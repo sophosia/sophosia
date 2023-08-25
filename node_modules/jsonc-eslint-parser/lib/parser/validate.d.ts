@@ -1,0 +1,32 @@
+import type { Node, Identifier } from "estree";
+import type { TokenStore } from "./token-store";
+import type { JSONIdentifier } from "./ast";
+export declare type JSONSyntaxContext = {
+    trailingCommas: boolean;
+    comments: boolean;
+    plusSigns: boolean;
+    spacedSigns: boolean;
+    leadingOrTrailingDecimalPoints: boolean;
+    infinities: boolean;
+    nans: boolean;
+    numericSeparators: boolean;
+    binaryNumericLiterals: boolean;
+    octalNumericLiterals: boolean;
+    legacyOctalNumericLiterals: boolean;
+    invalidJsonNumbers: boolean;
+    multilineStrings: boolean;
+    unquoteProperties: boolean;
+    singleQuotes: boolean;
+    numberProperties: boolean;
+    undefinedKeywords: boolean;
+    sparseArrays: boolean;
+    regExpLiterals: boolean;
+    templateLiterals: boolean;
+    bigintLiterals: boolean;
+    unicodeCodepointEscapes: boolean;
+    escapeSequenceInIdentifier: boolean;
+};
+export declare function validateNode(node: Node, tokens: TokenStore, ctx: JSONSyntaxContext): void;
+export declare function isStaticValueIdentifier<I extends Identifier | JSONIdentifier>(node: I, ctx: JSONSyntaxContext): node is I & {
+    name: "NaN" | "Infinity" | "undefined";
+};
