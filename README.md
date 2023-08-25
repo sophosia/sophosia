@@ -1,1 +1,0 @@
-# sophosia-app
