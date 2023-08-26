@@ -3,9 +3,10 @@ import { uid } from "quasar";
 import { Buffer } from "buffer";
 import { createFile, deleteFile } from "./file";
 
-const fs = window.fs;
-const path = window.path;
-
+// const fs = window.fs;
+// const path = window.path;
+import { readBinaryFile, exists, writeTextFile, createDir, writeBinaryFile} from '@tauri-apps/api/fs';
+import { join, basename, extname } from '@tauri-apps/api/path';
 /**
  * Create a note
  * @param projectId
@@ -163,11 +164,11 @@ export async function loadNote(
 ): Promise<string> {
   try {
     let note: Note = await db.get(noteId);
-    if (fs.existsSync(note.path)) return fs.readFileSync(note.path, "utf8");
+    if (await exists(note.path)) return new TextDecoder().decode(await readBinaryFile(note.path));
     else return "";
   } catch (error) {
     if ((error as Error).name == "not_found") {
-      if (notePath) return fs.readFileSync(notePath, "utf8");
+      if (notePath) return new TextDecoder().decode(await readBinaryFile(notePath));
       else {
         console.log("Error: Must have a valid noteId or notePath");
         return "";
@@ -189,11 +190,14 @@ export async function saveNote(
 ) {
   try {
     let note: Note = await db.get(noteId);
-    fs.writeFileSync(note.path, content);
+    // fs.writeFileSync(note.path,content);
+    await writeTextFile(note.path, content);
   } catch (error) {
     if ((error as Error).name == "not_found") {
       // might be a note opened by plugin
-      if (notePath) fs.writeFileSync(notePath, content);
+      // if (notePath) fs.writeFileSync(notePath, content);
+      if (notePath) writeTextFile(notePath, content);
+
       else console.log("Error: Must pass in a valid noteId or valid notePath");
     }
   }
@@ -213,14 +217,14 @@ export async function uploadImage(
 
   try {
     let note: Note = await db.get(noteId);
-    let imgType: string = path.extname(file.name); // .png
+    let imgType: string = await extname(file.name); // .png
     let imgName: string = uid() + imgType; // use uuid as img name
-    let imgFolder: string = path.join(path.dirname(note.path), "img");
-    let imgPath: string = path.join(imgFolder, imgName);
-    if (!fs.existsSync(imgFolder)) fs.mkdirSync(imgFolder);
+    let imgFolder: string = await join(await basename(note.path), "img");
+    let imgPath: string = await join(imgFolder, imgName);
+    if (!await exists(imgFolder)) await createDir(imgFolder);
 
     let arrayBuffer: ArrayBuffer = await file.arrayBuffer();
-    fs.writeFileSync(imgPath, Buffer.from(arrayBuffer));
+    await writeBinaryFile(imgPath, Buffer.from(arrayBuffer));
     return { imgName: imgName, imgPath: imgPath };
   } catch (error) {
     console.log(error);

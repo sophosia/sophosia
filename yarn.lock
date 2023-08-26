@@ -78,6 +78,14 @@
   dependencies:
     "@citation-js/date" "^0.5.0"
 
+"@citation-js/plugin-isbn@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@citation-js/plugin-isbn/-/plugin-isbn-0.4.0.tgz#33ab9f0f09e1a6eac5acd98554aabb35d400cf1c"
+  integrity sha512-5pnpQi+99BjkWbDWdb0LnPnVH92HxHmPUqaKKxX2npNulTqELO6mBRIjc6eV7unxyZ9eJAai1lZYdr153iUdVw==
+  dependencies:
+    "@citation-js/date" "^0.5.0"
+    "@citation-js/name" "^0.4.2"
+
 "@citation-js/plugin-ris@0.6.8", "@citation-js/plugin-ris@^0.6.8":
   version "0.6.8"
   resolved "https://registry.yarnpkg.com/@citation-js/plugin-ris/-/plugin-ris-0.6.8.tgz#a32de155dfa1fd4704b159937364db14a4c44a2c"

@@ -10,9 +10,11 @@
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
-    "build": "quasar build"
+    "build": "quasar build",
+    "test:unit:ci": "vitest run --no-threads"
   },
   "dependencies": {
+    "@citation-js/plugin-isbn": "^0.4.0",
     "@quasar/extras": "^1.16.4",
     "@tauri-apps/api": "^1.4.0",
     "axios": "^1.2.1",

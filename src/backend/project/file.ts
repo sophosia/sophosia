@@ -1,10 +1,8 @@
 import { db, AppState } from "../database";
 
-// const path = window.path;
-// const fs = window.fs;
-const fs = require('fs')
+
 import { join, basename, dirname } from '@tauri-apps/api/path';
-import { createDir, removeDir, copyFile } from "@tauri-apps/api/fs"
+import { createDir, removeDir, copyFile, exists, removeFile, renameFile} from "@tauri-apps/api/fs"
 
 /**
  * Get storagePath from database
@@ -93,8 +91,8 @@ async function createFile(
     // let filePath = path.join(await storagePath(), projectId, fileName);
     let filePath = await join(await storagePath(), projectId, fileName);
 
-    fs.closeSync(fs.openSync(filePath, "w"));
-
+    // fs.closeSync(fs.openSync(filePath, "w"));
+    if( await exists(filePath))
     return filePath;
   } catch (error) {
     console.log(error);
@@ -105,11 +103,11 @@ async function createFile(
  * Delete file
  * @param filePath
  */
-function deleteFile(filePath: string) {
+async function deleteFile(filePath: string) {
   try {
-    if (!fs) return;
+    // if (!fs) return;
     // we can ignore this error since rmSync is there
-    fs.rmSync(filePath, { force: true });
+    await removeFile(filePath);
   } catch (error) {
     console.log(error);
   }
@@ -120,7 +118,7 @@ function deleteFile(filePath: string) {
  * @param filePath - path to file
  * @param fileName - new file name
  */
-async function renameFile(filePath: string, fileName: string) {
+async function renameFilefun(filePath: string, fileName: string) {
   try {
     // if (!path || !fs) return;
     // let dirname = path.dirname(filePath);
@@ -129,7 +127,7 @@ async function renameFile(filePath: string, fileName: string) {
     let dir = await dirname(filePath);
     let newPath = await join(dir, fileName.replace("/", ""));
 
-    fs.renameSync(filePath, newPath);
+    await renameFilefun(filePath, newPath);
     return newPath;
   } catch (error) {
     console.log(error);
@@ -141,10 +139,10 @@ async function renameFile(filePath: string, fileName: string) {
  * @param srcPath source path
  * @param dstPath destination path
  */
-function changePath(srcPath: string, dstPath: string): Error | undefined {
+async function changePath(srcPath: string, dstPath: string): Promise<Error | undefined> {
   try {
-    if (!fs) return;
-    fs.renameSync(srcPath, dstPath);
+    // if (!fs) return;
+    await renameFilefun(srcPath, dstPath);
   } catch (error) {
     console.log(error);
     return error as Error;
@@ -157,6 +155,6 @@ export {
   copyFilefun,
   createFile,
   deleteFile,
-  renameFile,
+  renameFilefun,
   changePath,
 };

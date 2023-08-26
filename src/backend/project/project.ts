@@ -1,11 +1,12 @@
 import { uid } from "quasar";
 import { db, Project, SpecialFolder } from "../database";
 import {
-  copyFile,
+  copyFilefun,
   createProjectFolder,
   deleteProjectFolder,
-  renameFile,
+  renameFilefun
 } from "./file";
+import { join, basename, extname } from '@tauri-apps/api/path';
 
 /**
  * Create a project data
@@ -228,43 +229,43 @@ export async function getProjects(folderId: string): Promise<Project[]> {
   }
 }
 
-export async function renamePDF(project: Project) {
-  if (project.path === undefined) return;
-  let author = "";
-  let year = project.issued?.["date-parts"][0][0] || "Unknown";
-  let title = project.title;
-  let extname = window.path.extname(project.path);
-  if (!project.author || project.author.length === 0) {
-    // no author
-    author = "Unknown";
-  } else {
-    // 1 author
-    let author0 = project.author[0];
-    author = !!author0.family ? author0.family : (author0.literal as string);
+// export async function renamePDF(project: Project) {
+//   if (project.path === undefined) return;
+//   let author = "";
+//   let year = project.issued?.["date-parts"][0][0] || "Unknown";
+//   let title = project.title;
+//   let extname_ = await extname(project.path);
+//   if (!project.author || project.author.length === 0) {
+//     // no author
+//     author = "Unknown";
+//   } else {
+//     // 1 author
+//     let author0 = project.author[0];
+//     author = !!author0.family ? author0.family : (author0.literal as string);
 
-    // more than 1 authors
-    if (project.author.length > 1) author += " et al.";
-  }
-  let fileName = `${author} - ${year} - ${title}${extname}`;
+//     // more than 1 authors
+//     if (project.author.length > 1) author += " et al.";
+//   }
+//   let fileName = `${author} - ${year} - ${title}${extname_}`;
 
-  // update backend
-  let newPath = renameFile(project.path, fileName);
-  return await updateProject(project._id, { path: newPath } as Project);
-}
+//   // update backend
+//   let newPath = renameFile(project.path, fileName);
+//   return await updateProject(project._id, { path: newPath } as Project);
+// }
 
-/**
- * Attach a PDF file
- * @param replaceStoredCopy
- */
-export async function attachPDF(projectId: string, replaceStoredCopy: boolean) {
-  let filePaths = window.fileBrowser.showFilePicker({
-    multiSelections: false,
-    filters: [{ name: "*.pdf", extensions: ["pdf"] }],
-  });
-  if (filePaths?.length === 1) {
-    let dstPath = filePaths[0];
-    if (replaceStoredCopy)
-      dstPath = (await copyFile(dstPath, projectId)) as string;
-    return await updateProject(projectId, { path: dstPath } as Project);
-  }
-}
+// /**
+//  * Attach a PDF file
+//  * @param replaceStoredCopy
+//  */
+// export async function attachPDF(projectId: string, replaceStoredCopy: boolean) {
+//   let filePaths = window.fileBrowser.showFilePicker({
+//     multiSelections: false,
+//     filters: [{ name: "*.pdf", extensions: ["pdf"] }],
+//   });
+//   if (filePaths?.length === 1) {
+//     let dstPath = filePaths[0];
+//     if (replaceStoredCopy)
+//       dstPath = (await copyFilefun(dstPath, projectId)) as string;
+//     return await updateProject(projectId, { path: dstPath } as Project);
+//   }
+// }
