@@ -18,7 +18,7 @@ export function createNote(projectId: string, type: NoteType) {
     _rev: "",
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
-    dataType: "note",
+    dataType: 'note',
     projectId: projectId,
     label: "New Note",
     path: "",
