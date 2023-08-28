@@ -7,7 +7,7 @@
     unit="px"
     :separator-class="{
       'q-splitter-separator-horizontal': isGraphViewOpened && isTreeOpened,
-      'no-pointer-events': !isGraphViewOpened || !isTreeOpened,
+      'no-pointer-events': !isGraphViewOpened || !isTreeOpened
     }"
     v-model="treeSize"
     ref="root"

@@ -56,7 +56,7 @@
           'bg-primary':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
             !isClickingPDF,
-          selected: props.selected,
+          selected: props.selected
         }"
         draggable="true"
         @dragstart="onDragStart"
@@ -76,7 +76,7 @@
         :class="{
           'bg-primary':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
-            isClickingPDF,
+            isClickingPDF
         }"
         @click="isClickingPDF = true"
       />
@@ -89,7 +89,7 @@
         :class="{
           'bg-primary': projectStore.selected
             .map((item) => item._id)
-            .includes(note._id),
+            .includes(note._id)
         }"
       />
 
@@ -99,7 +99,7 @@
         :class="{
           'bg-primary': projectStore.selected
             .map((item) => item._id)
-            .includes(props.key),
+            .includes(props.key)
         }"
         :width="searchRowWidth"
         :text="expansionText[props.rowIndex]"
@@ -128,7 +128,7 @@ const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   searchString: { type: String, required: true },
-  projects: { type: Array as PropType<Project[]>, required: true },
+  projects: { type: Array as PropType<Project[]>, required: true }
 });
 
 const emit = defineEmits(["dragProject", "update:projects"]);
@@ -146,15 +146,15 @@ const headers = [
     field: "title",
     label: t("title"),
     align: "left",
-    sortable: true,
+    sortable: true
   },
   {
     name: "author",
     field: "author",
     label: t("author"),
     align: "left",
-    sortable: true,
-  },
+    sortable: true
+  }
 ] as QTableColumn[];
 
 onMounted(() => {

@@ -1,14 +1,14 @@
 import DeleteDialog from "./DeleteDialog.vue";
 function mount(deleteFromDB: boolean) {
-  let projects = [
+  const projects = [
     { title: "title1" },
     { title: "title2" },
-    { title: "title3" },
+    { title: "title3" }
   ];
-  let props = {
+  const props = {
     show: true,
     projects: projects,
-    deleteFromDB: deleteFromDB,
+    deleteFromDB: deleteFromDB
   };
   return cy.mount(DeleteDialog, { props });
 }

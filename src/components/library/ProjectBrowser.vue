@@ -37,7 +37,7 @@
         reverse
         :limits="[0, 60]"
         :separator-class="{
-          'q-splitter-separator': stateStore.showLibraryRightMenu,
+          'q-splitter-separator': stateStore.showLibraryRightMenu
         }"
         :disable="!stateStore.showLibraryRightMenu"
         v-model="rightMenuSize"
@@ -132,8 +132,8 @@ import { getMeta, exportMeta, importMeta } from "src/backend/project/meta";
 import { copyFilefun } from "src/backend/project/file";
 // util (to scan identifier in PDF)
 import * as pdfjsLib from "pdfjs-dist";
-import {  basename, dirname } from '@tauri-apps/api/path';
-import {  readBinaryFile } from '@tauri-apps/api/fs';
+import { basename, dirname } from "@tauri-apps/api/path";
+import { readBinaryFile } from "@tauri-apps/api/fs";
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "node_modules/pdfjs-dist/build/pdf.worker.min.js";
 
@@ -182,7 +182,7 @@ const onLayoutChanged = inject("onLayoutChanged") as () => void;
 watch(
   [
     () => stateStore.showLibraryRightMenu,
-    () => stateStore.libraryRightMenuSize,
+    () => stateStore.libraryRightMenuSize
   ],
   onLayoutChanged
 );
@@ -256,11 +256,11 @@ async function addProjectsByFiles(filePaths: string[]) {
       projectStore.addProject(project, true);
       let path = (await copyFilefun(filePath, project._id)) as string;
       // let title = window.path.basename(path, ".pdf");
-      let title = await basename(path,".pdf");
+      let title = await basename(path, ".pdf");
       let props = {
         path: path,
         title: title,
-        label: title,
+        label: title
       };
       // get meta
       // let buffer = window.fs.readFileSync(filePath);

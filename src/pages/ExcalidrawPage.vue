@@ -16,7 +16,7 @@ const stateStore = useStateStore();
 const props = defineProps({
   itemId: { type: String, required: true },
   visible: { type: Boolean, reqruied: true },
-  data: { type: Object, requried: false },
+  data: { type: Object, requried: false }
 });
 
 const ExcalidrawReact = applyPureReactInVue(CustomExcalidraw);

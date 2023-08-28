@@ -20,8 +20,8 @@ async function getMeta(
   try {
     const data = await Cite.async(identifier);
     if (!format || format === "json") {
-      let metas = data.data;
-      for (let i in metas) delete metas[i]._graph;
+      const metas = data.data;
+      for (const i in metas) delete metas[i]._graph;
       return metas;
     } else if (!options) return data.format(format);
     else return data.format(format, options);
@@ -43,12 +43,12 @@ async function exportMeta(
   options: { format?: string; template?: string }
 ) {
   try {
-    let projects: Project[] = await getProjects(folder._id);
+    const projects: Project[] = await getProjects(folder._id);
     console.log("projects", projects);
-    let meta = await getMeta(projects, format, options);
+    const meta = await getMeta(projects, format, options);
     if (format === "json") {
       exportFile(`${folder.label}.json`, JSON.stringify(meta), {
-        mimeType: "application/json",
+        mimeType: "application/json"
       });
     } else {
       let extension = "";
@@ -56,7 +56,7 @@ async function exportMeta(
       else if (format === "bibliography") extension = "txt";
       else if (format === "ris") extension = "ris";
       exportFile(`${folder.label}.${extension}`, meta, {
-        mimeType: "text/plain",
+        mimeType: "text/plain"
       });
     }
   } catch (error) {
@@ -71,7 +71,7 @@ async function exportMeta(
  * @returns {any} citation data
  */
 async function importMeta(filePath: string): Promise<any> {
-  let data = window.fs.readFileSync(filePath, "utf8");
+  const data = window.fs.readFileSync(filePath, "utf8");
   return await getMeta(data, "json");
 }
 

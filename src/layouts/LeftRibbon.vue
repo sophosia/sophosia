@@ -17,9 +17,8 @@
         <template
           v-for="toggleBtn in toggleBtns"
           v-slot:[toggleBtn.slot]
+          :key="toggleBtn.value"
         >
-          <!-- icons do not render properly using the normal way -->
-          <!-- I need to render icons in templates -->
           <q-icon :name="toggleBtn._icon">
             <q-tooltip>
               {{ toggleBtn.tooltip }}
@@ -51,7 +50,7 @@
           $emit('openPage', {
             id: 'library',
             label: t('library'),
-            type: 'LibraryPage',
+            type: 'LibraryPage'
           })
         "
       >
@@ -67,7 +66,7 @@
           $emit('openPage', {
             id: 'help',
             label: t('help'),
-            type: 'HelpPage',
+            type: 'HelpPage'
           })
         "
       >
@@ -83,7 +82,7 @@
           $emit('openPage', {
             id: 'settings',
             label: t('settings'),
-            type: 'SettingsPage',
+            type: 'SettingsPage'
           })
         "
       >
@@ -110,7 +109,7 @@ const stateStore = useStateStore();
 const { t, locale } = useI18n({ useScope: "global" });
 
 const props = defineProps({
-  isLeftMenuVisible: { type: Boolean, required: true },
+  isLeftMenuVisible: { type: Boolean, required: true }
 });
 const emit = defineEmits(["update:isLeftMenuVisible", "openPage"]);
 
@@ -161,14 +160,14 @@ function mountBtns() {
     _icon: "account_tree",
     value: "projectNavigator",
     tooltip: t("openedProjects"),
-    slot: "projectNavigator",
+    slot: "projectNavigator"
   });
   for (let toggleBtn of buttons.toggleBtns) {
     toggleBtns.value.push({
       _icon: toggleBtn.icon,
       value: toggleBtn.uid,
       tooltip: toggleBtn.tooltip,
-      slot: toggleBtn.uid,
+      slot: toggleBtn.uid
     });
   }
 }

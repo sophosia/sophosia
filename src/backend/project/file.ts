@@ -1,15 +1,21 @@
 import { db, AppState } from "../database";
 
-
-import { join, basename, dirname } from '@tauri-apps/api/path';
-import { createDir, removeDir, copyFile, exists, removeFile, renameFile} from "@tauri-apps/api/fs"
+import { join, basename, dirname } from "@tauri-apps/api/path";
+import {
+  createDir,
+  removeDir,
+  copyFile,
+  exists,
+  removeFile,
+  renameFile
+} from "@tauri-apps/api/fs";
 
 /**
  * Get storagePath from database
  * @returns storagePath
  */
 async function storagePath(): Promise<string> {
-  let state: AppState = await db.get("appState");
+  const state: AppState = await db.get("appState");
   return state.settings.storagePath;
 }
 
@@ -21,12 +27,10 @@ async function createProjectFolder(projectId: string) {
   try {
     // if (!path || !fs) return; // Need to find another way to check for error
     // let projectPath = path.join(await storagePath(), projectId);
-    let projectPath = await join(await storagePath(), projectId);
+    const projectPath = await join(await storagePath(), projectId);
 
     // fs.mkdirSync(projectPath);
     await createDir(projectPath);
-
-
   } catch (error) {
     console.log(error);
   }
@@ -40,11 +44,9 @@ async function deleteProjectFolder(projectId: string) {
   try {
     // if (!path || !fs) return;
     // let dirPath = path.join(await storagePath(), projectId);
-    let dirPath = await join(await storagePath(), projectId);
+    const dirPath = await join(await storagePath(), projectId);
     // fs.rmdirSync(dirPath, { recursive: true });
-     await removeDir(dirPath, { recursive: true });
-
-
+    await removeDir(dirPath, { recursive: true });
   } catch (error) {
     console.log(error);
   }
@@ -66,9 +68,9 @@ async function copyFilefun(
     // let dstPath = path.join(await storagePath(), projectId, fileName);
     // fs.copyFileSync(srcPath, dstPath);
 
-    let fileName = await basename(srcPath);
-    let dstPath = await join(await storagePath(), projectId, fileName);
-    await copyFile(srcPath,dstPath);
+    const fileName = await basename(srcPath);
+    const dstPath = await join(await storagePath(), projectId, fileName);
+    await copyFile(srcPath, dstPath);
 
     return dstPath;
   } catch (error) {
@@ -89,11 +91,10 @@ async function createFile(
   try {
     // if (!path || !fs) return;
     // let filePath = path.join(await storagePath(), projectId, fileName);
-    let filePath = await join(await storagePath(), projectId, fileName);
+    const filePath = await join(await storagePath(), projectId, fileName);
 
     // fs.closeSync(fs.openSync(filePath, "w"));
-    if( await exists(filePath))
-    return filePath;
+    if (await exists(filePath)) return filePath;
   } catch (error) {
     console.log(error);
   }
@@ -124,8 +125,8 @@ async function renameFilefun(filePath: string, fileName: string) {
     // let dirname = path.dirname(filePath);
 
     // let newPath = path.join(dirname, fileName.replace("/", ""));
-    let dir = await dirname(filePath);
-    let newPath = await join(dir, fileName.replace("/", ""));
+    const dir = await dirname(filePath);
+    const newPath = await join(dir, fileName.replace("/", ""));
 
     await renameFilefun(filePath, newPath);
     return newPath;
@@ -139,7 +140,10 @@ async function renameFilefun(filePath: string, fileName: string) {
  * @param srcPath source path
  * @param dstPath destination path
  */
-async function changePath(srcPath: string, dstPath: string): Promise<Error | undefined> {
+async function changePath(
+  srcPath: string,
+  dstPath: string
+): Promise<Error | undefined> {
   try {
     // if (!fs) return;
     await renameFilefun(srcPath, dstPath);
@@ -156,5 +160,5 @@ export {
   createFile,
   deleteFile,
   renameFilefun,
-  changePath,
+  changePath
 };

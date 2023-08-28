@@ -24,7 +24,7 @@
             dragover:
               !!dragoverNode &&
               dragoverNode == prop.node &&
-              draggingNode != prop.node,
+              draggingNode != prop.node
           }"
           draggable="true"
           @dragstart="(e: DragEvent) => onDragStart(e, prop.node)"
@@ -112,7 +112,7 @@ import {
   updateFolder,
   deleteFolder as deleteFolderDB,
   moveFolderInto,
-  getParentFolder,
+  getParentFolder
 } from "src/backend/project/folder";
 import { updateAppState } from "src/backend/appState";
 import { sortTree } from "src/backend/project/utils";
@@ -153,12 +153,12 @@ onMounted(async () => {
   folders.value.push({
     _id: "added",
     label: t("added"),
-    icon: "history",
+    icon: "history"
   });
   folders.value.push({
     _id: "favorites",
     label: t("favorites"),
-    icon: "star",
+    icon: "star"
   });
 });
 
@@ -185,7 +185,7 @@ async function addFolder(parentNode: Folder, label?: string, focus?: boolean) {
   if (!!label) {
     node.label = label;
     node = (await updateFolder(node._id, {
-      label: node.label,
+      label: node.label
     } as Folder)) as Folder;
   }
 
@@ -217,7 +217,7 @@ function deleteFolder(node: Folder) {
           _id: (n as Folder)._id,
           icon: (n as Folder).icon,
           label: (n as Folder).label,
-          children: _dfs(n as Folder),
+          children: _dfs(n as Folder)
         } as Folder);
       }
     }
@@ -372,7 +372,7 @@ function getLibraryNode() {
 defineExpose({
   getLibraryNode,
   addFolder,
-  onDragEnd,
+  onDragEnd
 });
 </script>
 <style lang="scss" scoped>

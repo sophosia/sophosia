@@ -6,8 +6,8 @@ import {
   deleteProjectFolder,
   renameFilefun
 } from "./file";
-import { join, basename, extname } from '@tauri-apps/api/path';
-import { open } from '@tauri-apps/api/dialog';
+import { join, basename, extname } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/api/dialog";
 
 /**
  * Create a project data
@@ -15,7 +15,7 @@ import { open } from '@tauri-apps/api/dialog';
  */
 export function createProject(folderId: string) {
   // create empty project entry
-  let project = {
+  const project = {
     _id: uid(),
     _rev: "",
     timestampAdded: Date.now(),
@@ -26,7 +26,7 @@ export function createProject(folderId: string) {
     path: "",
     tags: [] as string[],
     folderIds: ["library"],
-    favorite: false,
+    favorite: false
   } as Project;
   if (folderId != "library") project.folderIds.push(folderId);
   return project;
@@ -49,7 +49,7 @@ export async function addProject(
     await createProjectFolder(project._id);
 
     // put entry to database
-    let result = await db.put(project);
+    const result = await db.put(project);
     project._rev = result.rev;
 
     return project; // return the project
@@ -72,18 +72,18 @@ export async function deleteProject(
   folderId?: string
 ) {
   try {
-    let project: Project = await db.get(projectId);
+    const project: Project = await db.get(projectId);
     if (deleteFromDB) {
       // remove from db
       await db.remove(project as PouchDB.Core.RemoveDocument);
 
       // remove related pdfState, pdfAnnotation and notes on db
-      let result = await db.find({
+      const result = await db.find({
         selector: {
-          projectId: project._id,
-        },
+          projectId: project._id
+        }
       });
-      for (let doc of result.docs) {
+      for (const doc of result.docs) {
         await db.remove(doc);
       }
 
@@ -112,12 +112,12 @@ export async function updateProject(
   try {
     // need to remomve _graph property if update by meta
     delete props._graph;
-    let project = (await db.get(projectId)) as Project;
+    const project = (await db.get(projectId)) as Project;
     props._rev = project._rev;
     props.timestampModified = Date.now();
     Object.assign(project, props);
     project.label = project.title; // also update label
-    let result = await db.put(project);
+    const result = await db.put(project);
     project._rev = result.rev;
     return project;
   } catch (error) {
@@ -145,10 +145,10 @@ export async function getProject(
  * @returns {Project[]} array of projects
  */
 export async function getAllProjects(): Promise<Project[]> {
-  let result = await db.find({
+  const result = await db.find({
     selector: {
-      dataType: "project",
-    },
+      dataType: "project"
+    }
   });
   return result.docs as Project[];
 }
@@ -165,22 +165,22 @@ export async function getProjects(folderId: string): Promise<Project[]> {
       case SpecialFolder.LIBRARY:
         projects = (
           await db.find({
-            selector: { dataType: "project" },
+            selector: { dataType: "project" }
           })
         ).docs as Project[];
         break;
       case SpecialFolder.ADDED:
-        let date = new Date();
+        const date = new Date();
         // get recently added project in the last 30 days
-        let timestamp = date.setDate(date.getDate() - 30);
+        const timestamp = date.setDate(date.getDate() - 30);
         projects = (
           await db.find({
             selector: {
               dataType: "project",
               timestampAdded: {
-                $gt: timestamp,
-              },
-            },
+                $gt: timestamp
+              }
+            }
           })
         ).docs as Project[];
         // sort projects in descending order
@@ -191,8 +191,8 @@ export async function getProjects(folderId: string): Promise<Project[]> {
           await db.find({
             selector: {
               dataType: "project",
-              favorite: true,
-            },
+              favorite: true
+            }
           })
         ).docs as Project[];
         console.log("here", projects);
@@ -202,24 +202,24 @@ export async function getProjects(folderId: string): Promise<Project[]> {
           await db.find({
             selector: {
               dataType: "project",
-              folderIds: { $in: [folderId] },
-            },
+              folderIds: { $in: [folderId] }
+            }
           })
         ).docs as Project[];
         break;
     }
     // TODO: remove this few more versions later
     let flag = false;
-    for (let project of projects)
+    for (const project of projects)
       if (!project.timestampAdded) {
         project.timestampAdded = Date.now();
         project.timestampModified = Date.now();
         flag = true;
       }
     if (flag) {
-      let responses = await db.bulkDocs(projects);
-      for (let i in responses) {
-        let rev = responses[i].rev;
+      const responses = await db.bulkDocs(projects);
+      for (const i in responses) {
+        const rev = responses[i].rev;
         if (rev) projects[i]._rev = rev;
       }
     }
@@ -233,25 +233,27 @@ export async function getProjects(folderId: string): Promise<Project[]> {
 export async function renamePDF(project: Project) {
   if (project.path === undefined) return;
   let author = "";
-  let year = project.issued?.["date-parts"][0][0] || "Unknown";
-  let title = project.title;
-  let extname_ = await extname(project.path);
+  const year = project.issued?.["date-parts"][0][0] || "Unknown";
+  const title = project.title;
+  const extname_ = await extname(project.path);
   if (!project.author || project.author.length === 0) {
     // no author
     author = "Unknown";
   } else {
     // 1 author
-    let author0 = project.author[0];
+    const author0 = project.author[0];
     author = !!author0.family ? author0.family : (author0.literal as string);
 
     // more than 1 authors
     if (project.author.length > 1) author += " et al.";
   }
-  let fileName = `${author} - ${year} - ${title}${extname_}`;
+  const fileName = `${author} - ${year} - ${title}${extname_}`;
 
   // update backend
-  let newPath = renameFilefun(project.path, fileName);
-  return await updateProject(project._id, { path: newPath } as unknown as Project); // added unknown
+  const newPath = renameFilefun(project.path, fileName);
+  return await updateProject(project._id, {
+    path: newPath
+  } as unknown as Project); // added unknown
 }
 
 /**
@@ -264,9 +266,9 @@ export async function attachPDF(projectId: string, replaceStoredCopy: boolean) {
   //   filters: [{ name: "*.pdf", extensions: ["pdf"] }],
   // });
 
-  let filePaths = await open({
+  const filePaths = await open({
     multiple: true,
-    filters: [{ name: "*.pdf", extensions: ["pdf"] }],
+    filters: [{ name: "*.pdf", extensions: ["pdf"] }]
   });
   if (filePaths?.length === 1) {
     let dstPath = filePaths[0];

@@ -43,41 +43,41 @@
         {
           value: AnnotationType.CURSOR,
           icon: 'bi-cursor-text',
-          slot: AnnotationType.CURSOR,
+          slot: AnnotationType.CURSOR
         },
         {
           value: AnnotationType.HIGHLIGHT,
           icon: 'border_color',
-          slot: AnnotationType.HIGHLIGHT,
+          slot: AnnotationType.HIGHLIGHT
         },
         {
           value: AnnotationType.UNDERLINE,
           icon: 'format_underlined',
-          slot: AnnotationType.UNDERLINE,
+          slot: AnnotationType.UNDERLINE
         },
         {
           value: AnnotationType.STRIKEOUT,
           icon: 'format_strikethrough',
-          slot: AnnotationType.STRIKEOUT,
+          slot: AnnotationType.STRIKEOUT
         },
         {
           value: AnnotationType.RECTANGLE,
           icon: 'rectangle',
-          slot: AnnotationType.RECTANGLE,
+          slot: AnnotationType.RECTANGLE
         },
         {
           value: AnnotationType.COMMENT,
           icon: 'comment',
-          slot: AnnotationType.COMMENT,
+          slot: AnnotationType.COMMENT
         },
         {
           value: AnnotationType.INK,
-          slot: AnnotationType.INK,
+          slot: AnnotationType.INK
         },
         {
           value: AnnotationType.ERASER,
-          slot: 'eraser',
-        },
+          slot: 'eraser'
+        }
       ]"
     >
       <template v-slot:cursor>
@@ -184,7 +184,7 @@ const $q = useQuasar();
  * Props, emits, data
  */
 const props = defineProps({
-  showRightMenu: { type: Boolean, required: true },
+  showRightMenu: { type: Boolean, required: true }
 });
 const emit = defineEmits(["update:showRightMenu"]);
 

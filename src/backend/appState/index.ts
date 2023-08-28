@@ -12,7 +12,7 @@ async function getAppState(): Promise<AppState> {
   } catch (error) {
     // cannot get appState
 
-    let state: AppState = {
+    const state: AppState = {
       _id: "appState",
       _rev: "",
       dataType: "appState",
@@ -31,8 +31,8 @@ async function getAppState(): Promise<AppState> {
         theme: "dark",
         language: "en_US",
         storagePath: "",
-        fontSize: "16px",
-      },
+        fontSize: "16px"
+      }
     };
     await db.put(state);
     return state;
@@ -40,7 +40,7 @@ async function getAppState(): Promise<AppState> {
 }
 
 async function _updateAppState(state: AppState) {
-  let oldState = await db.get("appState");
+  const oldState = await db.get("appState");
   state._rev = oldState._rev;
   await db.put(state);
 }
@@ -56,7 +56,7 @@ async function getLayout(): Promise<Layout> {
     return (await db.get("layout")) as Layout;
   } catch (error) {
     // cannot get layout
-    let layout = {
+    const layout = {
       _id: "layout",
       _rev: "",
       dataType: "layout",
@@ -65,11 +65,11 @@ async function getLayout(): Promise<Layout> {
           showPopoutIcon: false,
           showMaximiseIcon: false,
           // must have close icon otherwise the last tab can't close
-          showCloseIcon: true,
+          showCloseIcon: true
         },
         dimensions: {
           borderWidth: 3,
-          headerHeight: 36,
+          headerHeight: 36
         },
         root: {
           type: "stack",
@@ -78,11 +78,11 @@ async function getLayout(): Promise<Layout> {
               type: "component",
               title: "Library",
               componentType: "LibraryPage",
-              componentState: { id: "library" },
-            },
-          ],
-        },
-      },
+              componentState: { id: "library" }
+            }
+          ]
+        }
+      }
     };
 
     await db.put(layout);
@@ -91,7 +91,7 @@ async function getLayout(): Promise<Layout> {
 }
 
 async function _updateLayout(config: LayoutConfig | ResolvedLayoutConfig) {
-  let layout: any = await db.get("layout");
+  const layout: any = await db.get("layout");
   layout.config = config;
   await db.put(layout);
 }

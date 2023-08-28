@@ -64,7 +64,7 @@ import { Project } from "src/backend/database";
 const props = defineProps({
   show: { type: Boolean, required: true },
   projects: { type: Object as PropType<Project[]>, required: false },
-  deleteFromDB: { type: Boolean, required: true },
+  deleteFromDB: { type: Boolean, required: true }
 });
 const emit = defineEmits(["update:show", "confirm"]);
 

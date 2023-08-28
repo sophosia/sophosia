@@ -42,7 +42,7 @@ export default class AnnotationStore {
    * @param props
    */
   async update(annotId: string, props: AnnotationData) {
-    let annot = this.getById(annotId);
+    const annot = this.getById(annotId);
     if (annot) await annot.update(props);
   }
 
@@ -51,9 +51,9 @@ export default class AnnotationStore {
    * @param annotId
    */
   async delete(annotId: string) {
-    let ind = this.annots.findIndex((annot) => annot.data._id === annotId);
+    const ind = this.annots.findIndex((annot) => annot.data._id === annotId);
     if (ind > -1) {
-      let annot = this.annots[ind];
+      const annot = this.annots[ind];
       await annot.delete();
       this.annots.splice(ind, 1);
     }
@@ -66,24 +66,24 @@ export default class AnnotationStore {
   async loadFromDB() {
     try {
       // get all annotations of the currentry {
-      let annotDatas = (
+      const annotDatas = (
         await db.find({
-          selector: { dataType: "pdfAnnotation", projectId: this.projectId },
+          selector: { dataType: "pdfAnnotation", projectId: this.projectId }
         })
       ).docs as AnnotationData[];
 
       // TODO: remove this few more versions later
       let flag = false;
-      for (let annotData of annotDatas)
+      for (const annotData of annotDatas)
         if (!annotData.timestampAdded) {
           annotData.timestampAdded = Date.now();
           annotData.timestampModified = Date.now();
           flag = true;
         }
       if (flag) {
-        let responses = await db.bulkDocs(annotDatas);
-        for (let i in responses) {
-          let rev = responses[i].rev;
+        const responses = await db.bulkDocs(annotDatas);
+        for (const i in responses) {
+          const rev = responses[i].rev;
           if (rev) annotDatas[i]._rev = rev;
         }
       }
@@ -113,7 +113,7 @@ export default class AnnotationStore {
 
   setActive(annotId: string) {
     this.selectedId = annotId;
-    for (let annot of this.annots) {
+    for (const annot of this.annots) {
       annot.setActive(false);
       if (annot.data._id === annotId) annot.setActive(true);
     }

@@ -6,42 +6,42 @@ import {
   deleteNote,
   updateNote,
   getNote,
-  getNotes,
+  getNotes
 } from "src/backend/project/note";
 
 describe("note.ts", () => {
   it("createNote", async () => {
-    let type = NoteType.MARKDOWN;
-    let projectId = "test-id";
-    let note = createNote(projectId, type);
+    const type = NoteType.MARKDOWN;
+    const projectId = "test-id";
+    const note = createNote(projectId, type);
     expect(note.type).toBe(type);
     expect(note.projectId).toBe(projectId);
   });
 
   it("deleteNote", async () => {
-    let note = createNote("", NoteType.MARKDOWN);
+    const note = createNote("", NoteType.MARKDOWN);
     await addNote(note);
     await deleteNote(note._id);
 
-    let result = await getNote(note._id);
+    const result = await getNote(note._id);
     expect(result).toBe(undefined);
   });
 
   it("updateNote", async () => {
-    let note = createNote("", NoteType.MARKDOWN);
-    let n = (await addNote(note)) as Note;
+    const note = createNote("", NoteType.MARKDOWN);
+    const n = (await addNote(note)) as Note;
     n.label = "test note";
-    let nn = (await updateNote(n._id, n)) as Note;
+    const nn = (await updateNote(n._id, n)) as Note;
     expect(nn.label).toBe(n.label);
   });
 
   it("getNotes", async () => {
-    let n = 10;
+    const n = 10;
     for (let i = 0; i < n; i++) {
-      let note = createNote("projectId", NoteType.MARKDOWN);
+      const note = createNote("projectId", NoteType.MARKDOWN);
       await addNote(note);
     }
-    let notes = (await getNotes("projectId")) as Note[];
+    const notes = (await getNotes("projectId")) as Note[];
     expect(notes.length).toBe(n);
   });
 });

@@ -66,7 +66,7 @@ import pluginManager from "src/backend/plugin";
 const props = defineProps({
   visible: { type: Boolean, reqruied: true },
   itemId: { type: String, required: true },
-  data: { type: Object, requried: false },
+  data: { type: Object, requried: false }
 });
 
 const pluginId = ref(props.itemId);

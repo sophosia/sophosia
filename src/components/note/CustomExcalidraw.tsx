@@ -3,7 +3,7 @@ import {
   Excalidraw,
   MainMenu,
   serializeAsJSON,
-  serializeLibraryAsJSON,
+  serializeLibraryAsJSON
 } from "@excalidraw/excalidraw";
 import "src/css/excalidraw/theme.scss";
 import { debounce, uid } from "quasar";
@@ -14,11 +14,16 @@ import {
   AppState as ExcalidrawState,
   BinaryFiles,
   ExcalidrawImperativeAPI,
-  LibraryItems,
+  LibraryItems
 } from "@excalidraw/excalidraw/types/types";
 import { Note } from "src/backend/database";
-import { createDir, exists, readTextFile, writeTextFile} from '@tauri-apps/api/fs';
-import { join } from '@tauri-apps/api/path';
+import {
+  createDir,
+  exists,
+  readTextFile,
+  writeTextFile
+} from "@tauri-apps/api/fs";
+import { join } from "@tauri-apps/api/path";
 
 interface InitialData {
   elements: ExcalidrawElement[];
@@ -43,7 +48,7 @@ export default function CustomExcalidraw(props: {
   async function loadExcalidraw(): Promise<InitialData | undefined> {
     if (!notePath) return;
     try {
-      let scene = JSON.parse(await readTextFile(notePath));
+      const scene = JSON.parse(await readTextFile(notePath));
       if (!scene.appState.theme)
         scene.appState.theme = stateStore.settings.theme;
       return scene as InitialData;
@@ -59,8 +64,8 @@ export default function CustomExcalidraw(props: {
   ) {
     if (!notePath && !ready) return;
     try {
-      let jsonString = serializeAsJSON(elements, state, files, "local");
-      let json = JSON.parse(jsonString);
+      const jsonString = serializeAsJSON(elements, state, files, "local");
+      const json = JSON.parse(jsonString);
       json.appState.theme = state.theme;
       // fs.writeFileSync(notePath, JSON.stringify(json, null, 2));
       await writeTextFile(notePath, JSON.stringify(json, null, 2));
@@ -76,10 +81,10 @@ export default function CustomExcalidraw(props: {
   ) => void;
 
   async function loadExcalidrawLibrary(): Promise<LibraryItems> {
-    let storagePath = stateStore.settings.storagePath;
-    let hiddenFolder = await join(storagePath, ".research-helper");
-    let filePath = await join(hiddenFolder, "library.excalidrawlib");
-    if (!await exists(filePath)) return [] as LibraryItems;
+    const storagePath = stateStore.settings.storagePath;
+    const hiddenFolder = await join(storagePath, ".research-helper");
+    const filePath = await join(hiddenFolder, "library.excalidrawlib");
+    if (!(await exists(filePath))) return [] as LibraryItems;
     return JSON.parse(await readTextFile(filePath))
       .libraryItems as LibraryItems;
   }
@@ -92,12 +97,12 @@ export default function CustomExcalidraw(props: {
       }, 500);
       return;
     }
-    let storagePath = stateStore.settings.storagePath;
+    const storagePath = stateStore.settings.storagePath;
     try {
-      let hiddenFolder = await join(storagePath, ".research-helper");
-      if (!await exists(hiddenFolder)) await createDir(hiddenFolder);
-      let filePath = await join(hiddenFolder, "library.excalidrawlib");
-      let jsonString = serializeLibraryAsJSON(items);
+      const hiddenFolder = await join(storagePath, ".research-helper");
+      if (!(await exists(hiddenFolder))) await createDir(hiddenFolder);
+      const filePath = await join(hiddenFolder, "library.excalidrawlib");
+      const jsonString = serializeLibraryAsJSON(items);
       await writeTextFile(filePath, jsonString);
     } catch (error) {
       console.log(error);
@@ -115,15 +120,14 @@ export default function CustomExcalidraw(props: {
   // if (initialData) initialData.libraryItems = loadExcalidrawLibrary();
   let initialData: InitialData | undefined;
   async function loadInitialData() {
-     initialData = await loadExcalidraw(); // Wait for the promise to resolve
+    initialData = await loadExcalidraw(); // Wait for the promise to resolve
     if (initialData) {
       initialData.libraryItems = await loadExcalidrawLibrary();
       // Now you can work with initialData.libraryItems
     }
   }
-  
-  loadInitialData();
 
+  loadInitialData();
 
   return notePath && props.visible ? (
     <Excalidraw

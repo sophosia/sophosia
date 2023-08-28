@@ -17,7 +17,7 @@ class PeekManager {
     // IMPORTANT: DO NOT CHANGE container to peekContainer, otherwise it breaks
     const eventBus = new pdfjsViewer.EventBus();
     const pdfLinkService = new pdfjsViewer.PDFLinkService({
-      eventBus,
+      eventBus
     });
 
     const pdfSinglePageViewer = new pdfjsViewer.PDFSinglePageViewer({
@@ -26,7 +26,7 @@ class PeekManager {
       linkService: pdfLinkService,
       textLayerMode: 0, // DISABLE: 0, ENABLE: 1
       annotationMode: pdfjsLib.AnnotationMode.DISABLE,
-      l10n: pdfjsViewer.NullL10n,
+      l10n: pdfjsViewer.NullL10n
     });
     pdfLinkService.setViewer(pdfSinglePageViewer);
 
@@ -54,11 +54,11 @@ class PeekManager {
       cMapUrl = new URL("cmaps/", import.meta.url).href;
     }
     // let buffer = window.fs.readFileSync(filePath); //Electron
-    let buffer = await readBinaryFile(filePath); //Tauri
-    let loadingTask = pdfjsLib.getDocument({
+    const buffer = await readBinaryFile(filePath); //Tauri
+    const loadingTask = pdfjsLib.getDocument({
       data: buffer,
       cMapUrl: cMapUrl,
-      cMapPacked: true,
+      cMapPacked: true
     });
     loadingTask.promise.then((pdfDocument) => {
       this.pdfViewer.setDocument(pdfDocument);
@@ -72,11 +72,11 @@ class PeekManager {
    */
   peek(link: HTMLAnchorElement) {
     link.onmouseover = () => {
-      let timeoutId = setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         // internal link is wrapped by an <section> tag
         // this section tag has class linkAnnotation
         // and it is in annotationLayer of pdfjs
-        let linkAnnot = link.parentElement as HTMLElement;
+        const linkAnnot = link.parentElement as HTMLElement;
         this.pdfViewer.linkService.setHash(link.href.split("#")[1]);
         this.showContainer(linkAnnot);
         this.handtool.activate();
@@ -90,18 +90,18 @@ class PeekManager {
   }
 
   showContainer(annot: HTMLElement) {
-    let annotRect = annot.getBoundingClientRect();
-    let viewerRect = this.viewerContainer.getBoundingClientRect();
+    const annotRect = annot.getBoundingClientRect();
+    const viewerRect = this.viewerContainer.getBoundingClientRect();
 
     // container dimension (in px)
-    let vw = viewerRect.width;
-    let vh = viewerRect.height;
+    const vw = viewerRect.width;
+    const vh = viewerRect.height;
 
-    let x1 = annotRect.x - viewerRect.x;
-    let y1 = annotRect.y - viewerRect.y;
+    const x1 = annotRect.x - viewerRect.x;
+    const y1 = annotRect.y - viewerRect.y;
 
-    let w = (viewerRect.width * 2) / 3;
-    let h = viewerRect.height / 2;
+    const w = (viewerRect.width * 2) / 3;
+    const h = viewerRect.height / 2;
 
     // anchor point
     let left = annotRect.x - viewerRect.x;

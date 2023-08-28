@@ -47,6 +47,6 @@ const setZIndex = (value: string): void => {
 defineExpose({
   setPosAndSize,
   setVisibility,
-  setZIndex,
+  setZIndex
 });
 </script>

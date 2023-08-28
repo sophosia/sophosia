@@ -75,7 +75,7 @@
             :options="[
               { label: $t('no-spreads'), value: 0 },
               { label: $t('odd-spreads'), value: 1 },
-              { label: $t('even-spreads'), value: 2 },
+              { label: $t('even-spreads'), value: 2 }
             ]"
             :model-value="spreadMode"
             @update:model-value="(mode: number) => $emit('changeSpreadMode',mode)"
@@ -108,11 +108,11 @@
 const props = defineProps({
   currentScale: { type: Number, required: true },
   spreadMode: { type: Number, required: true },
-  isFullscreen: { type: Boolean, required: true },
+  isFullscreen: { type: Boolean, required: true }
 });
 const emit = defineEmits([
   "changeScale",
   "changeSpreadMode",
-  "toggleFullscreen",
+  "toggleFullscreen"
 ]);
 </script>

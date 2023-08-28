@@ -21,7 +21,7 @@ import {
   getAllNotes,
   getNote,
   uploadImage,
-  updateNote,
+  updateNote
 } from "src/backend/project/note";
 
 import { getAllProjects } from "src/backend/project/project";
@@ -30,7 +30,7 @@ import { EventBus, debounce } from "quasar";
 import { useI18n } from "vue-i18n";
 import _ from "lodash";
 
-import { dirname} from '@tauri-apps/api/path';
+import { dirname } from "@tauri-apps/api/path";
 
 const stateStore = useStateStore();
 const { t } = useI18n({ useScope: "global" });
@@ -39,7 +39,7 @@ const bus = inject("bus") as EventBus;
 const props = defineProps({
   noteId: { type: String, required: true },
   hasToolbar: { type: Boolean, required: true },
-  data: { type: Object, required: false },
+  data: { type: Object, required: false }
 });
 
 const currentNote = ref<Note>();
@@ -94,7 +94,7 @@ function initEditor() {
     toolbar = [
       {
         name: "outline",
-        tipPosition: "s",
+        tipPosition: "s"
       },
       "|",
       { name: "headings", tipPosition: "s" },
@@ -106,14 +106,14 @@ function initEditor() {
       { name: "upload", tipPosition: "s", tip: t("upload-image") },
       { name: "export", tipPosition: "s" },
       "|",
-      { name: "help", tipPosition: "s" },
+      { name: "help", tipPosition: "s" }
     ];
 
   vditor.value = new Vditor("vditor-" + props.noteId, {
     height: "100%",
     mode: "ir",
     toolbarConfig: {
-      pin: true,
+      pin: true
     },
     toolbar: toolbar,
     lang: stateStore.settings.language as keyof II18n,
@@ -121,20 +121,20 @@ function initEditor() {
     preview: {
       math: {
         // able to use digit in inline math
-        inlineDigit: true,
+        inlineDigit: true
       },
       markdown: {
         // in DEV mode, load local files instead of server path
-        linkBase: linkBase.value,
+        linkBase: linkBase.value
       },
       hljs: {
         // enable line number in code block
-        lineNumber: true,
-      },
+        lineNumber: true
+      }
     },
     placeholder: t("live-markdown-editor-latex-supported"),
     cache: {
-      enable: false,
+      enable: false
     },
     hint: {
       parse: false,
@@ -142,9 +142,9 @@ function initEditor() {
       extend: [
         {
           key: "[[",
-          hint: filterHints,
-        },
-      ],
+          hint: filterHints
+        }
+      ]
     },
     after: () => {
       if (showEditor.value) {
@@ -178,8 +178,8 @@ function initEditor() {
           });
         }
         return null;
-      },
-    },
+      }
+    }
   });
 }
 
@@ -256,7 +256,7 @@ async function saveLinks() {
         targetNodes.push({
           id: href,
           label: node.innerText,
-          type: undefined,
+          type: undefined
         });
       // default type to undefined for easier determination of missing node
     }
@@ -398,7 +398,7 @@ function filterHints(key: string) {
     if (label.toLocaleLowerCase().indexOf(key) > -1) {
       hints.value.push({
         value: `[${label}](${item._id})`,
-        html: `<p class="ellipsis"><strong>${item.dataType}</strong>: ${item.label}</p>`,
+        html: `<p class="ellipsis"><strong>${item.dataType}</strong>: ${item.label}</p>`
       });
     }
   }

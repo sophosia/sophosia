@@ -142,11 +142,11 @@ import { Project, Note, NoteType } from "src/backend/database";
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { copyToClipboard } from "quasar";
-import { basename } from '@tauri-apps/api/path';
-import { open } from '@tauri-apps/api/shell';
+import { basename } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/api/shell";
 import { OptionalContentConfig } from "pdfjs-dist/types/src/display/optional_content_config";
 const props = defineProps({
-  item: { type: Object as PropType<Project | Note>, required: true },
+  item: { type: Object as PropType<Project | Note>, required: true }
 });
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -171,7 +171,7 @@ const label = computed({
   },
   set(_newLabel: string) {
     newLabel.value = _newLabel;
-  },
+  }
 });
 
 function copyID() {
@@ -215,7 +215,7 @@ async function onRenameNote() {
   // let note = props.item as Note;
   // note.label = newLabel.value;
   await projectStore.updateNote(props.item._id, {
-    label: newLabel.value,
+    label: newLabel.value
   } as Note);
   renaming.value = false;
 }

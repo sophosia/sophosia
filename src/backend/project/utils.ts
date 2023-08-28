@@ -15,7 +15,7 @@ function sortTree(root: TreeNode) {
         ? -1
         : 0
     );
-    for (let child of root.children) sortTree(child as TreeNode);
+    for (const child of root.children) sortTree(child as TreeNode);
   }
 }
 

@@ -21,10 +21,12 @@ export async function getItem(
  */
 export async function getLinks(item: Project | Note) {
   try {
-    let forwardIds = item.links ? item.links.map((link: Node) => link.id) : [];
+    const forwardIds = item.links
+      ? item.links.map((link: Node) => link.id)
+      : [];
 
     // query removes non-existing docs and duplicated docs
-    let result = await db.query(function (doc: Project | Note, emit) {
+    const result = await db.query(function (doc: Project | Note, emit) {
       if (emit) {
         // forward links
         if (forwardIds.includes(doc._id)) emit("forward", doc);
@@ -38,22 +40,22 @@ export async function getLinks(item: Project | Note) {
       }
     });
 
-    let pushedIds = [item._id];
-    let nodes = [
+    const pushedIds = [item._id];
+    const nodes = [
       {
         data: {
           id: item._id,
           label: item.label,
           type: item.dataType,
-          parent: item.projectId,
-        },
-      },
+          parent: item.projectId
+        }
+      }
     ] as NodeUI[];
-    let edges = [] as EdgeUI[];
-    for (let row of result.rows) {
+    const edges = [] as EdgeUI[];
+    for (const row of result.rows) {
       // add to nodes
       if (!pushedIds.includes(row.id)) {
-        let { _id: id, label, dataType: type, projectId: parent } = row.value;
+        const { _id: id, label, dataType: type, projectId: parent } = row.value;
         nodes.push({ data: { id, label, type, parent } });
         pushedIds.push(row.id);
       }
@@ -62,22 +64,22 @@ export async function getLinks(item: Project | Note) {
       edges.push({
         data: {
           source: row.key === "forward" ? item._id : row.id,
-          target: row.key === "forward" ? row.id : item._id,
-        },
+          target: row.key === "forward" ? row.id : item._id
+        }
       });
     }
 
     // add missing nodes as well
     if (item.links) {
-      for (let link of item.links) {
+      for (const link of item.links) {
         if (!pushedIds.includes(link.id)) {
           // link.type is default to undefined (missing) already
           nodes.push({ data: link });
           edges.push({
             data: {
               source: item._id,
-              target: link.id,
-            },
+              target: link.id
+            }
           });
         }
       }
@@ -95,12 +97,12 @@ export async function getLinks(item: Project | Note) {
  * @returns parentNodes
  */
 export async function getParents(nodes: NodeUI[]) {
-  let parentIds = nodes.map((node) => node.data.parent);
+  const parentIds = nodes.map((node) => node.data.parent);
   // query removes non-existing docs and duplicated docs
-  let result = await db.query(function (doc: Project, emit) {
+  const result = await db.query(function (doc: Project, emit) {
     if (emit) {
       if (parentIds.includes(doc._id)) {
-        let { _id: id, label, dataType: type } = doc;
+        const { _id: id, label, dataType: type } = doc;
         emit("parent", { data: { id, label, type } });
       }
     }

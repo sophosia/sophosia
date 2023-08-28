@@ -157,8 +157,8 @@ import { Note, NoteType, Page, Project } from "src/backend/database";
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { getProject } from "src/backend/project/project";
-import { join} from '@tauri-apps/api/path';
-import { open } from '@tauri-apps/api/shell';
+import { join } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/api/shell";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -233,15 +233,12 @@ function selectItem(node: Project | Note) {
   stateStore.openPage({ id, type, label });
 }
 
-
-
-
 async function showInExplorer(node: Project | Note) {
   let path = "";
   if (node.path) {
     path = node.path;
   } else {
-    // window.path.join(stateStore.settings.storagePath, node._id); 
+    // window.path.join(stateStore.settings.storagePath, node._id);
     await join(stateStore.settings.storagePath, node._id);
   }
   // don't use props.row.path because it might not exists

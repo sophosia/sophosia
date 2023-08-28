@@ -136,15 +136,15 @@ import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
 import { copyToClipboard } from "quasar";
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
-import { open } from '@tauri-apps/api/shell';
-import { join } from '@tauri-apps/api/path';
+import { open } from "@tauri-apps/api/shell";
+import { join } from "@tauri-apps/api/path";
 // import { join } from "path";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 
 const props = defineProps({
-  projectId: { type: String, required: true },
+  projectId: { type: String, required: true }
 });
 const emit = defineEmits(["expandRow"]);
 
@@ -212,7 +212,7 @@ async function onAttachFile(replaceStoredCopy: boolean) {
 
 async function setFavorite(isFavorite: boolean) {
   await projectStore.updateProject(props.projectId, {
-    favorite: isFavorite,
+    favorite: isFavorite
   } as Project);
 }
 

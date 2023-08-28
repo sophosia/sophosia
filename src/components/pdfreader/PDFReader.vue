@@ -64,7 +64,7 @@ import {
   AnnotationType,
   PDFState,
   Project,
-  Rect,
+  Rect
 } from "src/backend/database";
 import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
 import { KEY_pdfApp, KEY_project } from "./injectKeys";
@@ -106,7 +106,7 @@ const showRightMenu = computed({
       prvRightMenuSize.value = rightMenuSize.value;
       rightMenuSize.value = 0;
     }
-  },
+  }
 });
 
 // annot card & colorpicker
@@ -321,7 +321,7 @@ onMounted(async () => {
               content: "",
               color: "",
               rects: [] as Rect[],
-              type: AnnotationType.INK,
+              type: AnnotationType.INK
             } as AnnotationData;
             let annot = pdfApp.annotFactory.build(annotData);
             if (annot) {
@@ -409,8 +409,8 @@ onMounted(async () => {
                   left: Math.min(x1, ev.clientX),
                   top: Math.min(y1, ev.clientY),
                   width: Math.abs(x1 - ev.clientX),
-                  height: Math.abs(y1 - ev.clientY),
-                },
+                  height: Math.abs(y1 - ev.clientY)
+                }
               ];
               if (rects[0].width < 1 || rects[0].height < 1) return;
               rects[0] = pdfApp.annotFactory.offsetTransform(
@@ -429,7 +429,7 @@ onMounted(async () => {
                 pageNumber: e.pageNumber,
                 projectId: pdfApp.state.projectId,
                 dataType: "pdfAnnotation",
-                content: "",
+                content: ""
               } as AnnotationData;
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {
@@ -451,8 +451,8 @@ onMounted(async () => {
                   left: ev.clientX,
                   top: ev.clientY,
                   width: 0,
-                  height: 0,
-                },
+                  height: 0
+                }
               ];
               rects[0] = pdfApp.annotFactory.offsetTransform(
                 rects[0],
@@ -469,7 +469,7 @@ onMounted(async () => {
                 pageNumber: e.pageNumber,
                 projectId: pdfApp.state.projectId,
                 dataType: "pdfAnnotation",
-                content: "",
+                content: ""
               } as AnnotationData;
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {

@@ -54,7 +54,7 @@ export interface Meta {
 
 export enum NoteType {
   MARKDOWN = "markdown",
-  EXCALIDRAW = "excalidraw",
+  EXCALIDRAW = "excalidraw"
 }
 
 /**
@@ -111,7 +111,7 @@ export interface Folder {
 export enum SpecialFolder {
   LIBRARY = "library",
   ADDED = "added",
-  FAVORITES = "favorites",
+  FAVORITES = "favorites"
 }
 
 /******************************************
@@ -170,18 +170,18 @@ export enum AnnotationType {
   UNDERLINE = "underline",
   STRIKEOUT = "strikeout",
   INK = "ink",
-  ERASER = "eraser",
+  ERASER = "eraser"
 }
 
 export enum EraserType {
   STROKE = "stroke",
-  PIXEL = "pixel",
+  PIXEL = "pixel"
 }
 
 export enum SpreadMode {
   NO_SPREAD,
   ODD_SPREAD,
-  EVEN_SPREAD,
+  EVEN_SPREAD
 }
 
 /**
@@ -292,7 +292,7 @@ export enum ComponentName {
   RIBBON = "ribbon",
   LEFT_MENU = "leftMenu",
   PDF_MENU = "pdfMenu",
-  PLUGIN_PAGE = "pluginPage",
+  PLUGIN_PAGE = "pluginPage"
 }
 
 export interface Button {
@@ -380,4 +380,4 @@ export interface PluginStatus {
   updatable: boolean;
 }
 
-export interface PluginStatusMap extends Map<string, PluginStatus> {}
+export type PluginStatusMap = Map<string, PluginStatus>;

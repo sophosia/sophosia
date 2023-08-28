@@ -90,19 +90,19 @@
 import { computed } from "vue";
 import { debounce } from "quasar";
 import { useStateStore } from "src/stores/appState";
-import { open } from '@tauri-apps/api/dialog';
+import { open } from "@tauri-apps/api/dialog";
 
 const stateStore = useStateStore();
 
 const props = defineProps({
-  searchString: { type: String, required: true },
+  searchString: { type: String, required: true }
 });
 const emit = defineEmits([
   "update:searchString",
   "addEmptyProject",
   "addByFiles",
   "addByCollection",
-  "showIdentifierDialog",
+  "showIdentifierDialog"
 ]);
 
 const searchText = computed({
@@ -111,7 +111,7 @@ const searchText = computed({
   },
   set: debounce((text: string) => {
     emit("update:searchString", text);
-  }, 500),
+  }, 500)
 });
 
 async function addByFiles(type: string) {
@@ -125,10 +125,10 @@ async function addByFiles(type: string) {
       // });
 
       filePaths = await open({
-          multiple: true,
-          filters: [{ name: "*.pdf", extensions: ["pdf"] }],
-        });
-      
+        multiple: true,
+        filters: [{ name: "*.pdf", extensions: ["pdf"] }]
+      });
+
       if (!filePaths) return;
       emit("addByFiles", filePaths);
       break;
@@ -141,9 +141,11 @@ async function addByFiles(type: string) {
       // });
 
       filePaths = await open({
-          multiple: false,
-          filters: [{ name: "*.bib, *.ris, *.json", extensions: ["bib", "ris", "json"] }],
-        });
+        multiple: false,
+        filters: [
+          { name: "*.bib, *.ris, *.json", extensions: ["bib", "ris", "json"] }
+        ]
+      });
       if (!filePaths) return;
       emit("addByCollection", filePaths[0]);
       break;

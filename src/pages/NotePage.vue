@@ -11,7 +11,7 @@ import NoteEditor from "src/components/note/NoteEditor.vue";
 const props = defineProps({
   itemId: { type: String, required: true },
   visible: { type: Boolean, required: true },
-  data: { type: Object, required: false },
+  data: { type: Object, required: false }
 });
 </script>
 <style lang="scss">

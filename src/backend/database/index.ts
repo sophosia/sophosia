@@ -14,9 +14,9 @@ db.createIndex({
       "children",
       "source",
       "targets",
-      "favorite",
-    ],
-  },
+      "favorite"
+    ]
+  }
 });
 
 // compacting the database
@@ -28,8 +28,6 @@ db.compact()
   .catch((error) => {
     console.log(error);
   });
-
-
 
 export { db };
 export * from "./models";

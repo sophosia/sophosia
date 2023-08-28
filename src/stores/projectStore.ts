@@ -6,7 +6,7 @@ import {
   addNote,
   deleteNote,
   updateNote,
-  createNote,
+  createNote
 } from "src/backend/project/note";
 import {
   getProjects,
@@ -16,7 +16,7 @@ import {
   updateProject,
   renamePDF,
   attachPDF,
-  createProject,
+  createProject
 } from "src/backend/project/project";
 import { sortTree } from "src/backend/project/utils";
 
@@ -27,7 +27,7 @@ export const useProjectStore = defineStore("projectStore", {
     projects: [] as Project[], // array of projects
     openedProjects: [] as Project[], // array of opened projects
 
-    updatedProject: {} as Project, // for updating window tab name
+    updatedProject: {} as Project // for updating window tab name
   }),
 
   actions: {
@@ -41,16 +41,16 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     async getProjectFromDB(projectId: string) {
-      let project = (await getProject(projectId)) as Project;
+      const project = (await getProject(projectId)) as Project;
       project.children = await getNotes(projectId);
       return project;
     },
 
     async loadOpenedProjects(openedProjectIds: string[] | Set<string>) {
-      let pushedIds = this.openedProjects.map((p) => p._id);
-      for (let projectId of openedProjectIds) {
+      const pushedIds = this.openedProjects.map((p) => p._id);
+      for (const projectId of openedProjectIds) {
         if (pushedIds.includes(projectId)) continue;
-        let project = (await this.getProjectFromDB(projectId)) as Project;
+        const project = (await this.getProjectFromDB(projectId)) as Project;
         sortTree(project); // sort notes by alphabet
         this.openedProjects.push(project);
         pushedIds.push(projectId);
@@ -58,7 +58,7 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     async openProject(projectId: string) {
-      let project = (await this.getProjectFromDB(projectId)) as Project;
+      const project = (await this.getProjectFromDB(projectId)) as Project;
       if (!this.openedProjects.map((p) => p._id).includes(project._id))
         this.openedProjects.push(project);
     },
@@ -88,13 +88,13 @@ export const useProjectStore = defineStore("projectStore", {
      * @param props
      */
     async updateProject(projectId: string, props: Project) {
-      let newProject = (await updateProject(projectId, props)) as Project;
+      const newProject = (await updateProject(projectId, props)) as Project;
       this._updateProjectUI(newProject);
     },
 
     _updateProjectUI(newProject: Project) {
-      let projectInList = this.projects.find((p) => p._id === newProject._id);
-      let projectInOpened = this.openedProjects.find(
+      const projectInList = this.projects.find((p) => p._id === newProject._id);
+      const projectInOpened = this.openedProjects.find(
         (p) => p._id === newProject._id
       );
 
@@ -116,7 +116,7 @@ export const useProjectStore = defineStore("projectStore", {
       deleteFromDB: boolean,
       folderId?: string
     ) {
-      let ind = this.projects.findIndex((p) => p._id === projectId);
+      const ind = this.projects.findIndex((p) => p._id === projectId);
       if (ind > -1) {
         // update ui
         this.projects.splice(ind, 1);
@@ -131,23 +131,23 @@ export const useProjectStore = defineStore("projectStore", {
      */
     async loadProjects(folderId: string) {
       this.projects = await getProjects(folderId);
-      for (let project of this.projects)
+      for (const project of this.projects)
         project.children = await getNotes(project._id);
 
       this.ready = true;
     },
 
     async renamePDF(projectId: string) {
-      let project = this.getProject(projectId);
+      const project = this.getProject(projectId);
       // update db and ui
       if (project) Object.assign(project, await renamePDF(project));
     },
 
     async attachPDF(projectId: string, replaceStoredCopy: boolean) {
       // update db
-      let newProject = await attachPDF(projectId, replaceStoredCopy);
+      const newProject = await attachPDF(projectId, replaceStoredCopy);
       // update ui
-      let project = this.getProject(projectId);
+      const project = this.getProject(projectId);
       if (newProject && project) Object.assign(project, newProject);
     },
 
@@ -168,27 +168,27 @@ export const useProjectStore = defineStore("projectStore", {
       // update db
       note = (await addNote(note)) as Note;
       // update ui
-      let project = await this.getProjectFromDB(note.projectId);
+      const project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
     },
 
     async updateNote(noteId: string, props: Note) {
       // update db
-      let note = (await updateNote(noteId, props)) as Note;
+      const note = (await updateNote(noteId, props)) as Note;
       // update ui
-      let project = await this.getProjectFromDB(note.projectId);
+      const project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
     },
 
     async deleteNote(noteId: string) {
-      let note = (await this.getNoteFromDB(noteId)) as Note;
+      const note = (await this.getNoteFromDB(noteId)) as Note;
       await deleteNote(noteId);
-      let project = await this.getProjectFromDB(note.projectId);
+      const project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
     },
 
     async getNoteFromDB(noteId: string) {
       return await getNote(noteId);
-    },
-  },
+    }
+  }
 });

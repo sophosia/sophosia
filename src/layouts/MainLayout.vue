@@ -15,7 +15,7 @@
         :limits="[0, 60]"
         emit-immediately
         :separator-class="{
-          'q-splitter-separator': stateStore.showLeftMenu,
+          'q-splitter-separator': stateStore.showLeftMenu
         }"
         :disable="!stateStore.showLeftMenu"
         v-model="leftMenuSize"
@@ -228,7 +228,7 @@ async function onLayoutChanged() {
     setComponent({
       id: "library",
       label: t("library"),
-      type: "LibraryPage",
+      type: "LibraryPage"
     });
     await nextTick();
   }
