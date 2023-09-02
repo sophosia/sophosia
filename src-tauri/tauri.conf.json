@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "yarn quasar dev",
+    "beforeBuildCommand": "yarn quasar build",
     "beforeDevCommand": "yarn quasar dev",
     "devPath": "http://localhost:9000",
     "distDir": "../dist/spa"
@@ -12,10 +12,9 @@
   },
   "tauri": {
     "allowlist": {
-   
       "window": {
-        "all": true, 
-        "create": true, 
+        "all": true,
+        "create": true,
         "center": true,
         "requestUserAttention": true,
         "setResizable": true,
@@ -50,7 +49,7 @@
         "print": true
       },
       "fs": {
-        "all": true, 
+        "all": true,
         "readFile": true,
         "writeFile": true,
         "readDir": true,
@@ -62,22 +61,22 @@
         "exists": true
       },
       "shell": {
-        "all": true, 
-        "execute": true, 
-        "sidecar": true, 
-        "open": true 
+        "all": true,
+        "execute": true,
+        "sidecar": true,
+        "open": true
       },
-      
+
       "path": {
         "all": true
       },
       "dialog": {
-        "all": true, 
-        "ask": true, 
-        "confirm": true, 
-        "message": true, 
-        "open": true, 
-        "save": true 
+        "all": true,
+        "ask": true,
+        "confirm": true,
+        "message": true,
+        "open": true,
+        "save": true
       }
     },
     "bundle": {

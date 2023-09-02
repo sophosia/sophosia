@@ -22,6 +22,7 @@
     "citation-js": "^0.6.8",
     "cytoscape": "^3.26.0",
     "cytoscape-cola": "^2.5.1",
+    "events": "^3.3.0",
     "golden-layout": "^2.6.0",
     "katex": "^0.16.8",
     "konva": "^9.2.0",

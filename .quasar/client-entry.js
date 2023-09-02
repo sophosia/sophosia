@@ -24,6 +24,8 @@ import '@quasar/extras/roboto-font/roboto-font.css'
 
 import '@quasar/extras/material-icons/material-icons.css'
 
+import '@quasar/extras/bootstrap-icons/bootstrap-icons.css'
+
 
 
 
@@ -154,7 +156,11 @@ createQuasarApp(createApp, quasarUserOptions)
       
       import('boot/i18n'),
       
-      import('boot/axios')
+      import('boot/axios'),
+      
+      import('boot/db'),
+      
+      import('boot/bus')
       
     ]).then(bootFiles => {
       const boot = mapFn(bootFiles).filter(entry => typeof entry === 'function')

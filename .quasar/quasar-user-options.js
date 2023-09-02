@@ -13,7 +13,9 @@
 
 
 
+import {AppFullscreen,Dialog} from 'quasar'
 
 
-export default { config: {} }
+
+export default { config: {},plugins: {AppFullscreen,Dialog} }
 

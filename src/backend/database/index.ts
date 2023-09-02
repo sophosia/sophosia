@@ -14,9 +14,9 @@ db.createIndex({
       "children",
       "source",
       "targets",
-      "favorite"
-    ]
-  }
+      "favorite",
+    ],
+  },
 });
 
 // compacting the database

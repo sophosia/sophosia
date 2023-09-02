@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { AppState, Page, Project, Settings } from "src/backend/database";
+import { AppState, Page, Settings } from "src/backend/database";
 
 export const useStateStore = defineStore("stateStore", {
   state: () => ({
@@ -24,13 +24,13 @@ export const useStateStore = defineStore("stateStore", {
       theme: "dark",
       language: "en_US",
       storagePath: "",
-      fontSize: "16px"
+      fontSize: "16px",
     },
 
     // page
     openedPage: { id: "", type: "", label: "" },
     closedPageId: "",
-    currentPageId: "library"
+    currentPageId: "library",
   }),
 
   actions: {
@@ -65,7 +65,7 @@ export const useStateStore = defineStore("stateStore", {
         selectedFolderId: this.selectedFolderId,
         currentPageId: this.currentPageId,
         openedProjectIds: [...this.openedProjectIds] as string[], // convert to Array for saving
-        settings: this.settings as Settings
+        settings: this.settings as Settings,
       } as AppState;
     },
 
@@ -107,6 +107,6 @@ export const useStateStore = defineStore("stateStore", {
       } else {
         this.showPDFMenuView = visible;
       }
-    }
-  }
+    },
+  },
 });
