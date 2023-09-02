@@ -78,7 +78,7 @@ const stateStore = useStateStore();
 const path = ref("");
 const languageOptions = ref([
   { value: "en_US", label: "English (en_US)" },
-  { value: "zh_CN", label: "中文 (zh_CN)" }
+  { value: "zh_CN", label: "中文 (zh_CN)" },
 ]);
 
 const language = computed({
@@ -94,7 +94,7 @@ const language = computed({
   set(option: { value: "en_US" | "zh_CN"; label: string }) {
     stateStore.settings.language = option.value;
     changeLanguage(option.value);
-  }
+  },
 });
 
 function changeLanguage(language: "en_US" | "zh_CN") {
@@ -107,7 +107,7 @@ async function changeStoragePath() {
   let result = await open({
     directory: true,
     multiple: true,
-    defaultPath: await homeDir()
+    defaultPath: await homeDir(),
   });
   if (result !== undefined && result != null && !!result[0]) {
     path.value = result[0];

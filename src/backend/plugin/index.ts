@@ -6,7 +6,7 @@ import {
   Button,
   View,
   ComponentName,
-  ToggleButton
+  ToggleButton,
 } from "../database";
 import { Buffer } from "buffer";
 import { getAppState } from "../appState";
@@ -18,10 +18,10 @@ const controller = {
     openPage: stateStore.openPage,
     closePage: stateStore.closePage,
     toggleLeftMenu: stateStore.toggleLeftMenu,
-    togglePDFMenuView: stateStore.togglePDFMenuView
+    togglePDFMenuView: stateStore.togglePDFMenuView,
   },
-  fs: window.fs,
-  path: window.path
+  // fs: window.fs,
+  // path: window.path
 };
 
 class PluginManager {
@@ -37,14 +37,14 @@ class PluginManager {
    */
   init() {
     // create all necessary folders and files
-    const hiddenFolder = window.path.join(
-      stateStore.settings.storagePath,
-      ".research-helper"
-    );
-    if (!window.fs.existsSync(hiddenFolder)) window.fs.mkdirSync(hiddenFolder);
-    const pluginsFolder = window.path.join(hiddenFolder, "plugins");
-    if (!window.fs.existsSync(pluginsFolder))
-      window.fs.mkdirSync(pluginsFolder);
+    // const hiddenFolder = window.path.join(
+    //   stateStore.settings.storagePath,
+    //   ".research-helper"
+    // );
+    // if (!window.fs.existsSync(hiddenFolder)) window.fs.mkdirSync(hiddenFolder);
+    // const pluginsFolder = window.path.join(hiddenFolder, "plugins");
+    // if (!window.fs.existsSync(pluginsFolder))
+    //   window.fs.mkdirSync(pluginsFolder);
   }
 
   /******************************************************
@@ -56,28 +56,28 @@ class PluginManager {
    * @param local - are we filtering local plugins or community plugins
    */
   filter(text: string | null, local: boolean): PluginMeta[] {
-    const metas = local ? this.pluginMetas : this.communityMetas;
-    if (!text) return metas.value;
-    const re = RegExp(text, "i"); // case insensitive
-    return metas.value.filter((meta) => {
-      for (const [key, value] of Object.entries(meta)) {
-        if ((value as string).search(re) != -1) return true;
-      }
-    });
+    // const metas = local ? this.pluginMetas : this.communityMetas;
+    // if (!text) return metas.value;
+    // const re = RegExp(text, "i"); // case insensitive
+    // return metas.value.filter((meta) => {
+    //   for (const [key, value] of Object.entries(meta)) {
+    //     if ((value as string).search(re) != -1) return true;
+    //   }
+    // });
   }
 
   async getCommunityMetas() {
     // if the communityMetas are there, no need to get them again
-    if (this.communityMetas.value.length > 0) return;
-    try {
-      // get community plugins
-      const response = await fetch(
-        "https://raw.githubusercontent.com/ResearchHelper/community-plugins/main/community-plugins.json"
-      );
-      this.communityMetas.value = await response.json();
-    } catch (error) {
-      console.log(error);
-    }
+    // if (this.communityMetas.value.length > 0) return;
+    // try {
+    //   // get community plugins
+    //   const response = await fetch(
+    //     "https://raw.githubusercontent.com/ResearchHelper/community-plugins/main/community-plugins.json"
+    //   );
+    //   this.communityMetas.value = await response.json();
+    // } catch (error) {
+    //   console.log(error);
+    // }
   }
 
   /**
@@ -85,33 +85,33 @@ class PluginManager {
    * To update plugin, simply download it again
    */
   async download(meta: PluginMeta) {
-    for (const file of ["main.js", "styles.css", "manifest.json"]) {
-      const url = `https://github.com/${meta.repo}/releases/latest/download/${file}`;
-      const directory = window.path.join(await this.pluginsFolder(), meta.id);
-      const filePath = window.path.join(directory, file);
-
-      if (!window.fs.existsSync(directory)) window.fs.mkdirSync(directory);
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const buffer = Buffer.from(await blob.arrayBuffer());
-      window.fs.writeFileSync(filePath, buffer);
-    }
-    await this.load(meta.id, false); // not yet enabled
-    await this.saveStatus();
+    // for (const file of ["main.js", "styles.css", "manifest.json"]) {
+    //   const url = `https://github.com/${meta.repo}/releases/latest/download/${file}`;
+    //   const directory = window.path.join(await this.pluginsFolder(), meta.id);
+    //   const filePath = window.path.join(directory, file);
+    //
+    //   if (!window.fs.existsSync(directory)) window.fs.mkdirSync(directory);
+    //   const response = await fetch(url);
+    //   const blob = await response.blob();
+    //   const buffer = Buffer.from(await blob.arrayBuffer());
+    //   window.fs.writeFileSync(filePath, buffer);
+    // }
+    // await this.load(meta.id, false); // not yet enabled
+    // await this.saveStatus();
   }
 
   /**
    * Delete a plugin on disk
    */
   async delete(meta: PluginMeta) {
-    this.statusMap.value.delete(meta.id);
-    this.plugins.value.delete(meta.id);
-    this.pluginMetas.value = this.pluginMetas.value.filter(
-      (m) => m.id != meta.id
-    );
-    const pluginPath = window.path.join(await this.pluginsFolder(), meta.id);
-    window.fs.rmSync(pluginPath, { recursive: true, force: true });
-    await this.saveStatus();
+    // this.statusMap.value.delete(meta.id);
+    // this.plugins.value.delete(meta.id);
+    // this.pluginMetas.value = this.pluginMetas.value.filter(
+    //   (m) => m.id != meta.id
+    // );
+    // const pluginPath = window.path.join(await this.pluginsFolder(), meta.id);
+    // window.fs.rmSync(pluginPath, { recursive: true, force: true });
+    // await this.saveStatus();
   }
 
   /**************************************************
@@ -121,20 +121,20 @@ class PluginManager {
    * Load all plugins
    */
   async loadAll() {
-    await this.loadStatus();
-    for (const [id, status] of this.statusMap.value.entries()) {
-      if (!this.plugins.value.has(id)) await this.load(id, status.enabled);
-    }
+    // await this.loadStatus();
+    // for (const [id, status] of this.statusMap.value.entries()) {
+    //   if (!this.plugins.value.has(id)) await this.load(id, status.enabled);
+    // }
   }
 
   async reloadAll() {
     // clear all data
-    this.statusMap.value.clear();
-    this.pluginMetas.value = [];
-    this.communityMetas.value = [];
-    this.plugins.value.clear();
-
-    await this.loadAll();
+    // this.statusMap.value.clear();
+    // this.pluginMetas.value = [];
+    // this.communityMetas.value = [];
+    // this.plugins.value.clear();
+    //
+    // await this.loadAll();
   }
 
   /**
@@ -142,23 +142,23 @@ class PluginManager {
    * TODO: need to deal with styles.css as well
    */
   async load(pluginId: string, enabled: boolean) {
-    const pluginsFolder = await this.pluginsFolder();
-    const pluginPath = window.path.join(pluginsFolder, pluginId);
-    const mainJsPath = window.path.join(pluginPath, "main.js");
-    const manifestPath = window.path.join(pluginPath, "manifest.json");
-    const module = await import(
-      /* @vite-ignore */
-      "file://" + mainJsPath
-    );
-    const manifest = JSON.parse(
-      window.fs.readFileSync(manifestPath, { encoding: "utf-8" })
-    );
-    const pluginClass = module.default;
-    const plugin = new pluginClass({ pluginId, pluginPath }, controller);
-
-    this.pluginMetas.value.push(manifest);
-    this.plugins.value.set(pluginId, plugin);
-    this.toggle(pluginId, enabled);
+    // const pluginsFolder = await this.pluginsFolder();
+    // const pluginPath = window.path.join(pluginsFolder, pluginId);
+    // const mainJsPath = window.path.join(pluginPath, "main.js");
+    // const manifestPath = window.path.join(pluginPath, "manifest.json");
+    // const module = await import(
+    //   /* @vite-ignore */
+    //   "file://" + mainJsPath
+    // );
+    // const manifest = JSON.parse(
+    //   window.fs.readFileSync(manifestPath, { encoding: "utf-8" })
+    // );
+    // const pluginClass = module.default;
+    // const plugin = new pluginClass({ pluginId, pluginPath }, controller);
+    //
+    // this.pluginMetas.value.push(manifest);
+    // this.plugins.value.set(pluginId, plugin);
+    // this.toggle(pluginId, enabled);
   }
 
   /**
@@ -166,20 +166,20 @@ class PluginManager {
    * @param enabled
    */
   toggle(pluginId: string, enabled: boolean) {
-    const plugin = this.plugins.value.get(pluginId);
-    if (!plugin) return;
-
-    let status = this.statusMap.value.get(pluginId);
-    // if no status, meaning we just downloaded, it shouldn't be updatable
-    if (!status) status = { enabled: enabled, updatable: false };
-    else status.enabled = enabled;
-    this.statusMap.value.set(pluginId, { enabled: enabled, updatable: false });
-    this.saveStatus();
-    if (enabled) {
-      plugin.init();
-      plugin.loadSettings();
-      plugin.enable();
-    } else plugin.disable();
+    // const plugin = this.plugins.value.get(pluginId);
+    // if (!plugin) return;
+    //
+    // let status = this.statusMap.value.get(pluginId);
+    // // if no status, meaning we just downloaded, it shouldn't be updatable
+    // if (!status) status = { enabled: enabled, updatable: false };
+    // else status.enabled = enabled;
+    // this.statusMap.value.set(pluginId, { enabled: enabled, updatable: false });
+    // this.saveStatus();
+    // if (enabled) {
+    //   plugin.init();
+    //   plugin.loadSettings();
+    //   plugin.enable();
+    // } else plugin.disable();
   }
 
   /**
@@ -187,24 +187,24 @@ class PluginManager {
    * {pluginId: {enabled: boolean, updatable: boolean}}
    */
   async loadStatus() {
-    const filePath = window.path.join(
-      await this.hiddenFolder(),
-      "pluginStatus.json"
-    );
-    if (!window.fs.existsSync(filePath)) return;
-    const statusJson = JSON.parse(
-      window.fs.readFileSync(filePath, { encoding: "utf-8" })
-    );
-    this.statusMap.value = new Map(Object.entries(statusJson));
+    // const filePath = window.path.join(
+    //   await this.hiddenFolder(),
+    //   "pluginStatus.json"
+    // );
+    // if (!window.fs.existsSync(filePath)) return;
+    // const statusJson = JSON.parse(
+    //   window.fs.readFileSync(filePath, { encoding: "utf-8" })
+    // );
+    // this.statusMap.value = new Map(Object.entries(statusJson));
   }
 
   async saveStatus() {
-    const filePath = window.path.join(
-      await this.hiddenFolder(),
-      "pluginStatus.json"
-    );
-    const json = Object.fromEntries(this.statusMap.value);
-    window.fs.writeFileSync(filePath, JSON.stringify(json));
+    // const filePath = window.path.join(
+    //   await this.hiddenFolder(),
+    //   "pluginStatus.json"
+    // );
+    // const json = Object.fromEntries(this.statusMap.value);
+    // window.fs.writeFileSync(filePath, JSON.stringify(json));
   }
 
   /***********************************************************
@@ -214,66 +214,66 @@ class PluginManager {
   getBtns(componentName: ComponentName) {
     const btns: Button[] = [];
     const toggleBtns: ToggleButton[] = [];
-    for (const [pluginId, plugin] of pluginManager.plugins.value.entries()) {
-      if (!pluginManager.statusMap.value.get(pluginId)?.enabled) continue;
-      let _btns: Button[] = [];
-      let _toggleBtns: ToggleButton[] = [];
-      switch (componentName) {
-        case ComponentName.RIBBON:
-          _btns = plugin.ribbonBtns;
-          _toggleBtns = plugin.ribbonToggleBtns;
-          break;
-        case ComponentName.PDF_MENU:
-          _btns = plugin.pdfMenuBtns;
-          break;
-        default:
-          _btns = [];
-          break;
-      }
-      for (const btn of _btns) {
-        // by preppending pluginId, we make the button id unique
-        btn.uid = `${pluginId}-${btn.id}`;
-        // need to bind plugin object to click function
-        // otherwise `this` keyword is undefined
-        btn.click = btn.click.bind(plugin);
-        btns.push(btn);
-      }
-      for (const toggleBtn of _toggleBtns) {
-        toggleBtn.uid = `${pluginId}-${toggleBtn.id}`;
-        toggleBtns.push(toggleBtn);
-      }
-    }
+    // for (const [pluginId, plugin] of pluginManager.plugins.value.entries()) {
+    //   if (!pluginManager.statusMap.value.get(pluginId)?.enabled) continue;
+    //   let _btns: Button[] = [];
+    //   let _toggleBtns: ToggleButton[] = [];
+    //   switch (componentName) {
+    //     case ComponentName.RIBBON:
+    //       _btns = plugin.ribbonBtns;
+    //       _toggleBtns = plugin.ribbonToggleBtns;
+    //       break;
+    //     case ComponentName.PDF_MENU:
+    //       _btns = plugin.pdfMenuBtns;
+    //       break;
+    //     default:
+    //       _btns = [];
+    //       break;
+    //   }
+    //   for (const btn of _btns) {
+    //     // by preppending pluginId, we make the button id unique
+    //     btn.uid = `${pluginId}-${btn.id}`;
+    //     // need to bind plugin object to click function
+    //     // otherwise `this` keyword is undefined
+    //     btn.click = btn.click.bind(plugin);
+    //     btns.push(btn);
+    //   }
+    //   for (const toggleBtn of _toggleBtns) {
+    //     toggleBtn.uid = `${pluginId}-${toggleBtn.id}`;
+    //     toggleBtns.push(toggleBtn);
+    //   }
+    // }
     return { btns, toggleBtns };
   }
 
   getViews(componentName: ComponentName): View[] {
     const views: View[] = [];
-    for (const [pluginId, plugin] of pluginManager.plugins.value.entries()) {
-      if (!pluginManager.statusMap.value.get(pluginId)?.enabled) continue;
-      let _views: View[] = [];
-      switch (componentName) {
-        case ComponentName.LEFT_MENU:
-          _views = plugin.leftMenuViews;
-          break;
-        case ComponentName.PDF_MENU:
-          _views = plugin.pdfMenuViews;
-          break;
-        case ComponentName.PLUGIN_PAGE:
-          _views = plugin.pageViews;
-          break;
-        default:
-          _views = [];
-          break;
-      }
-      for (const view of _views) {
-        if (view.buttonId) view.uid = `${pluginId}-${view.buttonId}`;
-        view.onMounted = view.onMounted?.bind(plugin);
-        view.onBeforeMount = view.onBeforeMount?.bind(plugin);
-        view.onUnmounted = view.onUnmounted?.bind(plugin);
-        view.onBeforeUnmount = view.onBeforeUnmount?.bind(plugin);
-        views.push(view);
-      }
-    }
+    // for (const [pluginId, plugin] of pluginManager.plugins.value.entries()) {
+    //   if (!pluginManager.statusMap.value.get(pluginId)?.enabled) continue;
+    //   let _views: View[] = [];
+    //   switch (componentName) {
+    //     case ComponentName.LEFT_MENU:
+    //       _views = plugin.leftMenuViews;
+    //       break;
+    //     case ComponentName.PDF_MENU:
+    //       _views = plugin.pdfMenuViews;
+    //       break;
+    //     case ComponentName.PLUGIN_PAGE:
+    //       _views = plugin.pageViews;
+    //       break;
+    //     default:
+    //       _views = [];
+    //       break;
+    //   }
+    //   for (const view of _views) {
+    //     if (view.buttonId) view.uid = `${pluginId}-${view.buttonId}`;
+    //     view.onMounted = view.onMounted?.bind(plugin);
+    //     view.onBeforeMount = view.onBeforeMount?.bind(plugin);
+    //     view.onUnmounted = view.onUnmounted?.bind(plugin);
+    //     view.onBeforeUnmount = view.onBeforeUnmount?.bind(plugin);
+    //     views.push(view);
+    //   }
+    // }
     return views;
   }
 
@@ -292,15 +292,15 @@ class PluginManager {
   }
 
   private async hiddenFolder(): Promise<string> {
-    let storagePath = this.storagePath;
-    if (!storagePath) {
-      // don't use stateStore, it's not initialized yet
-      const state = await getAppState();
-      storagePath = state.settings.storagePath;
-    }
-    const hiddenPath = window.path.join(storagePath, ".research-helper");
-    if (!window.fs.existsSync(hiddenPath)) window.fs.mkdirSync(hiddenPath);
-    return hiddenPath;
+    // let storagePath = this.storagePath;
+    // if (!storagePath) {
+    //   // don't use stateStore, it's not initialized yet
+    //   const state = await getAppState();
+    //   storagePath = state.settings.storagePath;
+    // }
+    // const hiddenPath = window.path.join(storagePath, ".research-helper");
+    // if (!window.fs.existsSync(hiddenPath)) window.fs.mkdirSync(hiddenPath);
+    // return hiddenPath;
   }
 
   /**
@@ -308,9 +308,9 @@ class PluginManager {
    * @returns path to `plugins` folder
    */
   private async pluginsFolder(): Promise<string> {
-    const folderPath = window.path.join(await this.hiddenFolder(), "plugins");
-    if (!window.fs.existsSync(folderPath)) window.fs.mkdirSync(folderPath);
-    return folderPath;
+    // const folderPath = window.path.join(await this.hiddenFolder(), "plugins");
+    // if (!window.fs.existsSync(folderPath)) window.fs.mkdirSync(folderPath);
+    // return folderPath;
   }
 }
 

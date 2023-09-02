@@ -9,8 +9,8 @@
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0",
-    "dev": "yarn run pouchdb-server --port 5984 -d remote_database &  quasar dev",
-    "build": "quasar build",
+    "dev": "yarn run pouchdb-server --port 3000 -d remote_database &  yarn tauri dev",
+    "build": "yarn tauri build",
     "test:unit:ci": "vitest run --no-threads"
   },
   "dependencies": {
@@ -56,6 +56,7 @@
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^9.0.0",
+    "pouchdb-server": "^4.2.0",
     "prettier": "^2.5.1",
     "typescript": "^5.1.6"
   },

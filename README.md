@@ -19,9 +19,17 @@ npm install
 
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
 
+This command starts `pouchdb-server` at port 3000, and runs `yarn tauri dev`.
+
 ```bash
-yarn tauri dev
+yarn dev
+# or
+npm dev
 ```
+
+### Inspect database using Fauton UI
+
+This is for better debugging. We can inspect the database by accessing `localhost:3000/_utils`
 
 ### Lint the files
 
@@ -42,7 +50,9 @@ npm run format
 ### Build the app for production
 
 ```bash
-yarn tauri build
+yarn build
+# or
+npm build
 ```
 
 ### Customize the configuration
