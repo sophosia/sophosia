@@ -1,9 +1,0 @@
-import { parseForESLint } from "./parser/parser";
-import { traverseNodes } from "./parser/traverse";
-import { getStaticJSONValue, isExpression, isNumberIdentifier, isUndefinedIdentifier } from "./utils/ast";
-import type * as AST from "./parser/ast";
-export { parseForESLint };
-export declare const VisitorKeys: import("eslint").SourceCode.VisitorKeys;
-export { traverseNodes, getStaticJSONValue, isExpression, isNumberIdentifier, isUndefinedIdentifier, };
-export declare function parseJSON(code: string, options?: any): AST.JSONProgram;
-export { AST };
