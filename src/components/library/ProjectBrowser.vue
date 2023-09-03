@@ -132,7 +132,7 @@ import { getMeta, exportMeta, importMeta } from "src/backend/project/meta";
 import { copyFilefun } from "src/backend/project/file";
 // util (to scan identifier in PDF)
 import * as pdfjsLib from "pdfjs-dist";
-import { basename, dirname, extname } from "@tauri-apps/api/path";
+import { basename, extname } from "@tauri-apps/api/path";
 import { readBinaryFile } from "@tauri-apps/api/fs";
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "node_modules/pdfjs-dist/build/pdf.worker.min.js";
@@ -331,7 +331,7 @@ async function addProjectsByCollection(isCreateFolder: boolean) {
     // add a new project to db and update it with meta
     let project = projectStore.createProject(stateStore.selectedFolderId);
     await projectStore.addProject(project, true);
-    await projectStore.updateProject(project._id, meta);
+    await projectStore.updateProject(project._id, meta as Project);
   }
 
   importDialog.value = false;
@@ -348,10 +348,13 @@ async function processIdentifier(identifier: string) {
     // add a new project to db and update it with meta
     let project = projectStore.createProject(stateStore.selectedFolderId);
     await projectStore.addProject(project, true);
-    await projectStore.updateProject(project._id, meta);
+    await projectStore.updateProject(project._id, meta as Project);
   } else {
     // update existing project
-    await projectStore.updateProject(projectStore.selected[0]._id, meta);
+    await projectStore.updateProject(
+      projectStore.selected[0]._id,
+      meta as Project
+    );
   }
 }
 

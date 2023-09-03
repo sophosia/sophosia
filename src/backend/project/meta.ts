@@ -73,7 +73,6 @@ export async function exportMeta(
  * @returns citation data
  */
 export async function importMeta(filePath: string): Promise<Meta[]> {
-  // let data = window.fs.readFileSync(filePath, "utf8");
   let data = await readTextFile(filePath);
   return (await getMeta(data, "json")) as Meta[];
 }
