@@ -37,7 +37,7 @@
         reverse
         :limits="[0, 60]"
         :separator-class="{
-          'q-splitter-separator': stateStore.showLibraryRightMenu
+          'q-splitter-separator': stateStore.showLibraryRightMenu,
         }"
         :disable="!stateStore.showLibraryRightMenu"
         v-model="rightMenuSize"
@@ -129,18 +129,14 @@ import ImportDialog from "src/components/library/ImportDialog.vue";
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { getMeta, exportMeta, importMeta } from "src/backend/project/meta";
-import { copyFilefun } from "src/backend/project/file";
+import { copyFileToProjectFolder } from "src/backend/project/file";
 // util (to scan identifier in PDF)
 import * as pdfjsLib from "pdfjs-dist";
-import { basename, dirname } from "@tauri-apps/api/path";
+import { basename, extname } from "@tauri-apps/api/path";
 import { readBinaryFile } from "@tauri-apps/api/fs";
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "node_modules/pdfjs-dist/build/pdf.worker.min.js";
 
-import { useI18n } from "vue-i18n";
-const { t } = useI18n({ useScope: "global" });
-
-const componentName = "ProjectBrowser";
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 
@@ -182,7 +178,7 @@ const onLayoutChanged = inject("onLayoutChanged") as () => void;
 watch(
   [
     () => stateStore.showLibraryRightMenu,
-    () => stateStore.libraryRightMenuSize
+    () => stateStore.libraryRightMenuSize,
   ],
   onLayoutChanged
 );
@@ -254,13 +250,16 @@ async function addProjectsByFiles(filePaths: string[]) {
     try {
       let project = projectStore.createProject(stateStore.selectedFolderId);
       projectStore.addProject(project, true);
-      let path = (await copyFilefun(filePath, project._id)) as string;
+      let path = (await copyFileToProjectFolder(
+        filePath,
+        project._id
+      )) as string;
       // let title = window.path.basename(path, ".pdf");
       let title = await basename(path, ".pdf");
       let props = {
         path: path,
         title: title,
-        label: title
+        label: title,
       };
       // get meta
       // let buffer = window.fs.readFileSync(filePath);
@@ -319,7 +318,11 @@ async function addProjectsByCollection(isCreateFolder: boolean) {
     let rootNode = treeview.value.getLibraryNode();
     if (!rootNode) return;
     // let folderName = window.path.parse(collectionPath.value).name;
-    let folderName = await dirname(collectionPath.value);
+    let folderName = await basename(
+      collectionPath.value,
+      `.${await extname(collectionPath.value)}`
+    );
+
     let focus = true;
     await treeview.value.addFolder(rootNode, folderName, focus);
   }
@@ -331,7 +334,7 @@ async function addProjectsByCollection(isCreateFolder: boolean) {
     // add a new project to db and update it with meta
     let project = projectStore.createProject(stateStore.selectedFolderId);
     await projectStore.addProject(project, true);
-    await projectStore.updateProject(project._id, meta);
+    await projectStore.updateProject(project._id, meta as Project);
   }
 
   importDialog.value = false;
@@ -348,10 +351,13 @@ async function processIdentifier(identifier: string) {
     // add a new project to db and update it with meta
     let project = projectStore.createProject(stateStore.selectedFolderId);
     await projectStore.addProject(project, true);
-    await projectStore.updateProject(project._id, meta);
+    await projectStore.updateProject(project._id, meta as Project);
   } else {
     // update existing project
-    await projectStore.updateProject(projectStore.selected[0]._id, meta);
+    await projectStore.updateProject(
+      projectStore.selected[0]._id,
+      meta as Project
+    );
   }
 }
 

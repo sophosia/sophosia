@@ -95,14 +95,14 @@ import { open } from "@tauri-apps/api/dialog";
 const stateStore = useStateStore();
 
 const props = defineProps({
-  searchString: { type: String, required: true }
+  searchString: { type: String, required: true },
 });
 const emit = defineEmits([
   "update:searchString",
   "addEmptyProject",
   "addByFiles",
   "addByCollection",
-  "showIdentifierDialog"
+  "showIdentifierDialog",
 ]);
 
 const searchText = computed({
@@ -111,43 +111,32 @@ const searchText = computed({
   },
   set: debounce((text: string) => {
     emit("update:searchString", text);
-  }, 500)
+  }, 500),
 });
 
 async function addByFiles(type: string) {
-  // let filePaths: string[] | undefined;
-  let filePaths; //no type checking for now
+  let filePath: string | string[] | null; //no type checking for now
   switch (type) {
     case "file":
-      // filePaths = window.fileBrowser.showFilePicker({
-      //   multiSelections: true,
-      //   filters: [{ name: "*.pdf", extensions: ["pdf"] }],
-      // });
-
-      filePaths = await open({
+      filePath = await open({
         multiple: true,
-        filters: [{ name: "*.pdf", extensions: ["pdf"] }]
+        filters: [{ name: "*.pdf", extensions: ["pdf"] }],
       });
 
-      if (!filePaths) return;
-      emit("addByFiles", filePaths);
+      if (Array.isArray(filePath)) emit("addByFiles", filePath);
+      else if (!filePath) return;
+      else emit("addByFiles", [filePath]); // user selected a single file
+
       break;
     case "collection":
-      // filePaths = window.fileBrowser.showFilePicker({
-      //   multiSelections: false,
-      //   filters: [
-      //     { name: "*.bib, *.ris, *.json", extensions: ["bib", "ris", "json"] },
-      //   ],
-      // });
-
-      filePaths = await open({
+      filePath = await open({
         multiple: false,
         filters: [
-          { name: "*.bib, *.ris, *.json", extensions: ["bib", "ris", "json"] }
-        ]
+          { name: "*.bib, *.ris, *.json", extensions: ["bib", "ris", "json"] },
+        ],
       });
-      if (!filePaths) return;
-      emit("addByCollection", filePaths[0]);
+      if (!filePath) return;
+      emit("addByCollection", filePath);
       break;
   }
 }

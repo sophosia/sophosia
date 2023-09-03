@@ -2,17 +2,15 @@ import { db, Note, NoteType } from "../database";
 import { uid } from "quasar";
 import { Buffer } from "buffer";
 import { createFile, deleteFile } from "./file";
-
-// const fs = window.fs;
-// const path = window.path;
 import {
-  readBinaryFile,
   exists,
-  writeTextFile,
   createDir,
-  writeBinaryFile
+  readTextFile,
+  writeTextFile,
+  writeBinaryFile,
 } from "@tauri-apps/api/fs";
-import { join, basename, extname } from "@tauri-apps/api/path";
+import { join, extname, dirname } from "@tauri-apps/api/path";
+
 /**
  * Create a note
  * @param projectId
@@ -29,7 +27,7 @@ export function createNote(projectId: string, type: NoteType) {
     label: "New Note",
     path: "",
     type: type,
-    links: []
+    links: [],
   } as Note;
 }
 
@@ -117,8 +115,8 @@ export async function getNotes(projectId: string): Promise<Note[]> {
       await db.find({
         selector: {
           dataType: "note",
-          projectId: projectId
-        }
+          projectId: projectId,
+        },
       })
     ).docs as Note[];
 
@@ -152,8 +150,8 @@ export async function getNotes(projectId: string): Promise<Note[]> {
 export async function getAllNotes(): Promise<Note[]> {
   const result = await db.find({
     selector: {
-      dataType: "note"
-    }
+      dataType: "note",
+    },
   });
 
   return result.docs as Note[];
@@ -170,13 +168,11 @@ export async function loadNote(
 ): Promise<string> {
   try {
     const note: Note = await db.get(noteId);
-    if (await exists(note.path))
-      return new TextDecoder().decode(await readBinaryFile(note.path));
+    if (await exists(note.path)) return await readTextFile(note.path);
     else return "";
   } catch (error) {
     if ((error as Error).name == "not_found") {
-      if (notePath)
-        return new TextDecoder().decode(await readBinaryFile(notePath));
+      if (notePath) return await readTextFile(notePath);
       else {
         console.log("Error: Must have a valid noteId or notePath");
         return "";
@@ -198,13 +194,11 @@ export async function saveNote(
 ) {
   try {
     const note: Note = await db.get(noteId);
-    // fs.writeFileSync(note.path,content);
     await writeTextFile(note.path, content);
   } catch (error) {
     if ((error as Error).name == "not_found") {
       // might be a note opened by plugin
-      // if (notePath) fs.writeFileSync(notePath, content);
-      if (notePath) writeTextFile(notePath, content);
+      if (notePath) await writeTextFile(notePath, content);
       else console.log("Error: Must pass in a valid noteId or valid notePath");
     }
   }
@@ -226,7 +220,7 @@ export async function uploadImage(
     const note: Note = await db.get(noteId);
     const imgType: string = await extname(file.name); // .png
     const imgName: string = uid() + imgType; // use uuid as img name
-    const imgFolder: string = await join(await basename(note.path), "img");
+    const imgFolder: string = await join(await dirname(note.path), "img");
     const imgPath: string = await join(imgFolder, imgName);
     if (!(await exists(imgFolder))) await createDir(imgFolder);
 

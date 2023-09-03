@@ -136,15 +136,14 @@ import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
 import { copyToClipboard } from "quasar";
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
-import { open } from "@tauri-apps/api/shell";
 import { join } from "@tauri-apps/api/path";
-// import { join } from "path";
+import { invoke } from "@tauri-apps/api";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 
 const props = defineProps({
-  projectId: { type: String, required: true }
+  projectId: { type: String, required: true },
 });
 const emit = defineEmits(["expandRow"]);
 
@@ -183,15 +182,15 @@ function copyProjectId() {
 async function showInExplorer() {
   // don't use project.path because it might not exists
   for (let project of projectStore.selected) {
-    // let path = window.path.join(stateStore.settings.storagePath, project._id);
     let path = await join(stateStore.settings.storagePath, project._id);
-    // window.fileBrowser.showFileInFolder(path);
-    await open(path);
+    await invoke("show_in_folder", {
+      path: path,
+    });
   }
 }
 
 function deleteProject(deleteFromDB: boolean) {
-  showDeleteDialog(projectStore.selected, deleteFromDB);
+  showDeleteDialog(projectStore.selected as Project[], deleteFromDB);
 }
 
 /**
@@ -212,7 +211,7 @@ async function onAttachFile(replaceStoredCopy: boolean) {
 
 async function setFavorite(isFavorite: boolean) {
   await projectStore.updateProject(props.projectId, {
-    favorite: isFavorite
+    favorite: isFavorite,
   } as Project);
 }
 

@@ -56,17 +56,17 @@
           'bg-primary':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
             !isClickingPDF,
-          selected: props.selected
+          selected: props.selected,
         }"
         draggable="true"
         @dragstart="onDragStart"
         @dragend="onDragEnd"
         @expandRow="(isExpand: boolean) => props.expand=isExpand"
         @mousedown="(e: PointerEvent) => clickProject(props, e)"
+        @mouseup="(e: PointerEvent) => clickProject(props, e)"
         @dblclick="dblclickProject(props.row)"
         @contextmenu="(e:PointerEvent) => toggleContextMenu(props, e)"
       />
-
       <!-- Expanded Rows -->
 
       <!-- PDF -->
@@ -76,7 +76,7 @@
         :class="{
           'bg-primary':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
-            isClickingPDF
+            isClickingPDF,
         }"
         @click="isClickingPDF = true"
       />
@@ -89,7 +89,7 @@
         :class="{
           'bg-primary': projectStore.selected
             .map((item) => item._id)
-            .includes(note._id)
+            .includes(note._id),
         }"
       />
 
@@ -99,7 +99,7 @@
         :class="{
           'bg-primary': projectStore.selected
             .map((item) => item._id)
-            .includes(props.key)
+            .includes(props.key),
         }"
         :width="searchRowWidth"
         :text="expansionText[props.rowIndex]"
@@ -124,11 +124,12 @@ const stateStore = useStateStore();
 const projectStore = useProjectStore();
 // utils
 import { useI18n } from "vue-i18n";
+import { authorToString } from "src/backend/project/utils";
 const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   searchString: { type: String, required: true },
-  projects: { type: Array as PropType<Project[]>, required: true }
+  projects: { type: Array as PropType<Project[]>, required: true },
 });
 
 const emit = defineEmits(["dragProject", "update:projects"]);
@@ -146,15 +147,15 @@ const headers = [
     field: "title",
     label: t("title"),
     align: "left",
-    sortable: true
+    sortable: true,
   },
   {
     name: "author",
     field: "author",
     label: t("author"),
     align: "left",
-    sortable: true
-  }
+    sortable: true,
+  },
 ] as QTableColumn[];
 
 onMounted(() => {
@@ -209,22 +210,6 @@ function handleSelection(rows: Project[], added: boolean, evt: KeyboardEvent) {
 }
 
 /**
- * Convert array of author objects to string
- * @param authors
- */
-function authorString(authors: Author[] | undefined) {
-  if (!!!authors?.length) return "";
-
-  let names = [];
-  for (let author of authors) {
-    if (!!!author) continue;
-    if (!!author.literal) names.push(author.literal);
-    else names.push(`${author.given} ${author.family}`);
-  }
-  return names.join(", ");
-}
-
-/**
  * Select a row in the table
  * @param row
  * @param rowIndex
@@ -238,6 +223,13 @@ function clickProject(
   e: PointerEvent
 ) {
   if (e.button !== 0) return; // return if not left click
+  if (e.type === "mousedown" && props.selected) return; // return if clicking on a selected project
+  if (
+    e.type === "mouseup" &&
+    (e.target as HTMLInputElement)?.type === "checkbox"
+  )
+    return; // return if clicking on the checkbox, the checkbox will take care of selection for us
+
   // row: Project, rowIndex: number
   let row = props.row;
   let descriptor = Object.getOwnPropertyDescriptor(props, "selected");
@@ -322,8 +314,17 @@ function searchProject(
   let text = "";
   let re = RegExp(terms, "i"); // case insensitive
   let filtered = rows.filter((row) => {
-    // search title, abstract, and year
-    for (let prop of ["title", "abstract", "DOI", "publisher"]) {
+    // search in the following props
+    for (let prop of [
+      "type",
+      "title",
+      "abstract",
+      "DOI",
+      "publisher",
+      "container-title",
+      "path",
+      "citation-key",
+    ]) {
       if (row[prop] === undefined) continue;
       if (row[prop].search(re) != -1) {
         text = row[prop].replace(
@@ -347,10 +348,20 @@ function searchProject(
     }
 
     // search authors
-    let authors = authorString(row.author);
+    let authors = authorToString(row.author);
     if (authors.search(re) != -1) {
       text = authors.replace(re, `<span class="bg-primary">${terms}</span>`);
       expansionText.value.push(`Authors: ${text}`);
+      return true;
+    }
+
+    // search issued year
+    let date = row.issued?.["date-parts"];
+    if (date) {
+      text = date[0][0]
+        .toString()
+        .replace(re, `<span class="bg-primary">${terms}</span>`);
+      expansionText.value.push(`Year: ${text}`);
       return true;
     }
 
