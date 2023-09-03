@@ -129,7 +129,7 @@ import ImportDialog from "src/components/library/ImportDialog.vue";
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { getMeta, exportMeta, importMeta } from "src/backend/project/meta";
-import { copyFilefun } from "src/backend/project/file";
+import { copyFileToProjectFolder } from "src/backend/project/file";
 // util (to scan identifier in PDF)
 import * as pdfjsLib from "pdfjs-dist";
 import { basename, extname } from "@tauri-apps/api/path";
@@ -250,7 +250,10 @@ async function addProjectsByFiles(filePaths: string[]) {
     try {
       let project = projectStore.createProject(stateStore.selectedFolderId);
       projectStore.addProject(project, true);
-      let path = (await copyFilefun(filePath, project._id)) as string;
+      let path = (await copyFileToProjectFolder(
+        filePath,
+        project._id
+      )) as string;
       // let title = window.path.basename(path, ".pdf");
       let title = await basename(path, ".pdf");
       let props = {

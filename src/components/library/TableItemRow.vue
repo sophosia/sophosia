@@ -136,41 +136,32 @@
 </template>
 <script setup lang="ts">
 // types
-import { computed, PropType, ref, WritableComputedOptions } from "vue";
+import { computed, PropType, ref, watchEffect } from "vue";
 import { Project, Note, NoteType } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { copyToClipboard } from "quasar";
 import { basename } from "@tauri-apps/api/path";
-import { open } from "@tauri-apps/api/shell";
-import { OptionalContentConfig } from "pdfjs-dist/types/src/display/optional_content_config";
+import { invoke } from "@tauri-apps/api";
 const props = defineProps({
-  item: { type: Object as PropType<Project | Note>, required: true }
+  item: { type: Object as PropType<Project | Note>, required: true },
 });
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 
-const newLabel = ref("");
 const renaming = ref(false);
 const renameInput = ref<HTMLInputElement | null>(null);
+const label = ref("");
 
 // label has to be reactive
 // once props.item.path is changed
 // we also need to change the label
-const label = computed({
-  async get() {
-    let _label = "";
-    if (props.item.dataType === "note") {
-      _label = props.item.label;
-    } else if (props.item.dataType === "project") {
-      // _label = window.path.basename(props.item.path as string);
-      _label = await basename(props.item.path as string);
-    }
-    return _label;
-  },
-  set(_newLabel: string) {
-    newLabel.value = _newLabel;
+watchEffect(async () => {
+  if (props.item.dataType === "note") {
+    label.value = props.item.label;
+  } else if (props.item.dataType === "project") {
+    label.value = await basename(props.item.path as string);
   }
 });
 
@@ -179,9 +170,10 @@ function copyID() {
 }
 
 async function showInExplorer() {
-  // don't use props.row.path because it might not exists
-  // window.fileBrowser.showFileInFolder(props.item.path as string);
-  await open(props.item.path as string);
+  if (!props.item.path) return;
+  await invoke("show_in_folder", {
+    path: props.item.path,
+  });
 }
 
 function clickItem() {
@@ -212,10 +204,8 @@ function setRenaming() {
 }
 
 async function onRenameNote() {
-  // let note = props.item as Note;
-  // note.label = newLabel.value;
   await projectStore.updateNote(props.item._id, {
-    label: newLabel.value
+    label: label.value,
   } as Note);
   renaming.value = false;
 }
@@ -224,7 +214,7 @@ async function deleteItem() {
   await projectStore.deleteNote(props.item._id);
 }
 
-function renameFile() {
-  projectStore.renamePDF(props.item._id);
+async function renameFile() {
+  await projectStore.renamePDF(props.item._id);
 }
 </script>

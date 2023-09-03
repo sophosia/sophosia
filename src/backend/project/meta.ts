@@ -1,10 +1,10 @@
 import Cite from "citation-js";
 import "@citation-js/plugin-isbn"; // must import this so we can use isbn as identifier
 import { getProjects } from "./project";
-import { exportFile } from "quasar";
 
 import { Author, Folder, Meta, Project } from "../database";
-import { readTextFile } from "@tauri-apps/api/fs";
+import { readTextFile, writeTextFile } from "@tauri-apps/api/fs";
+import { save } from "@tauri-apps/api/dialog";
 
 /**
  * Get artible/book info given an identifier using citation.js
@@ -49,17 +49,22 @@ export async function exportMeta(
     let projects: Project[] = await getProjects(folder._id);
     let metas = await getMeta(projects, format, options);
     if (format === "json") {
-      exportFile(`${folder.label}.json`, JSON.stringify(metas), {
-        mimeType: "application/json",
-      });
+      let path = await save();
+      if (path) {
+        if (path.slice(-5).indexOf(".json") === -1) path += ".json";
+        await writeTextFile(path, JSON.stringify(metas));
+      }
     } else {
       let extension = "";
       if (["bibtex", "biblatex"].includes(format)) extension = "bib";
       else if (format === "bibliography") extension = "txt";
       else if (format === "ris") extension = "ris";
-      exportFile(`${folder.label}.${extension}`, metas as string, {
-        mimeType: "text/plain",
-      });
+      let path = await save();
+      if (path) {
+        if (path.slice(-4).indexOf(`.${extension}`) === -1)
+          path += `.${extension}`;
+        await writeTextFile(path, metas as string);
+      }
     }
   } catch (error) {
     console.log(error);

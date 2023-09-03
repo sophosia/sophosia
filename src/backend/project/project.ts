@@ -1,13 +1,13 @@
 import { uid } from "quasar";
 import { db, Project, SpecialFolder } from "../database";
 import {
-  copyFilefun,
+  copyFileToProjectFolder,
   createProjectFolder,
   deleteProjectFolder,
-  renameFilefun
 } from "./file";
-import { join, basename, extname } from "@tauri-apps/api/path";
+import { basename, extname } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
+import { renameFile } from "@tauri-apps/api/fs";
 
 /**
  * Create a project data
@@ -26,7 +26,7 @@ export function createProject(folderId: string) {
     path: "",
     tags: [] as string[],
     folderIds: ["library"],
-    favorite: false
+    favorite: false,
   } as Project;
   if (folderId != "library") project.folderIds.push(folderId);
   return project;
@@ -80,8 +80,8 @@ export async function deleteProject(
       // remove related pdfState, pdfAnnotation and notes on db
       const result = await db.find({
         selector: {
-          projectId: project._id
-        }
+          projectId: project._id,
+        },
       });
       for (const doc of result.docs) {
         await db.remove(doc);
@@ -147,8 +147,8 @@ export async function getProject(
 export async function getAllProjects(): Promise<Project[]> {
   const result = await db.find({
     selector: {
-      dataType: "project"
-    }
+      dataType: "project",
+    },
   });
   return result.docs as Project[];
 }
@@ -165,7 +165,7 @@ export async function getProjects(folderId: string): Promise<Project[]> {
       case SpecialFolder.LIBRARY:
         projects = (
           await db.find({
-            selector: { dataType: "project" }
+            selector: { dataType: "project" },
           })
         ).docs as Project[];
         break;
@@ -178,9 +178,9 @@ export async function getProjects(folderId: string): Promise<Project[]> {
             selector: {
               dataType: "project",
               timestampAdded: {
-                $gt: timestamp
-              }
-            }
+                $gt: timestamp,
+              },
+            },
           })
         ).docs as Project[];
         // sort projects in descending order
@@ -191,8 +191,8 @@ export async function getProjects(folderId: string): Promise<Project[]> {
           await db.find({
             selector: {
               dataType: "project",
-              favorite: true
-            }
+              favorite: true,
+            },
           })
         ).docs as Project[];
         console.log("here", projects);
@@ -202,8 +202,8 @@ export async function getProjects(folderId: string): Promise<Project[]> {
           await db.find({
             selector: {
               dataType: "project",
-              folderIds: { $in: [folderId] }
-            }
+              folderIds: { $in: [folderId] },
+            },
           })
         ).docs as Project[];
         break;
@@ -235,7 +235,7 @@ export async function renamePDF(project: Project) {
   let author = "";
   const year = project.issued?.["date-parts"][0][0] || "Unknown";
   const title = project.title;
-  const extname_ = await extname(project.path);
+  const extension = await extname(project.path);
   if (!project.author || project.author.length === 0) {
     // no author
     author = "Unknown";
@@ -247,13 +247,17 @@ export async function renamePDF(project: Project) {
     // more than 1 authors
     if (project.author.length > 1) author += " et al.";
   }
-  const fileName = `${author} - ${year} - ${title}${extname_}`;
+  // replace all "/" to "" and ":" to "-" to avoid bad nameing
+  const fileName = `${author} - ${year} - ${title}.${extension}`
+    .replaceAll("/", "")
+    .replaceAll(":", "-");
 
   // update backend
-  const newPath = renameFilefun(project.path, fileName);
+  const newPath = project.path.replace(await basename(project.path), fileName);
+  await renameFile(project.path, newPath);
   return await updateProject(project._id, {
-    path: newPath
-  } as unknown as Project); // added unknown
+    path: newPath,
+  } as Project);
 }
 
 /**
@@ -261,19 +265,15 @@ export async function renamePDF(project: Project) {
  * @param replaceStoredCopy
  */
 export async function attachPDF(projectId: string, replaceStoredCopy: boolean) {
-  // let filePaths = window.fileBrowser.showFilePicker({
-  //   multiSelections: false,
-  //   filters: [{ name: "*.pdf", extensions: ["pdf"] }],
-  // });
-
-  const filePaths = await open({
-    multiple: true,
-    filters: [{ name: "*.pdf", extensions: ["pdf"] }]
+  const filePath = await open({
+    multiple: false,
+    filters: [{ name: "*.pdf", extensions: ["pdf"] }],
   });
-  if (filePaths?.length === 1) {
-    let dstPath = filePaths[0];
+
+  if (typeof filePath === "string") {
+    let dstPath = filePath;
     if (replaceStoredCopy)
-      dstPath = (await copyFilefun(dstPath, projectId)) as string;
+      dstPath = (await copyFileToProjectFolder(dstPath, projectId)) as string;
     return await updateProject(projectId, { path: dstPath } as Project);
   }
 }
