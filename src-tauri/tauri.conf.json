@@ -58,7 +58,8 @@
         "removeDir": true,
         "removeFile": true,
         "renameFile": true,
-        "exists": true
+        "exists": true,
+        "scope": ["$APPDATA/**", "$HOME/**"]
       },
       "shell": {
         "all": true,
