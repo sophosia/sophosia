@@ -60,17 +60,18 @@
     "@types/react": "^18.2.21",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
+    "@vitejs/plugin-react": "^4.0.4",
     "@vue/test-utils": "^2.0.0",
     "autoprefixer": "^10.4.2",
+    "cypress": "^12.2.0",
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-vue": "^9.0.0",
     "pouchdb-server": "^4.2.0",
     "prettier": "^2.5.1",
     "typescript": "^5.1.6",
-    "vitest": "^0.31.0",
-    "cypress": "^12.2.0",
-    "eslint-plugin-cypress": "^2.12.1"
+    "vitest": "^0.31.0"
   },
   "engines": {
     "node": "^20 || ^18 || ^16 || ^14.19",
