@@ -71,7 +71,7 @@ import { KEY_pdfApp, KEY_project } from "./injectKeys";
 
 import PDFToolBar from "./PDFToolBar.vue";
 import RightMenu from "./RightMenu.vue";
-import AnnotCard from "./AnnotCard.vue";
+// import AnnotCard from "./AnnotCard.vue";
 import FloatingMenu from "./FloatingMenu.vue";
 
 import { getProject } from "src/backend/project/project";

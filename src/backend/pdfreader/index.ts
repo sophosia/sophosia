@@ -377,6 +377,7 @@ export default class PDFApplication {
           container.scrollTop += ratio * e.pageY;
       } else {
         this.pdfViewer.currentScale -= 0.1;
+
       }
     }
   }
