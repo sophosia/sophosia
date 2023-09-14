@@ -1,4 +1,3 @@
-use std::fs;
 use std::fs::metadata;
 use std::path::PathBuf;
 use std::process::Command;
