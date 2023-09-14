@@ -30,7 +30,7 @@ import { TOCNode } from "src/backend/database";
 import { QTree } from "quasar";
 
 const props = defineProps({
-  outline: { type: Object as PropType<TOCNode[]>, required: true }
+  outline: { type: Object as PropType<TOCNode[]>, required: true },
 });
 const emit = defineEmits(["clickTOC"]);
 const selected = ref(null);

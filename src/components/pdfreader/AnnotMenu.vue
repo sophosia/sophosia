@@ -51,7 +51,7 @@ const emit = defineEmits([
   "changeColor",
   "deleteAnnot",
   "copyID",
-  "scrollIntoView"
+  "scrollIntoView",
 ]);
 const changeColor = (color: string) => emit("changeColor", color);
 const deleteAnnot = () => emit("deleteAnnot");

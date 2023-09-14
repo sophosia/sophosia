@@ -21,7 +21,7 @@
         :annot="(annot as Annotation)"
         :style="'width: 100%'"
         :class="{
-          activeAnnotation: selectedId === annot.data._id
+          activeAnnotation: selectedId === annot.data._id,
         }"
         @click="$emit('setActive', annot.data._id)"
         ref="cards"
@@ -40,7 +40,7 @@ import AnnotCard from "./AnnotCard.vue";
 
 const props = defineProps({
   annots: { type: Object as PropType<Annotation[]>, required: true },
-  selectedId: { type: String, required: true }
+  selectedId: { type: String, required: true },
 });
 const emit = defineEmits(["setActive"]);
 </script>
