@@ -38,6 +38,8 @@
     "pouchdb-find": "^8.0.1",
     "quasar": "^2.6.0",
     "react": "^18.2.0",
+    "react-async": "^10.0.1",
+    "react-dom": "^18.2.0",
     "vditor": "^3.9.4",
     "veaury": "^2.3.12",
     "vitest": "^0.34.3",
