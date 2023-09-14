@@ -65,10 +65,13 @@
 import { ref, computed } from "vue";
 import { useStateStore } from "src/stores/appState";
 import { useI18n } from "vue-i18n";
+import { open } from "@tauri-apps/api/dialog";
+import { homeDir } from "@tauri-apps/api/path";
+
 const { locale } = useI18n({ useScope: "global" });
 
 const props = defineProps({ modelValue: { type: Boolean, required: true } });
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "updateAppState"]);
 
 const stateStore = useStateStore();
 
@@ -89,17 +92,27 @@ const language = computed({
     return result as { value: "en_US" | "zh_CN"; label: string };
   },
   set(option: { value: "en_US" | "zh_CN"; label: string }) {
-    locale.value = option.value;
-    stateStore.changeLanguage(option.value);
+    stateStore.settings.language = option.value;
+    changeLanguage(option.value);
   },
 });
 
-function changeStoragePath() {
-  let result = window.fileBrowser.showFolderPicker();
-  if (result !== undefined && !!result[0]) {
+function changeLanguage(language: "en_US" | "zh_CN") {
+  locale.value = language;
+  emit("updateAppState");
+}
+
+async function changeStoragePath() {
+  // let result = window.fileBrowser.showFolderPicker();
+  let result = await open({
+    directory: true,
+    multiple: true,
+    defaultPath: await homeDir(),
+  });
+  if (result !== undefined && result != null && !!result[0]) {
     path.value = result[0];
     stateStore.settings.storagePath = path.value;
-    stateStore.saveAppState();
+    emit("updateAppState");
   }
 }
 
