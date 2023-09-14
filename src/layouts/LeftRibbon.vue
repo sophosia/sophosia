@@ -17,8 +17,9 @@
         <template
           v-for="toggleBtn in toggleBtns"
           v-slot:[toggleBtn.slot]
-          :key="toggleBtn.value"
         >
+          <!-- icons do not render properly using the normal way -->
+          <!-- I need to render icons in templates -->
           <q-icon :name="toggleBtn._icon">
             <q-tooltip>
               {{ toggleBtn.tooltip }}
@@ -99,9 +100,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import pluginManager from "src/backend/plugin";
-import { Button, ComponentName } from "src/backend/database";
+import { Button, ComponentName, ToggleButton } from "src/backend/database";
 import { useI18n } from "vue-i18n";
 import { useStateStore } from "src/stores/appState";
 
