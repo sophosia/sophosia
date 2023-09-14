@@ -52,25 +52,26 @@ const isUpdateAvailable = ref(false);
 const disabled = ref(false);
 
 onMounted(() => {
-  version.value = window.updater.versionInfo();
+  version.value = "v0.1.0-alpha";
+  // version.value = window.updater.versionInfo();
 
-  window.updater.updateAvailable((event, isAvailable) => {
-    isUpdateAvailable.value = isAvailable;
-  });
+  // window.updater.updateAvailable((event, isAvailable) => {
+  //   isUpdateAvailable.value = isAvailable;
+  // });
 
-  window.updater.updateMessage((event, info) => {
-    updateMsg.value = info;
-  });
+  // window.updater.updateMessage((event, info) => {
+  //   updateMsg.value = info;
+  // });
 });
 
-function checkForUpdates() {
-  window.updater.checkForUpdates();
-}
+// function checkForUpdates() {
+//   window.updater.checkForUpdates();
+// }
 
-function downloadUpdate() {
-  window.updater.downloadUpdate();
-  disabled.value = true;
-}
+// function downloadUpdate() {
+//   window.updater.downloadUpdate();
+//   disabled.value = true;
+// }
 </script>
 <style scoped>
 .card {
