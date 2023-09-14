@@ -13,12 +13,12 @@ describe("utils.ts", () => {
           label: "1.2",
           children: [
             { label: "1.2.2", children: [] as TreeNode[] },
-            { label: "1.2.1", children: [] as TreeNode[] }
-          ]
+            { label: "1.2.1", children: [] as TreeNode[] },
+          ],
         },
         { label: "1.1", children: [] as TreeNode[] },
-        { label: "1.3", children: [] as TreeNode[] }
-      ] as TreeNode[]
+        { label: "1.3", children: [] as TreeNode[] },
+      ] as TreeNode[],
     } as TreeNode;
 
     const sortedRoot = {
@@ -29,12 +29,12 @@ describe("utils.ts", () => {
           label: "1.2",
           children: [
             { label: "1.2.1", children: [] as TreeNode[] },
-            { label: "1.2.2", children: [] as TreeNode[] }
-          ]
+            { label: "1.2.2", children: [] as TreeNode[] },
+          ],
         },
         { label: "1.3", children: [] as TreeNode[] },
-        { label: "1.4", children: [] as TreeNode[] }
-      ] as TreeNode[]
+        { label: "1.4", children: [] as TreeNode[] },
+      ] as TreeNode[],
     } as TreeNode;
 
     sortTree(root);

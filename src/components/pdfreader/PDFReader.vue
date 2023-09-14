@@ -44,12 +44,13 @@
         />
       </div>
 
-      <div
-        ref="peekContainer"
-        class="peekContainer"
-      >
-        <div class="pdfViewer"></div>
-      </div>
+      <PeekCard
+        v-for="link in pdfApp.peekManager.links"
+        :key="link.id"
+        :link="link"
+        :peekManager="pdfApp.peekManager"
+        :darkMode="pdfApp.state.darkMode"
+      />
     </template>
     <template v-slot:after>
       <RightMenu />
@@ -64,7 +65,7 @@ import {
   AnnotationType,
   PDFState,
   Project,
-  Rect
+  Rect,
 } from "src/backend/database";
 import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
 import { KEY_pdfApp, KEY_project } from "./injectKeys";
@@ -73,6 +74,7 @@ import PDFToolBar from "./PDFToolBar.vue";
 import RightMenu from "./RightMenu.vue";
 import AnnotCard from "./AnnotCard.vue";
 import FloatingMenu from "./FloatingMenu.vue";
+import PeekCard from "./PeekCard.vue";
 
 import { getProject } from "src/backend/project/project";
 import PDFApplication from "src/backend/pdfreader";
@@ -87,7 +89,6 @@ const props = defineProps({ projectId: { type: String, required: true } });
 
 // viewer containers
 const viewerContainer = ref<HTMLDivElement>();
-const peekContainer = ref<HTMLDivElement>();
 
 // ready to save data
 const project = ref<Project>();
@@ -106,7 +107,7 @@ const showRightMenu = computed({
       prvRightMenuSize.value = rightMenuSize.value;
       rightMenuSize.value = 0;
     }
-  }
+  },
 });
 
 // annot card & colorpicker
@@ -267,11 +268,8 @@ watch(pdfApp.state, (state) => {
  * Implement eventhandlers and init PDFApplication
  **************************************************/
 onMounted(async () => {
-  if (!viewerContainer.value || !peekContainer.value) return;
-  pdfApp.init(
-    viewerContainer.value as HTMLDivElement,
-    peekContainer.value as HTMLDivElement
-  );
+  if (!viewerContainer.value) return;
+  pdfApp.init(viewerContainer.value as HTMLDivElement);
 
   pdfApp.eventBus?.on(
     "annotationeditorlayerrendered",
@@ -321,7 +319,7 @@ onMounted(async () => {
               content: "",
               color: "",
               rects: [] as Rect[],
-              type: AnnotationType.INK
+              type: AnnotationType.INK,
             } as AnnotationData;
             let annot = pdfApp.annotFactory.build(annotData);
             if (annot) {
@@ -409,8 +407,8 @@ onMounted(async () => {
                   left: Math.min(x1, ev.clientX),
                   top: Math.min(y1, ev.clientY),
                   width: Math.abs(x1 - ev.clientX),
-                  height: Math.abs(y1 - ev.clientY)
-                }
+                  height: Math.abs(y1 - ev.clientY),
+                },
               ];
               if (rects[0].width < 1 || rects[0].height < 1) return;
               rects[0] = pdfApp.annotFactory.offsetTransform(
@@ -429,7 +427,7 @@ onMounted(async () => {
                 pageNumber: e.pageNumber,
                 projectId: pdfApp.state.projectId,
                 dataType: "pdfAnnotation",
-                content: ""
+                content: "",
               } as AnnotationData;
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {
@@ -451,8 +449,8 @@ onMounted(async () => {
                   left: ev.clientX,
                   top: ev.clientY,
                   width: 0,
-                  height: 0
-                }
+                  height: 0,
+                },
               ];
               rects[0] = pdfApp.annotFactory.offsetTransform(
                 rects[0],
@@ -469,7 +467,7 @@ onMounted(async () => {
                 pageNumber: e.pageNumber,
                 projectId: pdfApp.state.projectId,
                 dataType: "pdfAnnotation",
-                content: ""
+                content: "",
               } as AnnotationData;
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {
@@ -498,13 +496,6 @@ onMounted(async () => {
   width: 100%; // so the right scroll bar does not touch right edge
   margin-right: 10px;
   background-color: var(--color-pdfreader-viewer-bkgd);
-}
-
-.peekContainer {
-  position: absolute;
-  overflow: auto;
-  background: var(--color-pdfreader-viewer-bkgd);
-  border: solid $primary 3px;
 }
 
 .page {

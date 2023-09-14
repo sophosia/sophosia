@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { Note, NoteType, Project } from "src/backend/database";
+import { Note, NoteType, Project, AppState } from "src/backend/database";
 import {
   getNotes,
   getNote,
@@ -41,16 +41,16 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     async getProjectFromDB(projectId: string) {
-      const project = (await getProject(projectId)) as Project;
+      let project = (await getProject(projectId)) as Project;
       project.children = await getNotes(projectId);
       return project;
     },
 
     async loadOpenedProjects(openedProjectIds: string[] | Set<string>) {
-      const pushedIds = this.openedProjects.map((p) => p._id);
-      for (const projectId of openedProjectIds) {
+      let pushedIds = this.openedProjects.map((p) => p._id);
+      for (let projectId of openedProjectIds) {
         if (pushedIds.includes(projectId)) continue;
-        const project = (await this.getProjectFromDB(projectId)) as Project;
+        let project = (await this.getProjectFromDB(projectId)) as Project;
         sortTree(project); // sort notes by alphabet
         this.openedProjects.push(project);
         pushedIds.push(projectId);
@@ -58,7 +58,7 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     async openProject(projectId: string) {
-      const project = (await this.getProjectFromDB(projectId)) as Project;
+      let project = (await this.getProjectFromDB(projectId)) as Project;
       if (!this.openedProjects.map((p) => p._id).includes(project._id))
         this.openedProjects.push(project);
     },
@@ -88,13 +88,13 @@ export const useProjectStore = defineStore("projectStore", {
      * @param props
      */
     async updateProject(projectId: string, props: Project) {
-      const newProject = (await updateProject(projectId, props)) as Project;
+      let newProject = (await updateProject(projectId, props)) as Project;
       this._updateProjectUI(newProject);
     },
 
     _updateProjectUI(newProject: Project) {
-      const projectInList = this.projects.find((p) => p._id === newProject._id);
-      const projectInOpened = this.openedProjects.find(
+      let projectInList = this.projects.find((p) => p._id === newProject._id);
+      let projectInOpened = this.openedProjects.find(
         (p) => p._id === newProject._id
       );
 
@@ -116,7 +116,7 @@ export const useProjectStore = defineStore("projectStore", {
       deleteFromDB: boolean,
       folderId?: string
     ) {
-      const ind = this.projects.findIndex((p) => p._id === projectId);
+      let ind = this.projects.findIndex((p) => p._id === projectId);
       if (ind > -1) {
         // update ui
         this.projects.splice(ind, 1);
@@ -131,23 +131,23 @@ export const useProjectStore = defineStore("projectStore", {
      */
     async loadProjects(folderId: string) {
       this.projects = await getProjects(folderId);
-      for (const project of this.projects)
+      for (let project of this.projects)
         project.children = await getNotes(project._id);
 
       this.ready = true;
     },
 
     async renamePDF(projectId: string) {
-      const project = this.getProject(projectId);
+      let project = this.getProject(projectId);
       // update db and ui
       if (project) Object.assign(project, await renamePDF(project));
     },
 
     async attachPDF(projectId: string, replaceStoredCopy: boolean) {
       // update db
-      const newProject = await attachPDF(projectId, replaceStoredCopy);
+      let newProject = await attachPDF(projectId, replaceStoredCopy);
       // update ui
-      const project = this.getProject(projectId);
+      let project = this.getProject(projectId);
       if (newProject && project) Object.assign(project, newProject);
     },
 
@@ -168,22 +168,22 @@ export const useProjectStore = defineStore("projectStore", {
       // update db
       note = (await addNote(note)) as Note;
       // update ui
-      const project = await this.getProjectFromDB(note.projectId);
+      let project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
     },
 
     async updateNote(noteId: string, props: Note) {
       // update db
-      const note = (await updateNote(noteId, props)) as Note;
+      let note = (await updateNote(noteId, props)) as Note;
       // update ui
-      const project = await this.getProjectFromDB(note.projectId);
+      let project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
     },
 
     async deleteNote(noteId: string) {
-      const note = (await this.getNoteFromDB(noteId)) as Note;
+      let note = (await this.getNoteFromDB(noteId)) as Note;
       await deleteNote(noteId);
-      const project = await this.getProjectFromDB(note.projectId);
+      let project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
     },
 

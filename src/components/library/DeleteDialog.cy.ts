@@ -3,12 +3,12 @@ function mount(deleteFromDB: boolean) {
   const projects = [
     { title: "title1" },
     { title: "title2" },
-    { title: "title3" }
+    { title: "title3" },
   ];
   const props = {
     show: true,
     projects: projects,
-    deleteFromDB: deleteFromDB
+    deleteFromDB: deleteFromDB,
   };
   return cy.mount(DeleteDialog, { props });
 }

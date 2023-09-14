@@ -75,8 +75,8 @@ const props = defineProps({
       expand: boolean;
       selected: boolean;
     }>,
-    required: true
-  }
+    required: true,
+  },
 });
 const emit = defineEmits(["expandRow", "setFavorite"]);
 

@@ -5,7 +5,7 @@ import {
   updateFolder,
   deleteFolder,
   moveFolderInto,
-  getParentFolder
+  getParentFolder,
 } from "src/backend/project/folder";
 import { db, Folder } from "../database";
 
@@ -30,8 +30,8 @@ describe("folder.ts", () => {
 
     const results = await db.find({
       selector: {
-        _id: folder._id
-      }
+        _id: folder._id,
+      },
     });
     expect(results.docs.length).toBe(0);
   });

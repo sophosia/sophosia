@@ -5,7 +5,7 @@ import {
   EraserType,
   PDFState,
   Rect,
-  RenderEvt
+  RenderEvt,
 } from "../database";
 import { db } from "../database";
 import Konva from "konva";
@@ -63,12 +63,12 @@ export abstract class Annotation {
   }): void;
 
   undraw() {
-    for (const dom of this.doms) dom.remove();
+    for (let dom of this.doms) dom.remove();
     this.doms = [];
   }
 
   setActive(isActive: boolean) {
-    for (const dom of this.doms) {
+    for (let dom of this.doms) {
       if (isActive) dom.classList.add("activeAnnotation");
       else dom.classList.remove("activeAnnotation");
     }
@@ -82,7 +82,7 @@ export abstract class Annotation {
     // we assume the draggable annotations are: comment, rectangle
     // these annotations only have 1 dom
     if (this.doms.length != 1) return;
-    const dom = this.doms[0];
+    let dom = this.doms[0];
     let annotLayerRect: Rect;
     let domRect: Rect;
     let offsetX = 0;
@@ -129,9 +129,9 @@ export abstract class Annotation {
             left: left,
             top: top,
             width: parseFloat(dom.style.width),
-            height: parseFloat(dom.style.height)
-          }
-        ]
+            height: parseFloat(dom.style.height),
+          },
+        ],
       } as AnnotationData);
     };
 
@@ -151,11 +151,11 @@ export abstract class Annotation {
 
   private async _updateDB(props: AnnotationData) {
     try {
-      const annot = (await db.get(this.data._id)) as AnnotationData;
+      let annot = (await db.get(this.data._id)) as AnnotationData;
       props._rev = annot._rev;
       props.timestampModified = Date.now();
       Object.assign(annot, props);
-      const result = await db.put(annot);
+      let result = await db.put(annot);
       annot._rev = result.rev;
       this.data = annot;
     } catch (err) {
@@ -168,7 +168,7 @@ export abstract class Annotation {
    */
   async update(props: AnnotationData) {
     // update ui
-    for (const dom of this.doms) {
+    for (let dom of this.doms) {
       if (props.color) {
         if (
           this.data.type === AnnotationType.UNDERLINE ||
@@ -188,11 +188,11 @@ export abstract class Annotation {
    */
   async delete() {
     // update ui
-    for (const dom of this.doms) dom.remove();
+    for (let dom of this.doms) dom.remove();
 
     // update db
     try {
-      const annot = await db.get(this.data._id);
+      let annot = await db.get(this.data._id);
       await db.remove(annot);
     } catch (error) {
       console.log(error);
@@ -204,10 +204,10 @@ export class Highlight extends Annotation {
   draw(e: RenderEvt): void {
     if (this.isDrawn(e) || !this.data._id) return;
 
-    const canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
-    for (const rect of this.data.rects) {
+    let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    for (let rect of this.data.rects) {
       // update UI
-      const section = document.createElement("section");
+      let section = document.createElement("section");
       section.setAttribute("annotation-id", this.data._id);
       section.style.position = "absolute";
       // using percentage since it's invariant under scale change
@@ -232,10 +232,10 @@ export class Underline extends Annotation {
   draw(e: RenderEvt): void {
     if (this.isDrawn(e) || !this.data._id) return;
 
-    const canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
-    for (const rect of this.data.rects) {
+    let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    for (let rect of this.data.rects) {
       // update UI
-      const section = document.createElement("section");
+      let section = document.createElement("section");
       section.setAttribute("annotation-id", this.data._id);
       section.style.position = "absolute";
       // using percentage since it's invariant under scale change
@@ -262,10 +262,10 @@ export class Strikeout extends Annotation {
   draw(e: RenderEvt): void {
     if (this.isDrawn(e) || !this.data._id) return;
 
-    const canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
-    for (const rect of this.data.rects) {
+    let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    for (let rect of this.data.rects) {
       // update UI
-      const section = document.createElement("section");
+      let section = document.createElement("section");
       section.setAttribute("annotation-id", this.data._id);
       section.style.position = "absolute";
       // using percentage since it's invariant under scale change
@@ -278,7 +278,7 @@ export class Strikeout extends Annotation {
       section.style.zIndex = "3";
       section.className = "strikeoutAnnotation";
 
-      const div = document.createElement("div");
+      let div = document.createElement("div");
       div.style.position = "relative";
       div.style.top = "0";
       div.style.left = "0";
@@ -299,9 +299,9 @@ export class Rectangle extends Annotation {
   draw(e: RenderEvt): void {
     if (this.isDrawn(e) || !this.data._id) return;
 
-    const canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
     // update UI
-    const section = document.createElement("section");
+    let section = document.createElement("section");
     section.setAttribute("annotation-id", this.data._id);
     section.style.position = "absolute";
     // using percentage since it's invariant under scale change
@@ -325,9 +325,9 @@ export class Comment extends Annotation {
   draw(e: RenderEvt): void {
     if (this.isDrawn(e) || !this.data._id) return;
 
-    const canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
     // update UI
-    const section = document.createElement("section");
+    let section = document.createElement("section");
     section.setAttribute("annotation-id", this.data._id);
     section.style.position = "absolute";
     // using percentage since it's invariant under scale change
@@ -342,7 +342,7 @@ export class Comment extends Annotation {
     section.style.zIndex = "3";
     section.classList.add("textAnnotation");
 
-    const img = document.createElement("img");
+    let img = document.createElement("img");
     img.src = "annotation-note-transparent.svg";
     img.style.position = "absolute";
     img.style.left = "0px";
@@ -379,7 +379,7 @@ export class Ink extends Annotation {
     this.stage.scale({ x: view.scale, y: view.scale });
     this.stage.size({
       width: view.width,
-      height: view.height
+      height: view.height,
     });
   }
 
@@ -403,10 +403,10 @@ export class Ink extends Annotation {
           container: this.annotationEditorLayer,
           width: e.source.width,
           height: e.source.height,
-          scale: { x: e.source.scale, y: e.source.scale }
+          scale: { x: e.source.scale, y: e.source.scale },
         });
         this.stage.content.style.zIndex = "2";
-        const layer = new Konva.Layer();
+        let layer = new Konva.Layer();
         this.stage.add(layer);
       }
     } else {
@@ -433,7 +433,7 @@ export class Ink extends Annotation {
     this.stage.on("pointerdown", (e) => {
       if (!this.stage) return;
       isPressed = true;
-      const pos = this.stage.getRelativePointerPosition();
+      let pos = this.stage.getRelativePointerPosition();
       if (!pos) return;
       if (
         !(
@@ -442,7 +442,7 @@ export class Ink extends Annotation {
         )
       ) {
         // draw line for normal pen or pixel eraser
-        const line = new Konva.Line({
+        let line = new Konva.Line({
           stroke: state.color,
           strokeWidth:
             state.tool === AnnotationType.INK
@@ -455,7 +455,7 @@ export class Ink extends Annotation {
               : "destination-out",
           lineCap: "round",
           lineJoin: "round",
-          shadowEnabled: false
+          shadowEnabled: false,
         });
         this.stage.getLayers()[0].add(line);
         this.lines.push(line);
@@ -486,14 +486,14 @@ export class Ink extends Annotation {
         return;
       const pos = this.stage.getRelativePointerPosition();
       if (!pos) return;
-      const lastLine = this.lines.slice(-1)[0];
-      const newPoints = lastLine.points().concat([pos.x, pos.y]);
+      let lastLine = this.lines.slice(-1)[0];
+      let newPoints = lastLine.points().concat([pos.x, pos.y]);
       lastLine.points(newPoints);
     });
     this.stage.on("pointerup", () => {
       isPressed = false;
       if (!this.stage) return;
-      const content = this.stage.toJSON();
+      let content = this.stage.toJSON();
       this.update({ content: content } as AnnotationData);
     });
     // set this to true to prevent repeatly binding

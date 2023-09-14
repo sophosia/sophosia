@@ -5,36 +5,35 @@ import {
   PDFSearch,
   PDFState,
   SpreadMode,
-  TOCNode
+  TOCNode,
 } from "../database";
 import { debounce } from "quasar";
 import { nextTick, reactive, ref } from "vue";
 import { AnnotationStore, AnnotationFactory } from "../pdfannotation";
-import { PeekManager } from "./pdfpeek";
+import { PeekManager } from "./peekManager";
 import {
   PDFFindController,
   PDFPageView,
-  PDFViewer
+  PDFViewer,
 } from "pdfjs-dist/web/pdf_viewer";
 import * as pdfjsLib from "pdfjs-dist";
 import * as pdfjsViewer from "pdfjs-dist/web/pdf_viewer";
 import { Annotation } from "../pdfannotation/annotations";
-
-import { readBinaryFile } from "@tauri-apps/api/fs"; //Tauri
-import { open } from "@tauri-apps/api/shell"; //Tauri
-
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "node_modules/pdfjs-dist/build/pdf.worker.min.js";
 
+import { readBinaryFile } from "@tauri-apps/api/fs";
+import { open } from "@tauri-apps/api/shell";
+
 export default class PDFApplication {
   container: HTMLDivElement | undefined;
-  peekContainer: HTMLDivElement | undefined;
   eventBus: pdfjsViewer.EventBus | undefined;
   pdfLinkService: pdfjsViewer.PDFLinkService | undefined;
   pdfFindController: pdfjsViewer.PDFFindController | undefined;
   pdfViewer: pdfjsViewer.PDFViewer | undefined;
-  peekManager: PeekManager | undefined;
+  peekManager: PeekManager;
   pdfDocument: pdfjsLib.PDFDocumentProxy | undefined;
+
   annotStore: AnnotationStore;
   annotFactory: AnnotationFactory;
 
@@ -54,6 +53,7 @@ export default class PDFApplication {
     this.projectId = projectId;
     this.annotStore = new AnnotationStore(projectId);
     this.annotFactory = new AnnotationFactory(projectId);
+    this.peekManager = new PeekManager();
     // make saveState a debounce function
     // it ignores the signals 500ms after each call
     this.saveState = debounce(this._saveState, 500);
@@ -72,18 +72,18 @@ export default class PDFApplication {
       inkThickness: 5,
       inkOpacity: 1,
       eraserType: EraserType.STROKE,
-      eraserThickness: 20
+      eraserThickness: 20,
     } as PDFState);
   }
 
-  init(container: HTMLDivElement, peekContainer: HTMLDivElement) {
+  init(container: HTMLDivElement) {
     const eventBus = new pdfjsViewer.EventBus();
     const pdfLinkService = new pdfjsViewer.PDFLinkService({
-      eventBus
+      eventBus,
     });
     const pdfFindController = new pdfjsViewer.PDFFindController({
       eventBus,
-      linkService: pdfLinkService
+      linkService: pdfLinkService,
     });
 
     // l10n resource
@@ -100,18 +100,16 @@ export default class PDFApplication {
       linkService: pdfLinkService,
       findController: pdfFindController,
       annotationEditorMode: pdfjsLib.AnnotationEditorType.NONE,
-      l10n: l10n
+      l10n: l10n,
     });
     // must have this otherwise find controller does not work
     pdfLinkService.setViewer(pdfViewer);
 
     this.container = container;
-    this.peekContainer = peekContainer;
     this.eventBus = eventBus;
     this.pdfLinkService = pdfLinkService;
     this.pdfFindController = pdfFindController;
     this.pdfViewer = pdfViewer;
-    this.peekManager = new PeekManager(container, peekContainer);
     this.pdfDocument = undefined; // initialize in loadPDF
 
     // install internal event listener
@@ -124,6 +122,7 @@ export default class PDFApplication {
       this.changeSpreadMode(this.state.spreadMode);
       this.changeScale({ scale: this.state.currentScale });
       this.changeTool(this.state.tool);
+      this.changeViewMode(this.state.darkMode);
       if (this.pdfViewer) this.state.pagesCount = this.pdfViewer.pagesCount;
       this.ready.value = true;
     });
@@ -132,17 +131,25 @@ export default class PDFApplication {
       this.container
         .querySelectorAll("section.linkAnnotation")
         .forEach((section) => {
-          const link = section.querySelector("a");
+          let link = section.querySelector("a");
           if (!link) return;
           if (section.hasAttribute("data-internal-link")) {
             // peek internal links
-            if (this.peekManager) this.peekManager.peek(link);
+            link.onmouseover = () => {
+              if (!link) return;
+              let timeoutId = setTimeout(() => {
+                if (!link) return;
+                if (this.peekManager) this.peekManager.create(link);
+              }, 500);
+
+              link.onmouseleave = () => clearTimeout(timeoutId);
+            };
           } else {
             // external links must open using default browser
-            const href = link.href;
+            let href = link.href;
             link.onclick = async (e) => {
               e.preventDefault();
-              // window.browser.openURL(href); //Electron
+              // window.browser.openURL(href);
               await open(href);
             };
           }
@@ -204,14 +211,14 @@ export default class PDFApplication {
       "updatetextlayermatches",
       (e: { source: PDFFindController; pageIndex: number }) => {
         // if not found, set the matchesCount.total to 0
-        const findController = e.source;
-        const selected = findController.selected;
+        let findController = e.source;
+        let selected = findController.selected;
         if (selected === undefined) return;
         if (findController.pageMatches === undefined) return;
         if (selected.matchIdx == -1 && selected.pageIdx == -1) {
           Object.assign(this.matchesCount, { current: -1, total: 0 });
         } else {
-          const pageIdx = selected.pageIdx;
+          let pageIdx = selected.pageIdx;
           let current = selected.matchIdx + 1;
           for (let i = 0; i < pageIdx; i++) {
             current += findController.pageMatches[i].length;
@@ -228,51 +235,52 @@ export default class PDFApplication {
     if (process.env.DEV)
       cMapUrl = new URL("../../../cmaps/", import.meta.url).href;
     else {
-      console.log("url?", import.meta.url);
       cMapUrl = new URL("cmaps/", import.meta.url).href;
     }
-    // let buffer = window.fs.readFileSync(filePath); //Electron
-    const buffer = await readBinaryFile(filePath); //Tauri
+    // let buffer = window.fs.readFileSync(filePath);
+    let buffer = await readBinaryFile(filePath);
     this.pdfDocument = await pdfjsLib.getDocument({
       data: buffer,
       cMapUrl: cMapUrl,
-      cMapPacked: true
+      cMapPacked: true,
     }).promise;
     if (this.pdfLinkService)
       this.pdfLinkService.setDocument(this.pdfDocument, null);
     if (this.pdfFindController)
       this.pdfFindController.setDocument(this.pdfDocument);
     if (this.pdfViewer) this.pdfViewer.setDocument(this.pdfDocument);
-    if (this.peekManager) this.peekManager.loadPDF(filePath);
+    this.peekManager.setDocument(this.pdfDocument);
     this.getTOC();
     this.getPageLabels();
   }
 
   async loadState(projectId: string): Promise<PDFState | undefined> {
     try {
-      const result = await db.find({
-        selector: { dataType: "pdfState", projectId: projectId }
+      let result = await db.find({
+        selector: { dataType: "pdfState", projectId: projectId },
       });
 
-      let state = result.docs[0] as PDFState;
-      if (!!!state) {
-        // default state
-        state = {
-          dataType: "pdfState",
-          projectId: projectId,
-          pagesCount: 0,
-          currentPageNumber: 1,
-          currentScale: 1,
-          currentScaleValue: "1",
-          spreadMode: 0,
-          tool: "cursor",
-          color: "#FFFF00",
-          inkThickness: 5,
-          inkOpacity: 100,
-          scrollLeft: 0,
-          scrollTop: 0
-        } as PDFState;
-      }
+      // default state
+      let state = {
+        _id: "",
+        _rev: "",
+        dataType: "pdfState",
+        projectId: projectId,
+        pagesCount: 0,
+        currentPageNumber: 1,
+        currentScale: 1,
+        currentScaleValue: "1",
+        spreadMode: 0,
+        darkMode: false,
+        tool: "cursor",
+        color: "#FFFF00",
+        inkThickness: 5,
+        inkOpacity: 100,
+        scrollLeft: 0,
+        scrollTop: 0,
+      } as PDFState;
+      // doing this we can make sure if anything missing from db, the default values are there
+      Object.assign(state, result.docs[0] as PDFState);
       Object.assign(this.state, state);
       return state;
     } catch (error) {
@@ -288,7 +296,7 @@ export default class PDFApplication {
 
     try {
       if (!!state._id) {
-        const oldState = await db.get(state._id);
+        let oldState = await db.get(state._id);
         state._rev = oldState._rev;
         await db.put(state);
       } else {
@@ -308,9 +316,9 @@ export default class PDFApplication {
    * Create annotations from db
    */
   async loadAnnotations() {
-    const annotDatas = await this.annotStore.loadFromDB();
-    for (const annotData of annotDatas) {
-      const annot = this.annotFactory.build(annotData);
+    let annotDatas = await this.annotStore.loadFromDB();
+    for (let annotData of annotDatas) {
+      let annot = this.annotFactory.build(annotData);
       if (annot) this.annotStore.add(annot);
     }
   }
@@ -347,6 +355,18 @@ export default class PDFApplication {
     this.state.color = color;
   }
 
+  changeViewMode(darkMode: boolean) {
+    this.state.darkMode = darkMode;
+    let viewer = this.container?.querySelector(
+      ".pdfViewer"
+    ) as HTMLElement | null;
+    if (!viewer) return;
+    if (darkMode)
+      viewer.style.filter =
+        "invert(64%) contrast(228%) brightness(80%) hue-rotate(180deg)";
+    else viewer.style.filter = "unset";
+  }
+
   changeInkThickness(thickness: number) {
     this.state.inkThickness = thickness;
   }
@@ -362,12 +382,12 @@ export default class PDFApplication {
       // disable the default action avoid the offsetParent not set error
       e.preventDefault();
       if (e.deltaY < 0) {
-        const container = this.container;
-        const oldScale = this.pdfViewer.currentScale;
+        let container = this.container;
+        let oldScale = this.pdfViewer.currentScale;
         this.pdfViewer.currentScale += 0.1;
-        const newScale = this.pdfViewer.currentScale;
+        let newScale = this.pdfViewer.currentScale;
 
-        const ratio = newScale / oldScale - 1;
+        let ratio = newScale / oldScale - 1;
 
         // shift the scroll bar if cursor is on the right / bottom of the screen
         // the default zoom-in takes the upper-left conner as scale origin
@@ -377,7 +397,6 @@ export default class PDFApplication {
           container.scrollTop += ratio * e.pageY;
       } else {
         this.pdfViewer.currentScale -= 0.1;
-
       }
     }
   }
@@ -394,14 +413,14 @@ export default class PDFApplication {
 
     function _dfs(oldNodes: TOCNode[]): TOCNode[] {
       const tree = [] as TOCNode[];
-      for (const k in oldNodes) {
-        const node = {
+      for (let k in oldNodes) {
+        let node = {
           label: oldNodes[k].title,
-          children: _dfs(oldNodes[k].items)
+          children: _dfs(oldNodes[k].items),
         } as TOCNode;
         if (typeof oldNodes[k].dest === "string") node.dest = oldNodes[k].dest;
         else {
-          const dest = oldNodes[k].dest;
+          let dest = oldNodes[k].dest;
           if (!!dest && dest?.length > 0) node.ref = dest[0];
         }
         tree.push(node);
@@ -410,7 +429,7 @@ export default class PDFApplication {
     }
 
     try {
-      const outline = await this.pdfDocument.getOutline();
+      let outline = await this.pdfDocument.getOutline();
       Object.assign(this.outline, _dfs(outline as TOCNode[]));
     } catch (error) {
       console.log(error);
@@ -426,21 +445,21 @@ export default class PDFApplication {
     let pageNumber = 1;
 
     if (node.ref === undefined) {
-      const dest = await this.pdfDocument.getDestination(node.dest as string);
+      let dest = await this.pdfDocument.getDestination(node.dest as string);
       if (!!dest && dest?.length > 0) {
-        const ref = dest[0];
-        const pageIndex = await this.pdfDocument.getPageIndex(ref);
+        let ref = dest[0];
+        let pageIndex = await this.pdfDocument.getPageIndex(ref);
         pageNumber = pageIndex + 1;
       }
     } else {
-      const pageIndex = await this.pdfDocument.getPageIndex(node.ref);
+      let pageIndex = await this.pdfDocument.getPageIndex(node.ref);
       pageNumber = pageIndex + 1;
     }
     return pageNumber;
   }
 
   async clickTOC(node: TOCNode) {
-    const pageNumber = await this.getTOCPage(node);
+    let pageNumber = await this.getTOCPage(node);
     this.changePageNumber(pageNumber);
   }
 
@@ -456,8 +475,8 @@ export default class PDFApplication {
     if (this.pdfFindController.selected === undefined) return;
     if (this.pdfFindController.pageMatches === undefined) return;
 
-    const currentMatch = this.pdfFindController.selected;
-    const matches = this.pdfFindController.pageMatches;
+    let currentMatch = this.pdfFindController.selected;
+    let matches = this.pdfFindController.pageMatches;
 
     let pageIdx = currentMatch.pageIdx;
     let newMatchIdx = currentMatch.matchIdx + delta;
@@ -465,7 +484,7 @@ export default class PDFApplication {
 
     while (newMatchIdx < 0 || newMatchIdx > matchIdxList.length - 1) {
       pageIdx += delta;
-      const mod = pageIdx % this.state.pagesCount; // mod can be negative
+      let mod = pageIdx % this.state.pagesCount; // mod can be negative
       pageIdx = mod >= 0 ? mod : this.state.pagesCount - Math.abs(mod);
       // if next: select first match (delta-1 = 0) in the next available pages
       // if prev: select last match (length-1) in the previous available pages
@@ -482,13 +501,13 @@ export default class PDFApplication {
     this.changePageNumber(pageIdx + 1);
     this.eventBus.dispatch("updatetextlayermatches", {
       source: this.pdfFindController,
-      pageIndex: pageIdx
+      pageIndex: pageIdx,
     });
   }
 
   scrollAnnotIntoView(annotId: string) {
     if (!!!annotId) return;
-    const annot = this.annotStore.getById(annotId) as Annotation;
+    let annot = this.annotStore.getById(annotId) as Annotation;
     // change number first in case the dom is not rendered
     this.changePageNumber(annot.data.pageNumber);
     nextTick(() => {

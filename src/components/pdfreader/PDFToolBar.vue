@@ -1,5 +1,11 @@
 <template>
-  <q-toolbar style="min-height: unset; height: 36px; background: #222222">
+  <q-toolbar
+    style="
+      min-height: unset;
+      height: 36px;
+      background: var(--color-pdfreader-toolbar-bkgd);
+    "
+  >
     <!-- navigation -->
     <div data-cy="page-control">
       <input
@@ -24,9 +30,11 @@
       :currentScale="pdfApp.state.currentScale"
       :spreadMode="pdfApp.state.spreadMode"
       :isFullscreen="isFullscreen"
+      :darkMode="pdfApp.state.darkMode"
       @changeScale="(params) => pdfApp.changeScale(params)"
       @changeSpreadMode="(mode) => pdfApp.changeSpreadMode(mode)"
       @toggleFullscreen="toggleFullscreen"
+      @toggleDarkMode="toggleDarkMode"
     />
 
     <q-space />
@@ -43,41 +51,41 @@
         {
           value: AnnotationType.CURSOR,
           icon: 'bi-cursor-text',
-          slot: AnnotationType.CURSOR
+          slot: AnnotationType.CURSOR,
         },
         {
           value: AnnotationType.HIGHLIGHT,
           icon: 'border_color',
-          slot: AnnotationType.HIGHLIGHT
+          slot: AnnotationType.HIGHLIGHT,
         },
         {
           value: AnnotationType.UNDERLINE,
           icon: 'format_underlined',
-          slot: AnnotationType.UNDERLINE
+          slot: AnnotationType.UNDERLINE,
         },
         {
           value: AnnotationType.STRIKEOUT,
           icon: 'format_strikethrough',
-          slot: AnnotationType.STRIKEOUT
+          slot: AnnotationType.STRIKEOUT,
         },
         {
           value: AnnotationType.RECTANGLE,
           icon: 'rectangle',
-          slot: AnnotationType.RECTANGLE
+          slot: AnnotationType.RECTANGLE,
         },
         {
           value: AnnotationType.COMMENT,
           icon: 'comment',
-          slot: AnnotationType.COMMENT
+          slot: AnnotationType.COMMENT,
         },
         {
           value: AnnotationType.INK,
-          slot: AnnotationType.INK
+          slot: AnnotationType.INK,
         },
         {
           value: AnnotationType.ERASER,
-          slot: 'eraser'
-        }
+          slot: 'eraser',
+        },
       ]"
     >
       <template v-slot:cursor>
@@ -184,7 +192,7 @@ const $q = useQuasar();
  * Props, emits, data
  */
 const props = defineProps({
-  showRightMenu: { type: Boolean, required: true }
+  showRightMenu: { type: Boolean, required: true },
 });
 const emit = defineEmits(["update:showRightMenu"]);
 
@@ -222,5 +230,9 @@ async function toggleFullscreen() {
   isFullscreen.value = !isFullscreen.value;
 }
 
-defineExpose({ changePage });
+async function toggleDarkMode() {
+  pdfApp.changeViewMode(!pdfApp.state.darkMode);
+}
+
+defineExpose({ changePage, toggleDarkMode });
 </script>

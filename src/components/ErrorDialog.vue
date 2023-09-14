@@ -38,7 +38,7 @@
 <script setup lang="ts">
 const props = defineProps({
   show: { type: Boolean, required: true },
-  error: { type: Error, required: false }
+  error: { type: Error, required: false },
 });
 const emit = defineEmits(["update:show"]);
 

@@ -25,7 +25,7 @@
           :model-value="eraserType"
           :options="[
             { label: t('strok-eraser'), value: EraserType.STROKE },
-            { label: t('pixel-eraser'), value: EraserType.PIXEL }
+            { label: t('pixel-eraser'), value: EraserType.PIXEL },
           ]"
           @update:model-value="(type) => $emit('update:eraserType', type)"
           data-cy="btn-toggle"
@@ -69,14 +69,14 @@ const { t } = useI18n({ useScope: "global" });
 const props = defineProps({
   eraserType: {
     type: String as PropType<EraserType>,
-    required: true
+    required: true,
   },
-  eraserThickness: { type: Number, required: true }
+  eraserThickness: { type: Number, required: true },
 });
 const emit = defineEmits([
   "update:eraserType",
   "update:eraserThickness",
-  "setEraserTool"
+  "setEraserTool",
 ]);
 
 const thickness = computed({
@@ -87,6 +87,6 @@ const thickness = computed({
     if (value > 30) value = 30;
     else if (value < 5) value = 5;
     emit("update:eraserThickness", value);
-  }
+  },
 });
 </script>

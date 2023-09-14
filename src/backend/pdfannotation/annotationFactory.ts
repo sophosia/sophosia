@@ -5,7 +5,7 @@ import {
   Strikeout,
   Rectangle,
   Comment,
-  Ink
+  Ink,
 } from "./annotations";
 import { AnnotationType, AnnotationData, Rect } from "../database";
 import { uid } from "quasar";
@@ -26,9 +26,9 @@ export default class AnnotationFactory {
    * @returns selection rectangles
    */
   getSelectionRects(): Rect[] {
-    const selection = window.getSelection();
+    let selection = window.getSelection();
     if (!selection || selection.isCollapsed) return [];
-    const range = selection.getRangeAt(0);
+    let range = selection.getRangeAt(0);
     // convert DOMRectList to Array since we need filter function
     let rects = Array.from(range.getClientRects());
 
@@ -62,15 +62,15 @@ export default class AnnotationFactory {
     });
 
     // join rectangles
-    const newRects = [] as Rect[];
+    let newRects = [] as Rect[];
     let len = 0;
-    for (const rect of rects) {
+    for (let rect of rects) {
       if (len == 0) {
         newRects.push({
           top: rect.top,
           left: rect.left,
           width: rect.width,
-          height: rect.height
+          height: rect.height,
         });
         len++;
       } else if (
@@ -83,7 +83,7 @@ export default class AnnotationFactory {
           top: rect.top,
           left: rect.left,
           width: rect.width,
-          height: rect.height
+          height: rect.height,
         });
         len++;
       }
@@ -93,25 +93,25 @@ export default class AnnotationFactory {
   }
 
   offsetTransform(rect: Rect, canvasWrapper: HTMLElement) {
-    const ost = this.computePageOffset(canvasWrapper);
-    const left_1 = rect.left - ost.left;
-    const top_1 = rect.top - ost.top;
+    let ost = this.computePageOffset(canvasWrapper);
+    let left_1 = rect.left - ost.left;
+    let top_1 = rect.top - ost.top;
     // calculate the rectt on UI (using percentage since it's invariant under scale change)
     return {
       left: (left_1 / ost.width) * 100,
       top: (top_1 / ost.height) * 100,
       width: (rect.width / ost.width) * 100,
-      height: (rect.height / ost.height) * 100
+      height: (rect.height / ost.height) * 100,
     };
   }
 
   computePageOffset(canvasWrapper: HTMLElement): Rect {
-    const rect = canvasWrapper.getBoundingClientRect();
+    let rect = canvasWrapper.getBoundingClientRect();
     return {
       top: rect.top,
       left: rect.left,
       width: rect.width,
-      height: rect.height
+      height: rect.height,
     } as Rect;
   }
 
@@ -160,13 +160,13 @@ export default class AnnotationFactory {
     color: string,
     e: { pageNumber: number; source: PDFPageView }
   ) {
-    const rects = this.getSelectionRects();
+    let rects = this.getSelectionRects();
     if (rects.length === 0) return;
-    const canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
-    for (const [i, rect] of rects.entries())
+    let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    for (let [i, rect] of rects.entries())
       rects[i] = this.offsetTransform(rect, canvasWrapper);
 
-    const annotData = {
+    let annotData = {
       _id: uid(),
       _rev: "",
       timestampAdded: Date.now(),
@@ -177,10 +177,8 @@ export default class AnnotationFactory {
       pageNumber: e.pageNumber,
       projectId: this.projectId,
       dataType: "pdfAnnotation",
-      content: ""
+      content: "",
     } as AnnotationData;
-
-    console.log("annotData", annotData);
 
     return this.build(annotData);
   }

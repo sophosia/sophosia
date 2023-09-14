@@ -40,7 +40,7 @@ import {
   defineEmits,
   nextTick,
   getCurrentInstance,
-  watch
+  watch,
 } from "vue";
 import {
   ComponentContainer,
@@ -55,7 +55,7 @@ import {
   ResolvedLayoutConfig,
   ComponentItem,
   RowOrColumn,
-  Stack
+  Stack,
 } from "golden-layout";
 import GLComponent from "src/pages/GLComponent.vue";
 
@@ -63,12 +63,12 @@ import GLComponent from "src/pages/GLComponent.vue";
  * Props and Emits
  *******************/
 const props = defineProps({
-  currentPageId: String
+  currentPageId: String,
 });
 const emit = defineEmits([
   "update:currentPageId",
   "layoutchanged",
-  "itemdestroyed"
+  "itemdestroyed",
 ]);
 
 /*******************
@@ -267,7 +267,7 @@ const addGLDragSource = async (
       type: "component",
       title,
       componentType,
-      componentState
+      componentState,
     };
   });
 };
@@ -360,7 +360,7 @@ onMounted(() => {
 
     MapComponents.value.set(refId, {
       container: container,
-      glc: (component as any)[0]
+      glc: (component as any)[0],
     });
 
     container.virtualRectingRequiredEvent = (container, width, height) =>
@@ -382,7 +382,7 @@ onMounted(() => {
 
     return {
       component,
-      virtual: true
+      virtual: true,
     };
   };
 
@@ -456,6 +456,6 @@ defineExpose({
   addGLDragSource,
   resize,
   initialized,
-  AllComponents
+  AllComponents,
 });
 </script>

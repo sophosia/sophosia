@@ -7,13 +7,13 @@ import {
   onBeforeUnmount,
   onMounted,
   onUnmounted,
-  ref
+  ref,
 } from "vue";
 import { ComponentName } from "src/backend/database";
 import pluginManager from "src/backend/plugin";
 
 const props = defineProps({
-  uid: { type: String, required: true }
+  uid: { type: String, required: true },
 });
 const root = ref<HTMLElement | null>(null);
 const views = ref(pluginManager.getViews(ComponentName.LEFT_MENU));

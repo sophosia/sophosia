@@ -42,7 +42,7 @@ export default class AnnotationStore {
    * @param props
    */
   async update(annotId: string, props: AnnotationData) {
-    const annot = this.getById(annotId);
+    let annot = this.getById(annotId);
     if (annot) await annot.update(props);
   }
 
@@ -51,9 +51,9 @@ export default class AnnotationStore {
    * @param annotId
    */
   async delete(annotId: string) {
-    const ind = this.annots.findIndex((annot) => annot.data._id === annotId);
+    let ind = this.annots.findIndex((annot) => annot.data._id === annotId);
     if (ind > -1) {
-      const annot = this.annots[ind];
+      let annot = this.annots[ind];
       await annot.delete();
       this.annots.splice(ind, 1);
     }
@@ -66,27 +66,11 @@ export default class AnnotationStore {
   async loadFromDB() {
     try {
       // get all annotations of the currentry {
-      const annotDatas = (
+      let annotDatas = (
         await db.find({
-          selector: { dataType: "pdfAnnotation", projectId: this.projectId }
+          selector: { dataType: "pdfAnnotation", projectId: this.projectId },
         })
       ).docs as AnnotationData[];
-
-      // TODO: remove this few more versions later
-      let flag = false;
-      for (const annotData of annotDatas)
-        if (!annotData.timestampAdded) {
-          annotData.timestampAdded = Date.now();
-          annotData.timestampModified = Date.now();
-          flag = true;
-        }
-      if (flag) {
-        const responses = await db.bulkDocs(annotDatas);
-        for (const i in responses) {
-          const rev = responses[i].rev;
-          if (rev) annotDatas[i]._rev = rev;
-        }
-      }
 
       return annotDatas;
     } catch (err) {
@@ -113,7 +97,7 @@ export default class AnnotationStore {
 
   setActive(annotId: string) {
     this.selectedId = annotId;
-    for (const annot of this.annots) {
+    for (let annot of this.annots) {
       annot.setActive(false);
       if (annot.data._id === annotId) annot.setActive(true);
     }

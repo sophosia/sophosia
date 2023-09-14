@@ -352,7 +352,7 @@ const title = computed({
     if (!meta.value) return;
     meta.value.title = newTitle;
     meta.value.label = newTitle;
-  }
+  },
 });
 const year = computed({
   get() {
@@ -363,11 +363,11 @@ const year = computed({
     if (!meta.value) return;
     if (!meta.value.issued) {
       meta.value.issued = {
-        "date-parts": [[1, 1]] // initialize it
+        "date-parts": [[1, 1]], // initialize it
       };
     }
     meta.value.issued["date-parts"][0][0] = parseInt(newYear);
-  }
+  },
 });
 const authors = computed(() => {
   let authors = meta.value?.author;
@@ -494,7 +494,7 @@ async function getReferences() {
   for (let [i, ref] of meta.value.reference.entries()) {
     try {
       getMeta(ref.DOI || ref.key, "bibliography", {
-        format: "html"
+        format: "html",
       }).then((text) => {
         references.value[i].link = text.match(
           /(https[a-zA-Z0-9:\.\/\-\_]+)/g

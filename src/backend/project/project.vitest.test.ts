@@ -6,7 +6,7 @@ import {
   deleteProject,
   updateProject,
   getProject,
-  getProjects
+  getProjects,
 } from "src/backend/project/project";
 import { uid } from "quasar";
 
