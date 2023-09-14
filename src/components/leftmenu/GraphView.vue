@@ -48,7 +48,7 @@ import {
   Note,
   NoteType,
   Project,
-  db
+  db,
 } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
@@ -62,7 +62,7 @@ cytoscape.use(cola);
 
 const props = defineProps({
   itemId: { type: String, required: true },
-  height: { type: Number, required: true }
+  height: { type: Number, required: true },
 });
 
 const stateStore = useStateStore();
@@ -150,26 +150,26 @@ async function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
           },
           "background-color": function (el) {
             return el.data("bg");
-          }
+          },
         },
         css: {
           "text-valign": "top",
-          "text-halign": "center"
-        }
+          "text-halign": "center",
+        },
       },
       {
         selector: ":parent",
         css: {
-          "background-color": "grey"
-        }
+          "background-color": "grey",
+        },
       },
       {
         selector: "edge",
         css: {
           "target-arrow-shape": "triangle",
-          "curve-style": "straight"
-        }
-      }
+          "curve-style": "straight",
+        },
+      },
     ] as cytoscape.Stylesheet[],
 
     elements: elements,
@@ -178,8 +178,8 @@ async function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
       name: "cola" as any, // cytoscape's type is not good
       animate: false,
       avoidOverlap: true,
-      nodeDimensionsIncludeLabels: true
-    }
+      nodeDimensionsIncludeLabels: true,
+    },
   });
 
   cy.on("tap", "node", function () {

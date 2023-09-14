@@ -47,9 +47,9 @@ export async function getLinks(item: Project | Note) {
           id: item._id,
           label: item.label,
           type: item.dataType,
-          parent: item.projectId
-        }
-      }
+          parent: item.projectId,
+        },
+      },
     ] as NodeUI[];
     const edges = [] as EdgeUI[];
     for (const row of result.rows) {
@@ -64,8 +64,8 @@ export async function getLinks(item: Project | Note) {
       edges.push({
         data: {
           source: row.key === "forward" ? item._id : row.id,
-          target: row.key === "forward" ? row.id : item._id
-        }
+          target: row.key === "forward" ? row.id : item._id,
+        },
       });
     }
 
@@ -78,8 +78,8 @@ export async function getLinks(item: Project | Note) {
           edges.push({
             data: {
               source: item._id,
-              target: link.id
-            }
+              target: link.id,
+            },
           });
         }
       }

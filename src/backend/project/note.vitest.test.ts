@@ -6,7 +6,7 @@ import {
   deleteNote,
   updateNote,
   getNote,
-  getNotes
+  getNotes,
 } from "src/backend/project/note";
 
 describe("note.ts", () => {

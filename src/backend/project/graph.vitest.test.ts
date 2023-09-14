@@ -28,7 +28,7 @@ describe("graph.ts", () => {
     note1.links.push({
       id: note2._id,
       label: note2.label,
-      type: undefined
+      type: undefined,
     });
     await addNote(note1);
 
@@ -38,7 +38,7 @@ describe("graph.ts", () => {
     note0.links.push({
       id: note1._id,
       label: note1.label,
-      type: undefined
+      type: undefined,
     });
     await addNote(note0);
   });

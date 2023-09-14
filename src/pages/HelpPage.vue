@@ -22,14 +22,14 @@ const stateStore = useStateStore();
 const props = defineProps({
   itemId: { type: String, required: true },
   visible: { type: Boolean, reqruied: true },
-  data: { type: Object, requried: false }
+  data: { type: Object, requried: false },
 });
 const vditorHelp = ref<HTMLElement | null>(null);
 const editor = ref<Vditor | null>(null);
 const toolbar = [
   {
     name: "outline",
-    tipPosition: "s"
+    tipPosition: "s",
   },
   "|",
   { name: "headings", tipPosition: "s" },
@@ -41,7 +41,7 @@ const toolbar = [
   { name: "upload", tipPosition: "s", tip: t("upload-image") },
   { name: "export", tipPosition: "s" },
   "|",
-  { name: "help", tipPosition: "s" }
+  { name: "help", tipPosition: "s" },
 ];
 
 watch(
@@ -65,7 +65,7 @@ onMounted(() => {
     height: "100%",
     mode: "ir",
     toolbarConfig: {
-      pin: true
+      pin: true,
     },
     toolbar: toolbar,
     lang: locale.value as keyof II18n,
@@ -73,23 +73,23 @@ onMounted(() => {
     preview: {
       math: {
         // able to use digit in inline math
-        inlineDigit: true
+        inlineDigit: true,
       },
       hljs: {
         // enable line number in code block
-        lineNumber: true
-      }
+        lineNumber: true,
+      },
     },
     placeholder: t("live-markdown-editor-latex-supported"),
     cache: {
-      enable: false
+      enable: false,
     },
     after: () => {
       if (!editor.value) return;
       editor.value.setValue(locale.value === "zh_CN" ? text_zh_CN : text_en_US);
       setTheme(stateStore.settings.theme);
       changeLinks();
-    }
+    },
   });
 });
 

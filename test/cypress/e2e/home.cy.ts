@@ -4,14 +4,14 @@
 // ** This file is an example of how to write Cypress tests, you can safely delete it **
 
 // This test will pass when run against a clean Quasar project
-describe('Landing', () => {
+describe("Landing", () => {
   beforeEach(() => {
-    cy.visit('/');
+    cy.visit("/");
   });
-  it('.should() - assert that <title> is correct', () => {
-    cy.title().should('include', 'Quasar');
-    cy.get('li').first().click();
-    cy.contains('Clicks on todos: 1').should('exist');
+  it(".should() - assert that <title> is correct", () => {
+    cy.title().should("include", "Quasar");
+    cy.get("li").first().click();
+    cy.contains("Clicks on todos: 1").should("exist");
   });
 });
 
@@ -41,8 +41,6 @@ describe('Landing', () => {
 //   });
 // });
 
- 
 // Workaround for Cypress AE + TS + Vite
 // See: https://github.com/quasarframework/quasar-testing/issues/262#issuecomment-1154127497
 export {};
-

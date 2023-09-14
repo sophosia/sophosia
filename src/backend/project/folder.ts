@@ -18,8 +18,8 @@ async function getFolderTree(): Promise<Folder[] | undefined> {
   try {
     const result = await db.find({
       selector: {
-        dataType: "folder"
-      }
+        dataType: "folder",
+      },
     });
     const docs = result.docs;
 
@@ -34,7 +34,7 @@ async function getFolderTree(): Promise<Folder[] | undefined> {
         label: "Library",
         icon: "home",
         children: [],
-        dataType: "folder"
+        dataType: "folder",
       } as Folder;
       await db.put(library);
       return [library];
@@ -96,7 +96,7 @@ async function addFolder(parentId: string) {
       label: "New Folder",
       icon: "folder",
       children: [],
-      dataType: "folder"
+      dataType: "folder",
     } as Folder;
     await db.put(folder);
 
@@ -138,7 +138,7 @@ async function deleteFolder(folderId: string) {
   try {
     // delete from children of parent folder
     let result = await db.find({
-      selector: { children: { $in: [folderId] } }
+      selector: { children: { $in: [folderId] } },
     });
     const parentNode = result.docs[0] as Folder;
     parentNode.children = parentNode.children.filter((id) => id != folderId);
@@ -147,8 +147,8 @@ async function deleteFolder(folderId: string) {
     // delete subfolders using dfs
     result = await db.find({
       selector: {
-        dataType: "folder"
-      }
+        dataType: "folder",
+      },
     });
     const docs = result.docs;
 
@@ -179,8 +179,8 @@ async function getParentFolder(folderId: string): Promise<Folder | undefined> {
     const result = await db.find({
       selector: {
         dataType: "folder",
-        children: { $in: [folderId] }
-      }
+        children: { $in: [folderId] },
+      },
     });
     // the parent folder is unique
     return result.docs[0] as Folder;
@@ -202,14 +202,14 @@ async function moveFolderInto(dragFolderId: string, dropFolderId: string) {
       (id) => id != dragFolderId
     );
     await updateFolder(dragParentFolder._id, {
-      children: dragParentFolder.children
+      children: dragParentFolder.children,
     } as Folder);
 
     // add to dropFolder after the dragParentFolder is modified
     const dropFolder: Folder = await db.get(dropFolderId);
     dropFolder.children.push(dragFolderId);
     await updateFolder(dropFolderId, {
-      children: dropFolder.children
+      children: dropFolder.children,
     } as Folder);
   } catch (error) {
     console.log(error);
@@ -223,5 +223,5 @@ export {
   updateFolder,
   deleteFolder,
   moveFolderInto,
-  getParentFolder
+  getParentFolder,
 };
