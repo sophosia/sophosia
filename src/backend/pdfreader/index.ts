@@ -256,9 +256,8 @@ export default class PDFApplication {
 
   async loadState(projectId: string): Promise<PDFState | undefined> {
     try {
-      let result = await db.find({
-        selector: { dataType: "pdfState", projectId: projectId },
-      });
+      let docs = (await db.getDocs("pdfState")) as PDFState[];
+      let pdfState = docs.find((state) => state.projectId === projectId);
 
       // default state
       let state = {
@@ -279,7 +278,7 @@ export default class PDFApplication {
         scrollTop: 0,
       } as PDFState;
       // doing this we can make sure if anything missing from db, the default values are there
-      Object.assign(state, result.docs[0] as PDFState);
+      Object.assign(state, pdfState);
       Object.assign(this.state, state);
       return state;
     } catch (error) {

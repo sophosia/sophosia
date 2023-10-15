@@ -15,27 +15,32 @@
     - [x] model
     - [x] folder
     - [x] project
-    - [ ] meta
-    - [ ] note
-    - [ ] annotation
     - [x] layout
     - [x] appstate
-    - [ ] pdfstate
+    - [x] annotation
+    - [x] pdfstate
+    - [ ] note
+    - [ ] graph
   - [ ] replace db.find with db.getDocs(dataType) and some filter functions
     - [x] folder
     - [x] project
-    - [ ] meta
-    - [ ] note
-    - [ ] annotation
     - [x] layout
     - [x] appstate
-    - [ ] pdfstate
+    - [x] annotation
+    - [x] pdfstate
+    - [ ] note
+    - [ ] graph
   - [ ] replace uid() by nanoid(10)
     - [x] folder
     - [x] project
+    - [x] annotation
+    - [x] pdfstate
     - [ ] note
-    - [ ] annotation
-    - [ ] pdfstate
+    - [ ] graph
+  - [ ] remove pouchdb
+    - [ ] remove module
+    - [ ] remove boot file
+    - [ ] remove browserify events and stuff
 
 - [ ] note
   - the internal links will use wikilinks

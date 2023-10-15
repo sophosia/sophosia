@@ -65,12 +65,11 @@ export default class AnnotationStore {
    */
   async loadFromDB() {
     try {
-      // get all annotations of the currentry {
-      let annotDatas = (
-        await db.find({
-          selector: { dataType: "pdfAnnotation", projectId: this.projectId },
-        })
-      ).docs as AnnotationData[];
+      // get all annotations of the current project
+      let annotDatas = (await db.getDocs("pdfAnnotation")) as AnnotationData[];
+      annotDatas = annotDatas.filter(
+        (annotData) => annotData.projectId === this.projectId
+      );
 
       return annotDatas;
     } catch (err) {

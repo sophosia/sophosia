@@ -79,7 +79,8 @@ import PeekCard from "./PeekCard.vue";
 import { getProject } from "src/backend/project/project";
 import PDFApplication from "src/backend/pdfreader";
 import { Ink } from "src/backend/pdfannotation/annotations";
-import { QSplitter, throttle, uid } from "quasar";
+import { QSplitter, throttle } from "quasar";
+import { nanoid } from "nanoid";
 import { Annotation } from "src/backend/pdfannotation/annotations";
 
 /**********************************
@@ -309,8 +310,7 @@ onMounted(async () => {
           if (!inkAnnot) {
             // create canvas if there is none
             let annotData = {
-              _id: uid(),
-              _rev: "",
+              _id: nanoid(10),
               timestampAdded: Date.now(),
               timestampModified: Date.now(),
               dataType: "pdfAnnotation",
@@ -417,8 +417,7 @@ onMounted(async () => {
               );
 
               let annotData = {
-                _id: uid(),
-                _rev: "",
+                _id: nanoid(10),
                 timestampAdded: Date.now(),
                 timestampModified: Date.now(),
                 type: AnnotationType.RECTANGLE,
@@ -457,8 +456,7 @@ onMounted(async () => {
                 canvasWrapper
               );
               let annotData = {
-                _id: uid(),
-                _rev: "",
+                _id: nanoid(10),
                 timestampAdded: Date.now(),
                 timestampModified: Date.now(),
                 type: AnnotationType.COMMENT,
