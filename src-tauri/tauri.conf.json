@@ -99,7 +99,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "app",
+      "identifier": "sophosia",
       "longDescription": "",
       "macOS": {
         "entitlements": null,

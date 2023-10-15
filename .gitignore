@@ -53,3 +53,6 @@ coverage/
 
 .nyc_output
 coverage/
+
+testing/
+test-storage/

@@ -35,6 +35,7 @@ import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { db } from "src/backend/database";
 const { locale } = useI18n({ useScope: "global" });
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -43,6 +44,7 @@ const showWelcomeCarousel = ref(true);
 const loading = ref(true);
 
 onMounted(async () => {
+  await db.getStoragePath();
   // show progress bar during appState retrival
   setTimeout(() => {
     loading.value = false;
@@ -52,7 +54,9 @@ onMounted(async () => {
   projectStore.loadOpenedProjects(state.openedProjectIds);
 
   // if there is no path, show welcome carousel
-  if (!stateStore.settings.storagePath) {
+  // if (!stateStore.settings.storagePath) {
+  //   showWelcomeCarousel.value = true;
+  if (!(await db.getStoragePath())) {
     showWelcomeCarousel.value = true;
   } else {
     showWelcomeCarousel.value = false;

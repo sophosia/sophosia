@@ -54,8 +54,10 @@ const updateAppState = debounce(_updateAppState, 200);
 
 async function getLayout(): Promise<Layout> {
   try {
+    console.log("getting layout!!!!!!!!");
     return (await db.get("layout")) as Layout;
   } catch (error) {
+    console.log("getting layout error!!!!!!!!");
     // cannot get layout
     let layout = {
       _id: "layout",

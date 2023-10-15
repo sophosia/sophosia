@@ -1,109 +1,140 @@
-import PouchDB from "pouchdb";
-import Find from "pouchdb-find";
-import { generateCiteKey } from "../project/meta";
-import { Project } from "./models";
-PouchDB.plugin(Find);
+import {
+  BaseDirectory,
+  createDir,
+  exists,
+  readDir,
+  readTextFile,
+  removeFile,
+  writeTextFile,
+} from "@tauri-apps/api/fs";
+import { appConfigDir, join } from "@tauri-apps/api/path";
+import { nanoid } from "nanoid";
 
-// for details of compacting database, see https://pouchdb.com/guides/compact-and-destroy.html
-const db = new PouchDB("mydb", { auto_compaction: true, revs_limit: 10 });
-
-db.createIndex({
-  index: {
-    fields: [
-      "dataType",
-      "timestampAdded",
-      "projectId",
-      "pageNumber",
-      "folderIds",
-      "children",
-      "source",
-      "targets",
-      "favorite",
-    ],
-  },
-});
-
-// TODO: remove this few more versions later
-// add timestamps to data
-// remove all edge data
-// add citation-key to project
-db.allDocs({ include_docs: true })
-  .then((result) => {
-    let docs = [];
-    for (let row of result.rows as { doc: any }[]) {
-      let flag = false;
-      let doc = row.doc as {
-        dataType: string;
-        timestampAdded?: number;
-        timestampModified?: number;
-        _deleted?: boolean;
-      };
-      switch (doc.dataType) {
-        case "project":
-          if (!(doc as Project)["citation-key"])
-            (doc as Project)["citation-key"] = generateCiteKey(doc as Project);
-          flag = true;
-        case "folder":
-        case "note":
-        case "pdfAnnotation":
-          if (!doc.timestampAdded) {
-            doc.timestampAdded = Date.now();
-            doc.timestampModified = Date.now();
-            flag = true;
-          }
-          break;
-        case "edge":
-          doc._deleted = true;
-          flag = true;
-        default:
-          break;
-      }
-      if (flag) docs.push(doc);
-    }
-    db.bulkDocs(docs);
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-
-// for debug use
-if ((process.env.DEV || process.env.DEBUGGING) && !process.env.TEST) {
-  const remotedb = new PouchDB("http://localhost:3000/mydb");
-  PouchDB.sync("mydb", "http://localhost:3000/mydb", {
-    live: true,
-  })
-    .on("change", function (info) {
-      // handle change
-      console.log(info);
-    })
-    .on("paused", function (err) {
-      // replication paused (e.g. replication up to date, user went offline)
-      console.log(err);
-    })
-    .on("active", function () {
-      // replicate resumed (e.g. new changes replicating, user went back online)
-      console.log("active");
-    })
-    .on("denied", function (err) {
-      // a document failed to replicate (e.g. due to permissions)
-      console.log(err);
-    })
-    .on("complete", function (info) {
-      // handle complete
-      console.log(info);
-    })
-    .on("error", function (err) {
-      // handle error
-      console.log(err);
-    });
-
-  function destroyDB() {
-    remotedb.destroy();
-    db.destroy();
-  }
-  (window as any).db = db;
-  (window as any).destroyDB = destroyDB;
+interface Doc extends Object {
+  _id: string;
+  dataType: string;
 }
 
-export { db };
+interface Response {
+  id: string;
+  success: boolean;
+  doc: Doc;
+}
+
+export class JsonDB {
+  storagePath: string = "";
+
+  async get(id: string): Promise<Doc> {
+    if (!this.storagePath) throw Error("storagePath not set");
+    for (let folder of [
+      "appState",
+      "layout",
+      "project",
+      "note",
+      "folder",
+      "pdfAnnotation",
+      "pdfState",
+    ]) {
+      let path = await join(
+        this.storagePath,
+        ".sophosia",
+        folder,
+        `${id}.json`
+      );
+      if (await exists(path)) return JSON.parse(await readTextFile(path));
+      else throw Error(`data with id=${id} not found`);
+    }
+  }
+
+  async put(doc: Doc) {
+    if (!this.storagePath) throw Error("storagePath not set");
+    let path = await join(
+      this.storagePath,
+      ".sophosia",
+      doc.dataType,
+      `${doc._id}.json`
+    );
+    await writeTextFile(path, JSON.stringify(doc));
+  }
+
+  async post(doc: { dataType: string }) {
+    if (!this.storagePath) throw Error("storagePath not set");
+    (doc as Doc)._id = nanoid(10);
+    await this.put(doc as Doc);
+  }
+
+  async remove(doc: Doc) {
+    if (!this.storagePath) throw Error("storagePath not set");
+    let path = await join(
+      this.storagePath,
+      ".sophosia",
+      doc.dataType,
+      `${doc._id}.json`
+    );
+    await removeFile(path);
+  }
+
+  async getDocs(dataType: string): Promise<Doc[]> {
+    if (!this.storagePath) throw Error("storagePath not set");
+    let dir = await join(this.storagePath, ".sophosia", dataType);
+    let files = await readDir(dir);
+    let promises = files.map(async (file) => {
+      try {
+        return JSON.parse(await readTextFile(file.path));
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    return await Promise.all(promises);
+  }
+
+  async getStoragePath(): Promise<string> {
+    try {
+      let config = JSON.parse(
+        await readTextFile("config.json", { dir: BaseDirectory.AppConfig })
+      );
+      this.storagePath = config.storagePath;
+      return config.storagePath as string;
+    } catch (error) {
+      console.log(error);
+      return "";
+    }
+  }
+
+  async setStoragePath(path: string) {
+    try {
+      if (!(await exists(await appConfigDir())))
+        await createDir(await appConfigDir());
+      await writeTextFile(
+        "config.json",
+        JSON.stringify({ storagePath: path }),
+        { dir: BaseDirectory.AppConfig }
+      );
+      this.storagePath = path;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async createHiddenFolders() {
+    if (!this.storagePath) throw Error("storagePath not set");
+    let sophosia = await join(this.storagePath, ".sophosia");
+    await createDir(sophosia);
+    for (let folder of [
+      "appState",
+      "layout",
+      "project",
+      "note",
+      "folder",
+      "pdfAnnotation",
+      "pdfState",
+    ])
+      await createDir(await join(sophosia, folder));
+  }
+}
+
+export const db = new JsonDB();
 export * from "./models";
+
+window.db = db;
