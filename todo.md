@@ -11,14 +11,33 @@
     - [x] get, remove, put, post
     - [x] save/load appState.json, layout.json to/from .sophosia
     - [x] save/load other json files to/from .sophosia/dataType
+  - [x] remove \_rev
+    - [x] model
+    - [x] folder
+    - [x] project
+    - [ ] meta
+    - [ ] note
+    - [ ] annotation
+    - [x] layout
+    - [x] appstate
+    - [ ] pdfstate
   - [ ] replace db.find with db.getDocs(dataType) and some filter functions
-  - [ ] remove \_rev from model
+    - [x] folder
+    - [x] project
+    - [ ] meta
+    - [ ] note
+    - [ ] annotation
+    - [x] layout
+    - [x] appstate
+    - [ ] pdfstate
+  - [ ] replace uid() by nanoid(10)
+    - [x] folder
+    - [x] project
+    - [ ] note
+    - [ ] annotation
+    - [ ] pdfstate
 
 - [ ] note
   - the internal links will use wikilinks
   - no native support of wikilinks in vditor, need to render wikilinks after vditor is finished rendering.
   - can use regex to find all texts like this [[*]], then render them as link
-
-To better use it with obsidian, we need
-
-- [ ] short uid using nanoid

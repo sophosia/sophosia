@@ -1,4 +1,4 @@
-import { uid } from "quasar";
+import { nanoid } from "nanoid";
 import { db, Folder } from "../database";
 import { sortTree } from "./utils";
 
@@ -16,19 +16,13 @@ async function getFolder(folderId: string): Promise<Folder | undefined> {
  */
 async function getFolderTree(): Promise<Folder[] | undefined> {
   try {
-    const result = await db.find({
-      selector: {
-        dataType: "folder",
-      },
-    });
-    const docs = result.docs;
+    const docs = await db.getDocs("folder");
 
     // no folders in db yet
     if (docs.length == 0) {
       // create library folder for user if there is none
       const library = {
         _id: "library",
-        _rev: "",
         timestampAdded: Date.now(),
         timestampModified: Date.now(),
         label: "Library",
@@ -42,18 +36,14 @@ async function getFolderTree(): Promise<Folder[] | undefined> {
 
     // TODO: remove this few more versions later
     let flag = false;
-    for (const folder of result.docs as Folder[])
+    for (const folder of docs as Folder[])
       if (!folder.timestampAdded) {
         folder.timestampAdded = Date.now();
         folder.timestampModified = Date.now();
         flag = true;
       }
     if (flag) {
-      const responses = await db.bulkDocs(result.docs);
-      for (const i in responses) {
-        const rev = responses[i].rev;
-        if (rev) result.docs[i]._rev = rev;
-      }
+      await db.bulkDocs(docs);
     }
 
     // create a dict for later use
@@ -89,8 +79,7 @@ async function addFolder(parentId: string) {
   try {
     // add to database
     const folder = {
-      _id: uid(),
-      _rev: "",
+      _id: nanoid(10),
       timestampAdded: Date.now(),
       timestampModified: Date.now(),
       label: "New Folder",
@@ -101,7 +90,7 @@ async function addFolder(parentId: string) {
     await db.put(folder);
 
     // push to children of parent Node
-    const parentNode: Folder = await db.get(parentId);
+    const parentNode = (await db.get(parentId)) as Folder;
     parentNode.children.push(folder._id);
     await updateFolder(parentId, { children: parentNode.children } as Folder);
 
@@ -118,12 +107,10 @@ async function addFolder(parentId: string) {
  */
 async function updateFolder(folderId: string, props: Folder) {
   try {
-    const folder: Folder = await db.get(folderId);
-    props._rev = folder._rev;
+    const folder = (await db.get(folderId)) as Folder;
     props.timestampModified = Date.now();
     Object.assign(folder, props);
-    const result = await db.put(folder);
-    folder._rev = result.rev;
+    await db.put(folder);
     return folder;
   } catch (error) {
     console.log(error);
@@ -136,28 +123,18 @@ async function updateFolder(folderId: string, props: Folder) {
  */
 async function deleteFolder(folderId: string) {
   try {
-    // delete from children of parent folder
-    let result = await db.find({
-      selector: { children: { $in: [folderId] } },
-    });
-    const parentNode = result.docs[0] as Folder;
+    const parentNode = (await getParentFolder(folderId)) as Folder;
     parentNode.children = parentNode.children.filter((id) => id != folderId);
     await db.put(parentNode);
 
-    // delete subfolders using dfs
-    result = await db.find({
-      selector: {
-        dataType: "folder",
-      },
-    });
-    const docs = result.docs;
+    const docs = await db.getDocs("folder");
 
     // create a dict for later use
     const folders: { [key: string]: Folder } = {};
     for (const doc of docs) folders[doc._id] = doc as Folder;
 
     function _dfs(root: Folder) {
-      db.remove(root as PouchDB.Core.RemoveDocument);
+      db.remove(root);
       for (const childId of root.children) {
         _dfs(folders[childId as string]);
       }
@@ -176,14 +153,8 @@ async function deleteFolder(folderId: string) {
  */
 async function getParentFolder(folderId: string): Promise<Folder | undefined> {
   try {
-    const result = await db.find({
-      selector: {
-        dataType: "folder",
-        children: { $in: [folderId] },
-      },
-    });
-    // the parent folder is unique
-    return result.docs[0] as Folder;
+    let folders = (await db.getDocs("folder")) as Folder[];
+    return folders.filter((folder) => folder.children.includes(folderId))[0];
   } catch (error) {
     console.log(error);
   }
@@ -206,7 +177,7 @@ async function moveFolderInto(dragFolderId: string, dropFolderId: string) {
     } as Folder);
 
     // add to dropFolder after the dragParentFolder is modified
-    const dropFolder: Folder = await db.get(dropFolderId);
+    const dropFolder = (await db.get(dropFolderId)) as Folder;
     dropFolder.children.push(dragFolderId);
     await updateFolder(dropFolderId, {
       children: dropFolder.children,

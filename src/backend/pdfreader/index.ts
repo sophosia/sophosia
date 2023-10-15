@@ -263,7 +263,6 @@ export default class PDFApplication {
       // default state
       let state = {
         _id: "",
-        _rev: "",
         dataType: "pdfState",
         projectId: projectId,
         pagesCount: 0,
@@ -296,8 +295,6 @@ export default class PDFApplication {
 
     try {
       if (!!state._id) {
-        let oldState = await db.get(state._id);
-        state._rev = oldState._rev;
         await db.put(state);
       } else {
         await db.post(state);

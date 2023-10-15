@@ -62,7 +62,6 @@ export enum NoteType {
  */
 export interface Note {
   _id: string; // unique id handled by database
-  _rev: string; // rev handled by database
   timestampAdded: number; // timestamp when data is saved
   timestampModified: number; // timestamp when data is updated
   dataType: "note"; // for database search
@@ -78,7 +77,6 @@ export interface Note {
  */
 export interface Project extends Meta {
   _id: string; // unique id
-  _rev: string; // data version handled by database
   timestampAdded: number; // timestamp when data is saved
   timestampModified: number; // timestamp when data is updated
   dataType: "project"; // for database search
@@ -99,7 +97,6 @@ export interface Project extends Meta {
  */
 export interface Folder {
   _id: string; // uid managed by db
-  _rev: string; // rev handled by database
   timestampAdded: number; // timestamp when data is saved
   timestampModified: number; // timestamp when data is updated
   dataType: "folder"; // for database search
@@ -136,7 +133,6 @@ export interface EdgeUI {
  ****************************************/
 export interface PDFState {
   _id: string; // handled by db
-  _rev: string; // handled by db
   dataType: "pdfState"; // for database search
   projectId: string; // the corresponding project id
   pagesCount: number; // total pages of the pdf
@@ -190,7 +186,6 @@ export enum SpreadMode {
  */
 export interface AnnotationData {
   _id: string; // handled by db
-  _rev: string; // handled by db
   timestampAdded: number; // timestamp when data is saved
   timestampModified: number; // timestamp when data is updated
   dataType: "pdfAnnotation"; // for database search
@@ -247,7 +242,6 @@ export interface Settings {
 
 export interface AppState {
   _id: "appState";
-  _rev: string;
   dataType: "appState";
   ribbonToggledBtnUid: string; // which toggleBtn is toggled
   leftMenuSize: number;
@@ -266,7 +260,6 @@ export interface AppState {
 
 export interface Layout {
   _id: "layout";
-  _rev: string;
   dataType: "layout";
   config: LayoutConfig | ResolvedLayoutConfig;
 }

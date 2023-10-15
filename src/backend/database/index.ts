@@ -42,8 +42,8 @@ export class JsonDB {
         `${id}.json`
       );
       if (await exists(path)) return JSON.parse(await readTextFile(path));
-      else throw Error(`data with id=${id} not found`);
     }
+    throw Error(`data with id=${id} not found`);
   }
 
   async put(doc: Doc) {
@@ -81,6 +81,19 @@ export class JsonDB {
     let promises = files.map(async (file) => {
       try {
         return JSON.parse(await readTextFile(file.path));
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    return await Promise.all(promises);
+  }
+
+  async bulkDocs(docs: Doc[]) {
+    if (!this.storagePath) throw Error("storagePath not set");
+    let promises = docs.map(async (doc) => {
+      try {
+        await this.put(doc);
       } catch (error) {
         console.log(error);
       }
@@ -136,5 +149,3 @@ export class JsonDB {
 
 export const db = new JsonDB();
 export * from "./models";
-
-window.db = db;

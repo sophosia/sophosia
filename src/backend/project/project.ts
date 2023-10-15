@@ -1,4 +1,4 @@
-import { uid } from "quasar";
+import { nanoid } from "nanoid";
 import { db, Project, SpecialFolder } from "../database";
 import {
   copyFileToProjectFolder,
@@ -16,8 +16,7 @@ import { renameFile } from "@tauri-apps/api/fs";
 export function createProject(folderId: string) {
   // create empty project entry
   const project = {
-    _id: uid(),
-    _rev: "",
+    _id: nanoid(10),
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
     dataType: "project",
@@ -49,9 +48,7 @@ export async function addProject(
     await createProjectFolder(project._id);
 
     // put entry to database
-    const result = await db.put(project);
-    project._rev = result.rev;
-
+    await db.put(project);
     return project; // return the project
   } catch (err) {
     console.log(err);
@@ -72,19 +69,12 @@ export async function deleteProject(
   folderId?: string
 ) {
   try {
-    const project: Project = await db.get(projectId);
+    const project = (await db.get(projectId)) as Project;
     if (deleteFromDB) {
-      // remove from db
-      await db.remove(project as PouchDB.Core.RemoveDocument);
-
-      // remove related pdfState, pdfAnnotation and notes on db
-      const result = await db.find({
-        selector: {
-          projectId: project._id,
-        },
-      });
-      for (const doc of result.docs) {
-        await db.remove(doc);
+      // remove project and its related pdfState, pdfAnnotation and notes on db
+      for (let dataType of ["pdfState", "pdfAnnotation", "note", "project"]) {
+        const docs = await db.getDocs(dataType);
+        for (const doc of docs) await db.remove(doc);
       }
 
       // remove the acutual files
@@ -113,12 +103,10 @@ export async function updateProject(
     // need to remomve _graph property if update by meta
     delete props._graph;
     const project = (await db.get(projectId)) as Project;
-    props._rev = project._rev;
     props.timestampModified = Date.now();
     Object.assign(project, props);
     project.label = project.title; // also update label
-    const result = await db.put(project);
-    project._rev = result.rev;
+    await db.put(project);
     return project;
   } catch (error) {
     console.log(error);
@@ -134,7 +122,7 @@ export async function getProject(
   projectId: string
 ): Promise<Project | undefined> {
   try {
-    return await db.get(projectId);
+    return (await db.get(projectId)) as Project;
   } catch (error) {
     console.log(error);
   }
@@ -145,12 +133,7 @@ export async function getProject(
  * @returns {Project[]} array of projects
  */
 export async function getAllProjects(): Promise<Project[]> {
-  const result = await db.find({
-    selector: {
-      dataType: "project",
-    },
-  });
-  return result.docs as Project[];
+  return (await db.getDocs("project")) as Project[];
 }
 
 /**
@@ -163,49 +146,28 @@ export async function getProjects(folderId: string): Promise<Project[]> {
     let projects = [] as Project[];
     switch (folderId) {
       case SpecialFolder.LIBRARY:
-        projects = (
-          await db.find({
-            selector: { dataType: "project" },
-          })
-        ).docs as Project[];
+        projects = (await db.getDocs("project")) as Project[];
         break;
       case SpecialFolder.ADDED:
         const date = new Date();
         // get recently added project in the last 30 days
         const timestamp = date.setDate(date.getDate() - 30);
-        projects = (
-          await db.find({
-            selector: {
-              dataType: "project",
-              timestampAdded: {
-                $gt: timestamp,
-              },
-            },
-          })
-        ).docs as Project[];
+        projects = (await db.getDocs("project")) as Project[];
+        projects = projects.filter(
+          (project) => project.timestampAdded > timestamp
+        );
         // sort projects in descending order
         projects.sort((a, b) => b.timestampAdded - a.timestampAdded);
         break;
       case SpecialFolder.FAVORITES:
-        projects = (
-          await db.find({
-            selector: {
-              dataType: "project",
-              favorite: true,
-            },
-          })
-        ).docs as Project[];
-        console.log("here", projects);
+        projects = (await db.getDocs("project")) as Project[];
+        projects = projects.filter((project) => project.favorite);
         break;
       default:
-        projects = (
-          await db.find({
-            selector: {
-              dataType: "project",
-              folderIds: { $in: [folderId] },
-            },
-          })
-        ).docs as Project[];
+        projects = (await db.getDocs("project")) as Project[];
+        projects = projects.filter((project) =>
+          project.folderIds.includes(folderId)
+        );
         break;
     }
     // TODO: remove this few more versions later
@@ -217,11 +179,7 @@ export async function getProjects(folderId: string): Promise<Project[]> {
         flag = true;
       }
     if (flag) {
-      const responses = await db.bulkDocs(projects);
-      for (const i in responses) {
-        const rev = responses[i].rev;
-        if (rev) projects[i]._rev = rev;
-      }
+      await db.bulkDocs(projects);
     }
     return projects;
   } catch (error) {

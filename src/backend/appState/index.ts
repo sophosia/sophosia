@@ -8,13 +8,12 @@ import { debounce } from "quasar";
 
 async function getAppState(): Promise<AppState> {
   try {
-    return await db.get("appState");
+    return (await db.get("appState")) as AppState;
   } catch (error) {
     // cannot get appState
 
     let state: AppState = {
       _id: "appState",
-      _rev: "",
       dataType: "appState",
       ribbonToggledBtnUid: "",
       leftMenuSize: 20,
@@ -41,8 +40,6 @@ async function getAppState(): Promise<AppState> {
 }
 
 async function _updateAppState(state: AppState) {
-  let oldState = await db.get("appState");
-  state._rev = oldState._rev;
   await db.put(state);
 }
 
@@ -54,14 +51,11 @@ const updateAppState = debounce(_updateAppState, 200);
 
 async function getLayout(): Promise<Layout> {
   try {
-    console.log("getting layout!!!!!!!!");
     return (await db.get("layout")) as Layout;
   } catch (error) {
-    console.log("getting layout error!!!!!!!!");
     // cannot get layout
     let layout = {
       _id: "layout",
-      _rev: "",
       dataType: "layout",
       config: {
         settings: {
