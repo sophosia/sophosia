@@ -7,7 +7,7 @@ export async function getItem(
   itemId: string
 ): Promise<Project | Note | undefined> {
   try {
-    return await db.get(itemId);
+    return (await db.get(itemId)) as Project | Note | undefined;
   } catch (error) {
     console.log(error);
   }

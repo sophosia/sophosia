@@ -68,17 +68,6 @@ watch(
 );
 
 onMounted(async () => {
-  try {
-    currentNote.value = (await getNote(props.noteId)) as Note;
-    linkBase.value = await dirname(currentNote.value.path);
-    if (process.env.DEV) {
-      linkBase.value = "file://" + linkBase.value;
-    }
-  } catch (error) {
-    if (!props.data?.notePath) {
-      throw Error("Must pass in a valid noteId or a valid notePath");
-    }
-  }
   if (!vditorDiv.value) return;
   vditorDiv.value.setAttribute("id", `vditor-${props.noteId}`);
   showEditor.value = true;
@@ -178,7 +167,7 @@ function initEditor() {
             if (uploaded === undefined) return;
             if (!vditor.value) return;
             vditor.value.insertValue(
-              `![${uploaded.imgName}](./img/${uploaded.imgName})`
+              `![${uploaded.imgName}](${uploaded.imgPath})`
             );
           });
         }

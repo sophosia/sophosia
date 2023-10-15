@@ -1,5 +1,5 @@
 import { db, Note, NoteType } from "../database";
-import { uid } from "quasar";
+import { nanoid } from "nanoid";
 import { Buffer } from "buffer";
 import { createFile, deleteFile } from "./file";
 import {
@@ -10,6 +10,7 @@ import {
   writeBinaryFile,
 } from "@tauri-apps/api/fs";
 import { join, extname, dirname } from "@tauri-apps/api/path";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
 
 /**
  * Create a note
@@ -18,8 +19,7 @@ import { join, extname, dirname } from "@tauri-apps/api/path";
  */
 export function createNote(projectId: string, type: NoteType) {
   return {
-    _id: uid(),
-    _rev: "",
+    _id: nanoid(10),
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
     dataType: "note",
@@ -47,8 +47,7 @@ export async function addNote(note: Note): Promise<Note | undefined> {
     )) as string;
 
     // add to db
-    const result = await db.put(note);
-    note._rev = result.rev;
+    await db.put(note);
     return note;
   } catch (error) {
     console.log(error);
@@ -80,11 +79,9 @@ export async function deleteNote(noteId: string) {
 export async function updateNote(noteId: string, props: Note) {
   try {
     const note = (await db.get(noteId)) as Note;
-    props._rev = note._rev;
     props.timestampModified = Date.now();
     Object.assign(note, props);
-    const result = await db.put(note);
-    note._rev = result.rev;
+    await db.put(note);
     return note;
   } catch (error) {
     console.log(error);
@@ -98,7 +95,7 @@ export async function updateNote(noteId: string, props: Note) {
  */
 export async function getNote(noteId: string): Promise<Note | undefined> {
   try {
-    return await db.get(noteId);
+    return (await db.get(noteId)) as Note;
   } catch (error) {
     console.log(error);
   }
@@ -111,32 +108,8 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
  */
 export async function getNotes(projectId: string): Promise<Note[]> {
   try {
-    const notes = (
-      await db.find({
-        selector: {
-          dataType: "note",
-          projectId: projectId,
-        },
-      })
-    ).docs as Note[];
-
-    // TODO: remove this few more versions later
-    let flag = false;
-    for (const note of notes)
-      if (!note.timestampAdded) {
-        note.timestampAdded = Date.now();
-        note.timestampModified = Date.now();
-        flag = true;
-      }
-    if (flag) {
-      const responses = await db.bulkDocs(notes);
-      for (const i in responses) {
-        const rev = responses[i].rev;
-        if (rev) notes[i]._rev = rev;
-      }
-    }
-
-    return notes as Note[];
+    let notes = (await db.getDocs("note")) as Note[];
+    return notes.filter((note) => note.projectId === projectId);
   } catch (error) {
     console.log(error);
     return [];
@@ -148,13 +121,7 @@ export async function getNotes(projectId: string): Promise<Note[]> {
  * @returns {Note[]} array of notes
  */
 export async function getAllNotes(): Promise<Note[]> {
-  const result = await db.find({
-    selector: {
-      dataType: "note",
-    },
-  });
-
-  return result.docs as Note[];
+  return (await db.getDocs("note")) as Note[];
 }
 
 /**
@@ -167,7 +134,7 @@ export async function loadNote(
   notePath?: string
 ): Promise<string> {
   try {
-    const note: Note = await db.get(noteId);
+    const note = (await db.get(noteId)) as Note;
     if (await exists(note.path)) return await readTextFile(note.path);
     else return "";
   } catch (error) {
@@ -193,7 +160,7 @@ export async function saveNote(
   notePath?: string
 ) {
   try {
-    const note: Note = await db.get(noteId);
+    const note = (await db.get(noteId)) as Note;
     await writeTextFile(note.path, content);
   } catch (error) {
     if ((error as Error).name == "not_found") {
@@ -217,16 +184,16 @@ export async function uploadImage(
   if (!file.type.includes("image")) return;
 
   try {
-    const note: Note = await db.get(noteId);
-    const imgType: string = await extname(file.name); // .png
-    const imgName: string = uid() + imgType; // use uuid as img name
+    const note = (await db.get(noteId)) as Note;
+    const imgType: string = await extname(file.name); // png
+    const imgName: string = `${nanoid(10)}.${imgType}`; // use nanoid as img name
     const imgFolder: string = await join(await dirname(note.path), "img");
     const imgPath: string = await join(imgFolder, imgName);
     if (!(await exists(imgFolder))) await createDir(imgFolder);
 
     const arrayBuffer: ArrayBuffer = await file.arrayBuffer();
     await writeBinaryFile(imgPath, Buffer.from(arrayBuffer));
-    return { imgName: imgName, imgPath: imgPath };
+    return { imgName: imgName, imgPath: convertFileSrc(imgPath) };
   } catch (error) {
     console.log(error);
   }

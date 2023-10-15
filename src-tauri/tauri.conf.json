@@ -75,6 +75,10 @@
       "path": {
         "all": true
       },
+      "protocol": {
+        "asset": true,
+        "assetScope": ["**"]
+      },
       "dialog": {
         "all": true,
         "ask": true,
@@ -118,7 +122,7 @@
       }
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost"
     },
     "updater": {
       "active": false

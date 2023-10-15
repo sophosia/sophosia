@@ -19,7 +19,7 @@
     - [x] appstate
     - [x] annotation
     - [x] pdfstate
-    - [ ] note
+    - [x] note
     - [ ] graph
   - [ ] replace db.find with db.getDocs(dataType) and some filter functions
     - [x] folder
@@ -28,14 +28,14 @@
     - [x] appstate
     - [x] annotation
     - [x] pdfstate
-    - [ ] note
+    - [x] note
     - [ ] graph
   - [ ] replace uid() by nanoid(10)
     - [x] folder
     - [x] project
     - [x] annotation
     - [x] pdfstate
-    - [ ] note
+    - [x] note
     - [ ] graph
   - [ ] remove pouchdb
     - [ ] remove module
