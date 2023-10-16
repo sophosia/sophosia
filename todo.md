@@ -1,25 +1,48 @@
-src/components/library
+- [ ] backend
 
-- [x] DeleteDialog.vue
-- [x] ExportDialog.vue
-- [x] IdentifierDialog.vue
-- [x] ImportDialog.vue
-- [x] FolderTree.vue
-- [x] ActionBar.vue
-- [x] ProjectBrowser.vue
-- [x] ProjectTable.vue
-- [x] TableProjectRow.vue
-- [x] TableProjectMenu
-- [x] TableItemRow.vue
-- [x] TableSearchRow.vue
-- [x] injectKeys.ts
+  - create 1 json file for each project, save them in the same location, and create views for usual queries
+  - [x] storagePath
+    - [x] getStoragePath from AppConfigDir
+    - [x] setStoragePath to AppConfigDir
+  - [x] create hidden folder in storagePath once storagePath is known
+    - [x] create .sophosia
+    - [x] create .sophosia/project, .sophosia/note, .sophosia/folder, .sophosia/annotation, .sophosia/pdfState
+  - [x] implement JsonDB
+    - [x] get, remove, put, post
+    - [x] save/load appState.json, layout.json to/from .sophosia
+    - [x] save/load other json files to/from .sophosia/dataType
+  - [x] remove \_rev
+    - [x] model
+    - [x] folder
+    - [x] project
+    - [x] layout
+    - [x] appstate
+    - [x] annotation
+    - [x] pdfstate
+    - [x] note
+    - [ ] graph
+  - [ ] replace db.find with db.getDocs(dataType) and some filter functions
+    - [x] folder
+    - [x] project
+    - [x] layout
+    - [x] appstate
+    - [x] annotation
+    - [x] pdfstate
+    - [x] note
+    - [ ] graph
+  - [ ] replace uid() by nanoid(10)
+    - [x] folder
+    - [x] project
+    - [x] annotation
+    - [x] pdfstate
+    - [x] note
+    - [ ] graph
+  - [ ] remove pouchdb
+    - [ ] remove module
+    - [ ] remove boot file
+    - [ ] remove browserify events and stuff
 
-src/backend/project
-
-- [x] file.ts
-- [x] folder.ts
-- [x] graph.ts
-- [x] meta.ts
-- [x] note.ts
-- [x] project.ts
-- [x] utils.ts
+- [ ] note
+  - the internal links will use wikilinks
+  - no native support of wikilinks in vditor, need to render wikilinks after vditor is finished rendering.
+  - can use regex to find all texts like this [[*]], then render them as link

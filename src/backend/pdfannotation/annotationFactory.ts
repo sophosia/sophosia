@@ -8,7 +8,7 @@ import {
   Ink,
 } from "./annotations";
 import { AnnotationType, AnnotationData, Rect } from "../database";
-import { uid } from "quasar";
+import { nanoid } from "nanoid";
 import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
 
 /**
@@ -167,8 +167,7 @@ export default class AnnotationFactory {
       rects[i] = this.offsetTransform(rect, canvasWrapper);
 
     let annotData = {
-      _id: uid(),
-      _rev: "",
+      _id: nanoid(10),
       timestampAdded: Date.now(),
       timestampModified: Date.now(),
       type: tool,

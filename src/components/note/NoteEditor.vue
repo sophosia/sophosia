@@ -13,7 +13,7 @@
 <script setup lang="ts">
 // types
 import { inject, nextTick, onMounted, ref, watch } from "vue";
-import { Note, NoteType, Project, Node } from "src/backend/database";
+import { Note, NoteType, Project, Node, db } from "src/backend/database";
 // vditor
 import Vditor from "vditor";
 import "src/css/vditor/index.css";
@@ -68,18 +68,8 @@ watch(
 );
 
 onMounted(async () => {
-  try {
-    currentNote.value = (await getNote(props.noteId)) as Note;
-    linkBase.value = await dirname(currentNote.value.path);
-    if (process.env.DEV) {
-      linkBase.value = "file://" + linkBase.value;
-    }
-  } catch (error) {
-    if (!props.data?.notePath) {
-      throw Error("Must pass in a valid noteId or a valid notePath");
-    }
-  }
   if (!vditorDiv.value) return;
+  currentNote.value = (await db.get(props.noteId)) as Note | undefined;
   vditorDiv.value.setAttribute("id", `vditor-${props.noteId}`);
   showEditor.value = true;
   initEditor();
@@ -178,7 +168,7 @@ function initEditor() {
             if (uploaded === undefined) return;
             if (!vditor.value) return;
             vditor.value.insertValue(
-              `![${uploaded.imgName}](./img/${uploaded.imgName})`
+              `![${uploaded.imgName}](${uploaded.imgPath})`
             );
           });
         }
@@ -229,6 +219,7 @@ async function saveLinks() {
   let parser = new DOMParser();
   let html = parser.parseFromString(vditor.value.getHTML(), "text/html");
   let linkNodes = html.querySelectorAll("a");
+  console.log(linkNodes);
   for (let node of linkNodes) {
     let href = (node as HTMLAnchorElement).getAttribute("href") as string;
     // href = href.replace(linkBase.value + window.path.sep, "");

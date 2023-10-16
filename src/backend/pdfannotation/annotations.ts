@@ -152,11 +152,9 @@ export abstract class Annotation {
   private async _updateDB(props: AnnotationData) {
     try {
       let annot = (await db.get(this.data._id)) as AnnotationData;
-      props._rev = annot._rev;
       props.timestampModified = Date.now();
       Object.assign(annot, props);
-      let result = await db.put(annot);
-      annot._rev = result.rev;
+      await db.put(annot);
       this.data = annot;
     } catch (err) {
       console.log(err);

@@ -67,6 +67,7 @@ import { useStateStore } from "src/stores/appState";
 import { useI18n } from "vue-i18n";
 import { open } from "@tauri-apps/api/dialog";
 import { homeDir } from "@tauri-apps/api/path";
+import { db } from "src/backend/database";
 
 const { locale } = useI18n({ useScope: "global" });
 
@@ -112,6 +113,8 @@ async function changeStoragePath() {
   if (result !== undefined && result != null && !!result[0]) {
     path.value = result[0];
     stateStore.settings.storagePath = path.value;
+    await db.setStoragePath(path.value);
+    await db.createHiddenFolders();
     emit("updateAppState");
   }
 }

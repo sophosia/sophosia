@@ -11,14 +11,14 @@ import {
   writeTextFile,
 } from "@tauri-apps/api/fs";
 
-/**
- * Get storagePath from database
- * @returns storagePath
- */
-async function storagePath(): Promise<string> {
-  const state: AppState = await db.get("appState");
-  return state.settings.storagePath;
-}
+// /**
+//  * Get storagePath from database
+//  * @returns storagePath
+//  */
+// async function storagePath(): Promise<string> {
+//   const state: AppState = await db.get("appState");
+//   return state.settings.storagePath;
+// }
 
 /**
  * Create project folder in storage path
@@ -26,7 +26,7 @@ async function storagePath(): Promise<string> {
  */
 async function createProjectFolder(projectId: string) {
   try {
-    const projectPath = await join(await storagePath(), projectId);
+    const projectPath = await join(await db.getStoragePath(), projectId);
     await createDir(projectPath);
   } catch (error) {
     console.log(error);
@@ -39,7 +39,7 @@ async function createProjectFolder(projectId: string) {
  */
 async function deleteProjectFolder(projectId: string) {
   try {
-    const dirPath = await join(await storagePath(), projectId);
+    const dirPath = await join(await db.getStoragePath(), projectId);
     await removeDir(dirPath, { recursive: true });
   } catch (error) {
     console.log(error);
@@ -58,7 +58,7 @@ async function copyFileToProjectFolder(
 ): Promise<string | undefined> {
   try {
     const fileName = await basename(srcPath);
-    const dstPath = await join(await storagePath(), projectId, fileName);
+    const dstPath = await join(await db.getStoragePath(), projectId, fileName);
     await copyFile(srcPath, dstPath);
 
     return dstPath;
@@ -78,7 +78,7 @@ async function createFile(
   fileName: string
 ): Promise<string | undefined> {
   try {
-    const filePath = await join(await storagePath(), projectId, fileName);
+    const filePath = await join(await db.getStoragePath(), projectId, fileName);
     await writeTextFile(filePath, "");
     if (await exists(filePath)) return filePath;
   } catch (error) {
