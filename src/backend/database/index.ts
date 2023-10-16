@@ -15,12 +15,6 @@ interface Doc extends Object {
   dataType: string;
 }
 
-interface Response {
-  id: string;
-  success: boolean;
-  doc: Doc;
-}
-
 export class JsonDB {
   storagePath: string = "";
 
