@@ -69,7 +69,7 @@ export interface Note {
   path: string; // path to actual markdown file
   label: string; // markdown file name
   type: NoteType;
-  links: Node[]; // array of forward linked Ids
+  links: Node[]; // array of forward linked node
 }
 
 /**

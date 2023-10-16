@@ -21,26 +21,6 @@ export async function getItem(
  */
 export async function getLinks(item: Project | Note) {
   try {
-    const forwardIds = item.links
-      ? item.links.map((link: Node) => link.id)
-      : [];
-
-    // query removes non-existing docs and duplicated docs
-    const result = await db.query(function (doc: Project | Note, emit) {
-      if (emit) {
-        // forward links
-        if (forwardIds.includes(doc._id)) emit("forward", doc);
-
-        // backward links
-        if (
-          doc.links &&
-          doc.links.map((link: Node) => link.id).includes(item._id)
-        )
-          emit("backward", doc);
-      }
-    });
-
-    const pushedIds = [item._id];
     const nodes = [
       {
         data: {
@@ -52,38 +32,57 @@ export async function getLinks(item: Project | Note) {
       },
     ] as NodeUI[];
     const edges = [] as EdgeUI[];
-    for (const row of result.rows) {
-      // add to nodes
-      if (!pushedIds.includes(row.id)) {
-        const { _id: id, label, dataType: type, projectId: parent } = row.value;
-        nodes.push({ data: { id, label, type, parent } });
-        pushedIds.push(row.id);
-      }
+    const allNotes = (await db.getDocs("note")) as Note[];
 
-      // add to edges
-      edges.push({
-        data: {
-          source: row.key === "forward" ? item._id : row.id,
-          target: row.key === "forward" ? row.id : item._id,
-        },
-      });
+    // forward links of the item
+    let notes = [item];
+    if (item.type === "project") {
+      // if item is project, the forward links are the internal links in its notes
+      notes = notes.concat(
+        allNotes.filter((note) => note.projectId === item._id)
+      );
     }
-
-    // add missing nodes as well
-    if (item.links) {
-      for (const link of item.links) {
-        if (!pushedIds.includes(link.id)) {
-          // link.type is default to undefined (missing) already
-          nodes.push({ data: link });
-          edges.push({
-            data: {
-              source: item._id,
-              target: link.id,
-            },
-          });
+    for (let note of notes) {
+      for (let link of note.links) {
+        // link.type is default to undefined (missing) already
+        let node = { data: link } as NodeUI;
+        try {
+          let forwardItem = await db.get(link.id);
+          node.data.type = forwardItem.dataType as "project" | "note";
+        } catch (error) {
+          // if the note does not exist, it's missing
+          node.data.type = undefined;
         }
+        nodes.push(node);
+        edges.push({
+          data: {
+            source: note._id,
+            target: link.id,
+          },
+        });
       }
     }
+
+    // backward links
+    for (let note of allNotes) {
+      if (note.links.map((link) => link.id).includes(item._id)) {
+        nodes.push({
+          data: {
+            id: note._id,
+            label: note.label,
+            type: "note",
+            parent: note.projectId,
+          },
+        });
+        edges.push({
+          data: {
+            source: note._id,
+            target: item._id,
+          },
+        });
+      }
+    }
+
     return { nodes, edges };
   } catch (error) {
     console.log(error);
@@ -96,17 +95,15 @@ export async function getLinks(item: Project | Note) {
  * @param nodes
  * @returns parentNodes
  */
-export async function getParents(nodes: NodeUI[]) {
+export async function getParents(nodes: NodeUI[]): Promise<NodeUI[]> {
   const parentIds = nodes.map((node) => node.data.parent);
-  // query removes non-existing docs and duplicated docs
-  const result = await db.query(function (doc: Project, emit) {
-    if (emit) {
-      if (parentIds.includes(doc._id)) {
-        const { _id: id, label, dataType: type } = doc;
-        emit("parent", { data: { id, label, type } });
-      }
-    }
-  });
-
-  return result.rows.map((row) => row.value);
+  const parentNodes = [] as NodeUI[];
+  const projects = (await db.getDocs("project")) as Project[];
+  for (let project of projects) {
+    if (parentIds.includes(project._id))
+      parentNodes.push({
+        data: { id: project._id, label: project.label, type: "project" },
+      });
+  }
+  return parentNodes;
 }
