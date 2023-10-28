@@ -7,7 +7,7 @@
     - [x] pdfStateId uses this format `SS${nanoid()}`
   - [ ] note
     - noteid uses projectId/filename
-  - [ ] put all images to a single folder `.sophosia/image`
+  - [x] put all images to a single folder `.sophosia/image`
 - [x] prelimary test
   - [x] unable to open note in production mode
   - [x] vditor is loading everything from https://unpkg.com/vditor@{version} ..., change it to local files

@@ -8,8 +8,7 @@ import {
   writeTextFile,
   writeBinaryFile,
 } from "@tauri-apps/api/fs";
-import { join, extname, dirname } from "@tauri-apps/api/path";
-import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { join, extname } from "@tauri-apps/api/path";
 
 /**
  * Create a note
@@ -183,16 +182,16 @@ export async function uploadImage(
   if (!file.type.includes("image")) return;
 
   try {
-    const note = (await db.get(noteId)) as Note;
     const imgType: string = await extname(file.name); // png
     const imgName: string = `SI${db.nanoid}.${imgType}`; // use nanoid as img name
-    const imgFolder: string = await join(await dirname(note.path), "img");
+    // const imgFolder: string = await join(await dirname(note.path), "img");
+    const imgFolder: string = await join(db.storagePath, ".sophosia", "image");
     const imgPath: string = await join(imgFolder, imgName);
     if (!(await exists(imgFolder))) await createDir(imgFolder);
 
     const arrayBuffer: ArrayBuffer = await file.arrayBuffer();
     await writeBinaryFile(imgPath, Buffer.from(arrayBuffer));
-    return { imgName: imgName, imgPath: convertFileSrc(imgPath) };
+    return { imgName: imgName, imgPath: imgName };
   } catch (error) {
     console.log(error);
   }

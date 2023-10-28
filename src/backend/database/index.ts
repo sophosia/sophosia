@@ -144,6 +144,7 @@ export class JsonDB {
       "folder",
       "pdfAnnotation",
       "pdfState",
+      "image",
     ])
       await createDir(await join(sophosia, folder));
   }

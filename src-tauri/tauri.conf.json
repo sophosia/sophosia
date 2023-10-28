@@ -77,7 +77,7 @@
       },
       "protocol": {
         "asset": true,
-        "assetScope": ["**"]
+        "assetScope": ["**", "**/.sophosia/**"]
       },
       "dialog": {
         "all": true,

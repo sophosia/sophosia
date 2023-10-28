@@ -363,11 +363,15 @@ async function _hangleImage() {
     if (img.src.includes("http://localhost:9000")) {
       // doing this so image can be display in dev mode
       let relPath = img.src.replace("http://localhost:9000", "");
-      img.src = convertFileSrc(await join(db.storagePath, relPath));
+      img.src = convertFileSrc(
+        await join(db.storagePath, ".sophosia", "image", relPath)
+      );
     } else if (img.src.includes("tauri://localhost")) {
       // doing this so image can be display in production mode
       let relPath = img.src.replace("tauri://localhost", "");
-      img.src = convertFileSrc(await join(db.storagePath, relPath));
+      img.src = convertFileSrc(
+        await join(db.storagePath, ".sophosia", "image", relPath)
+      );
     }
 
     let p = img.parentElement?.parentElement;
