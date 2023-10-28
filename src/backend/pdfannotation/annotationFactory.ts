@@ -7,8 +7,7 @@ import {
   Comment,
   Ink,
 } from "./annotations";
-import { AnnotationType, AnnotationData, Rect } from "../database";
-import { nanoid } from "nanoid";
+import { AnnotationType, AnnotationData, Rect, db } from "../database";
 import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
 
 /**
@@ -167,7 +166,7 @@ export default class AnnotationFactory {
       rects[i] = this.offsetTransform(rect, canvasWrapper);
 
     let annotData = {
-      _id: nanoid(10),
+      _id: `SA${db.nanoid}`,
       timestampAdded: Date.now(),
       timestampModified: Date.now(),
       type: tool,

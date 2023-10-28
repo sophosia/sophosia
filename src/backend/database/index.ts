@@ -8,7 +8,8 @@ import {
   writeTextFile,
 } from "@tauri-apps/api/fs";
 import { appConfigDir, join } from "@tauri-apps/api/path";
-import { nanoid } from "nanoid";
+import { customAlphabet } from "nanoid";
+const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
 interface Doc extends Object {
   _id: string;
@@ -17,6 +18,13 @@ interface Doc extends Object {
 
 export class JsonDB {
   storagePath: string = "";
+
+  /**
+   * Generate a length-8 id with alphabets 0-9A-Z
+   */
+  get nanoid() {
+    return nanoid();
+  }
 
   async get(id: string): Promise<Doc> {
     if (!this.storagePath) throw Error("storagePath not set");

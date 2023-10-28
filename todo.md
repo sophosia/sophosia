@@ -1,48 +1,15 @@
 - [ ] backend
-
-  - create 1 json file for each project, save them in the same location, and create views for usual queries
-  - [x] storagePath
-    - [x] getStoragePath from AppConfigDir
-    - [x] setStoragePath to AppConfigDir
-  - [x] create hidden folder in storagePath once storagePath is known
-    - [x] create .sophosia
-    - [x] create .sophosia/project, .sophosia/note, .sophosia/folder, .sophosia/annotation, .sophosia/pdfState
-  - [x] implement JsonDB
-    - [x] get, remove, put, post
-    - [x] save/load appState.json, layout.json to/from .sophosia
-    - [x] save/load other json files to/from .sophosia/dataType
-  - [x] remove \_rev
-    - [x] model
-    - [x] folder
-    - [x] project
-    - [x] layout
-    - [x] appstate
-    - [x] annotation
-    - [x] pdfstate
-    - [x] note
-    - [ ] graph
-  - [ ] replace db.find with db.getDocs(dataType) and some filter functions
-    - [x] folder
-    - [x] project
-    - [x] layout
-    - [x] appstate
-    - [x] annotation
-    - [x] pdfstate
-    - [x] note
-    - [ ] graph
-  - [ ] replace uid() by nanoid(10)
-    - [x] folder
-    - [x] project
-    - [x] annotation
-    - [x] pdfstate
-    - [x] note
-    - [ ] graph
-  - [ ] remove pouchdb
-    - [ ] remove module
-    - [ ] remove boot file
-    - [ ] remove browserify events and stuff
-
-- [ ] note
-  - the internal links will use wikilinks
-  - no native support of wikilinks in vditor, need to render wikilinks after vditor is finished rendering.
-  - can use regex to find all texts like this [[*]], then render them as link
+  - id
+    - [x] `nanoid = customAlphabet("A...Z", 8)`
+    - [x] projectId uses this format `SP${nanoid()}`
+    - [x] annotationId uses this format `SA${nanoid()}`
+    - [x] folderId uses this format `SF${nanoid()}`
+    - [x] pdfStateId uses this format `SS${nanoid()}`
+  - [ ] note
+    - noteid uses projectId/filename
+  - [ ] put all images to a single folder `.sophosia/image`
+- [x] prelimary test
+  - [x] unable to open note in production mode
+  - [x] vditor is loading everything from https://unpkg.com/vditor@{version} ..., change it to local files
+  - [x] also failed to apply stylesheet because of the content security issue, not sure how to make it load (the stylesheet should be the one in src/css/vditor)
+  - [x] able to use relative path in link in production mode

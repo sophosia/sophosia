@@ -293,11 +293,8 @@ export default class PDFApplication {
     state.scrollTop = this.container.scrollTop;
 
     try {
-      if (!!state._id) {
-        await db.put(state);
-      } else {
-        await db.post(state);
-      }
+      if (!state._id) state._id = `SS${db.nanoid}`;
+      await db.put(state);
     } catch (error) {
       console.log(error);
     }

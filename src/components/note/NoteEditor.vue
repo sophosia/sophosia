@@ -35,10 +35,11 @@ import { useI18n } from "vue-i18n";
 import _ from "lodash";
 import { authorToString } from "src/backend/project/utils";
 import { generateCiteKey } from "src/backend/project/meta";
-import { dirname, sep } from "@tauri-apps/api/path";
+import { dirname, join, sep } from "@tauri-apps/api/path";
 
 import HoverPane from "./HoverPane.vue";
 import { open } from "@tauri-apps/api/shell";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
 
 const stateStore = useStateStore();
 const { t } = useI18n({ useScope: "global" });
@@ -54,11 +55,10 @@ const currentNote = ref<Note>();
 const vditor = ref<Vditor | null>(null);
 const vditorDiv = ref<HTMLElement | null>(null);
 const showEditor = ref(false);
-const linkBase = ref("");
 const hoverPane = ref();
 const hoverContent = ref("");
 // tells HoverPane the hovered project path prefix and the content to show
-const hoverData = ref({ linkBase: "", content: "" });
+const hoverData = ref({ content: "" });
 
 watch(
   () => stateStore.settings.theme,
@@ -113,17 +113,18 @@ function initEditor() {
     toolbarConfig: {
       pin: true,
     },
+    cdn: "vditor", // the entire vditor folder is in public
     toolbar: toolbar,
     lang: stateStore.settings.language as keyof II18n,
     tab: "    ", // use 4 spaces as tab
     preview: {
+      theme: {
+        current: stateStore.settings.theme,
+        path: "vditor/dist/css/content-theme",
+      },
       math: {
         // able to use digit in inline math
         inlineDigit: true,
-      },
-      markdown: {
-        // in DEV mode, load local files instead of server path
-        linkBase: linkBase.value,
       },
       hljs: {
         // enable line number in code block
@@ -150,7 +151,7 @@ function initEditor() {
       await setContent();
       setTheme(stateStore.settings.theme);
       changeLinks();
-      addImgResizer();
+      handleImage();
     },
     blur: () => {
       saveContent();
@@ -158,7 +159,7 @@ function initEditor() {
     input: () => {
       saveContent();
       changeLinks();
-      addImgResizer();
+      handleImage();
     },
     upload: {
       accept: "image/*",
@@ -219,11 +220,8 @@ async function saveLinks() {
   let parser = new DOMParser();
   let html = parser.parseFromString(vditor.value.getHTML(), "text/html");
   let linkNodes = html.querySelectorAll("a");
-  console.log(linkNodes);
   for (let node of linkNodes) {
     let href = (node as HTMLAnchorElement).getAttribute("href") as string;
-    // href = href.replace(linkBase.value + window.path.sep, "");
-    href = href.replace(linkBase.value + sep, "");
     try {
       new URL(href);
       // this is a valid url, do nothing
@@ -321,16 +319,8 @@ async function hoverLink(linkNode: HTMLElement) {
           `Abstract: ${item.abstract}`,
         ];
         hoverContent.value = lines.join("\n");
-        hoverData.value.linkBase = linkBase.value.replace(
-          currentNote.value.projectId,
-          item._id
-        );
         hoverData.value.content = lines.join("\n");
       } else if (item.dataType === "note") {
-        hoverData.value.linkBase = linkBase.value.replace(
-          currentNote.value.projectId,
-          item.projectId
-        );
         if (item.type === "excalidraw") {
           let lines = [
             "# Excalidraw note",
@@ -366,10 +356,20 @@ async function hoverLink(linkNode: HTMLElement) {
  * Add image resize handle on each image in the note
  ********************************************/
 // TODO: save image size
-function _addImgResizer() {
+async function _hangleImage() {
   if (!vditorDiv.value) return;
   let imgs = vditorDiv.value.querySelectorAll("img");
   for (let img of imgs) {
+    if (img.src.includes("http://localhost:9000")) {
+      // doing this so image can be display in dev mode
+      let relPath = img.src.replace("http://localhost:9000", "");
+      img.src = convertFileSrc(await join(db.storagePath, relPath));
+    } else if (img.src.includes("tauri://localhost")) {
+      // doing this so image can be display in production mode
+      let relPath = img.src.replace("tauri://localhost", "");
+      img.src = convertFileSrc(await join(db.storagePath, relPath));
+    }
+
     let p = img.parentElement?.parentElement;
     if (!!!p || !!p.onmouseover) continue;
     // add this only if the image does not have it
@@ -418,7 +418,7 @@ function _addImgResizer() {
     };
   }
 }
-const addImgResizer = debounce(_addImgResizer, 50) as () => void;
+const handleImage = debounce(_hangleImage, 50) as () => void;
 
 /*******************************************
  * Hints

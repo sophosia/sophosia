@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 import { db, Folder } from "../database";
 import { sortTree } from "./utils";
 
@@ -79,7 +78,7 @@ async function addFolder(parentId: string) {
   try {
     // add to database
     const folder = {
-      _id: nanoid(10),
+      _id: `SF${db.nanoid}`,
       timestampAdded: Date.now(),
       timestampModified: Date.now(),
       label: "New Folder",

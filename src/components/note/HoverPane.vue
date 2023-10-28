@@ -17,7 +17,7 @@ const stateStore = useStateStore();
 const props = defineProps({
   content: { type: String },
   data: {
-    type: Object as PropType<{ linkBase: string; content: string }>,
+    type: Object as PropType<{ content: string }>,
     required: true,
   },
 });
@@ -57,21 +57,22 @@ function changeLinks() {
     linkNode.onclick = (e: MouseEvent) => {
       // do not open link winthin app
       e.preventDefault();
-      let link = linkNode.href
-        .replace("http://localhost:9300/", "") // in dev mode
-        .replace(/^file:.*app\.asar\//, ""); // in production mode
-      emit("clickLink", e, link);
+      // let link = linkNode.href
+      //   .replace("http://localhost:9300/", "") // in dev mode
+      //   .replace(/^file:.*app\.asar\//, ""); // in production mode
+      // emit("clickLink", e, link);
+      emit("clickLink", e, linkNode.href);
     };
   }
 
-  let imageNodes = mdContentDiv.value.querySelectorAll(
-    "img"
-  ) as NodeListOf<HTMLImageElement>;
-  for (let imageNode of imageNodes) {
-    imageNode.src = imageNode.src
-      .replace("http://localhost:9300", props.data.linkBase) // in dev mode
-      .replace(/^file:.*app\.asar/, props.data.linkBase); // in production mode
-  }
+  // let imageNodes = mdContentDiv.value.querySelectorAll(
+  //   "img"
+  // ) as NodeListOf<HTMLImageElement>;
+  // for (let imageNode of imageNodes) {
+  //   imageNode.src = imageNode.src
+  //     .replace("http://localhost:9300", props.data.linkBase) // in dev mode
+  //     .replace(/^file:.*app\.asar/, props.data.linkBase); // in production mode
+  // }
 }
 
 defineExpose({ card });

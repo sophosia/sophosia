@@ -80,8 +80,8 @@ import { getProject } from "src/backend/project/project";
 import PDFApplication from "src/backend/pdfreader";
 import { Ink } from "src/backend/pdfannotation/annotations";
 import { QSplitter, throttle } from "quasar";
-import { nanoid } from "nanoid";
 import { Annotation } from "src/backend/pdfannotation/annotations";
+import { db } from "src/backend/database";
 
 /**********************************
  * Props, Data, and component refs
@@ -310,7 +310,7 @@ onMounted(async () => {
           if (!inkAnnot) {
             // create canvas if there is none
             let annotData = {
-              _id: nanoid(10),
+              _id: `SA${db.nanoid}`,
               timestampAdded: Date.now(),
               timestampModified: Date.now(),
               dataType: "pdfAnnotation",
@@ -417,7 +417,7 @@ onMounted(async () => {
               );
 
               let annotData = {
-                _id: nanoid(10),
+                _id: `SA${db.nanoid}`,
                 timestampAdded: Date.now(),
                 timestampModified: Date.now(),
                 type: AnnotationType.RECTANGLE,
@@ -456,7 +456,7 @@ onMounted(async () => {
                 canvasWrapper
               );
               let annotData = {
-                _id: nanoid(10),
+                _id: `SA${db.nanoid}`,
                 timestampAdded: Date.now(),
                 timestampModified: Date.now(),
                 type: AnnotationType.COMMENT,

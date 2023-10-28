@@ -1,5 +1,4 @@
 import { db, Note, NoteType } from "../database";
-import { nanoid } from "nanoid";
 import { Buffer } from "buffer";
 import { createFile, deleteFile } from "./file";
 import {
@@ -19,7 +18,7 @@ import { convertFileSrc } from "@tauri-apps/api/tauri";
  */
 export function createNote(projectId: string, type: NoteType) {
   return {
-    _id: nanoid(10),
+    _id: `SN${db.nanoid}`,
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
     dataType: "note",
@@ -186,7 +185,7 @@ export async function uploadImage(
   try {
     const note = (await db.get(noteId)) as Note;
     const imgType: string = await extname(file.name); // png
-    const imgName: string = `${nanoid(10)}.${imgType}`; // use nanoid as img name
+    const imgName: string = `SI${db.nanoid}.${imgType}`; // use nanoid as img name
     const imgFolder: string = await join(await dirname(note.path), "img");
     const imgPath: string = await join(imgFolder, imgName);
     if (!(await exists(imgFolder))) await createDir(imgFolder);
