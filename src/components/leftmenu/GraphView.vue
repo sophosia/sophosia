@@ -189,6 +189,11 @@ async function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
     let id = this.data("id") as string;
     let label = this.data("label") as string;
     let type = "";
+    let data = {
+      _id: this.data("id") as string,
+      label: label,
+      path: this.data("path") as string,
+    };
     db.get(id).then((item) => {
       if ((item as Project | Note).dataType === "project") {
         type = "ReaderPage";
@@ -197,7 +202,7 @@ async function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
           type = "ExcalidrawPage";
         else type = "NotePage";
       }
-      stateStore.openPage({ id, type, label });
+      stateStore.openPage({ id, type, label, data });
     });
   });
 }

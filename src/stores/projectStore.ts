@@ -174,13 +174,14 @@ export const useProjectStore = defineStore("projectStore", {
       this._updateProjectUI(project);
     },
 
-    async updateNote(noteId: string, props: Note) {
+    async updateNote(noteId: string, props: Note): Promise<Note> {
       // update db
       let note = (await updateNote(noteId, props)) as Note;
       this.renamedNote = note;
       // update ui
       let project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
+      return note;
     },
 
     async deleteNote(noteId: string) {

@@ -2,16 +2,18 @@
   <NoteEditor
     v-if="visible"
     :has-toolbar="true"
-    :noteId="itemId"
+    :noteId="data._id"
     :data="data"
   />
 </template>
 <script setup lang="ts">
 import NoteEditor from "src/components/note/NoteEditor.vue";
+import { PageData } from "src/backend/database";
+import { PropType } from "vue";
 const props = defineProps({
-  itemId: { type: String, required: true },
-  visible: { type: Boolean, required: true },
-  data: { type: Object, required: false },
+  id: { type: String, required: true },
+  visible: { type: Boolean, reqruied: true },
+  data: { type: Object as PropType<PageData>, required: true },
 });
 </script>
 <style lang="scss">

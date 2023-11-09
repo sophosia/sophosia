@@ -5,11 +5,12 @@
 import { onMounted, ref } from "vue";
 import pluginManager from "src/backend/plugin";
 import { ComponentName, View } from "src/backend/database";
-
+import { PageData } from "src/backend/database";
+import { PropType } from "vue";
 const props = defineProps({
-  itemId: { type: String, required: true },
-  visible: { type: Boolean, required: true },
-  data: { type: Object, requried: false },
+  id: { type: String, required: true },
+  visible: { type: Boolean, reqruied: true },
+  data: { type: Object as PropType<PageData>, required: true },
 });
 
 const root = ref<HTMLDivElement | null>(null);
@@ -18,7 +19,7 @@ views.value = pluginManager.getViews(ComponentName.PLUGIN_PAGE);
 onMounted(() => {
   console.log(views.value);
   for (let view of views.value) {
-    if (view.uid === props.itemId) {
+    if (view.uid === props.data._id) {
       if (root.value && view.onMounted) view.onMounted(root.value);
     }
   }

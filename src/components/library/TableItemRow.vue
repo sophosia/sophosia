@@ -29,8 +29,8 @@
           <input
             v-model="label"
             @input="checkDuplicate"
-            @blur="onRenameNote"
-            @keydown.enter="onRenameNote"
+            @blur="renameNote"
+            @keydown.enter="renameNote"
             ref="renameInput"
           />
           <q-tooltip
@@ -146,7 +146,7 @@
 <script setup lang="ts">
 // types
 import { PropType, Ref, inject, ref, watchEffect } from "vue";
-import { Project, Note, NoteType, db } from "src/backend/database";
+import { Project, Note, NoteType, db, PageData } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
@@ -154,6 +154,7 @@ import { copyToClipboard } from "quasar";
 import { basename, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
+import { nanoid } from "nanoid";
 const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
 });
@@ -166,6 +167,11 @@ const label = ref("");
 const renamingNoteId = inject("renamingNoteId") as Ref<string>;
 const oldNoteName = ref("");
 const pathDuplicate = ref(false);
+
+const setComponentData = inject("setComponentData") as (
+  oldItemId: string,
+  newData: PageData
+) => Promise<void>;
 
 // label has to be reactive
 // once props.item.path is changed
@@ -197,8 +203,9 @@ function clickItem() {
 }
 
 function openItem() {
-  let id = props.item._id;
+  let id = nanoid(10);
   let label = props.item.label;
+  let data = { _id: props.item._id, label: label, path: props.item.path };
   let type = "";
   if (props.item.dataType === "project") {
     if (props.item.path) type = "ReaderPage";
@@ -206,7 +213,7 @@ function openItem() {
     if (props.item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
     else type = "NotePage";
   }
-  stateStore.openPage({ id, type, label });
+  stateStore.openPage({ id, type, label, data });
 }
 
 function setRenaming() {
@@ -222,10 +229,20 @@ function setRenaming() {
   }, 100);
 }
 
-async function onRenameNote() {
+async function renameNote() {
   let note = props.item as Note;
+  let oldNoteId = props.item._id;
   note.label = pathDuplicate.value ? oldNoteName.value : label.value;
-  await projectStore.updateNote(note._id, note);
+  let newNote = await projectStore.updateNote(note._id, note);
+  console.log("noteId", oldNoteId, "data", {
+    _id: newNote._id,
+    path: newNote.path,
+  });
+  setComponentData(oldNoteId, {
+    _id: newNote._id,
+    label: newNote.label,
+    path: newNote.path,
+  });
   renaming.value = false;
   renamingNoteId.value = "";
   pathDuplicate.value = false;

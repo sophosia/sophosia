@@ -341,14 +341,15 @@
 
 <script setup lang="ts">
 // types
-import { ref, watch, computed, onMounted } from "vue";
+import { ref, watch, computed, onMounted, inject } from "vue";
 import type { PropType } from "vue";
-import { Author, Folder, Meta, Project } from "src/backend/database";
+import { Author, Folder, Meta, PageData, Project } from "src/backend/database";
 // backend stuff
 import { generateCiteKey, getMeta } from "src/backend/project/meta";
 import { getFolder } from "src/backend/project/folder";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/appState";
+import { open } from "@tauri-apps/api/shell";
 const projectStore = useProjectStore();
 const stateStore = useStateStore();
 
@@ -398,6 +399,11 @@ const authors = computed(() => {
   return names;
 });
 
+const setComponentData = inject("setComponentData") as (
+  oldItemId: string,
+  newData: PageData
+) => Promise<void>;
+
 watch(tab, () => {
   if (tab.value === "reference") getReferences();
 });
@@ -440,6 +446,11 @@ async function modifyInfo() {
     stateStore.settings.citeKeyRule
   );
   projectStore.updateProject(meta.value._id, meta.value);
+  setComponentData(meta.value._id, {
+    _id: meta.value._id,
+    label: meta.value.label,
+    path: meta.value.path,
+  });
 }
 
 async function addAuthor() {
@@ -553,7 +564,7 @@ async function updateMeta() {
 
 function openURL(url: string | undefined) {
   if (url === undefined || url === "") return;
-  window.browser.openURL(url);
+  open(url);
 }
 </script>
 <style lang="scss" scoped>

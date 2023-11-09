@@ -18,9 +18,9 @@
         <component
           v-if="initialized"
           :is="pair[1].component"
-          :itemId="pair[1].id"
+          :id="pair[1].id"
           :visible="MapComponents.get(pair[0])?.container?.visible"
-          :data="MapComponents.get(pair[0])?.container.state?.data"
+          :data="pair[1].data"
         ></component>
       </GLComponent>
     </div>
@@ -58,15 +58,17 @@ import {
   Stack,
 } from "golden-layout";
 import GLComponent from "src/pages/GLComponent.vue";
+import { PageData } from "src/backend/database";
+import { computeContainerDimensionForBoundText } from "@excalidraw/excalidraw/types/element/textElement";
 
 /*******************
  * Props and Emits
  *******************/
 const props = defineProps({
-  currentPageId: String,
+  currentItemId: String,
 });
 const emit = defineEmits([
-  "update:currentPageId",
+  "update:currentItemId",
   "layoutchanged",
   "itemdestroyed",
 ]);
@@ -79,7 +81,14 @@ let GLayout: VirtualLayout;
 const GlcKeyPrefix = readonly(ref("glc_"));
 
 const AllComponents = ref(
-  new Map<number, { component: any; id: string; data?: any }>()
+  new Map<
+    number,
+    {
+      component: any;
+      id: string;
+      data: PageData;
+    }
+  >()
 );
 const MapComponents = ref(
   new Map<number, { container: ComponentContainer; glc: any }>()
@@ -97,12 +106,12 @@ const initialized = ref(false);
  *******************/
 watch(initialized, (initialized) => {
   // after initialized, focus the currentPage
-  if (initialized) focusById(props.currentPageId as string);
+  if (initialized) focusById(props.currentItemId as string);
 });
 
-// must use a getter to get props.currentPageId
+// must use a getter to get props.currentItemId
 watch(
-  () => props.currentPageId,
+  () => props.currentItemId,
   (id) => {
     focusById(id as string);
   }
@@ -116,7 +125,7 @@ const addComponent = (
   componentType: string,
   title: string,
   id: string,
-  data?: any
+  data: any
 ) => {
   let index = CurIndex;
   if (UnusedIndexes.length > 0) index = UnusedIndexes.pop() as number;
@@ -143,15 +152,12 @@ const addGLComponent = async (
   componentType: string,
   title: string,
   id: string,
-  data?: any
+  data: any
 ) => {
   if (componentType.length == 0)
     throw new Error("addGLComponent: Component's type is empty");
 
-  if (id in IdToRef) {
-    focusById(id);
-    return; // don't repeatly add components
-  }
+  if (focusById(data._id)) return; // don't repeatly add components
 
   const index = addComponent(componentType, title, id, data);
   await nextTick(); // wait 1 tick for vue to add the dom
@@ -192,7 +198,8 @@ const loadGLLayout = async (
         index = addComponent(
           itemConfig.componentType as string,
           itemConfig.title as string,
-          (itemConfig.componentState as Json).id as string
+          (itemConfig.componentState as Json).id as string,
+          (itemConfig.componentState as Json).data as PageData
         );
         if (typeof itemConfig.componentState == "object")
           (itemConfig.componentState as Json)["refId"] = index;
@@ -231,50 +238,52 @@ const onClick = (refId: number) => {
   MapComponents.value.get(refId)?.container.focus();
 };
 
-const focusById = (id: string) => {
-  if (id in IdToRef) {
-    let refId = IdToRef[id];
-    MapComponents.value.get(refId)?.container.focus();
+/**
+ * Focus window by itemId
+ * If the corresponding window is found and focused, return true; otherwise false
+ * @param itemId
+ */
+const focusById = (itemId: string) => {
+  let focused = false;
+  for (const pair of AllComponents.value) {
+    const component = pair[1];
+    if (itemId === component.data._id) {
+      let refId = IdToRef[component.id];
+      MapComponents.value.get(refId)?.container.focus();
+      focused = true;
+    }
   }
+  return focused;
 };
 
 const removeGLComponent = (removeId: string) => {
   MapComponents.value.get(IdToRef[removeId])?.container.close();
 };
 
-/**
- * Add drag source to the entries in projectTree.
- * After a window is closed, if the entry is still in projectTree, then add component only.
- * @param element
- * @param componentType
- * @param componentState
- * @param title
- */
-const addGLDragSource = async (
-  element: HTMLElement,
-  componentType: string,
-  componentState: { refId: number; id: string },
-  title: string,
-  addComponentOnly = false
-) => {
-  componentState.refId = addComponent(componentType, title, componentState.id);
-  await nextTick(); // wait 1 tick for vue to add the dom
-
-  if (addComponentOnly) return;
-
-  GLayout.newDragSource(element, () => {
-    return {
-      type: "component",
-      title,
-      componentType,
-      componentState,
-    };
-  });
-};
-
 const renameGLComponent = async (id: string, title: string) => {
   let container = MapComponents.value.get(IdToRef[id])?.container;
-  if (!!container) container.setTitle(title);
+  if (!!container) {
+    container.setTitle(title);
+  }
+};
+
+const setGLComponentState = async (id: string, data: PageData) => {
+  let refId = IdToRef[id];
+  let container = MapComponents.value.get(refId)?.container;
+  if (!!container) {
+    container.setState({ refId, id, data });
+  }
+};
+
+const setGLComponentData = (itemId: string, data: PageData) => {
+  for (const pair of AllComponents.value) {
+    const component = pair[1];
+    if (component.data._id === itemId) {
+      Object.assign(component.data, data);
+      renameGLComponent(component.id, data.label);
+      setGLComponentState(component.id, data);
+    }
+  }
 };
 
 /*******************
@@ -414,8 +423,12 @@ onMounted(() => {
   GLayout.on("focus", (e) => {
     let target = e.target as ComponentItem | RowOrColumn | Stack;
     if (!target.isComponent) return;
-    let state = (target as ComponentItem).container.state as Json;
-    emit("update:currentPageId", state.id as string);
+    let state = (target as ComponentItem).container.state as {
+      refId: string;
+      id: string;
+      data: PageData;
+    };
+    emit("update:currentItemId", state.data._id);
     emit("layoutchanged");
   });
 
@@ -427,8 +440,12 @@ onMounted(() => {
   });
 
   GLayout.on("activeContentItemChanged", (e) => {
-    let state = e.container.state as Json;
-    emit("update:currentPageId", state.id);
+    let state = e.container.state as {
+      refId: string;
+      id: string;
+      data: PageData;
+    };
+    emit("update:currentItemId", state.data._id);
     nextTick(() => {
       // wait until layout is updated
       // this is needed for closing component
@@ -439,8 +456,12 @@ onMounted(() => {
   GLayout.on("itemDestroyed", (e) => {
     let target = e.target as ComponentItem | RowOrColumn | Stack;
     if (!target.isComponent) return;
-    let state = (target as ComponentItem).container.state as Json;
-    emit("itemdestroyed", state.id);
+    let state = (target as ComponentItem).container.state as {
+      refId: string;
+      id: string;
+      data: PageData;
+    };
+    emit("itemdestroyed", state.data._id);
   });
 });
 
@@ -451,9 +472,9 @@ defineExpose({
   addGLComponent,
   removeGLComponent,
   renameGLComponent,
+  setGLComponentData,
   loadGLLayout,
   getLayoutConfig,
-  addGLDragSource,
   resize,
   initialized,
   AllComponents,

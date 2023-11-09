@@ -82,6 +82,7 @@ import { KEY_pdfApp } from "./injectKeys";
 import Vditor from "vditor/dist/method.min";
 import { useStateStore } from "src/stores/appState";
 import { getItem } from "src/backend/project/graph";
+import { nanoid } from "nanoid";
 const { luminosity } = colors;
 const stateStore = useStateStore();
 
@@ -175,20 +176,21 @@ function changeLinks() {
           try {
             // valid external url, open it externally
             new URL(link);
-            window.browser.openURL(link);
+            open(link);
           } catch (error) {
             // we just want the document, both getProject or getNote are good
             try {
               let item = (await getItem(link)) as Note | Project;
-              let id = item._id;
+              let id = nanoid(10);
               let label = item.label;
               let type = "";
+              let data = { _id: item._id, label: label, path: item.path };
               if (item.dataType === "project") type = "ReaderPage";
               else if ((item as Project | Note).dataType === "note") {
                 if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
                 else type = "NotePage";
               }
-              stateStore.openPage({ id, type, label });
+              stateStore.openPage({ id, type, label, data });
             } catch (error) {
               console.log(error);
             }

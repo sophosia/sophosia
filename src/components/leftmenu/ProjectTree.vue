@@ -8,7 +8,7 @@
     :nodes="projectStore.openedProjects"
     node-key="_id"
     selected-color="primary"
-    v-model:selected="stateStore.currentPageId"
+    v-model:selected="stateStore.currentItemId"
     v-model:expanded="expanded"
   >
     <template v-slot:default-header="prop">
@@ -159,9 +159,17 @@
   </q-tree>
 </template>
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from "vue";
+import { inject, nextTick, onMounted, ref, watch } from "vue";
 import { QTree } from "quasar";
-import { Note, NoteType, Page, Project, db } from "src/backend/database";
+import {
+  Note,
+  NoteType,
+  Page,
+  PageData,
+  PageState,
+  Project,
+  db,
+} from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
@@ -169,6 +177,7 @@ import { getProject } from "src/backend/project/project";
 import { join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/shell";
 import { exists } from "@tauri-apps/api/fs";
+import { nanoid } from "nanoid";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -183,13 +192,18 @@ const addingNote = ref(false);
 const expanded = ref<string[]>([]);
 const showProjectMenu = ref(true);
 
+const setComponentData = inject("setComponentData") as (
+  oldItemId: string,
+  newData: PageData
+) => Promise<void>;
+
 onMounted(async () => {
   console.log("openedProjects", projectStore.openedProjects);
   // expand all projects
   expanded.value = Array.from(projectStore.openedProjects.map((p) => p._id));
 
   // select the item associated with current window
-  let selected = stateStore.currentPageId;
+  let selected = stateStore.currentItemId;
   if (!tree.value) return;
   let selectedNode = tree.value.getNodeByKey(selected);
   if (!!selectedNode && selectedNode?.children?.length > 0)
@@ -228,21 +242,22 @@ function menuSwitch(node: Project | Note) {
 }
 
 function selectItem(node: Project | Note) {
-  console.log(node);
-  stateStore.currentPageId = node._id;
+  stateStore.currentItemId = node._id;
   if (node.dataType === "project" && (node.children?.length as number) > 0)
     expanded.value.push(node._id);
 
   // open item
-  let id = node._id;
+  // let id = node._id;
+  let id = node.pageId || nanoid(10);
   let type = "";
   let label = node.label;
+  let data = { _id: node._id, path: node.path } as PageData;
   if (node.dataType === "project") type = "ReaderPage";
   else if ((node as Project | Note).dataType === "note") {
     if (node.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
     else type = "NotePage";
   }
-  stateStore.openPage({ id, type, label });
+  stateStore.openPage({ id, type, label, data });
 }
 
 async function showInExplorer(node: Project | Note) {
@@ -278,7 +293,7 @@ async function closeProject(projectId: string) {
   // if no page left, open library page
   setTimeout(() => {
     if (projectStore.openedProjects.length === 0)
-      stateStore.currentPageId = "library";
+      stateStore.currentItemId = "library";
   }, 50);
 }
 
@@ -334,7 +349,13 @@ async function renameNote() {
   if (!!!note) return;
 
   if (pathDuplicate.value) note.label = oldNoteName.value;
-  projectStore.updateNote(note._id, note);
+  let newNote = await projectStore.updateNote(note._id, note);
+
+  setComponentData(renamingNoteId.value, {
+    _id: newNote._id,
+    label: newNote.label,
+    path: newNote.path,
+  });
 
   if (addingNote.value) selectItem(note); // open the note
   addingNote.value = false;

@@ -1,30 +1,5 @@
-- [ ] backend
-  - id
-    - [x] `nanoid = customAlphabet("A...Z", 8)`
-    - [x] projectId uses this format `SP${nanoid()}`
-    - [x] annotationId uses this format `SA${nanoid()}`
-    - [x] folderId uses this format `SF${nanoid()}`
-    - [x] pdfStateId uses this format `SS${nanoid()}`
-  - [ ] note
-    - [x] noteid uses projectId/filename
-    - think about how the Note data lives in the program, do we need to change that?
-    - [x] getNote
-      - given a noteId, return note data. projectId can be told from the noteId
-    - [x] getNotes
-      - search folder, use getNote on all of them
-    - [x] add note
-      - [x] table rename note immediately after adding note
-    - [x] rename note
-      - [x] check name duplication
-      - [x] notify NoteEditor the note path is also changed
-      - [ ] notify mainlayout the note label is changed
-        - difficulty: the noteid also changed, main layout can't find the corresponding window
-        - [ ] separate windowId and itemId, give windowState more data: {path, label, itemId, dataType}
-    - [x] delete note
-    - [x] edit note
-  - [x] put all images to a single folder `.sophosia/image`
-- [x] prelimary test
-  - [x] unable to open note in production mode
-  - [x] vditor is loading everything from https://unpkg.com/vditor@{version} ..., change it to local files
-  - [x] also failed to apply stylesheet because of the content security issue, not sure how to make it load (the stylesheet should be the one in src/css/vditor)
-  - [x] able to use relative path in link in production mode
+- [ ] forward/backward link
+  - [ ] make them working
+  - [ ] render wikilinks
+- [ ] get rid of excalidraw
+- [ ] graphview path as property of a node

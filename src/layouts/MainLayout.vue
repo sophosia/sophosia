@@ -32,7 +32,7 @@
         <template v-slot:after>
           <GLayout
             style="width: 100%; height: 100vh"
-            v-model:currentPageId="stateStore.currentPageId"
+            v-model:currentItemId="stateStore.currentItemId"
             @layoutchanged="onLayoutChanged"
             ref="layout"
           ></GLayout>
@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 // types
-import { Project, Note, Page, NoteType } from "src/backend/database";
+import { Project, Note, Page, NoteType, PageData } from "src/backend/database";
 // components
 import LeftRibbon from "./LeftRibbon.vue";
 import LeftMenu from "src/components/leftmenu/LeftMenu.vue";
@@ -81,6 +81,7 @@ const leftMenuSize = ref(0);
 const ready = ref(false);
 
 provide("onLayoutChanged", onLayoutChanged);
+provide("setComponentData", setComponentData);
 
 /*******************
  * Watchers
@@ -112,7 +113,7 @@ watch(
 );
 
 watch(
-  () => stateStore.closedPageId,
+  () => stateStore.closedItemId,
   async (id: string) => {
     if (!!!id) return;
     let note = (await getNote(id)) as Note;
@@ -123,7 +124,7 @@ watch(
       }, 100);
     } else removeComponent(id);
     // clear this so we can reclose a reopened item
-    stateStore.closedPageId = "";
+    stateStore.closedItemId = "";
 
     stateStore.saveAppState();
   }
@@ -144,7 +145,6 @@ watch(
 watch(
   () => projectStore.updatedProject,
   (project: Project) => {
-    console.log("updated project's notes", project.children);
     editComponentState(project);
     if (!project.children) return;
     for (let note of project.children) {
@@ -196,6 +196,14 @@ async function editComponentState(item: PageItem | undefined) {
   await updateLayout(config);
 }
 
+async function setComponentData(oldItemId: string, data: PageData) {
+  if (!layout.value) return;
+  layout.value.setGLComponentData(oldItemId, data);
+  let config = layout.value.getLayoutConfig();
+  console.log("config.content", config.root?.content);
+  await updateLayout(config);
+}
+
 /***************************************************
  * Layout and AppState
  ***************************************************/
@@ -227,6 +235,7 @@ async function onLayoutChanged() {
       id: "library",
       label: t("library"),
       type: "LibraryPage",
+      data: { _id: "library" },
     });
     await nextTick();
   }
