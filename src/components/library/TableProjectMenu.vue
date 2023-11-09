@@ -128,7 +128,7 @@
 </template>
 <script setup lang="ts">
 // types
-import { inject, nextTick } from "vue";
+import { Ref, inject, nextTick } from "vue";
 import { NoteType, Project } from "src/backend/database";
 import { QMenu } from "quasar";
 import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
@@ -147,6 +147,8 @@ const props = defineProps({
 });
 const emit = defineEmits(["expandRow"]);
 
+const renamingNoteId = inject("renamingNoteId") as Ref<string>;
+
 // dialogs
 const showSearchMetaDialog = inject(KEY_metaDialog) as () => void;
 const showDeleteDialog = inject(KEY_deleteDialog) as (
@@ -160,11 +162,11 @@ function expandRow(isExpand: boolean) {
 
 async function addNote(type: NoteType) {
   let project = projectStore.selected[0];
-  let note = projectStore.createNote(project._id, type);
+  let note = await projectStore.createNote(project._id, type);
   await projectStore.addNote(note);
   expandRow(true);
   await nextTick();
-  projectStore.setRenameNote(note._id);
+  renamingNoteId.value = note._id;
 }
 
 async function openProject() {

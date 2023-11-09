@@ -6,20 +6,22 @@
     - [x] folderId uses this format `SF${nanoid()}`
     - [x] pdfStateId uses this format `SS${nanoid()}`
   - [ ] note
-    - noteid uses projectId/filename
+    - [x] noteid uses projectId/filename
     - think about how the Note data lives in the program, do we need to change that?
-    - [ ] getNote
+    - [x] getNote
       - given a noteId, return note data. projectId can be told from the noteId
-    - [ ] getAllNote
-      - search folders recursively, use getNote on all of them
-    - [ ] add note
+    - [x] getNotes
+      - search folder, use getNote on all of them
+    - [x] add note
       - [x] table rename note immediately after adding note
-      - [ ] add note only after renaming
-    - [ ] rename note
-      - [ ] check name duplication
-      - [ ] change id in db
-    - [ ] delete note
-    - [ ] edit note
+    - [x] rename note
+      - [x] check name duplication
+      - [x] notify NoteEditor the note path is also changed
+      - [ ] notify mainlayout the note label is changed
+        - difficulty: the noteid also changed, main layout can't find the corresponding window
+        - [ ] separate windowId and itemId, give windowState more data: {path, label, itemId, dataType}
+    - [x] delete note
+    - [x] edit note
   - [x] put all images to a single folder `.sophosia/image`
 - [x] prelimary test
   - [x] unable to open note in production mode

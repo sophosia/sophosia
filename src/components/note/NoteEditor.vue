@@ -40,6 +40,7 @@ import { dirname, join, sep } from "@tauri-apps/api/path";
 import HoverPane from "./HoverPane.vue";
 import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { useProjectStore } from "src/stores/projectStore";
 
 const stateStore = useStateStore();
 const { t } = useI18n({ useScope: "global" });
@@ -59,6 +60,7 @@ const hoverPane = ref();
 const hoverContent = ref("");
 // tells HoverPane the hovered project path prefix and the content to show
 const hoverData = ref({ content: "" });
+const projectStore = useProjectStore();
 
 watch(
   () => stateStore.settings.theme,
@@ -67,9 +69,18 @@ watch(
   }
 );
 
+watch(
+  () => projectStore.renamedNote,
+  (note: Note) => {
+    console.log("renamed note", note);
+    currentNote.value = note;
+  }
+);
+
 onMounted(async () => {
   if (!vditorDiv.value) return;
-  currentNote.value = (await db.get(props.noteId)) as Note | undefined;
+  // currentNote.value = (await db.get(props.noteId)) as Note | undefined;
+  currentNote.value = await getNote(props.noteId);
   vditorDiv.value.setAttribute("id", `vditor-${props.noteId}`);
   showEditor.value = true;
   initEditor();
@@ -205,9 +216,9 @@ async function setContent() {
 async function _saveContent() {
   // save the content when it's blur
   // this will be called before unmount
-  if (!vditor.value) return;
+  if (!vditor.value || !currentNote.value) return;
   let content = vditor.value.getValue();
-  await saveNote(props.noteId, content, props.data?.notePath);
+  await saveNote(currentNote.value._id, content, props.data?.notePath);
   if (currentNote.value) await saveLinks(); // only save links if it's a built-in note
 }
 

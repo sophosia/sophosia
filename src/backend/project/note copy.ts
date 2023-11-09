@@ -7,43 +7,30 @@ import {
   readTextFile,
   writeTextFile,
   writeBinaryFile,
-  readDir,
-  renameFile,
 } from "@tauri-apps/api/fs";
-import { join, extname, basename } from "@tauri-apps/api/path";
+import { join, extname } from "@tauri-apps/api/path";
 
 /**
  * Create a note
  * @param projectId
  * @param type
  */
-export async function createNote(projectId: string, type: NoteType) {
-  const extension = type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
-  let i = 1;
-  let label = "Untitled";
-  let path = await join(db.storagePath, projectId, label + extension);
-  while (await exists(path)) {
-    label = `Untitled ${i}`;
-    path = await join(db.storagePath, projectId, label + extension);
-    i++;
-  }
-
-  const note = {
-    _id: `${projectId}/${label}`,
+export function createNote(projectId: string, type: NoteType) {
+  return {
+    _id: `SN${db.nanoid}`,
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
     dataType: "note",
     projectId: projectId,
-    label: label,
-    path: path,
+    label: "New Note",
+    path: "",
     type: type,
     links: [],
   } as Note;
-
-  return note;
 }
 
 /**
+ * Add a note to database
  * and creates the actual markdown file in project folder
  * @param note
  * @returns updated note
@@ -54,11 +41,11 @@ export async function addNote(note: Note): Promise<Note | undefined> {
     const extension = note.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
     note.path = (await createFile(
       note.projectId,
-      note.label + extension
+      note._id + extension
     )) as string;
 
     // add to db
-    // await db.put(note);
+    await db.put(note);
     return note;
   } catch (error) {
     console.log(error);
@@ -69,11 +56,11 @@ export async function addNote(note: Note): Promise<Note | undefined> {
  * Delete a note from database and from disk
  * @param noteId
  */
-export async function deleteNote(note: Note) {
+export async function deleteNote(noteId: string) {
   try {
     // delete note entry from db
-    // const note = (await getNote(noteId)) as Note;
-    // await db.remove(note);
+    const note = (await db.get(noteId)) as Note;
+    await db.remove(note);
 
     // delete actual file
     await deleteFile(note.path);
@@ -83,23 +70,17 @@ export async function deleteNote(note: Note) {
 }
 
 /**
- * Update information of a note data according to the new label
+ * Update information of a note in database
  * @param noteId
  * @param props - update properties
  */
 export async function updateNote(noteId: string, props: Note) {
   try {
-    const extension =
-      props.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
-    const oldPath = props.path;
-    props.path = await join(
-      db.storagePath,
-      props.projectId,
-      props.label + extension
-    );
-    await renameFile(oldPath, props.path);
-    props._id = `${props.projectId}/${props.label}`;
-    return props;
+    const note = (await db.get(noteId)) as Note;
+    props.timestampModified = Date.now();
+    Object.assign(note, props);
+    await db.put(note);
+    return note;
   } catch (error) {
     console.log(error);
   }
@@ -112,24 +93,7 @@ export async function updateNote(noteId: string, props: Note) {
  */
 export async function getNote(noteId: string): Promise<Note | undefined> {
   try {
-    // If it's a markdown note, then label does not contain .md
-    // If it's a excalidraw note, then label does contain .excalidraw
-    const [projectId, label] = noteId.split("/");
-    const splitLabel = label.split(".");
-    const ext =
-      splitLabel.length > 1 ? splitLabel[splitLabel.length - 1] : "md";
-    const note = {
-      _id: noteId,
-      timestampAdded: Date.now(),
-      timestampModified: Date.now(),
-      dataType: "note",
-      projectId: projectId,
-      label: label,
-      path: await join(db.storagePath, projectId, label + `.${ext}`),
-      type: ext === "excalidraw" ? NoteType.EXCALIDRAW : NoteType.MARKDOWN,
-      links: [],
-    } as Note;
-    return note;
+    return (await db.get(noteId)) as Note;
   } catch (error) {
     console.log(error);
   }
@@ -142,32 +106,8 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
  */
 export async function getNotes(projectId: string): Promise<Note[]> {
   try {
-    // let notes = (await db.getDocs("note")) as Note[];
-    // return notes.filter((note) => note.projectId === projectId);
-    // TODO: support folders in project folder
-    // see example of readDir in https://tauri.app/v1/api/js/fs/
-    const notes = [] as Note[];
-    const files = await readDir(await join(db.storagePath, projectId), {
-      recursive: false,
-    });
-    for (const file of files) {
-      let ext = await extname(file.path);
-      let label = await basename(file.path, "." + ext);
-      if (!["excalidraw", "md"].includes(ext)) continue;
-      notes.push({
-        _id: `${projectId}/${label}`,
-        timestampAdded: Date.now(),
-        timestampModified: Date.now(),
-        dataType: "note",
-        projectId: projectId,
-        label: label,
-        path: file.path,
-        type: ext === "excalidraw" ? NoteType.EXCALIDRAW : NoteType.MARKDOWN,
-        links: [],
-      } as Note);
-    }
-    // sort by label
-    return notes.sort((n1, n2) => (n1.label < n2.label ? -1 : 1));
+    let notes = (await db.getDocs("note")) as Note[];
+    return notes.filter((note) => note.projectId === projectId);
   } catch (error) {
     console.log(error);
     return [];
@@ -218,8 +158,7 @@ export async function saveNote(
   notePath?: string
 ) {
   try {
-    const note = (await getNote(noteId)) as Note;
-    console.log("note", note);
+    const note = (await db.get(noteId)) as Note;
     await writeTextFile(note.path, content);
   } catch (error) {
     if ((error as Error).name == "not_found") {

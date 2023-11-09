@@ -144,6 +144,7 @@ watch(
 watch(
   () => projectStore.updatedProject,
   (project: Project) => {
+    console.log("updated project's notes", project.children);
     editComponentState(project);
     if (!project.children) return;
     for (let note of project.children) {
