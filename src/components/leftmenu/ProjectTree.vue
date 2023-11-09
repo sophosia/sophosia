@@ -189,7 +189,6 @@ const updateComponent = inject("updateComponent") as (
 ) => Promise<void>;
 
 onMounted(async () => {
-  console.log("openedProjects", projectStore.openedProjects);
   // expand all projects
   expanded.value = Array.from(projectStore.openedProjects.map((p) => p._id));
 

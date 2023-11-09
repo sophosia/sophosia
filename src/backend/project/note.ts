@@ -192,17 +192,9 @@ export async function loadNote(
   notePath?: string
 ): Promise<string> {
   try {
-    const note = (await db.get(noteId)) as Note;
-    if (await exists(note.path)) return await readTextFile(note.path);
-    else return "";
+    const note = (await getNote(noteId)) as Note;
+    return await readTextFile(notePath || note.path);
   } catch (error) {
-    if ((error as Error).name == "not_found") {
-      if (notePath) return await readTextFile(notePath);
-      else {
-        console.log("Error: Must have a valid noteId or notePath");
-        return "";
-      }
-    }
     return "";
   }
 }
@@ -219,14 +211,9 @@ export async function saveNote(
 ) {
   try {
     const note = (await getNote(noteId)) as Note;
-    console.log("note", note);
-    await writeTextFile(note.path, content);
+    await writeTextFile(notePath || note.path, content);
   } catch (error) {
-    if ((error as Error).name == "not_found") {
-      // might be a note opened by plugin
-      if (notePath) await writeTextFile(notePath, content);
-      else console.log("Error: Must pass in a valid noteId or valid notePath");
-    }
+    console.log(error);
   }
 }
 

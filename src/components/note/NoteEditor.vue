@@ -289,12 +289,13 @@ async function clickLink(e: MouseEvent, link: string) {
   try {
     // valid external url, open it externally
     new URL(link);
-    // window.browser.openURL(link);
     await open(link);
   } catch (error) {
     // we just want the document, both getProject or getNote are good
     try {
-      let item = (await getNote(link)) as Note | Project;
+      let item = null;
+      if (link.includes("/")) item = (await getNote(link)) as Note;
+      else item = (await getProject(link)) as Project;
       let id = item._id;
       let label = item.label;
       let type = "";
@@ -309,7 +310,6 @@ async function clickLink(e: MouseEvent, link: string) {
     }
   }
 }
-
 async function hoverLink(linkNode: HTMLElement) {
   if (!hoverPane.value || !currentNote.value) return;
   let link = (
@@ -321,7 +321,9 @@ async function hoverLink(linkNode: HTMLElement) {
   } catch (error) {
     // we just want the document, both getProject or getNote are good
     try {
-      let item = (await getNote(link)) as Note | Project;
+      let item = null;
+      if (link.includes("/")) item = (await getNote(link)) as Note;
+      else item = (await getProject(link)) as Project;
       if (item.dataType === "project") {
         let lines = [
           `# ${item.title}`,

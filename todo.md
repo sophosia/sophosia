@@ -1,5 +1,7 @@
 - [ ] forward/backward link
-  - [ ] make them working
-  - [ ] render wikilinks
+  - [x] make them working
+  - [x] HoverPane
+- [ ] graphview
+- [ ] render wikilinks
 - [ ] get rid of excalidraw
 - [x] It seems no need to separate pageId and itemId as long as we have the oldItemId
