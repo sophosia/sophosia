@@ -174,8 +174,7 @@ async function openProject() {
     let id = project._id;
     let label = project.label;
     let type = "ReaderPage";
-    let data = { _id: project._id, label: project.label, path: project.path };
-    stateStore.openPage({ id, type, label, data });
+    stateStore.openPage({ id, type, label });
     await nextTick();
   }
 }

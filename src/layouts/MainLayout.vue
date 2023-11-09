@@ -25,7 +25,6 @@
           <LeftMenu
             v-if="ready"
             style="height: 100vh"
-            @renameNode="(node) => editComponentState(node)"
             ref="leftMenu"
           />
         </template>
@@ -44,7 +43,7 @@
 
 <script setup lang="ts">
 // types
-import { Project, Note, Page, NoteType, PageData } from "src/backend/database";
+import { Project, Note, Page, NoteType } from "src/backend/database";
 // components
 import LeftRibbon from "./LeftRibbon.vue";
 import LeftMenu from "src/components/leftmenu/LeftMenu.vue";
@@ -81,7 +80,7 @@ const leftMenuSize = ref(0);
 const ready = ref(false);
 
 provide("onLayoutChanged", onLayoutChanged);
-provide("setComponentData", setComponentData);
+provide("updateComponent", updateComponent);
 
 /*******************
  * Watchers
@@ -135,23 +134,19 @@ watch(
   () => stateStore.settings.language,
   () => {
     for (let id of ["library", "settings", "help"])
-      editComponentState({ _id: id, label: t(id) });
+      updateComponent(id, { id: id, label: t(id) });
   }
 );
 
-/**
- * update window tab names when items are updated
- */
-watch(
-  () => projectStore.updatedProject,
-  (project: Project) => {
-    editComponentState(project);
-    if (!project.children) return;
-    for (let note of project.children) {
-      editComponentState(note);
-    }
-  }
-);
+// /**
+//  * update window tab names when items are updated
+//  */
+// watch(
+//   () => projectStore.updatedProject,
+//   (project: Project) => {
+//     updateComponent(project._id, { id: project._id, label: project.label });
+//   }
+// );
 
 /*******************************************************
  * Methods
@@ -189,18 +184,13 @@ function removeComponent(id: string) {
  * After renaming a row in projectTree, we need to rename the window title.
  * @param item
  */
-async function editComponentState(item: PageItem | undefined) {
-  if (!layout.value || !item) return;
-  layout.value.renameGLComponent(item._id, item.label);
-  let config = layout.value.getLayoutConfig();
-  await updateLayout(config);
-}
-
-async function setComponentData(oldItemId: string, data: PageData) {
+async function updateComponent(
+  oldItemId: string,
+  state: { id: string; label: string }
+) {
   if (!layout.value) return;
-  layout.value.setGLComponentData(oldItemId, data);
+  layout.value.updateGLComponent(oldItemId, state);
   let config = layout.value.getLayoutConfig();
-  console.log("config.content", config.root?.content);
   await updateLayout(config);
 }
 
@@ -235,7 +225,6 @@ async function onLayoutChanged() {
       id: "library",
       label: t("library"),
       type: "LibraryPage",
-      data: { _id: "library" },
     });
     await nextTick();
   }

@@ -161,15 +161,7 @@
 <script setup lang="ts">
 import { inject, nextTick, onMounted, ref, watch } from "vue";
 import { QTree } from "quasar";
-import {
-  Note,
-  NoteType,
-  Page,
-  PageData,
-  PageState,
-  Project,
-  db,
-} from "src/backend/database";
+import { Note, NoteType, Page, Project, db } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
@@ -177,7 +169,6 @@ import { getProject } from "src/backend/project/project";
 import { join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/shell";
 import { exists } from "@tauri-apps/api/fs";
-import { nanoid } from "nanoid";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -192,9 +183,9 @@ const addingNote = ref(false);
 const expanded = ref<string[]>([]);
 const showProjectMenu = ref(true);
 
-const setComponentData = inject("setComponentData") as (
+const updateComponent = inject("updateComponent") as (
   oldItemId: string,
-  newData: PageData
+  state: { id: string; label: string }
 ) => Promise<void>;
 
 onMounted(async () => {
@@ -247,17 +238,15 @@ function selectItem(node: Project | Note) {
     expanded.value.push(node._id);
 
   // open item
-  // let id = node._id;
-  let id = node.pageId || nanoid(10);
+  let id = node._id;
   let type = "";
   let label = node.label;
-  let data = { _id: node._id, path: node.path } as PageData;
   if (node.dataType === "project") type = "ReaderPage";
   else if ((node as Project | Note).dataType === "note") {
     if (node.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
     else type = "NotePage";
   }
-  stateStore.openPage({ id, type, label, data });
+  stateStore.openPage({ id, type, label });
 }
 
 async function showInExplorer(node: Project | Note) {
@@ -351,10 +340,9 @@ async function renameNote() {
   if (pathDuplicate.value) note.label = oldNoteName.value;
   let newNote = await projectStore.updateNote(note._id, note);
 
-  setComponentData(renamingNoteId.value, {
-    _id: newNote._id,
+  updateComponent(renamingNoteId.value, {
+    id: newNote._id,
     label: newNote.label,
-    path: newNote.path,
   });
 
   if (addingNote.value) selectItem(note); // open the note

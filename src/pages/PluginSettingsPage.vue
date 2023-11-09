@@ -62,15 +62,14 @@
 import { ref } from "vue";
 import { Plugin } from "src/backend/database";
 import pluginManager from "src/backend/plugin";
-import { PageData } from "src/backend/database";
 import { PropType } from "vue";
 const props = defineProps({
-  id: { type: String, required: true },
+  itemId: { type: String, required: true },
   visible: { type: Boolean, reqruied: true },
-  data: { type: Object as PropType<PageData>, required: true },
+  data: { type: Object as PropType<{ path: String }>, required: false },
 });
 
-const pluginId = ref(props.data._id);
+const pluginId = ref(props.itemId);
 const plugin = pluginManager.plugins.value.get(pluginId.value) as Plugin;
 
 console.log("plugin", plugin);

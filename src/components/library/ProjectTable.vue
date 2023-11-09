@@ -123,7 +123,6 @@ import { useProjectStore } from "src/stores/projectStore";
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 // utils
-import { nanoid } from "nanoid";
 import { useI18n } from "vue-i18n";
 import { authorToString } from "src/backend/project/utils";
 const { t } = useI18n({ useScope: "global" });
@@ -249,11 +248,10 @@ function clickProject(
  * @param row
  */
 function dblclickProject(row: Project) {
-  let id = nanoid(10);
+  let id = row._id;
   let label = row.label;
   let type = "ReaderPage";
-  let data = { _id: row._id, label: label, path: row.path };
-  stateStore.openPage({ id, type, label, data });
+  stateStore.openPage({ id, type, label });
 }
 
 function toggleContextMenu(

@@ -18,7 +18,7 @@
         <component
           v-if="initialized"
           :is="pair[1].component"
-          :id="pair[1].id"
+          :itemId="pair[1].id"
           :visible="MapComponents.get(pair[0])?.container?.visible"
           :data="pair[1].data"
         ></component>
@@ -58,8 +58,6 @@ import {
   Stack,
 } from "golden-layout";
 import GLComponent from "src/pages/GLComponent.vue";
-import { PageData } from "src/backend/database";
-import { computeContainerDimensionForBoundText } from "@excalidraw/excalidraw/types/element/textElement";
 
 /*******************
  * Props and Emits
@@ -86,7 +84,7 @@ const AllComponents = ref(
     {
       component: any;
       id: string;
-      data: PageData;
+      data?: { path: string };
     }
   >()
 );
@@ -157,7 +155,11 @@ const addGLComponent = async (
   if (componentType.length == 0)
     throw new Error("addGLComponent: Component's type is empty");
 
-  if (focusById(data._id)) return; // don't repeatly add components
+  // don't repeatly add components
+  if (id in IdToRef) {
+    focusById(id);
+    return;
+  }
 
   const index = addComponent(componentType, title, id, data);
   await nextTick(); // wait 1 tick for vue to add the dom
@@ -199,7 +201,7 @@ const loadGLLayout = async (
           itemConfig.componentType as string,
           itemConfig.title as string,
           (itemConfig.componentState as Json).id as string,
-          (itemConfig.componentState as Json).data as PageData
+          (itemConfig.componentState as Json).data
         );
         if (typeof itemConfig.componentState == "object")
           (itemConfig.componentState as Json)["refId"] = index;
@@ -240,50 +242,31 @@ const onClick = (refId: number) => {
 
 /**
  * Focus window by itemId
- * If the corresponding window is found and focused, return true; otherwise false
  * @param itemId
  */
-const focusById = (itemId: string) => {
-  let focused = false;
-  for (const pair of AllComponents.value) {
-    const component = pair[1];
-    if (itemId === component.data._id) {
-      let refId = IdToRef[component.id];
-      MapComponents.value.get(refId)?.container.focus();
-      focused = true;
-    }
-  }
-  return focused;
+const focusById = (id: string) => {
+  let refId = IdToRef[id];
+  MapComponents.value.get(refId)?.container.focus();
 };
 
 const removeGLComponent = (removeId: string) => {
   MapComponents.value.get(IdToRef[removeId])?.container.close();
 };
 
-const renameGLComponent = async (id: string, title: string) => {
-  let container = MapComponents.value.get(IdToRef[id])?.container;
+const updateGLComponent = (
+  oldItemId: string,
+  state: { id: string; label: string }
+) => {
+  const refId = IdToRef[oldItemId];
+  const container = MapComponents.value.get(refId)?.container;
   if (!!container) {
-    container.setTitle(title);
+    container.setTitle(state.label);
+    container.setState(Object.assign(container.state as {}, state));
   }
-};
-
-const setGLComponentState = async (id: string, data: PageData) => {
-  let refId = IdToRef[id];
-  let container = MapComponents.value.get(refId)?.container;
-  if (!!container) {
-    container.setState({ refId, id, data });
-  }
-};
-
-const setGLComponentData = (itemId: string, data: PageData) => {
-  for (const pair of AllComponents.value) {
-    const component = pair[1];
-    if (component.data._id === itemId) {
-      Object.assign(component.data, data);
-      renameGLComponent(component.id, data.label);
-      setGLComponentState(component.id, data);
-    }
-  }
+  // update the IdToRef list
+  // do not switch the order of these two statements since oldItemId might be the same as state.id
+  delete IdToRef[oldItemId];
+  IdToRef[state.id] = refId;
 };
 
 /*******************
@@ -426,9 +409,9 @@ onMounted(() => {
     let state = (target as ComponentItem).container.state as {
       refId: string;
       id: string;
-      data: PageData;
+      data?: { path: string };
     };
-    emit("update:currentItemId", state.data._id);
+    emit("update:currentItemId", state.id);
     emit("layoutchanged");
   });
 
@@ -443,9 +426,9 @@ onMounted(() => {
     let state = e.container.state as {
       refId: string;
       id: string;
-      data: PageData;
+      data?: { path: string };
     };
-    emit("update:currentItemId", state.data._id);
+    emit("update:currentItemId", state.id);
     nextTick(() => {
       // wait until layout is updated
       // this is needed for closing component
@@ -459,9 +442,9 @@ onMounted(() => {
     let state = (target as ComponentItem).container.state as {
       refId: string;
       id: string;
-      data: PageData;
+      data?: { path: string };
     };
-    emit("itemdestroyed", state.data._id);
+    emit("itemdestroyed", state.id);
   });
 });
 
@@ -471,8 +454,7 @@ onMounted(() => {
 defineExpose({
   addGLComponent,
   removeGLComponent,
-  renameGLComponent,
-  setGLComponentData,
+  updateGLComponent,
   loadGLLayout,
   getLayoutConfig,
   resize,

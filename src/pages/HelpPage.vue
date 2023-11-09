@@ -15,12 +15,11 @@ import text_zh_CN from "src/assets/help_zh_CN.md?raw";
 import { useStateStore } from "src/stores/appState";
 import { useI18n } from "vue-i18n";
 import { open } from "@tauri-apps/api/shell";
-import { PageData } from "src/backend/database";
 import { PropType } from "vue";
 const props = defineProps({
-  id: { type: String, required: true },
+  itemId: { type: String, required: true },
   visible: { type: Boolean, reqruied: true },
-  data: { type: Object as PropType<PageData>, required: true },
+  data: { type: Object as PropType<{ path: String }>, required: false },
 });
 
 const { t, locale } = useI18n({ useScope: "global" });

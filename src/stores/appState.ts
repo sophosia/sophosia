@@ -34,7 +34,7 @@ export const useStateStore = defineStore("stateStore", {
     } as Settings,
 
     // page
-    openedPage: { id: "", type: "", label: "", data: { _id: "", label: "" } },
+    openedPage: { id: "", type: "", label: "" },
     closedItemId: "",
     currentItemId: "library",
   }),
@@ -80,12 +80,10 @@ export const useStateStore = defineStore("stateStore", {
      */
 
     async openPage(page: Page) {
-      if (!page.data) return;
       const projectStore = useProjectStore();
-      if (page.type === "ReaderPage")
-        await projectStore.openProject(page.data._id);
+      if (page.type === "ReaderPage") await projectStore.openProject(page.id);
       else if (page.type === "NotePage" || page.type === "ExcalidrawPage") {
-        let note = await projectStore.getNoteFromDB(page.data._id);
+        let note = await projectStore.getNoteFromDB(page.id);
         if (note && note.projectId)
           await projectStore.openProject(note.projectId);
       }

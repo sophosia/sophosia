@@ -86,12 +86,11 @@ import { ref } from "vue";
 import GeneralTab from "src/components/settings/GeneralTab.vue";
 import AboutTab from "src/components/settings/AboutTab.vue";
 import PluginTab from "src/components/settings/plugin/PluginTab.vue";
-import { PageData } from "src/backend/database";
 import { PropType } from "vue";
 const props = defineProps({
-  id: { type: String, required: true },
+  itemId: { type: String, required: true },
   visible: { type: Boolean, reqruied: true },
-  data: { type: Object as PropType<PageData>, required: true },
+  data: { type: Object as PropType<{ path: String }>, required: false },
 });
 
 const leftMenuSize = ref(20);

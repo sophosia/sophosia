@@ -2,4 +2,4 @@
   - [ ] make them working
   - [ ] render wikilinks
 - [ ] get rid of excalidraw
-- [ ] graphview path as property of a node
+- [x] It seems no need to separate pageId and itemId as long as we have the oldItemId

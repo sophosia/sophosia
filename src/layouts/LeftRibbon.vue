@@ -52,7 +52,6 @@
             id: 'library',
             label: t('library'),
             type: 'LibraryPage',
-            data: { _id: 'library', label: t('library') },
           })
         "
       >
@@ -69,7 +68,6 @@
             id: 'help',
             label: t('help'),
             type: 'HelpPage',
-            data: { _id: 'help', label: t('help') },
           })
         "
       >
@@ -86,7 +84,6 @@
             id: 'settings',
             label: t('settings'),
             type: 'SettingsPage',
-            data: { _id: 'settings', label: t('settings') },
           })
         "
       >

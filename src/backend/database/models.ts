@@ -70,7 +70,6 @@ export interface Note {
   label: string; // markdown file name
   type: NoteType;
   links: Node[]; // array of forward linked node
-  pageId?: string; // associated page's id, could be undefined
 }
 
 /**
@@ -87,7 +86,6 @@ export interface Project extends Meta {
   tags: string[]; // user defined keywords for easier search
   folderIds: string[]; // array of folderIDs containing this project
   favorite?: boolean;
-  pageId?: string; // associated page's id, could be undefined
   // index signature, so we can access property like this project[key]
   [k: string]: any;
 }
@@ -270,19 +268,7 @@ export interface Page {
   id: string;
   type: string;
   label: string;
-  data: PageData;
-}
-
-export interface PageData {
-  _id: string; // itemId
-  label: string; // page title
-  path?: string; // file path
-}
-
-export interface PageState {
-  refId: number; // integer
-  id: string; // pageId
-  data: PageData;
+  data?: { path: string };
 }
 
 /*******************

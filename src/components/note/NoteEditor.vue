@@ -41,7 +41,6 @@ import HoverPane from "./HoverPane.vue";
 import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { useProjectStore } from "src/stores/projectStore";
-import { nanoid } from "nanoid";
 
 const stateStore = useStateStore();
 const { t } = useI18n({ useScope: "global" });
@@ -296,16 +295,15 @@ async function clickLink(e: MouseEvent, link: string) {
     // we just want the document, both getProject or getNote are good
     try {
       let item = (await getNote(link)) as Note | Project;
-      let id = nanoid(10);
+      let id = item._id;
       let label = item.label;
       let type = "";
-      let data = { _id: item._id, label: label, path: item.path };
       if (item.dataType === "project") type = "ReaderPage";
       else if ((item as Project | Note).dataType === "note") {
         if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
         else type = "NotePage";
       }
-      stateStore.openPage({ id, type, label, data });
+      stateStore.openPage({ id, type, label });
     } catch (error) {
       console.log(error);
     }

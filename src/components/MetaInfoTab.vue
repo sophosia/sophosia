@@ -343,7 +343,7 @@
 // types
 import { ref, watch, computed, onMounted, inject } from "vue";
 import type { PropType } from "vue";
-import { Author, Folder, Meta, PageData, Project } from "src/backend/database";
+import { Author, Folder, Meta, Project } from "src/backend/database";
 // backend stuff
 import { generateCiteKey, getMeta } from "src/backend/project/meta";
 import { getFolder } from "src/backend/project/folder";
@@ -399,9 +399,9 @@ const authors = computed(() => {
   return names;
 });
 
-const setComponentData = inject("setComponentData") as (
+const updateComponent = inject("updateComponent") as (
   oldItemId: string,
-  newData: PageData
+  state: { id: string; label: string }
 ) => Promise<void>;
 
 watch(tab, () => {
@@ -446,10 +446,9 @@ async function modifyInfo() {
     stateStore.settings.citeKeyRule
   );
   projectStore.updateProject(meta.value._id, meta.value);
-  setComponentData(meta.value._id, {
-    _id: meta.value._id,
+  updateComponent(meta.value._id, {
+    id: meta.value._id,
     label: meta.value.label,
-    path: meta.value.path,
   });
 }
 
