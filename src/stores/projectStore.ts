@@ -28,6 +28,7 @@ export const useProjectStore = defineStore("projectStore", {
     openedProjects: [] as Project[], // array of opened projects
 
     updatedProject: {} as Project, // for updating window tab name
+    renamingNoteId: "",
   }),
 
   actions: {
@@ -185,6 +186,10 @@ export const useProjectStore = defineStore("projectStore", {
       await deleteNote(noteId);
       let project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
+    },
+
+    setRenameNote(noteId: string) {
+      this.renamingNoteId = noteId;
     },
 
     async getNoteFromDB(noteId: string) {

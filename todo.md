@@ -7,6 +7,19 @@
     - [x] pdfStateId uses this format `SS${nanoid()}`
   - [ ] note
     - noteid uses projectId/filename
+    - think about how the Note data lives in the program, do we need to change that?
+    - [ ] getNote
+      - given a noteId, return note data. projectId can be told from the noteId
+    - [ ] getAllNote
+      - search folders recursively, use getNote on all of them
+    - [ ] add note
+      - [x] table rename note immediately after adding note
+      - [ ] add note only after renaming
+    - [ ] rename note
+      - [ ] check name duplication
+      - [ ] change id in db
+    - [ ] delete note
+    - [ ] edit note
   - [x] put all images to a single folder `.sophosia/image`
 - [x] prelimary test
   - [x] unable to open note in production mode

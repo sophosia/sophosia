@@ -136,7 +136,7 @@
 </template>
 <script setup lang="ts">
 // types
-import { computed, PropType, ref, watchEffect } from "vue";
+import { PropType, ref, watchEffect } from "vue";
 import { Project, Note, NoteType } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
@@ -163,6 +163,9 @@ watchEffect(async () => {
   } else if (props.item.dataType === "project") {
     label.value = await basename(props.item.path as string);
   }
+
+  // if the note is newly added, rename it immediately
+  if (projectStore.renamingNoteId === props.item._id) setRenaming();
 });
 
 function copyID() {
@@ -208,6 +211,7 @@ async function onRenameNote() {
     label: label.value,
   } as Note);
   renaming.value = false;
+  projectStore.setRenameNote("");
 }
 
 async function deleteItem() {

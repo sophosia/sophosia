@@ -163,6 +163,8 @@ async function addNote(type: NoteType) {
   let note = projectStore.createNote(project._id, type);
   await projectStore.addNote(note);
   expandRow(true);
+  await nextTick();
+  projectStore.setRenameNote(note._id);
 }
 
 async function openProject() {
