@@ -13,7 +13,7 @@
 <script setup lang="ts">
 // types
 import { inject, nextTick, onMounted, ref, watch } from "vue";
-import { Note, NoteType, Project, Edge, db } from "src/backend/database";
+import { Note, NoteType, Project, Node, db } from "src/backend/database";
 // vditor
 import Vditor from "vditor";
 import "src/css/vditor/index.css";
@@ -25,6 +25,7 @@ import {
   getAllNotes,
   getNote,
   uploadImage,
+  updateNote,
 } from "src/backend/project/note";
 
 import { getAllProjects, getProject } from "src/backend/project/project";
@@ -40,7 +41,6 @@ import HoverPane from "./HoverPane.vue";
 import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { useProjectStore } from "src/stores/projectStore";
-import { getForwardLinks, updateLinks } from "src/backend/project/graph";
 
 const stateStore = useStateStore();
 const { t } = useI18n({ useScope: "global" });
@@ -52,7 +52,7 @@ const props = defineProps({
   data: { type: Object, required: false },
 });
 
-const noteId = ref(props.noteId); // noteId might change as user rename
+const currentNote = ref<Note>();
 const vditor = ref<Vditor | null>(null);
 const vditorDiv = ref<HTMLElement | null>(null);
 const showEditor = ref(false);
@@ -61,7 +61,6 @@ const hoverContent = ref("");
 // tells HoverPane the hovered project path prefix and the content to show
 const hoverData = ref({ content: "" });
 const projectStore = useProjectStore();
-const links = ref<Edge[]>([]);
 
 watch(
   () => stateStore.settings.theme,
@@ -73,13 +72,15 @@ watch(
 watch(
   () => projectStore.renamedNote,
   (note: Note) => {
-    noteId.value = note._id;
+    console.log("renamed note", note);
+    currentNote.value = note;
   }
 );
 
 onMounted(async () => {
   if (!vditorDiv.value) return;
-  links.value = await getForwardLinks(props.noteId);
+  // currentNote.value = (await db.get(props.noteId)) as Note | undefined;
+  currentNote.value = await getNote(props.noteId);
   vditorDiv.value.setAttribute("id", `vditor-${props.noteId}`);
   showEditor.value = true;
   initEditor();
@@ -208,24 +209,24 @@ function setTheme(theme: string) {
 
 async function setContent() {
   if (!vditor.value) return;
-  let content = await loadNote(props.noteId);
+  let content = await loadNote(props.noteId, props.data?.notePath);
   vditor.value.setValue(content);
 }
 
 async function _saveContent() {
   // save the content when it's blur
   // this will be called before unmount
-  if (!vditor.value) return;
+  if (!vditor.value || !currentNote.value) return;
   let content = vditor.value.getValue();
-  await saveNote(noteId.value, content);
-  await saveLinks(); // only save links if it's a built-in note
+  await saveNote(currentNote.value._id, content, props.data?.notePath);
+  if (currentNote.value) await saveLinks(); // only save links if it's a built-in note
 }
 
 const saveContent = debounce(_saveContent, 100) as () => void;
 
 async function saveLinks() {
-  if (!vditor.value) return;
-  let newLinks = [] as Edge[]; // target ids
+  if (!vditor.value || !currentNote.value) return;
+  let targetNodes = [] as Node[]; // target ids
 
   let parser = new DOMParser();
   let html = parser.parseFromString(vditor.value.getHTML(), "text/html");
@@ -237,17 +238,25 @@ async function saveLinks() {
       // this is a valid url, do nothing
     } catch (error) {
       // this is an invalid url, might be an id
-      newLinks.push({ source: noteId.value, target: href });
+      targetNodes.push({
+        id: href,
+        label: node.innerText,
+        type: undefined,
+      });
+      // default type to undefined for easier determination of missing node
     }
   }
 
-  // compare to the recorded links, only save when different
-  let linkIds = Array.from(new Set(links.value.map((link) => link.target)));
-  let newLinkIds = Array.from(new Set(newLinks.map((link) => link.target)));
+  // compare to links of currentNote, only save when different
+  let linkIds = currentNote.value.links.map((n) => n.id);
+  let newLinkIds = targetNodes.map((n) => n.id);
   if (!_.isEqual(linkIds, newLinkIds)) {
-    // update indexeddb
-    await updateLinks(links.value, newLinks);
-    links.value = newLinks;
+    currentNote.value.links = targetNodes;
+    currentNote.value = await updateNote(
+      currentNote.value._id,
+      currentNote.value
+    );
+
     // notify graphview to update
     bus.emit("updateGraph");
   }
@@ -257,7 +266,7 @@ async function saveLinks() {
  * Modify the default click link behavior
  *****************************************/
 function _changeLinks() {
-  if (!vditorDiv.value) return;
+  if (!currentNote.value || !vditorDiv.value) return;
 
   let linkNodes = vditorDiv.value.querySelectorAll(
     "[data-type='a']"
@@ -302,7 +311,7 @@ async function clickLink(e: MouseEvent, link: string) {
   }
 }
 async function hoverLink(linkNode: HTMLElement) {
-  if (!hoverPane.value) return;
+  if (!hoverPane.value || !currentNote.value) return;
   let link = (
     linkNode.querySelector("span.vditor-ir__marker--link") as HTMLElement
   ).innerHTML;

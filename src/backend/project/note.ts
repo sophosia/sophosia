@@ -114,10 +114,10 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
   try {
     // If it's a markdown note, then label does not contain .md
     // If it's a excalidraw note, then label does contain .excalidraw
-    const [projectId, label] = noteId.split("/");
-    const splitLabel = label.split(".");
-    const ext =
-      splitLabel.length > 1 ? splitLabel[splitLabel.length - 1] : "md";
+    const splits = noteId.split("/");
+    const projectId = splits[0];
+    const label = splits.slice(1).join("/");
+    const path = (await join(db.storagePath, ...splits)) + ".md";
     const note = {
       _id: noteId,
       timestampAdded: Date.now(),
@@ -125,9 +125,10 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
       dataType: "note",
       projectId: projectId,
       label: label,
-      path: await join(db.storagePath, projectId, label + `.${ext}`),
-      type: ext === "excalidraw" ? NoteType.EXCALIDRAW : NoteType.MARKDOWN,
+      path: path,
+      type: NoteType.MARKDOWN,
       links: [],
+      exists: await exists(path),
     } as Note;
     return note;
   } catch (error) {
@@ -179,7 +180,8 @@ export async function getNotes(projectId: string): Promise<Note[]> {
  * @returns {Note[]} array of notes
  */
 export async function getAllNotes(): Promise<Note[]> {
-  return (await db.getDocs("note")) as Note[];
+  // return (await db.getDocs("note")) as Note[];
+  return [];
 }
 
 /**

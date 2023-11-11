@@ -1,7 +1,17 @@
-- [ ] forward/backward link
+- [x] forward/backward link
   - [x] make them working
   - [x] HoverPane
-- [ ] graphview
+- [ ] use indexdb to store all links
+  - [x] graphview
+  - [x] save link when editing note
+  - [ ] scan through all documents to update links when app starts
+    - [ ] in config folder, the file must have the last scan time
+    - [ ] using the last scan time and meta function from tauri's fs extra to determine wheter or not to rescan a file
+    - [ ] rescan file and updateLinks
+  - [ ] create a markdown note with name projectId.md under each folder, so that when user in obsidian click a link target to the project can navigate to the folder
+    - [ ] display this note in sophosia with a different label
+    - [ ] this note has project title as its title, authors and abstract by default. So hoverPane shows this note instead.
 - [ ] render wikilinks
 - [ ] get rid of excalidraw
 - [x] It seems no need to separate pageId and itemId as long as we have the oldItemId
+- [ ] change storage path

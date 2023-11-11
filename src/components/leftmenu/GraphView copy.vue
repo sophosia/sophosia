@@ -56,7 +56,8 @@ import { useStateStore } from "src/stores/appState";
 import cytoscape from "cytoscape";
 import cola from "cytoscape-cola";
 import { EventBus } from "quasar";
-import { getGraph } from "src/backend/project/graph";
+import { getItem, getLinks, getParents } from "src/backend/project/graph";
+import { getNotes } from "src/backend/project/note";
 cytoscape.use(cola);
 
 const props = defineProps({
@@ -89,15 +90,35 @@ onBeforeUnmount(() => {
 
 async function reload() {
   if (!!!props.itemId || specialPages.value.includes(props.itemId)) return;
-  const elements = await getGraph(props.itemId);
-  setStyle(elements);
-  drawGraph(elements);
+  let elements = await getGraph();
+  await drawGraph(elements);
 }
 
 /**
  * Note centered local graph
  */
-function setStyle(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
+async function getGraph() {
+  let elements = { nodes: [] as NodeUI[], edges: [] as EdgeUI[] };
+  let item = await getItem(props.itemId);
+  if (!item) return elements;
+
+  // if the item is project, also its notes' links and their parents
+  if (item.dataType === "project") {
+    let notes = await getNotes(item._id);
+    for (let note of notes) {
+      let { nodes, edges } = await getLinks(note);
+      nodes = nodes.concat(nodes, await getParents(nodes));
+      elements.nodes = elements.nodes.concat(nodes);
+      elements.edges = elements.edges.concat(edges);
+    }
+  }
+  // get the links and parents of the item itself
+  let { nodes, edges } = await getLinks(item);
+  nodes = nodes.concat(nodes, await getParents(nodes));
+  elements.nodes = elements.nodes.concat(nodes);
+  elements.edges = elements.edges.concat(edges);
+
+  // set styles to nodes
   let color = getComputedStyle(document.body).getPropertyValue("--color-text");
   for (let node of elements.nodes) {
     let type = node.data.type;
@@ -106,9 +127,11 @@ function setStyle(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
     else if (type === undefined) node.data.shape = "triangle";
     node.data.bg = props.itemId === node.data.id ? "#1976d2" : color;
   }
+
+  return elements;
 }
 
-function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
+async function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
   let cy = cytoscape({
     container: document.getElementById("cy"),
 
@@ -165,8 +188,17 @@ function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
     // we cannot use this to access this.stateStore now
     let id = this.data("id") as string;
     let label = this.data("label") as string;
-    let type = id.includes("/") ? "NotePage" : "ReaderPage";
-    stateStore.openPage({ id, type, label });
+    let type = "";
+    db.get(id).then((item) => {
+      if ((item as Project | Note).dataType === "project") {
+        type = "ReaderPage";
+      } else if ((item as Project | Note).dataType === "note") {
+        if ((item as Note).type === NoteType.EXCALIDRAW)
+          type = "ExcalidrawPage";
+        else type = "NotePage";
+      }
+      stateStore.openPage({ id, type, label });
+    });
   });
 }
 

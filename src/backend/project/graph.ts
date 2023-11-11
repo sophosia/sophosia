@@ -1,109 +1,167 @@
 /**
  * For drawing the graphs in cytoscape.
  */
-import { EdgeUI, NodeUI, Node, Note, Project, db } from "../database";
+import { Edge, EdgeUI, NodeUI, Project, db, idb } from "../database";
+import { getNote, getNotes } from "./note";
+import { getProject } from "./project";
+import { exists } from "@tauri-apps/api/fs";
+import { join } from "@tauri-apps/api/path";
 
-export async function getItem(
-  itemId: string
-): Promise<Project | Note | undefined> {
+async function itemExists(itemId: string) {
+  const item = itemId.includes("/")
+    ? await getNote(itemId)
+    : await getProject(itemId);
+  if (!item) return false;
+  else if (item.dataType === "note") return await exists(item.path);
+  else return await exists(await join(db.storagePath, item._id));
+}
+
+/**
+ * Update links of a note
+ * @param oldLinks old links of a note
+ * @param newLinks new links of a note
+ */
+export async function updateLinks(oldLinks: Edge[], newLinks: Edge[]) {
   try {
-    return (await db.get(itemId)) as Project | Note | undefined;
+    const keys = [];
+    if (oldLinks.length > 0) {
+      const source = oldLinks[0].source; // all source are the same
+      keys.push(...(await idb.getAllKeysFromIndex("links", "source", source)));
+    }
+    const tx = idb.transaction("links", "readwrite");
+    const promises = [] as Promise<void | IDBValidKey>[];
+    // delete all old links
+    if (keys.length > 0)
+      promises.push(...keys.map((key) => tx.store.delete(key)));
+    // add all new links
+    promises.push(...newLinks.map((link) => tx.store.put(link)));
+    promises.push(tx.done);
+    await Promise.all(promises);
   } catch (error) {
     console.log(error);
   }
 }
 
 /**
- * Get nodes and edges that are conected to given item
- * Styles are set yet
- * @param noteId
- * @returns elements
+ * Get forward links of an item
+ * @param itemId
+ * @returns links
  */
-export async function getLinks(item: Project | Note) {
-  try {
-    const nodes = [
-      {
+export async function getForwardLinks(itemId: string): Promise<Edge[]> {
+  const links = [] as Edge[];
+
+  // get the current Item
+  const item = itemId.includes("/")
+    ? await getNote(itemId)
+    : await getProject(itemId);
+
+  if (!item) return links;
+
+  if (item.dataType === "note") {
+    // forward links from the note
+    links.push(...(await idb.getAllFromIndex("links", "source", item._id)));
+  } else {
+    // forward links of a project is the collection of forward links of its notes
+    const notes = await getNotes(item._id);
+    for (const note of notes) {
+      links.push(...(await idb.getAllFromIndex("links", "source", note._id)));
+    }
+  }
+
+  return links;
+}
+
+/**
+ * Given a Project or a Note, create a graph with nodes connected with it
+ * @param item A project or a note
+ * @returns returns {nodes, edges}
+ */
+export async function getGraph(itemId: string) {
+  const nodes = [] as NodeUI[];
+  const edges = [] as EdgeUI[];
+
+  const links = [] as Edge[];
+  links.push(...(await getForwardLinks(itemId)));
+  // backward links
+  links.push(...(await idb.getAllFromIndex("links", "target", itemId)));
+
+  // create graph
+  const uniqueIds = [] as string[];
+  for (const link of links) {
+    // create nodes
+    if (!uniqueIds.includes(link.source)) {
+      uniqueIds.push(link.source);
+      let splits = link.source.split("/");
+      let parent = splits[0];
+      let label = splits.slice(1).join("/");
+      nodes.push({
         data: {
-          id: item._id,
-          label: item.label,
-          type: item.dataType,
-          parent: item.projectId,
+          id: link.source,
+          label: label,
+          type: "note",
+          parent: parent,
         },
-      },
-    ] as NodeUI[];
-    const edges = [] as EdgeUI[];
-    const allNotes = (await db.getDocs("note")) as Note[];
+      });
 
-    // forward links of the item
-    let notes = [item];
-    if (item.type === "project") {
-      // if item is project, the forward links are the internal links in its notes
-      notes = notes.concat(
-        allNotes.filter((note) => note.projectId === item._id)
-      );
-    }
-    for (let note of notes) {
-      for (let link of note.links) {
-        // link.type is default to undefined (missing) already
-        let node = { data: link } as NodeUI;
-        try {
-          let forwardItem = await db.get(link.id);
-          node.data.type = forwardItem.dataType as "project" | "note";
-        } catch (error) {
-          // if the note does not exist, it's missing
-          node.data.type = undefined;
-        }
-        nodes.push(node);
-        edges.push({
-          data: {
-            source: note._id,
-            target: link.id,
-          },
-        });
-      }
-    }
-
-    // backward links
-    for (let note of allNotes) {
-      if (note.links.map((link) => link.id).includes(item._id)) {
+      // push its parent node
+      if (!uniqueIds.includes(parent)) {
+        uniqueIds.push(parent);
+        let project = (await getProject(parent)) as Project;
         nodes.push({
           data: {
-            id: note._id,
-            label: note.label,
-            type: "note",
-            parent: note.projectId,
-          },
-        });
-        edges.push({
-          data: {
-            source: note._id,
-            target: item._id,
+            id: project._id,
+            label: project.label,
+            type: "project",
           },
         });
       }
     }
 
-    return { nodes, edges };
-  } catch (error) {
-    console.log(error);
-    return { nodes: [], edges: [] };
-  }
-}
+    if (!uniqueIds.includes(link.target)) {
+      uniqueIds.push(link.target);
+      let isNote = link.target.includes("/");
+      let splits = link.target.split("/");
+      let parent = isNote ? splits[0] : undefined;
+      let label = isNote
+        ? splits.slice(1).join("/")
+        : ((await getProject(parent as string)) as Project).label;
+      let type: "note" | "project" | undefined;
+      // see if the target exists
+      if (!(await itemExists(link.target))) type = undefined;
+      else if (isNote) type = "note";
+      else type = "project";
 
-/**
- * Given nodes, get each's parent project as node
- * @param nodes
- * @returns parentNodes
- */
-export async function getParents(nodes: NodeUI[]): Promise<NodeUI[]> {
-  const parentIds = nodes.map((node) => node.data.parent);
-  const parentNodes = [] as NodeUI[];
-  const projects = (await db.getDocs("project")) as Project[];
-  for (let project of projects) {
-    if (parentIds.includes(project._id))
-      parentNodes.push({
-        data: { id: project._id, label: project.label, type: "project" },
+      nodes.push({
+        data: {
+          id: link.target,
+          label: label,
+          type: type,
+          parent: parent,
+        },
       });
+
+      // push its parent node
+      if (parent && !uniqueIds.includes(parent)) {
+        uniqueIds.push(parent);
+        let project = (await getProject(parent)) as Project;
+        nodes.push({
+          data: {
+            id: project._id,
+            label: project.label,
+            type: "project",
+          },
+        });
+      }
+    }
+
+    // create edge
+    edges.push({
+      data: {
+        source: link.source,
+        target: link.target,
+      },
+    });
   }
-  return parentNodes;
+
+  return { nodes, edges };
 }

@@ -104,7 +104,6 @@ function changeLanguage(language: "en_US" | "zh_CN") {
 }
 
 async function changeStoragePath() {
-  // let result = window.fileBrowser.showFolderPicker();
   let result = await open({
     directory: true,
     multiple: true,
