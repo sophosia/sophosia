@@ -1,4 +1,4 @@
-import { openDB } from "idb";
+import { openDB, deleteDB } from "idb";
 
 export const idb = await openDB("linkDB", 1, {
   upgrade(idb) {
@@ -9,3 +9,4 @@ export const idb = await openDB("linkDB", 1, {
 });
 
 window.idb = idb;
+window.deleteDB = deleteDB;

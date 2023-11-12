@@ -66,16 +66,11 @@ export async function addNote(note: Note): Promise<Note | undefined> {
 }
 
 /**
- * Delete a note from database and from disk
+ * Delete a note from disk
  * @param noteId
  */
 export async function deleteNote(note: Note) {
   try {
-    // delete note entry from db
-    // const note = (await getNote(noteId)) as Note;
-    // await db.remove(note);
-
-    // delete actual file
     await deleteFile(note.path);
   } catch (error) {
     console.log(error);

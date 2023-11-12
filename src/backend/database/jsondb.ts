@@ -106,7 +106,7 @@ export class JsonDB {
   async getStoragePath(): Promise<string> {
     try {
       let config = JSON.parse(
-        await readTextFile("config.json", { dir: BaseDirectory.AppConfig })
+        await readTextFile("workspace.json", { dir: BaseDirectory.AppConfig })
       );
       this.storagePath = config.storagePath;
       return config.storagePath as string;
@@ -121,8 +121,8 @@ export class JsonDB {
       if (!(await exists(await appConfigDir())))
         await createDir(await appConfigDir());
       await writeTextFile(
-        "config.json",
-        JSON.stringify({ storagePath: path }),
+        "workspace.json",
+        JSON.stringify({ storagePath: path, lastScanTime: 0 }),
         { dir: BaseDirectory.AppConfig }
       );
       this.storagePath = path;

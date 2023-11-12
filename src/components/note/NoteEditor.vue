@@ -246,7 +246,7 @@ async function saveLinks() {
   let newLinkIds = Array.from(new Set(newLinks.map((link) => link.target)));
   if (!_.isEqual(linkIds, newLinkIds)) {
     // update indexeddb
-    await updateLinks(links.value, newLinks);
+    await updateLinks(noteId.value, newLinks);
     links.value = newLinks;
     // notify graphview to update
     bus.emit("updateGraph");

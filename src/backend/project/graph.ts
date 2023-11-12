@@ -18,23 +18,19 @@ async function itemExists(itemId: string) {
 
 /**
  * Update links of a note
- * @param oldLinks old links of a note
- * @param newLinks new links of a note
+ * @param noteId
+ * @param links new links of a note
  */
-export async function updateLinks(oldLinks: Edge[], newLinks: Edge[]) {
+export async function updateLinks(noteId: string, links: Edge[]) {
   try {
-    const keys = [];
-    if (oldLinks.length > 0) {
-      const source = oldLinks[0].source; // all source are the same
-      keys.push(...(await idb.getAllKeysFromIndex("links", "source", source)));
-    }
+    const keys = await idb.getAllKeysFromIndex("links", "source", noteId);
     const tx = idb.transaction("links", "readwrite");
     const promises = [] as Promise<void | IDBValidKey>[];
     // delete all old links
     if (keys.length > 0)
       promises.push(...keys.map((key) => tx.store.delete(key)));
     // add all new links
-    promises.push(...newLinks.map((link) => tx.store.put(link)));
+    promises.push(...links.map((link) => tx.store.put(link)));
     promises.push(tx.done);
     await Promise.all(promises);
   } catch (error) {
