@@ -8,7 +8,7 @@
     :nodes="projectStore.openedProjects"
     node-key="_id"
     selected-color="primary"
-    v-model:selected="stateStore.currentPageId"
+    v-model:selected="stateStore.currentItemId"
     v-model:expanded="expanded"
   >
     <template v-slot:default-header="prop">
@@ -118,15 +118,24 @@
         />
         <!-- note icon has 1rem width -->
         <!-- input must have keypress.space.stop since space is default to expand row rather than space in text -->
-        <input
-          v-if="prop.node._id == renamingNoteId"
-          style="width: calc(100% - 1.2rem)"
-          v-model="prop.node.label"
-          @keydown.enter="renameNote"
-          @blur="renameNote"
-          @keypress.space.stop
-          ref="renameInput"
-        />
+        <div v-if="prop.node._id == renamingNoteId">
+          <input
+            style="width: calc(100% - 1.2rem)"
+            v-model="prop.node.label"
+            @input="checkDuplicate(prop.node)"
+            @keydown.enter="renameNote"
+            @blur="renameNote"
+            @keypress.space.stop
+            ref="renameInput"
+          />
+          <q-tooltip
+            v-if="pathDuplicate"
+            v-model="pathDuplicate"
+            class="bg-red"
+          >
+            name already exists
+          </q-tooltip>
+        </div>
         <!-- add item-id and type for access of drag source -->
         <div
           v-else
@@ -150,15 +159,16 @@
   </q-tree>
 </template>
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from "vue";
+import { inject, nextTick, onMounted, ref, watch } from "vue";
 import { QTree } from "quasar";
-import { Note, NoteType, Page, Project } from "src/backend/database";
+import { Note, NoteType, Page, Project, db } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { getProject } from "src/backend/project/project";
 import { join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/shell";
+import { exists } from "@tauri-apps/api/fs";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -167,17 +177,23 @@ const tree = ref<QTree | null>(null);
 const renameInput = ref<HTMLInputElement | null>(null);
 // const renamingNote = ref<QTreeNode | null>(null);
 const renamingNoteId = ref("");
+const oldNoteName = ref("");
+const pathDuplicate = ref(false);
 const addingNote = ref(false);
 const expanded = ref<string[]>([]);
 const showProjectMenu = ref(true);
 
+const updateComponent = inject("updateComponent") as (
+  oldItemId: string,
+  state: { id: string; label: string }
+) => Promise<void>;
+
 onMounted(async () => {
-  console.log("openedProjects", projectStore.openedProjects);
   // expand all projects
   expanded.value = Array.from(projectStore.openedProjects.map((p) => p._id));
 
   // select the item associated with current window
-  let selected = stateStore.currentPageId;
+  let selected = stateStore.currentItemId;
   if (!tree.value) return;
   let selectedNode = tree.value.getNodeByKey(selected);
   if (!!selectedNode && selectedNode?.children?.length > 0)
@@ -216,8 +232,7 @@ function menuSwitch(node: Project | Note) {
 }
 
 function selectItem(node: Project | Note) {
-  console.log(node);
-  stateStore.currentPageId = node._id;
+  stateStore.currentItemId = node._id;
   if (node.dataType === "project" && (node.children?.length as number) > 0)
     expanded.value.push(node._id);
 
@@ -266,12 +281,12 @@ async function closeProject(projectId: string) {
   // if no page left, open library page
   setTimeout(() => {
     if (projectStore.openedProjects.length === 0)
-      stateStore.currentPageId = "library";
+      stateStore.currentItemId = "library";
   }, 50);
 }
 
 async function addNote(project: Project, type: NoteType) {
-  let note = projectStore.createNote(project._id, type);
+  let note = await projectStore.createNote(project._id, type);
   await projectStore.addNote(note);
   expanded.value.push(project._id);
   addingNote.value = true;
@@ -302,6 +317,10 @@ async function deleteNote(note: Note) {
 function setRenameNote(noteId: string) {
   // set renaming note and show input
   renamingNoteId.value = noteId;
+  oldNoteName.value = (
+    tree.value!.getNodeByKey(renamingNoteId.value) as Note
+  ).label;
+  pathDuplicate.value = false;
 
   setTimeout(() => {
     // wait till input appears
@@ -314,12 +333,33 @@ function setRenameNote(noteId: string) {
 }
 
 async function renameNote() {
-  let note = tree.value?.getNodeByKey(renamingNoteId.value) as Note;
+  const note = tree.value?.getNodeByKey(renamingNoteId.value) as Note;
   if (!!!note) return;
-  projectStore.updateNote(note._id, note);
+
+  if (pathDuplicate.value) note.label = oldNoteName.value;
+  let newNote = await projectStore.updateNote(note._id, note);
+
+  updateComponent(renamingNoteId.value, {
+    id: newNote._id,
+    label: newNote.label,
+  });
 
   if (addingNote.value) selectItem(note); // open the note
   addingNote.value = false;
   renamingNoteId.value = "";
+  oldNoteName.value = "";
+}
+
+async function checkDuplicate(note: Note) {
+  if (!note) return;
+  const extension = note.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
+  const path = await join(
+    db.storagePath,
+    note.projectId,
+    note.label + extension
+  );
+
+  if ((await exists(path)) && path !== note.path) pathDuplicate.value = true;
+  else pathDuplicate.value = false;
 }
 </script>

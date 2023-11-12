@@ -1,5 +1,4 @@
 import { db, Note, NoteType } from "../database";
-import { nanoid } from "nanoid";
 import { Buffer } from "buffer";
 import { createFile, deleteFile } from "./file";
 import {
@@ -8,31 +7,43 @@ import {
   readTextFile,
   writeTextFile,
   writeBinaryFile,
+  readDir,
+  renameFile,
 } from "@tauri-apps/api/fs";
-import { join, extname, dirname } from "@tauri-apps/api/path";
-import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { join, extname, basename } from "@tauri-apps/api/path";
 
 /**
  * Create a note
  * @param projectId
  * @param type
  */
-export function createNote(projectId: string, type: NoteType) {
-  return {
-    _id: nanoid(10),
+export async function createNote(projectId: string, type: NoteType) {
+  const extension = type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
+  let i = 1;
+  let label = "Untitled";
+  let path = await join(db.storagePath, projectId, label + extension);
+  while (await exists(path)) {
+    label = `Untitled ${i}`;
+    path = await join(db.storagePath, projectId, label + extension);
+    i++;
+  }
+
+  const note = {
+    _id: `${projectId}/${label}`,
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
     dataType: "note",
     projectId: projectId,
-    label: "New Note",
-    path: "",
+    label: label,
+    path: path,
     type: type,
     links: [],
   } as Note;
+
+  return note;
 }
 
 /**
- * Add a note to database
  * and creates the actual markdown file in project folder
  * @param note
  * @returns updated note
@@ -43,11 +54,11 @@ export async function addNote(note: Note): Promise<Note | undefined> {
     const extension = note.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
     note.path = (await createFile(
       note.projectId,
-      note._id + extension
+      note.label + extension
     )) as string;
 
     // add to db
-    await db.put(note);
+    // await db.put(note);
     return note;
   } catch (error) {
     console.log(error);
@@ -55,16 +66,11 @@ export async function addNote(note: Note): Promise<Note | undefined> {
 }
 
 /**
- * Delete a note from database and from disk
+ * Delete a note from disk
  * @param noteId
  */
-export async function deleteNote(noteId: string) {
+export async function deleteNote(note: Note) {
   try {
-    // delete note entry from db
-    const note = (await db.get(noteId)) as Note;
-    await db.remove(note);
-
-    // delete actual file
     await deleteFile(note.path);
   } catch (error) {
     console.log(error);
@@ -72,17 +78,23 @@ export async function deleteNote(noteId: string) {
 }
 
 /**
- * Update information of a note in database
+ * Update information of a note data according to the new label
  * @param noteId
  * @param props - update properties
  */
 export async function updateNote(noteId: string, props: Note) {
   try {
-    const note = (await db.get(noteId)) as Note;
-    props.timestampModified = Date.now();
-    Object.assign(note, props);
-    await db.put(note);
-    return note;
+    const extension =
+      props.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
+    const oldPath = props.path;
+    props.path = await join(
+      db.storagePath,
+      props.projectId,
+      props.label + extension
+    );
+    await renameFile(oldPath, props.path);
+    props._id = `${props.projectId}/${props.label}`;
+    return props;
   } catch (error) {
     console.log(error);
   }
@@ -95,7 +107,25 @@ export async function updateNote(noteId: string, props: Note) {
  */
 export async function getNote(noteId: string): Promise<Note | undefined> {
   try {
-    return (await db.get(noteId)) as Note;
+    // If it's a markdown note, then label does not contain .md
+    // If it's a excalidraw note, then label does contain .excalidraw
+    const splits = noteId.split("/");
+    const projectId = splits[0];
+    const label = splits.slice(1).join("/");
+    const path = (await join(db.storagePath, ...splits)) + ".md";
+    const note = {
+      _id: noteId,
+      timestampAdded: Date.now(),
+      timestampModified: Date.now(),
+      dataType: "note",
+      projectId: projectId,
+      label: label,
+      path: path,
+      type: NoteType.MARKDOWN,
+      links: [],
+      exists: await exists(path),
+    } as Note;
+    return note;
   } catch (error) {
     console.log(error);
   }
@@ -108,8 +138,32 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
  */
 export async function getNotes(projectId: string): Promise<Note[]> {
   try {
-    let notes = (await db.getDocs("note")) as Note[];
-    return notes.filter((note) => note.projectId === projectId);
+    // let notes = (await db.getDocs("note")) as Note[];
+    // return notes.filter((note) => note.projectId === projectId);
+    // TODO: support folders in project folder
+    // see example of readDir in https://tauri.app/v1/api/js/fs/
+    const notes = [] as Note[];
+    const files = await readDir(await join(db.storagePath, projectId), {
+      recursive: false,
+    });
+    for (const file of files) {
+      let ext = await extname(file.path);
+      let label = await basename(file.path, "." + ext);
+      if (!["excalidraw", "md"].includes(ext)) continue;
+      notes.push({
+        _id: `${projectId}/${label}`,
+        timestampAdded: Date.now(),
+        timestampModified: Date.now(),
+        dataType: "note",
+        projectId: projectId,
+        label: label,
+        path: file.path,
+        type: ext === "excalidraw" ? NoteType.EXCALIDRAW : NoteType.MARKDOWN,
+        links: [],
+      } as Note);
+    }
+    // sort by label
+    return notes.sort((n1, n2) => (n1.label < n2.label ? -1 : 1));
   } catch (error) {
     console.log(error);
     return [];
@@ -121,7 +175,8 @@ export async function getNotes(projectId: string): Promise<Note[]> {
  * @returns {Note[]} array of notes
  */
 export async function getAllNotes(): Promise<Note[]> {
-  return (await db.getDocs("note")) as Note[];
+  // return (await db.getDocs("note")) as Note[];
+  return [];
 }
 
 /**
@@ -134,17 +189,9 @@ export async function loadNote(
   notePath?: string
 ): Promise<string> {
   try {
-    const note = (await db.get(noteId)) as Note;
-    if (await exists(note.path)) return await readTextFile(note.path);
-    else return "";
+    const note = (await getNote(noteId)) as Note;
+    return await readTextFile(notePath || note.path);
   } catch (error) {
-    if ((error as Error).name == "not_found") {
-      if (notePath) return await readTextFile(notePath);
-      else {
-        console.log("Error: Must have a valid noteId or notePath");
-        return "";
-      }
-    }
     return "";
   }
 }
@@ -160,14 +207,10 @@ export async function saveNote(
   notePath?: string
 ) {
   try {
-    const note = (await db.get(noteId)) as Note;
-    await writeTextFile(note.path, content);
+    const note = (await getNote(noteId)) as Note;
+    await writeTextFile(notePath || note.path, content);
   } catch (error) {
-    if ((error as Error).name == "not_found") {
-      // might be a note opened by plugin
-      if (notePath) await writeTextFile(notePath, content);
-      else console.log("Error: Must pass in a valid noteId or valid notePath");
-    }
+    console.log(error);
   }
 }
 
@@ -184,16 +227,16 @@ export async function uploadImage(
   if (!file.type.includes("image")) return;
 
   try {
-    const note = (await db.get(noteId)) as Note;
     const imgType: string = await extname(file.name); // png
-    const imgName: string = `${nanoid(10)}.${imgType}`; // use nanoid as img name
-    const imgFolder: string = await join(await dirname(note.path), "img");
+    const imgName: string = `SI${db.nanoid}.${imgType}`; // use nanoid as img name
+    // const imgFolder: string = await join(await dirname(note.path), "img");
+    const imgFolder: string = await join(db.storagePath, ".sophosia", "image");
     const imgPath: string = await join(imgFolder, imgName);
     if (!(await exists(imgFolder))) await createDir(imgFolder);
 
     const arrayBuffer: ArrayBuffer = await file.arrayBuffer();
     await writeBinaryFile(imgPath, Buffer.from(arrayBuffer));
-    return { imgName: imgName, imgPath: convertFileSrc(imgPath) };
+    return { imgName: imgName, imgPath: imgName };
   } catch (error) {
     console.log(error);
   }

@@ -35,8 +35,8 @@ export const useStateStore = defineStore("stateStore", {
 
     // page
     openedPage: { id: "", type: "", label: "" },
-    closedPageId: "",
-    currentPageId: "library",
+    closedItemId: "",
+    currentItemId: "library",
   }),
 
   actions: {
@@ -51,7 +51,7 @@ export const useStateStore = defineStore("stateStore", {
       this.ribbonToggledBtnUid =
         state.ribbonToggledBtnUid || this.ribbonToggledBtnUid;
       this.selectedFolderId = state.selectedFolderId || this.selectedFolderId;
-      this.currentPageId = state.currentPageId || this.currentPageId;
+      this.currentItemId = state.currentItemId || this.currentItemId;
       this.openedProjectIds = new Set(state.openedProjectIds); // convert to Set after loading
       this.settings = Object.assign(this.settings, state.settings); // if state.settings is missing anything, this won't hurt!
 
@@ -69,7 +69,7 @@ export const useStateStore = defineStore("stateStore", {
         libraryRightMenuSize: this.libraryRightMenuSize,
         showLibraryRightMenu: this.showLibraryRightMenu,
         selectedFolderId: this.selectedFolderId,
-        currentPageId: this.currentPageId,
+        currentItemId: this.currentItemId,
         openedProjectIds: [...this.openedProjectIds] as string[], // convert to Array for saving
         settings: this.settings as Settings,
       } as AppState;
@@ -79,8 +79,7 @@ export const useStateStore = defineStore("stateStore", {
      * Layout Control
      */
 
-    async openPage(page: Page | null) {
-      if (!page?.id) return;
+    async openPage(page: Page) {
       const projectStore = useProjectStore();
       if (page.type === "ReaderPage") await projectStore.openProject(page.id);
       else if (page.type === "NotePage" || page.type === "ExcalidrawPage") {
@@ -93,7 +92,7 @@ export const useStateStore = defineStore("stateStore", {
 
     closePage(pageId: string) {
       if (!pageId) return;
-      this.closedPageId = pageId;
+      this.closedItemId = pageId;
     },
 
     /**

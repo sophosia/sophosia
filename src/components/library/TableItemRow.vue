@@ -25,13 +25,22 @@
           style="font-size: 1rem"
           name="bi-file-text-fill"
         />
-        <input
-          v-if="renaming"
-          v-model="label"
-          @blur="onRenameNote"
-          @keydown.enter="($refs.renameInput as HTMLInputElement).blur()"
-          ref="renameInput"
-        />
+        <div v-if="renaming">
+          <input
+            v-model="label"
+            @input="checkDuplicate"
+            @blur="renameNote"
+            @keydown.enter="renameNote"
+            ref="renameInput"
+          />
+          <q-tooltip
+            v-if="pathDuplicate"
+            v-model="pathDuplicate"
+            class="bg-red"
+          >
+            name already exists
+          </q-tooltip>
+        </div>
         <div
           v-else
           style="font-size: 1rem"
@@ -136,14 +145,15 @@
 </template>
 <script setup lang="ts">
 // types
-import { computed, PropType, ref, watchEffect } from "vue";
-import { Project, Note, NoteType } from "src/backend/database";
+import { PropType, Ref, inject, ref, watchEffect } from "vue";
+import { Project, Note, NoteType, db } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { copyToClipboard } from "quasar";
-import { basename } from "@tauri-apps/api/path";
+import { basename, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
+import { exists } from "@tauri-apps/api/fs";
 const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
 });
@@ -153,6 +163,14 @@ const projectStore = useProjectStore();
 const renaming = ref(false);
 const renameInput = ref<HTMLInputElement | null>(null);
 const label = ref("");
+const renamingNoteId = inject("renamingNoteId") as Ref<string>;
+const oldNoteName = ref("");
+const pathDuplicate = ref(false);
+
+const updateComponent = inject("updateComponent") as (
+  oldItemId: string,
+  state: { id: string; label: string }
+) => Promise<void>;
 
 // label has to be reactive
 // once props.item.path is changed
@@ -163,6 +181,9 @@ watchEffect(async () => {
   } else if (props.item.dataType === "project") {
     label.value = await basename(props.item.path as string);
   }
+
+  // if the note is newly added, rename it immediately
+  if (renamingNoteId.value === props.item._id) setRenaming();
 });
 
 function copyID() {
@@ -195,6 +216,9 @@ function openItem() {
 
 function setRenaming() {
   renaming.value = true;
+  props.item.label;
+  oldNoteName.value = props.item.label;
+  pathDuplicate.value = false;
 
   setTimeout(() => {
     let input = renameInput.value as HTMLInputElement;
@@ -203,11 +227,18 @@ function setRenaming() {
   }, 100);
 }
 
-async function onRenameNote() {
-  await projectStore.updateNote(props.item._id, {
-    label: label.value,
-  } as Note);
+async function renameNote() {
+  let note = props.item as Note;
+  let oldNoteId = props.item._id;
+  note.label = pathDuplicate.value ? oldNoteName.value : label.value;
+  let newNote = await projectStore.updateNote(note._id, note);
+  updateComponent(oldNoteId, {
+    id: newNote._id,
+    label: newNote.label,
+  });
   renaming.value = false;
+  renamingNoteId.value = "";
+  pathDuplicate.value = false;
 }
 
 async function deleteItem() {
@@ -216,5 +247,19 @@ async function deleteItem() {
 
 async function renameFile() {
   await projectStore.renamePDF(props.item._id);
+}
+
+async function checkDuplicate() {
+  const extension =
+    props.item.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
+  const path = await join(
+    db.storagePath,
+    props.item.projectId,
+    label.value + extension
+  );
+
+  if ((await exists(path)) && path !== props.item.path)
+    pathDuplicate.value = true;
+  else pathDuplicate.value = false;
 }
 </script>

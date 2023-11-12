@@ -204,6 +204,8 @@ import { generateCiteKey } from "src/backend/project/meta";
 import { db } from "src/backend/database";
 import { useI18n } from "vue-i18n";
 import pluginManager from "src/backend/plugin";
+import { homeDir, join } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/api/dialog";
 
 const stateStore = useStateStore();
 const { locale } = useI18n({ useScope: "global" });
@@ -296,9 +298,14 @@ const citeKeyConnector = ref(
  * Methods
  *********************/
 async function showFolderPicker() {
-  let result = window.fileBrowser.showFolderPicker();
-  if (result !== undefined && !!result[0]) {
-    let storagePath = result[0]; // do not update texts in label yet
+  // let result = window.fileBrowser.showFolderPicker();
+  let result = await open({
+    directory: true,
+    multiple: false,
+    defaultPath: await homeDir(),
+  });
+  if (result !== undefined && result != null && !!result) {
+    let storagePath = result as string; // do not update texts in label yet
     await changeStoragePath(storagePath);
   }
 }
@@ -308,6 +315,7 @@ async function changeStoragePath(newStoragePath: string) {
   let oldStoragePath = stateStore.settings.storagePath;
   stateStore.settings.storagePath = newStoragePath;
   await saveAppState();
+  await db.setStoragePath(newStoragePath);
   await moveFiles(oldStoragePath, newStoragePath);
   pluginManager.changePath(newStoragePath);
   await pluginManager.reloadAll(); // reload plugins
@@ -324,9 +332,9 @@ async function moveFiles(oldPath: string, newPath: string) {
   let current = 0;
 
   // move hidden folders
-  let oldHiddenFolder = window.path.join(oldPath, ".research-helper");
-  let newHiddenFolder = window.path.join(newPath, ".research-helper");
-  let error = changePath(oldHiddenFolder, newHiddenFolder);
+  let oldHiddenFolder = await join(oldPath, ".research-helper");
+  let newHiddenFolder = await join(newPath, ".research-helper");
+  let error = await changePath(oldHiddenFolder, newHiddenFolder);
   if (error) errors.value.push(error);
   current++;
   progress.value = current / total;
@@ -335,9 +343,9 @@ async function moveFiles(oldPath: string, newPath: string) {
 
   for (let project of projects) {
     if (!!!project.path) continue;
-    let oldProjectFolder = window.path.join(oldPath, project._id);
-    let newProjectFolder = window.path.join(newPath, project._id);
-    let error = changePath(oldProjectFolder, newProjectFolder);
+    let oldProjectFolder = await join(oldPath, project._id);
+    let newProjectFolder = await join(newPath, project._id);
+    let error = await changePath(oldProjectFolder, newProjectFolder);
     if (error) errors.value.push(error);
     project.path = project.path.replace(oldPath, newPath);
     current++;

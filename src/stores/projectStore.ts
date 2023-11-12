@@ -28,6 +28,8 @@ export const useProjectStore = defineStore("projectStore", {
     openedProjects: [] as Project[], // array of opened projects
 
     updatedProject: {} as Project, // for updating window tab name
+    renamingNoteId: "",
+    renamedNote: {} as Note, // for notifying note editor the note has been renamed
   }),
 
   actions: {
@@ -156,8 +158,8 @@ export const useProjectStore = defineStore("projectStore", {
      * @param projectId
      * @param type
      */
-    createNote(projectId: string, type: NoteType) {
-      return createNote(projectId, type);
+    async createNote(projectId: string, type: NoteType) {
+      return await createNote(projectId, type);
     },
 
     /**
@@ -172,19 +174,26 @@ export const useProjectStore = defineStore("projectStore", {
       this._updateProjectUI(project);
     },
 
-    async updateNote(noteId: string, props: Note) {
+    async updateNote(noteId: string, props: Note): Promise<Note> {
       // update db
       let note = (await updateNote(noteId, props)) as Note;
+      this.renamedNote = note;
       // update ui
       let project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
+      return note;
     },
 
     async deleteNote(noteId: string) {
       let note = (await this.getNoteFromDB(noteId)) as Note;
-      await deleteNote(noteId);
+      // await deleteNote(noteId);
+      await deleteNote(note);
       let project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
+    },
+
+    setRenameNote(noteId: string) {
+      this.renamingNoteId = noteId;
     },
 
     async getNoteFromDB(noteId: string) {

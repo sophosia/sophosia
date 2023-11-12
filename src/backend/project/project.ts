@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 import { db, Project, SpecialFolder } from "../database";
 import {
   copyFileToProjectFolder,
@@ -16,7 +15,7 @@ import { renameFile } from "@tauri-apps/api/fs";
 export function createProject(folderId: string) {
   // create empty project entry
   const project = {
-    _id: nanoid(10),
+    _id: `SP${db.nanoid}`,
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
     dataType: "project",

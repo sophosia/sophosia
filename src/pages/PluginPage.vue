@@ -5,11 +5,11 @@
 import { onMounted, ref } from "vue";
 import pluginManager from "src/backend/plugin";
 import { ComponentName, View } from "src/backend/database";
-
+import { PropType } from "vue";
 const props = defineProps({
   itemId: { type: String, required: true },
-  visible: { type: Boolean, required: true },
-  data: { type: Object, requried: false },
+  visible: { type: Boolean, reqruied: true },
+  data: { type: Object as PropType<{ path: String }>, required: false },
 });
 
 const root = ref<HTMLDivElement | null>(null);

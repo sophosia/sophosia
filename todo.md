@@ -1,48 +1,25 @@
-- [ ] backend
+- [x] forward/backward link
+  - [x] make them working
+  - [x] HoverPane
+- [x] use indexdb to store all links
+  - [x] graphview
+  - [x] save link when editing note
+  - [x] scan through all documents to update links when app starts
+    - [x] in config folder, the file must have the last scan time
+    - [x] using the last scan time and meta function from tauri's fs extra to determine wheter or not to rescan a file
+    - [x] scan file and updateLinks
+- [ ] updateLinks when file is renamed
+- [ ] create a markdown note with name projectId.md under each folder, so that when user in obsidian click a link target to the project can navigate to the folder
+  - [ ] display this note in sophosia with a different label ???
+  - [ ] this note has project title as its title, authors and abstract by default. So hoverPane shows this note instead.
+- [ ] when manually created a folder in storagePath, create the corresponding project in sophosia
+  - [ ] separate the logic of addProject and createProjectFolder
+  - [ ] separate the logic of deleteProject and deleteProjectFolder
+  - [ ] create project
+- [x] It seems no need to separate pageId and itemId as long as we have the oldItemId
+- [ ] change storage path
+- [ ] get rid of excalidraw
 
-  - create 1 json file for each project, save them in the same location, and create views for usual queries
-  - [x] storagePath
-    - [x] getStoragePath from AppConfigDir
-    - [x] setStoragePath to AppConfigDir
-  - [x] create hidden folder in storagePath once storagePath is known
-    - [x] create .sophosia
-    - [x] create .sophosia/project, .sophosia/note, .sophosia/folder, .sophosia/annotation, .sophosia/pdfState
-  - [x] implement JsonDB
-    - [x] get, remove, put, post
-    - [x] save/load appState.json, layout.json to/from .sophosia
-    - [x] save/load other json files to/from .sophosia/dataType
-  - [x] remove \_rev
-    - [x] model
-    - [x] folder
-    - [x] project
-    - [x] layout
-    - [x] appstate
-    - [x] annotation
-    - [x] pdfstate
-    - [x] note
-    - [ ] graph
-  - [ ] replace db.find with db.getDocs(dataType) and some filter functions
-    - [x] folder
-    - [x] project
-    - [x] layout
-    - [x] appstate
-    - [x] annotation
-    - [x] pdfstate
-    - [x] note
-    - [ ] graph
-  - [ ] replace uid() by nanoid(10)
-    - [x] folder
-    - [x] project
-    - [x] annotation
-    - [x] pdfstate
-    - [x] note
-    - [ ] graph
-  - [ ] remove pouchdb
-    - [ ] remove module
-    - [ ] remove boot file
-    - [ ] remove browserify events and stuff
-
-- [ ] note
-  - the internal links will use wikilinks
-  - no native support of wikilinks in vditor, need to render wikilinks after vditor is finished rendering.
-  - can use regex to find all texts like this [[*]], then render them as link
+- To enforce data consistent, we use markdown link of format [label](path/to/file.md#^block-id) in ob
+  1. turn of wikilinks
+  2. use absolute path in vault

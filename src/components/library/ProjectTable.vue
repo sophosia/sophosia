@@ -110,7 +110,7 @@
 
 <script setup lang="ts">
 // types
-import { nextTick, onMounted, PropType, ref, toRaw } from "vue";
+import { nextTick, onMounted, PropType, provide, ref, toRaw } from "vue";
 import { Project, Note, Author } from "src/backend/database";
 import { QTable, QTableColumn, QTr } from "quasar";
 // components
@@ -135,6 +135,8 @@ const props = defineProps({
 const emit = defineEmits(["dragProject", "update:projects"]);
 
 let storedSelectedRow = {};
+const renamingNoteId = ref("");
+provide("renamingNoteId", renamingNoteId);
 const isClickingPDF = ref(false);
 const showExpansion = ref(false);
 const expansionText = ref<string[]>([]);

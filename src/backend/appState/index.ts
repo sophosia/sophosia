@@ -24,7 +24,7 @@ async function getAppState(): Promise<AppState> {
       libraryRightMenuSize: 30,
       showLibraryRightMenu: false,
       selectedFolderId: "library",
-      currentPageId: "library",
+      currentItemId: "library",
       openedProjectIds: [],
       settings: {
         theme: "dark",

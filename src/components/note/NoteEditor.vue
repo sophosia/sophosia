@@ -13,7 +13,7 @@
 <script setup lang="ts">
 // types
 import { inject, nextTick, onMounted, ref, watch } from "vue";
-import { Note, NoteType, Project, Node, db } from "src/backend/database";
+import { Note, NoteType, Project, Edge, db } from "src/backend/database";
 // vditor
 import Vditor from "vditor";
 import "src/css/vditor/index.css";
@@ -25,7 +25,6 @@ import {
   getAllNotes,
   getNote,
   uploadImage,
-  updateNote,
 } from "src/backend/project/note";
 
 import { getAllProjects, getProject } from "src/backend/project/project";
@@ -35,10 +34,13 @@ import { useI18n } from "vue-i18n";
 import _ from "lodash";
 import { authorToString } from "src/backend/project/utils";
 import { generateCiteKey } from "src/backend/project/meta";
-import { dirname, sep } from "@tauri-apps/api/path";
+import { dirname, join, sep } from "@tauri-apps/api/path";
 
 import HoverPane from "./HoverPane.vue";
 import { open } from "@tauri-apps/api/shell";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { useProjectStore } from "src/stores/projectStore";
+import { getForwardLinks, updateLinks } from "src/backend/project/graph";
 
 const stateStore = useStateStore();
 const { t } = useI18n({ useScope: "global" });
@@ -50,15 +52,16 @@ const props = defineProps({
   data: { type: Object, required: false },
 });
 
-const currentNote = ref<Note>();
+const noteId = ref(props.noteId); // noteId might change as user rename
 const vditor = ref<Vditor | null>(null);
 const vditorDiv = ref<HTMLElement | null>(null);
 const showEditor = ref(false);
-const linkBase = ref("");
 const hoverPane = ref();
 const hoverContent = ref("");
 // tells HoverPane the hovered project path prefix and the content to show
-const hoverData = ref({ linkBase: "", content: "" });
+const hoverData = ref({ content: "" });
+const projectStore = useProjectStore();
+const links = ref<Edge[]>([]);
 
 watch(
   () => stateStore.settings.theme,
@@ -67,9 +70,16 @@ watch(
   }
 );
 
+watch(
+  () => projectStore.renamedNote,
+  (note: Note) => {
+    noteId.value = note._id;
+  }
+);
+
 onMounted(async () => {
   if (!vditorDiv.value) return;
-  currentNote.value = (await db.get(props.noteId)) as Note | undefined;
+  links.value = await getForwardLinks(props.noteId);
   vditorDiv.value.setAttribute("id", `vditor-${props.noteId}`);
   showEditor.value = true;
   initEditor();
@@ -113,17 +123,18 @@ function initEditor() {
     toolbarConfig: {
       pin: true,
     },
+    cdn: "vditor", // the entire vditor folder is in public
     toolbar: toolbar,
     lang: stateStore.settings.language as keyof II18n,
     tab: "    ", // use 4 spaces as tab
     preview: {
+      theme: {
+        current: stateStore.settings.theme,
+        path: "vditor/dist/css/content-theme",
+      },
       math: {
         // able to use digit in inline math
         inlineDigit: true,
-      },
-      markdown: {
-        // in DEV mode, load local files instead of server path
-        linkBase: linkBase.value,
       },
       hljs: {
         // enable line number in code block
@@ -150,7 +161,7 @@ function initEditor() {
       await setContent();
       setTheme(stateStore.settings.theme);
       changeLinks();
-      addImgResizer();
+      handleImage();
     },
     blur: () => {
       saveContent();
@@ -158,7 +169,7 @@ function initEditor() {
     input: () => {
       saveContent();
       changeLinks();
-      addImgResizer();
+      handleImage();
     },
     upload: {
       accept: "image/*",
@@ -197,7 +208,7 @@ function setTheme(theme: string) {
 
 async function setContent() {
   if (!vditor.value) return;
-  let content = await loadNote(props.noteId, props.data?.notePath);
+  let content = await loadNote(props.noteId);
   vditor.value.setValue(content);
 }
 
@@ -206,48 +217,37 @@ async function _saveContent() {
   // this will be called before unmount
   if (!vditor.value) return;
   let content = vditor.value.getValue();
-  await saveNote(props.noteId, content, props.data?.notePath);
-  if (currentNote.value) await saveLinks(); // only save links if it's a built-in note
+  await saveNote(noteId.value, content);
+  await saveLinks(); // only save links if it's a built-in note
 }
 
 const saveContent = debounce(_saveContent, 100) as () => void;
 
 async function saveLinks() {
-  if (!vditor.value || !currentNote.value) return;
-  let targetNodes = [] as Node[]; // target ids
+  if (!vditor.value) return;
+  let newLinks = [] as Edge[]; // target ids
 
   let parser = new DOMParser();
   let html = parser.parseFromString(vditor.value.getHTML(), "text/html");
   let linkNodes = html.querySelectorAll("a");
-  console.log(linkNodes);
   for (let node of linkNodes) {
     let href = (node as HTMLAnchorElement).getAttribute("href") as string;
-    // href = href.replace(linkBase.value + window.path.sep, "");
-    href = href.replace(linkBase.value + sep, "");
     try {
       new URL(href);
       // this is a valid url, do nothing
     } catch (error) {
       // this is an invalid url, might be an id
-      targetNodes.push({
-        id: href,
-        label: node.innerText,
-        type: undefined,
-      });
-      // default type to undefined for easier determination of missing node
+      newLinks.push({ source: noteId.value, target: href });
     }
   }
 
-  // compare to links of currentNote, only save when different
-  let linkIds = currentNote.value.links.map((n) => n.id);
-  let newLinkIds = targetNodes.map((n) => n.id);
+  // compare to the recorded links, only save when different
+  let linkIds = Array.from(new Set(links.value.map((link) => link.target)));
+  let newLinkIds = Array.from(new Set(newLinks.map((link) => link.target)));
   if (!_.isEqual(linkIds, newLinkIds)) {
-    currentNote.value.links = targetNodes;
-    currentNote.value = await updateNote(
-      currentNote.value._id,
-      currentNote.value
-    );
-
+    // update indexeddb
+    await updateLinks(noteId.value, newLinks);
+    links.value = newLinks;
     // notify graphview to update
     bus.emit("updateGraph");
   }
@@ -257,7 +257,7 @@ async function saveLinks() {
  * Modify the default click link behavior
  *****************************************/
 function _changeLinks() {
-  if (!currentNote.value || !vditorDiv.value) return;
+  if (!vditorDiv.value) return;
 
   let linkNodes = vditorDiv.value.querySelectorAll(
     "[data-type='a']"
@@ -280,12 +280,13 @@ async function clickLink(e: MouseEvent, link: string) {
   try {
     // valid external url, open it externally
     new URL(link);
-    // window.browser.openURL(link);
     await open(link);
   } catch (error) {
     // we just want the document, both getProject or getNote are good
     try {
-      let item = (await getNote(link)) as Note | Project;
+      let item = null;
+      if (link.includes("/")) item = (await getNote(link)) as Note;
+      else item = (await getProject(link)) as Project;
       let id = item._id;
       let label = item.label;
       let type = "";
@@ -300,9 +301,8 @@ async function clickLink(e: MouseEvent, link: string) {
     }
   }
 }
-
 async function hoverLink(linkNode: HTMLElement) {
-  if (!hoverPane.value || !currentNote.value) return;
+  if (!hoverPane.value) return;
   let link = (
     linkNode.querySelector("span.vditor-ir__marker--link") as HTMLElement
   ).innerHTML;
@@ -312,7 +312,9 @@ async function hoverLink(linkNode: HTMLElement) {
   } catch (error) {
     // we just want the document, both getProject or getNote are good
     try {
-      let item = (await getNote(link)) as Note | Project;
+      let item = null;
+      if (link.includes("/")) item = (await getNote(link)) as Note;
+      else item = (await getProject(link)) as Project;
       if (item.dataType === "project") {
         let lines = [
           `# ${item.title}`,
@@ -321,16 +323,8 @@ async function hoverLink(linkNode: HTMLElement) {
           `Abstract: ${item.abstract}`,
         ];
         hoverContent.value = lines.join("\n");
-        hoverData.value.linkBase = linkBase.value.replace(
-          currentNote.value.projectId,
-          item._id
-        );
         hoverData.value.content = lines.join("\n");
       } else if (item.dataType === "note") {
-        hoverData.value.linkBase = linkBase.value.replace(
-          currentNote.value.projectId,
-          item.projectId
-        );
         if (item.type === "excalidraw") {
           let lines = [
             "# Excalidraw note",
@@ -366,10 +360,24 @@ async function hoverLink(linkNode: HTMLElement) {
  * Add image resize handle on each image in the note
  ********************************************/
 // TODO: save image size
-function _addImgResizer() {
+async function _hangleImage() {
   if (!vditorDiv.value) return;
   let imgs = vditorDiv.value.querySelectorAll("img");
   for (let img of imgs) {
+    if (img.src.includes("http://localhost:9000")) {
+      // doing this so image can be display in dev mode
+      let relPath = img.src.replace("http://localhost:9000", "");
+      img.src = convertFileSrc(
+        await join(db.storagePath, ".sophosia", "image", relPath)
+      );
+    } else if (img.src.includes("tauri://localhost")) {
+      // doing this so image can be display in production mode
+      let relPath = img.src.replace("tauri://localhost", "");
+      img.src = convertFileSrc(
+        await join(db.storagePath, ".sophosia", "image", relPath)
+      );
+    }
+
     let p = img.parentElement?.parentElement;
     if (!!!p || !!p.onmouseover) continue;
     // add this only if the image does not have it
@@ -418,7 +426,7 @@ function _addImgResizer() {
     };
   }
 }
-const addImgResizer = debounce(_addImgResizer, 50) as () => void;
+const handleImage = debounce(_hangleImage, 50) as () => void;
 
 /*******************************************
  * Hints

@@ -25,14 +25,13 @@
           <LeftMenu
             v-if="ready"
             style="height: 100vh"
-            @renameNode="(node) => editComponentState(node)"
             ref="leftMenu"
           />
         </template>
         <template v-slot:after>
           <GLayout
             style="width: 100%; height: 100vh"
-            v-model:currentPageId="stateStore.currentPageId"
+            v-model:currentItemId="stateStore.currentItemId"
             @layoutchanged="onLayoutChanged"
             ref="layout"
           ></GLayout>
@@ -81,6 +80,7 @@ const leftMenuSize = ref(0);
 const ready = ref(false);
 
 provide("onLayoutChanged", onLayoutChanged);
+provide("updateComponent", updateComponent);
 
 /*******************
  * Watchers
@@ -112,7 +112,7 @@ watch(
 );
 
 watch(
-  () => stateStore.closedPageId,
+  () => stateStore.closedItemId,
   async (id: string) => {
     if (!!!id) return;
     let note = (await getNote(id)) as Note;
@@ -123,7 +123,7 @@ watch(
       }, 100);
     } else removeComponent(id);
     // clear this so we can reclose a reopened item
-    stateStore.closedPageId = "";
+    stateStore.closedItemId = "";
 
     stateStore.saveAppState();
   }
@@ -134,23 +134,19 @@ watch(
   () => stateStore.settings.language,
   () => {
     for (let id of ["library", "settings", "help"])
-      editComponentState({ _id: id, label: t(id) });
+      updateComponent(id, { id: id, label: t(id) });
   }
 );
 
-/**
- * update window tab names when items are updated
- */
-watch(
-  () => projectStore.updatedProject,
-  (project: Project) => {
-    editComponentState(project);
-    if (!project.children) return;
-    for (let note of project.children) {
-      editComponentState(note);
-    }
-  }
-);
+// /**
+//  * update window tab names when items are updated
+//  */
+// watch(
+//   () => projectStore.updatedProject,
+//   (project: Project) => {
+//     updateComponent(project._id, { id: project._id, label: project.label });
+//   }
+// );
 
 /*******************************************************
  * Methods
@@ -188,9 +184,12 @@ function removeComponent(id: string) {
  * After renaming a row in projectTree, we need to rename the window title.
  * @param item
  */
-async function editComponentState(item: PageItem | undefined) {
-  if (!layout.value || !item) return;
-  layout.value.renameGLComponent(item._id, item.label);
+async function updateComponent(
+  oldItemId: string,
+  state: { id: string; label: string }
+) {
+  if (!layout.value) return;
+  layout.value.updateGLComponent(oldItemId, state);
   let config = layout.value.getLayoutConfig();
   await updateLayout(config);
 }

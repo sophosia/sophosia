@@ -175,7 +175,7 @@ function changeLinks() {
           try {
             // valid external url, open it externally
             new URL(link);
-            window.browser.openURL(link);
+            open(link);
           } catch (error) {
             // we just want the document, both getProject or getNote are good
             try {
@@ -183,6 +183,7 @@ function changeLinks() {
               let id = item._id;
               let label = item.label;
               let type = "";
+              let data = { _id: item._id, label: label, path: item.path };
               if (item.dataType === "project") type = "ReaderPage";
               else if ((item as Project | Note).dataType === "note") {
                 if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";

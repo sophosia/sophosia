@@ -93,7 +93,7 @@
         </template>
         <GraphView
           v-if="isGraphViewOpened"
-          :itemId="stateStore.currentPageId"
+          :itemId="stateStore.currentItemId"
           :height="treeSize"
           ref="graphview"
         />

@@ -114,6 +114,11 @@ export enum SpecialFolder {
 /******************************************
  * For GraphView
  ******************************************/
+export interface Edge {
+  source: string;
+  target: string;
+}
+
 export interface Node {
   id: string; // id of the node
   label: string; // label of the node
@@ -125,7 +130,7 @@ export interface NodeUI {
 }
 
 export interface EdgeUI {
-  data: { source: string; target: string };
+  data: Edge;
 }
 
 /****************************************
@@ -253,7 +258,7 @@ export interface AppState {
   showLibraryRightMenu: boolean;
   selectedItemId?: string;
   selectedFolderId: string;
-  currentPageId?: string;
+  currentItemId?: string;
   openedProjectIds: string[];
   settings: Settings;
 }
@@ -268,7 +273,7 @@ export interface Page {
   id: string;
   type: string;
   label: string;
-  data?: any;
+  data?: { path: string };
 }
 
 /*******************
