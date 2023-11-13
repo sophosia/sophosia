@@ -161,6 +161,7 @@ watch(
  * @param id - itemId
  */
 async function setComponent(page: Page) {
+  console.log("set component");
   if (layout.value)
     await layout.value.addGLComponent(
       page.type,
@@ -189,6 +190,7 @@ async function updateComponent(
   state: { id: string; label: string }
 ) {
   if (!layout.value) return;
+  console.log("mainlayout updateComponent");
   layout.value.updateGLComponent(oldItemId, state);
   let config = layout.value.getLayoutConfig();
   await updateLayout(config);

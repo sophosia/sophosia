@@ -230,12 +230,16 @@ function setRenaming() {
 async function renameNote() {
   let note = props.item as Note;
   let oldNoteId = props.item._id;
-  note.label = pathDuplicate.value ? oldNoteName.value : label.value;
-  let newNote = await projectStore.updateNote(note._id, note);
-  updateComponent(oldNoteId, {
-    id: newNote._id,
-    label: newNote.label,
-  });
+  if (pathDuplicate.value) {
+    note.label = oldNoteName.value;
+  } else {
+    note.label = label.value;
+    let newNote = await projectStore.updateNote(note._id, note);
+    updateComponent(oldNoteId, {
+      id: newNote._id,
+      label: newNote.label,
+    });
+  }
   renaming.value = false;
   renamingNoteId.value = "";
   pathDuplicate.value = false;

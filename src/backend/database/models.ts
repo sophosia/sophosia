@@ -62,14 +62,11 @@ export enum NoteType {
  */
 export interface Note {
   _id: string; // unique id handled by database
-  timestampAdded: number; // timestamp when data is saved
-  timestampModified: number; // timestamp when data is updated
   dataType: "note"; // for database search
   projectId: string; // the project it belongs to
   path: string; // path to actual markdown file
   label: string; // markdown file name
   type: NoteType;
-  links: Node[]; // array of forward linked node
 }
 
 /**

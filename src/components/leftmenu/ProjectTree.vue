@@ -169,6 +169,7 @@ import { getProject } from "src/backend/project/project";
 import { join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/shell";
 import { exists } from "@tauri-apps/api/fs";
+import { batchReplaceLink } from "src/backend/project/scan";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -232,19 +233,15 @@ function menuSwitch(node: Project | Note) {
 }
 
 function selectItem(node: Project | Note) {
+  console.log("node", node);
   stateStore.currentItemId = node._id;
   if (node.dataType === "project" && (node.children?.length as number) > 0)
     expanded.value.push(node._id);
 
   // open item
   let id = node._id;
-  let type = "";
+  let type = node.dataType === "project" ? "ReaderPage" : "NotePage";
   let label = node.label;
-  if (node.dataType === "project") type = "ReaderPage";
-  else if ((node as Project | Note).dataType === "note") {
-    if (node.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-    else type = "NotePage";
-  }
   stateStore.openPage({ id, type, label });
 }
 
@@ -299,7 +296,7 @@ async function deleteNote(note: Note) {
   stateStore.closePage(note._id);
   await projectStore.deleteNote(note._id);
   // select something else if the selectedItem is deleted
-  if (note._id === projectStore.selected[0]._id) {
+  if (note._id === projectStore.selected[0]?._id) {
     let project = projectStore.openedProjects.find(
       (p) => p._id === note.projectId
     );
@@ -336,13 +333,17 @@ async function renameNote() {
   const note = tree.value?.getNodeByKey(renamingNoteId.value) as Note;
   if (!!!note) return;
 
-  if (pathDuplicate.value) note.label = oldNoteName.value;
-  let newNote = await projectStore.updateNote(note._id, note);
+  if (pathDuplicate.value) {
+    note.label = oldNoteName.value;
+  } else {
+    let newNote = await projectStore.updateNote(note._id, note);
 
-  updateComponent(renamingNoteId.value, {
-    id: newNote._id,
-    label: newNote.label,
-  });
+    // update window tab name
+    updateComponent(renamingNoteId.value, {
+      id: newNote._id,
+      label: newNote.label,
+    });
+  }
 
   if (addingNote.value) selectItem(note); // open the note
   addingNote.value = false;

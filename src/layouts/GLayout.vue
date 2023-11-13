@@ -157,6 +157,8 @@ const addGLComponent = async (
 
   // don't repeatly add components
   if (id in IdToRef) {
+    // FIXME: newly added note has Id in the IdToRef already???
+    console.log("IdToRef", IdToRef);
     focusById(id);
     return;
   }
@@ -257,6 +259,7 @@ const updateGLComponent = (
   oldItemId: string,
   state: { id: string; label: string }
 ) => {
+  if (!(oldItemId in IdToRef)) return;
   const refId = IdToRef[oldItemId];
   const container = MapComponents.value.get(refId)?.container;
   if (!!container) {

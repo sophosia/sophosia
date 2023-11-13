@@ -11,15 +11,6 @@ import {
   writeTextFile,
 } from "@tauri-apps/api/fs";
 
-// /**
-//  * Get storagePath from database
-//  * @returns storagePath
-//  */
-// async function storagePath(): Promise<string> {
-//   const state: AppState = await db.get("appState");
-//   return state.settings.storagePath;
-// }
-
 /**
  * Create project folder in storage path
  * @param projectId

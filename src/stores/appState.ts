@@ -82,7 +82,7 @@ export const useStateStore = defineStore("stateStore", {
     async openPage(page: Page) {
       const projectStore = useProjectStore();
       if (page.type === "ReaderPage") await projectStore.openProject(page.id);
-      else if (page.type === "NotePage" || page.type === "ExcalidrawPage") {
+      else {
         let note = await projectStore.getNoteFromDB(page.id);
         if (note && note.projectId)
           await projectStore.openProject(note.projectId);

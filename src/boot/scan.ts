@@ -1,3 +1,3 @@
-import { scan } from "src/backend/project/scan";
+import { scanAndUpdateDB } from "src/backend/project/scan";
 
-scan();
+scanAndUpdateDB();

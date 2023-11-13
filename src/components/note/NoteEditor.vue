@@ -439,7 +439,7 @@ const handleImage = debounce(_hangleImage, 50) as () => void;
 async function filterHints(key: string) {
   let hints = [];
   let projects = (await getAllProjects()) as Project[];
-  let notes = (await getAllNotes()) as Note[];
+  let noteIds = await getAllNotes();
 
   for (let project of projects) {
     if (project.title.toLowerCase().indexOf(key) > -1) {
@@ -459,20 +459,23 @@ async function filterHints(key: string) {
     }
   }
 
-  for (let note of notes) {
-    if (note.label.toLowerCase().indexOf(key) > -1) {
-      let parentProject = await getProject(note.projectId);
-      let citeKey = note.projectId;
-      if (parentProject)
-        citeKey = generateCiteKey(parentProject, "author-year-title", true);
+  for (let noteId of noteIds) {
+    const splits = noteId.split("/");
+    const label = splits[splits.length - 1];
+    const projectId = splits[0];
+    console.log("projectId", projectId);
+    if (label.toLowerCase().indexOf(key) > -1) {
+      let parentProject = await getProject(projectId);
+      let citeKey = projectId;
+      if (parentProject) citeKey = generateCiteKey(parentProject);
       hints.push({
-        value: `[${note.label}](${note._id})`,
+        value: `[${noteId}](${noteId})`,
         html: `
           <p style="font-size: 1rem" class="ellipsis q-my-none">
-            <strong>Note</strong>: ${note.label}
+            <strong>Note</strong>: ${label}
           </p>
           <p class="ellipsis q-my-none">
-            Belongs to: ${citeKey}
+            Belongs to: ${parentProject?.label}
           </p>
           `,
       });
