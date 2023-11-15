@@ -161,7 +161,6 @@ watch(
  * @param id - itemId
  */
 async function setComponent(page: Page) {
-  console.log("set component");
   if (layout.value)
     await layout.value.addGLComponent(
       page.type,

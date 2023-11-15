@@ -1,7 +1,7 @@
 <template>
   <ExcalidrawReact
     :visible="show"
-    :noteId="data._id"
+    :noteId="itemId"
   />
 </template>
 
@@ -10,12 +10,11 @@ import { onBeforeUnmount, onMounted, onUnmounted, ref, watch } from "vue";
 import { applyPureReactInVue } from "veaury";
 import CustomExcalidraw from "src/components/note/CustomExcalidraw";
 import { useStateStore } from "src/stores/appState";
-import { PageData } from "src/backend/database";
 import { PropType } from "vue";
 const props = defineProps({
-  id: { type: String, required: true },
+  itemId: { type: String, required: true },
   visible: { type: Boolean, reqruied: true },
-  data: { type: Object as PropType<PageData>, required: true },
+  data: { type: Object as PropType<{ path: String }>, required: false },
 });
 
 const stateStore = useStateStore();
@@ -26,17 +25,9 @@ const show = ref(props.visible);
 watch(
   () => stateStore.closedItemId,
   (id: string) => {
-    if (id === props.data._id) show.value = false;
+    if (id === props.itemId) show.value = false;
   }
 );
-
-onBeforeUnmount(() => {
-  console.log("before unmount");
-});
-
-onUnmounted(() => {
-  console.log("unmounted");
-});
 
 onMounted(() => {
   // MUST STOP render the react component before this vue component is unmounted
@@ -45,10 +36,10 @@ onMounted(() => {
   if (!activeTitle) return;
   let closeControl = activeTitle.nextElementSibling as HTMLDivElement;
   if (!closeControl.getAttribute("itemId"))
-    closeControl.setAttribute("itemId", props.data._id);
+    closeControl.setAttribute("itemId", props.itemId);
   if (!closeControl) return;
   closeControl.onmousedown = (e) => {
-    if ((e.target as HTMLDivElement).getAttribute("itemId") === props.data._id)
+    if ((e.target as HTMLDivElement).getAttribute("itemId") === props.itemId)
       show.value = false;
   };
 });

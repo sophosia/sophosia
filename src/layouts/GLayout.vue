@@ -96,6 +96,7 @@ const UnusedIndexes: number[] = [];
 let CurIndex = 0;
 let GlBoundingClientRect: DOMRect;
 
+const components = ref(new Map<string, any>());
 const instance = getCurrentInstance();
 const initialized = ref(false);
 
@@ -132,9 +133,17 @@ const addComponent = (
   // for vite's dynamic import, see the following page
   // https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations
   // when building the app, vite will automatically take care the imports for us
-  const component = markRaw(
-    defineAsyncComponent(() => import(`../pages/${componentType}.vue`))
-  );
+
+  // unknown async component error occurs if we create multiple async component with the same type at start up
+  if (!components.value.has(componentType)) {
+    components.value.set(
+      componentType,
+      markRaw(
+        defineAsyncComponent(() => import(`../pages/${componentType}.vue`))
+      )
+    );
+  }
+  const component = components.value.get(componentType);
   AllComponents.value.set(index, { component, id, data });
 
   return index;
@@ -157,7 +166,6 @@ const addGLComponent = async (
 
   // don't repeatly add components
   if (id in IdToRef) {
-    // FIXME: newly added note has Id in the IdToRef already???
     console.log("IdToRef", IdToRef);
     focusById(id);
     return;
@@ -205,6 +213,12 @@ const loadGLLayout = async (
           (itemConfig.componentState as Json).id as string,
           (itemConfig.componentState as Json).data
         );
+        await nextTick();
+        await nextTick();
+        await nextTick();
+        await nextTick();
+        await nextTick();
+        await nextTick();
         if (typeof itemConfig.componentState == "object")
           (itemConfig.componentState as Json)["refId"] = index;
         else itemConfig.componentState = { refId: index };
