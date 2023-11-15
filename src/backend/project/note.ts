@@ -100,7 +100,7 @@ export async function updateNote(noteId: string, props: Note) {
     await idb.delete("notes", noteId);
     await idb.put("notes", { noteId: props._id });
     // replace all related links in other markdown files and update indexeddb
-    batchReplaceLink(noteId, props._id);
+    await batchReplaceLink(noteId, props._id);
 
     return props;
   } catch (error) {

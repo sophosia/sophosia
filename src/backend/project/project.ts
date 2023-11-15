@@ -16,7 +16,7 @@ import { IdToPath } from "./utils";
 export function createProject(folderId: string) {
   // create empty project entry
   const projectId = `SP${db.nanoid}`;
-  const noteLabel = "Overview.md";
+  const noteLabel = `${projectId}.md`; // we'll change this to "Overview.md" in frontend
   const noteId = `${projectId}/${projectId}.md`;
   const notePath = IdToPath(noteId);
   const project = {

@@ -156,6 +156,10 @@ import { copyToClipboard } from "quasar";
 import { basename, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
+// utils
+import { useI18n } from "vue-i18n";
+const { t } = useI18n({ useScope: "global" });
+
 const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
 });

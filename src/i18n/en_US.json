@@ -146,5 +146,7 @@
   "date-modified": "Modified",
   "set-favorite": "Set as favorite",
   "citation-key": "Citation key",
-  "update-references": "Update references"
+  "update-references": "Update references",
+  "duplicate": "There' already a file with the same name",
+  "no-working-projects": "No working projects"
 }

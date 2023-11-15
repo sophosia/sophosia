@@ -146,5 +146,7 @@
   "date-modified": "修改日期",
   "set-favorite": "收藏",
   "citation-key": "引用键",
-  "update-references": "更新所有文献"
+  "update-references": "更新所有文献",
+  "duplicate": "该文件名已存在",
+  "no-working-projects": "无"
 }

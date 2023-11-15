@@ -4,7 +4,7 @@
     dense
     no-transition
     no-selection-unset
-    no-nodes-label="No working projects"
+    :no-nodes-label="$t('no-working-projects')"
     :nodes="projectStore.openedProjects"
     node-key="_id"
     selected-color="primary"
@@ -135,7 +135,7 @@
             v-model="pathDuplicate"
             class="bg-red"
           >
-            name already exists
+            {{ $t("duplicate") }}
           </q-tooltip>
         </div>
         <!-- add item-id and type for access of drag source -->
@@ -348,6 +348,8 @@ async function renameNote() {
       id: newNote._id,
       label: newNote.label,
     });
+
+    stateStore.showMessage("links has been updated");
   }
 
   if (addingNote.value) selectItem(note); // open the note
