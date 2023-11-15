@@ -84,6 +84,7 @@
               clickable
               v-close-popup
               @click="setRenameNote(prop.node._id)"
+              :disable="prop.node._id.split('/')[0] === prop.node.projectId"
             >
               <q-item-section> {{ $t("rename") }} </q-item-section>
             </q-item>
@@ -91,6 +92,7 @@
               clickable
               v-close-popup
               @click="deleteNote(prop.node)"
+              :disable="prop.node._id.split('/')[0] === prop.node.projectId"
             >
               <q-item-section> {{ $t("delete") }} </q-item-section>
             </q-item>
@@ -144,7 +146,11 @@
           :item-id="prop.key"
           :type="prop.node.dataType"
         >
-          {{ prop.node.label }}
+          {{
+            prop.node._id.split("/")[0] === prop.node.projectId
+              ? "Overview.md"
+              : prop.node.label
+          }}
           <q-tooltip> ID: {{ prop.key }} </q-tooltip>
         </div>
       </div>
@@ -169,7 +175,6 @@ import { getProject } from "src/backend/project/project";
 import { join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/shell";
 import { exists } from "@tauri-apps/api/fs";
-import { batchReplaceLink } from "src/backend/project/scan";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();

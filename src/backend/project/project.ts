@@ -1,4 +1,4 @@
-import { db, Project, SpecialFolder } from "../database";
+import { db, Note, Project, SpecialFolder } from "../database";
 import {
   copyFileToProjectFolder,
   createProjectFolder,
@@ -7,6 +7,7 @@ import {
 import { basename, extname } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
 import { renameFile } from "@tauri-apps/api/fs";
+import { IdToPath } from "./utils";
 
 /**
  * Create a project data
@@ -14,8 +15,12 @@ import { renameFile } from "@tauri-apps/api/fs";
  */
 export function createProject(folderId: string) {
   // create empty project entry
+  const projectId = `SP${db.nanoid}`;
+  const noteLabel = "Overview.md";
+  const noteId = `${projectId}/${projectId}.md`;
+  const notePath = IdToPath(noteId);
   const project = {
-    _id: `SP${db.nanoid}`,
+    _id: projectId,
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
     dataType: "project",
@@ -23,10 +28,21 @@ export function createProject(folderId: string) {
     title: "New Project",
     path: "",
     tags: [] as string[],
-    folderIds: ["library"],
+    folderIds: [SpecialFolder.LIBRARY.toString()],
     favorite: false,
+    children: [
+      {
+        _id: noteId,
+        dataType: "note",
+        projectId: projectId,
+        label: noteLabel,
+        path: notePath,
+        type: "markdown",
+      } as Note,
+    ],
   } as Project;
-  if (folderId != "library") project.folderIds.push(folderId);
+  if (folderId != SpecialFolder.LIBRARY.toString())
+    project.folderIds.push(folderId);
   return project;
 }
 
@@ -44,7 +60,7 @@ export async function addProject(
     delete project._graph;
 
     // create actual folder for containing its files
-    await createProjectFolder(project._id);
+    await createProjectFolder(project);
 
     // put entry to database
     await db.put(project);
@@ -71,9 +87,9 @@ export async function deleteProject(
     const project = (await db.get(projectId)) as Project;
     if (deleteFromDB) {
       // remove project and its related pdfState, pdfAnnotation and notes on db
-      for (let dataType of ["pdfState", "pdfAnnotation", "note", "project"]) {
+      for (let dataType of ["pdfState", "pdfAnnotation", "project"]) {
         const docs = await db.getDocs(dataType);
-        for (const doc of docs) await db.remove(doc);
+        for (const doc of docs) if (doc._id === projectId) await db.remove(doc);
       }
 
       // remove the acutual files

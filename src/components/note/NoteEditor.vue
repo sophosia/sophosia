@@ -284,17 +284,12 @@ async function clickLink(e: MouseEvent, link: string) {
   } catch (error) {
     // we just want the document, both getProject or getNote are good
     try {
-      let item = null;
-      if (link.includes("/")) item = (await getNote(link)) as Note;
-      else item = (await getProject(link)) as Project;
+      const item = link.includes("/")
+        ? ((await getNote(link)) as Note)
+        : ((await getProject(link)) as Project);
       let id = item._id;
       let label = item.label;
-      let type = "";
-      if (item.dataType === "project") type = "ReaderPage";
-      else if ((item as Project | Note).dataType === "note") {
-        if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-        else type = "NotePage";
-      }
+      let type = item.dataType === "project" ? "ReaderPage" : "NotePage";
       stateStore.openPage({ id, type, label });
     } catch (error) {
       console.log(error);

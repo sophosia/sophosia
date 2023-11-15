@@ -1,4 +1,4 @@
-import { db, AppState } from "../database";
+import { db, AppState, Project } from "../database";
 
 import { join, basename, dirname } from "@tauri-apps/api/path";
 import {
@@ -10,15 +10,29 @@ import {
   removeFile,
   writeTextFile,
 } from "@tauri-apps/api/fs";
+import { authorToString } from "./utils";
 
 /**
  * Create project folder in storage path
  * @param projectId
  */
-async function createProjectFolder(projectId: string) {
+async function createProjectFolder(project: Project) {
   try {
-    const projectPath = await join(await db.getStoragePath(), projectId);
-    await createDir(projectPath);
+    const projectPath = await join(db.storagePath, project._id);
+    const projectNotePath = await join(
+      db.storagePath,
+      project._id,
+      project._id + ".md"
+    );
+    if (!(await exists(projectPath))) await createDir(projectPath);
+    if (!(await exists(projectNotePath))) {
+      const content = `
+# Overview of ${project.label}
+- This note is auto managed, do not change the file name of this note.
+- Remove these lines as you wish, and enjoy note taking!
+      `;
+      await writeTextFile(projectNotePath, content);
+    }
   } catch (error) {
     console.log(error);
   }

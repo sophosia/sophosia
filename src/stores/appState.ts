@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { Dark } from "quasar";
 import { updateAppState } from "src/backend/appState";
-import { AppState, Page, Settings } from "src/backend/database";
+import { AppState, Page, Settings, SpecialFolder } from "src/backend/database";
 import { useProjectStore } from "./projectStore";
 import darkContent from "src/css/vditor/dark.css?raw";
 import lightContent from "src/css/vditor/light.css?raw";
@@ -19,7 +19,7 @@ export const useStateStore = defineStore("stateStore", {
     showLibraryRightMenu: false,
 
     // tree view
-    selectedFolderId: "library",
+    selectedFolderId: SpecialFolder.LIBRARY.toString(),
 
     // projects
     openedProjectIds: new Set<string>(), // for projectTree

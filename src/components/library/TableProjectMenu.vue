@@ -109,7 +109,7 @@
       </q-item>
 
       <q-item
-        v-if="stateStore.selectedFolderId != 'library'"
+        v-if="stateStore.selectedFolderId != SpecialFolder.LIBRARY.toString()"
         clickable
         v-close-popup
         @click="deleteProject(false)"
@@ -129,7 +129,7 @@
 <script setup lang="ts">
 // types
 import { Ref, inject, nextTick } from "vue";
-import { NoteType, Project } from "src/backend/database";
+import { NoteType, Project, SpecialFolder } from "src/backend/database";
 import { QMenu } from "quasar";
 import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
 // db

@@ -128,7 +128,7 @@ const renameInput = ref<HTMLInputElement | null>(null);
 const tree = ref<QTree | null>(null);
 
 const folders = ref<QTreeNode[]>([]);
-const expandedKeys = ref(["library"]);
+const expandedKeys = ref([SpecialFolder.LIBRARY.toString()]);
 const renamingFolderId = ref("");
 const draggingNode = ref<Folder | null>(null);
 const dragoverNode = ref<Folder | null>(null);
@@ -151,12 +151,12 @@ onMounted(async () => {
 
   // add other special folders
   folders.value.push({
-    _id: "added",
+    _id: SpecialFolder.ADDED.toString(),
     label: t("added"),
     icon: "history",
   });
   folders.value.push({
-    _id: "favorites",
+    _id: SpecialFolder.FAVORITES.toString(),
     label: t("favorites"),
     icon: "star",
   });
@@ -368,7 +368,7 @@ function onDragEnd(e: DragEvent) {
 
 function getLibraryNode() {
   if (!tree.value) return;
-  return tree.value.getNodeByKey("library");
+  return tree.value.getNodeByKey(SpecialFolder.LIBRARY.toString());
 }
 
 defineExpose({

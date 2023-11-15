@@ -103,9 +103,9 @@ export interface Folder {
 }
 
 export enum SpecialFolder {
-  LIBRARY = "library",
-  ADDED = "added",
-  FAVORITES = "favorites",
+  LIBRARY = "SFlibrary",
+  ADDED = "SFadded",
+  FAVORITES = "SFfavorites",
 }
 
 /******************************************

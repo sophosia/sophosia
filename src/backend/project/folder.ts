@@ -1,4 +1,4 @@
-import { db, Folder } from "../database";
+import { db, Folder, SpecialFolder } from "../database";
 import { sortTree } from "./utils";
 
 async function getFolder(folderId: string): Promise<Folder | undefined> {
@@ -21,7 +21,7 @@ async function getFolderTree(): Promise<Folder[] | undefined> {
     if (docs.length == 0) {
       // create library folder for user if there is none
       const library = {
-        _id: "library",
+        _id: "SFlibrary",
         timestampAdded: Date.now(),
         timestampModified: Date.now(),
         label: "Library",
@@ -61,7 +61,7 @@ async function getFolderTree(): Promise<Folder[] | undefined> {
     }
 
     const library = {} as Folder;
-    _dfs(folders["library"], library);
+    _dfs(folders[SpecialFolder.LIBRARY.toString()], library);
     sortTree(library);
 
     return [library];

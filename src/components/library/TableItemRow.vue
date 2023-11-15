@@ -105,12 +105,14 @@
         <q-item
           clickable
           @click="setRenaming"
+          :disable="item._id.split('/')[0] === item.projectId"
         >
           <q-item-section>{{ $t("rename-note") }}</q-item-section>
         </q-item>
         <q-item
           clickable
           @click="deleteItem"
+          :disable="item._id.split('/')[0] === item.projectId"
         >
           <q-item-section>{{ $t("delete-note") }}</q-item-section>
         </q-item>
@@ -177,7 +179,10 @@ const updateComponent = inject("updateComponent") as (
 // we also need to change the label
 watchEffect(async () => {
   if (props.item.dataType === "note") {
-    label.value = props.item.label;
+    label.value =
+      props.item._id.split("/")[0] === props.item.projectId
+        ? "Overview.md"
+        : props.item.label;
   } else if (props.item.dataType === "project") {
     label.value = await basename(props.item.path as string);
   }
