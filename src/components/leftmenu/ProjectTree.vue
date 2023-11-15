@@ -84,7 +84,7 @@
               clickable
               v-close-popup
               @click="setRenameNote(prop.node._id)"
-              :disable="prop.node._id.split('/')[0] === prop.node.projectId"
+              :disable="prop.node.label === prop.node.projectId + '.md'"
             >
               <q-item-section> {{ $t("rename") }} </q-item-section>
             </q-item>
@@ -92,7 +92,7 @@
               clickable
               v-close-popup
               @click="deleteNote(prop.node)"
-              :disable="prop.node._id.split('/')[0] === prop.node.projectId"
+              :disable="prop.node.label === prop.node.projectId + '.md'"
             >
               <q-item-section> {{ $t("delete") }} </q-item-section>
             </q-item>
@@ -147,7 +147,7 @@
           :type="prop.node.dataType"
         >
           {{
-            prop.node._id.split("/")[0] === prop.node.projectId
+            prop.node.label === prop.node.projectId + ".md"
               ? "Overview.md"
               : prop.node.label
           }}
