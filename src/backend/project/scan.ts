@@ -53,8 +53,8 @@ export async function scanAndUpdateDB() {
   const { storagePath, lastScanTime } = workspace;
 
   const processFile = async (file: FileEntry, meta: Metadata) => {
-    // only process markdown file
-    if ((await extname(file.path)) !== "md") return;
+    // only process note file
+    if (!["md", "excalidraw"].includes(await extname(file.path))) return;
 
     const noteId = file.path.replace(storagePath + sep, "").replace(sep, "/");
     // push the label and path of the note to indexeddb for faster retrival

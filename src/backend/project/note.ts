@@ -121,20 +121,19 @@ export async function updateNote(noteId: string, props: Note) {
  */
 export async function getNote(noteId: string): Promise<Note | undefined> {
   try {
-    // If it's a markdown note, then label does not contain .md
-    // If it's a excalidraw note, then label does contain .excalidraw
-    let completeNoteId = noteId.slice(-2) === "md" ? noteId : noteId + ".md";
-    const splits = completeNoteId.split("/");
+    const ext = await extname(noteId);
+    if (!["md", "excalidraw"].includes(ext)) return;
+    const splits = noteId.split("/");
     const projectId = splits[0];
     const label = splits[splits.length - 1];
     const path = IdToPath(noteId);
     const note = {
-      _id: completeNoteId,
+      _id: noteId,
       dataType: "note",
       projectId: projectId,
       label: label,
       path: path,
-      type: NoteType.MARKDOWN,
+      type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
     } as Note;
     return note;
   } catch (error) {

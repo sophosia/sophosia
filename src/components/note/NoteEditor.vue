@@ -295,6 +295,7 @@ async function clickLink(e: MouseEvent, link: string) {
         if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
         else type = "NotePage";
       }
+      console.log("clicked item", item);
       stateStore.openPage({ id, type, label });
     } catch (error) {
       console.log(error);
@@ -364,19 +365,17 @@ async function _hangleImage() {
   if (!vditorDiv.value) return;
   let imgs = vditorDiv.value.querySelectorAll("img");
   for (let img of imgs) {
-    if (img.src.includes("http://localhost:9000")) {
-      // doing this so image can be display in dev mode
-      let relPath = img.src.replace("http://localhost:9000", "");
-      img.src = convertFileSrc(
-        await join(db.storagePath, ".sophosia", "image", relPath)
-      );
-    } else if (img.src.includes("tauri://localhost")) {
-      // doing this so image can be display in production mode
-      let relPath = img.src.replace("tauri://localhost", "");
-      img.src = convertFileSrc(
-        await join(db.storagePath, ".sophosia", "image", relPath)
-      );
-    }
+    if (
+      !img.src.includes("http://localhost:9000/") &&
+      !img.src.includes("tauri://localhost/")
+    )
+      continue;
+    const imgFile = img.src
+      .replace("http://localhost:9000/", "") // in dev mode
+      .replace("tauri://localhost/", ""); // in production mode
+    img.src = convertFileSrc(
+      [db.storagePath, ".sophosia", "image", imgFile].join(sep)
+    );
 
     let p = img.parentElement?.parentElement;
     if (!!!p || !!p.onmouseover) continue;
@@ -463,7 +462,6 @@ async function filterHints(key: string) {
     const splits = noteId.split("/");
     const label = splits[splits.length - 1];
     const projectId = splits[0];
-    console.log("projectId", projectId);
     if (label.toLowerCase().indexOf(key) > -1) {
       let parentProject = await getProject(projectId);
       let citeKey = projectId;

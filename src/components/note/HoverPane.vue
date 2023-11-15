@@ -12,6 +12,9 @@
 import Vditor from "vditor/dist/method.min";
 import { onMounted, PropType, ref, watchEffect } from "vue";
 import { useStateStore } from "src/stores/appState";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { sep } from "@tauri-apps/api/path";
+import { db } from "src/backend/database";
 const stateStore = useStateStore();
 
 const props = defineProps({
@@ -57,22 +60,29 @@ function changeLinks() {
     linkNode.onclick = (e: MouseEvent) => {
       // do not open link winthin app
       e.preventDefault();
-      // let link = linkNode.href
-      //   .replace("http://localhost:9300/", "") // in dev mode
-      //   .replace(/^file:.*app\.asar\//, ""); // in production mode
-      // emit("clickLink", e, link);
-      emit("clickLink", e, linkNode.href);
+      let link = linkNode.href
+        .replace("http://localhost:9000/", "") // in dev mode
+        .replace("tauri://localhost/", ""); // in production mode
+      emit("clickLink", e, link);
     };
   }
 
-  // let imageNodes = mdContentDiv.value.querySelectorAll(
-  //   "img"
-  // ) as NodeListOf<HTMLImageElement>;
-  // for (let imageNode of imageNodes) {
-  //   imageNode.src = imageNode.src
-  //     .replace("http://localhost:9300", props.data.linkBase) // in dev mode
-  //     .replace(/^file:.*app\.asar/, props.data.linkBase); // in production mode
-  // }
+  let imageNodes = mdContentDiv.value.querySelectorAll(
+    "img"
+  ) as NodeListOf<HTMLImageElement>;
+  for (const img of imageNodes) {
+    if (
+      !img.src.includes("http://localhost:9000/") &&
+      !img.src.includes("tauri://localhost/")
+    )
+      continue;
+    const imgFile = img.src
+      .replace("http://localhost:9000/", "") // in dev mode
+      .replace("tauri://localhost/", ""); // in production mode
+    img.src = convertFileSrc(
+      [db.storagePath, ".sophosia", "image", imgFile].join(sep)
+    );
+  }
 }
 
 defineExpose({ card });
