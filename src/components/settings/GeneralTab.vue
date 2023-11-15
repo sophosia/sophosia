@@ -152,7 +152,7 @@
             square
             :options="citeKeyConnectorOptions"
             v-model="citeKeyConnector"
-            :option-label="(opt) => $t(opt)"
+            :option-label="(opt) => opt.trim() || '(None)'"
             @update:model-value="updateCiteKeyRule"
           />
           <q-select
@@ -171,7 +171,7 @@
             square
             :options="citeKeyConnectorOptions"
             v-model="citeKeyConnector"
-            :option-label="(opt) => $t(opt)"
+            :option-label="(opt) => opt.trim() || '(None)'"
             @update:model-value="updateCiteKeyRule"
           />
           <q-select
@@ -199,7 +199,6 @@ import { useStateStore } from "src/stores/appState";
 import { updateAppState } from "src/backend/appState";
 import { changePath } from "src/backend/project/file";
 import { getAllProjects } from "src/backend/project/project";
-import { getAllNotes } from "src/backend/project/note";
 import { generateCiteKey } from "src/backend/project/meta";
 import { db } from "src/backend/database";
 import { useI18n } from "vue-i18n";
@@ -222,7 +221,7 @@ const languageOptions = [
 ];
 const themeOptions = ["dark", "light"];
 const citeKeyPartKeyOptions = ["author", "title", "year"];
-const citeKeyConnectorOptions = [" ", "_", "-", "."];
+const citeKeyConnectorOptions = [" ", "_"];
 
 // example metas
 const exampleMetas = [
