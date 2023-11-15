@@ -1,0 +1,10 @@
+{
+  "_id": "SFlibrary",
+  "_rev": "",
+  "timestampAdded": 1697355241231,
+  "timestampModified": 1697358007543,
+  "label": "Library",
+  "icon": "home",
+  "children": [],
+  "dataType": "folder"
+}

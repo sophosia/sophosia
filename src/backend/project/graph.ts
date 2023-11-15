@@ -82,7 +82,38 @@ export async function getGraph(itemId: string) {
   links.push(...(await idb.getAllFromIndex("links", "target", itemId)));
 
   // create graph
-  const uniqueIds = [] as string[];
+  // add current node
+  let isNote = itemId.includes("/");
+  let splits = itemId.split("/");
+  let parent = isNote ? splits[0] : undefined;
+  let label = splits.slice(1).join("/");
+  let project: Project;
+  if (isNote) {
+    if (splits[splits.length - 1] === parent + ".md") label = "Overview.md";
+  } else {
+    project = (await getProject(itemId)) as Project;
+    label = project!.label;
+  }
+  nodes.push({
+    data: {
+      id: itemId,
+      label: label,
+      type: "note",
+      parent: parent,
+    },
+  });
+  // add parent node if it has
+  if (parent) {
+    nodes.push({
+      data: {
+        id: parent,
+        label: project!.label,
+        type: "project",
+      },
+    });
+  }
+
+  const uniqueIds = [itemId] as string[];
   for (const link of links) {
     // create nodes
     if (!uniqueIds.includes(link.source)) {

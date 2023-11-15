@@ -4,7 +4,7 @@
     dense
     no-transition
     no-selection-unset
-    no-nodes-label="No working projects"
+    :no-nodes-label="$t('no-working-projects')"
     :nodes="projectStore.openedProjects"
     node-key="_id"
     selected-color="primary"
@@ -84,6 +84,7 @@
               clickable
               v-close-popup
               @click="setRenameNote(prop.node._id)"
+              :disable="prop.node.label === prop.node.projectId + '.md'"
             >
               <q-item-section> {{ $t("rename") }} </q-item-section>
             </q-item>
@@ -91,6 +92,7 @@
               clickable
               v-close-popup
               @click="deleteNote(prop.node)"
+              :disable="prop.node.label === prop.node.projectId + '.md'"
             >
               <q-item-section> {{ $t("delete") }} </q-item-section>
             </q-item>
@@ -133,7 +135,7 @@
             v-model="pathDuplicate"
             class="bg-red"
           >
-            name already exists
+            {{ $t("duplicate") }}
           </q-tooltip>
         </div>
         <!-- add item-id and type for access of drag source -->
@@ -144,7 +146,11 @@
           :item-id="prop.key"
           :type="prop.node.dataType"
         >
-          {{ prop.node.label }}
+          {{
+            prop.node.label === prop.node.projectId + ".md"
+              ? "Overview.md"
+              : prop.node.label
+          }}
           <q-tooltip> ID: {{ prop.key }} </q-tooltip>
         </div>
       </div>
@@ -232,19 +238,15 @@ function menuSwitch(node: Project | Note) {
 }
 
 function selectItem(node: Project | Note) {
+  console.log("node", node);
   stateStore.currentItemId = node._id;
   if (node.dataType === "project" && (node.children?.length as number) > 0)
     expanded.value.push(node._id);
 
   // open item
   let id = node._id;
-  let type = "";
+  let type = node.dataType === "project" ? "ReaderPage" : "NotePage";
   let label = node.label;
-  if (node.dataType === "project") type = "ReaderPage";
-  else if ((node as Project | Note).dataType === "note") {
-    if (node.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-    else type = "NotePage";
-  }
   stateStore.openPage({ id, type, label });
 }
 
@@ -299,7 +301,7 @@ async function deleteNote(note: Note) {
   stateStore.closePage(note._id);
   await projectStore.deleteNote(note._id);
   // select something else if the selectedItem is deleted
-  if (note._id === projectStore.selected[0]._id) {
+  if (note._id === projectStore.selected[0]?._id) {
     let project = projectStore.openedProjects.find(
       (p) => p._id === note.projectId
     );
@@ -336,13 +338,19 @@ async function renameNote() {
   const note = tree.value?.getNodeByKey(renamingNoteId.value) as Note;
   if (!!!note) return;
 
-  if (pathDuplicate.value) note.label = oldNoteName.value;
-  let newNote = await projectStore.updateNote(note._id, note);
+  if (pathDuplicate.value) {
+    note.label = oldNoteName.value;
+  } else {
+    let newNote = await projectStore.updateNote(note._id, note);
 
-  updateComponent(renamingNoteId.value, {
-    id: newNote._id,
-    label: newNote.label,
-  });
+    // update window tab name
+    updateComponent(renamingNoteId.value, {
+      id: newNote._id,
+      label: newNote.label,
+    });
+
+    stateStore.showMessage("links has been updated");
+  }
 
   if (addingNote.value) selectItem(note); // open the note
   addingNote.value = false;

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { Dark } from "quasar";
 import { updateAppState } from "src/backend/appState";
-import { AppState, Page, Settings } from "src/backend/database";
+import { AppState, Page, Settings, SpecialFolder } from "src/backend/database";
 import { useProjectStore } from "./projectStore";
 import darkContent from "src/css/vditor/dark.css?raw";
 import lightContent from "src/css/vditor/light.css?raw";
@@ -19,7 +19,7 @@ export const useStateStore = defineStore("stateStore", {
     showLibraryRightMenu: false,
 
     // tree view
-    selectedFolderId: "library",
+    selectedFolderId: SpecialFolder.LIBRARY.toString(),
 
     // projects
     openedProjectIds: new Set<string>(), // for projectTree
@@ -37,6 +37,10 @@ export const useStateStore = defineStore("stateStore", {
     openedPage: { id: "", type: "", label: "" },
     closedItemId: "",
     currentItemId: "library",
+
+    // message
+    showMessageDialog: false,
+    message: "",
   }),
 
   actions: {
@@ -82,7 +86,7 @@ export const useStateStore = defineStore("stateStore", {
     async openPage(page: Page) {
       const projectStore = useProjectStore();
       if (page.type === "ReaderPage") await projectStore.openProject(page.id);
-      else if (page.type === "NotePage" || page.type === "ExcalidrawPage") {
+      else {
         let note = await projectStore.getNoteFromDB(page.id);
         if (note && note.projectId)
           await projectStore.openProject(note.projectId);
@@ -173,6 +177,18 @@ export const useStateStore = defineStore("stateStore", {
       // db
       this.settings.language = language;
       this.saveAppState();
+    },
+
+    /**
+     * Show a popup message on the screen
+     */
+    showMessage(message: string) {
+      this.message = message;
+      this.showMessageDialog = true;
+      setTimeout(() => {
+        this.showMessageDialog = false;
+        this.message = "";
+      }, 2000);
     },
 
     async saveAppState() {

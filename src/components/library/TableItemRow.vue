@@ -105,12 +105,14 @@
         <q-item
           clickable
           @click="setRenaming"
+          :disable="item.label === item.projectId + '.md'"
         >
           <q-item-section>{{ $t("rename-note") }}</q-item-section>
         </q-item>
         <q-item
           clickable
           @click="deleteItem"
+          :disable="item.label === item.projectId + '.md'"
         >
           <q-item-section>{{ $t("delete-note") }}</q-item-section>
         </q-item>
@@ -154,6 +156,10 @@ import { copyToClipboard } from "quasar";
 import { basename, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
+// utils
+import { useI18n } from "vue-i18n";
+const { t } = useI18n({ useScope: "global" });
+
 const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
 });
@@ -177,7 +183,10 @@ const updateComponent = inject("updateComponent") as (
 // we also need to change the label
 watchEffect(async () => {
   if (props.item.dataType === "note") {
-    label.value = props.item.label;
+    label.value =
+      props.item.label === props.item.projectId + ".md"
+        ? "Overview.md"
+        : props.item.label;
   } else if (props.item.dataType === "project") {
     label.value = await basename(props.item.path as string);
   }
@@ -230,12 +239,16 @@ function setRenaming() {
 async function renameNote() {
   let note = props.item as Note;
   let oldNoteId = props.item._id;
-  note.label = pathDuplicate.value ? oldNoteName.value : label.value;
-  let newNote = await projectStore.updateNote(note._id, note);
-  updateComponent(oldNoteId, {
-    id: newNote._id,
-    label: newNote.label,
-  });
+  if (pathDuplicate.value) {
+    note.label = oldNoteName.value;
+  } else {
+    note.label = label.value;
+    let newNote = await projectStore.updateNote(note._id, note);
+    updateComponent(oldNoteId, {
+      id: newNote._id,
+      label: newNote.label,
+    });
+  }
   renaming.value = false;
   renamingNoteId.value = "";
   pathDuplicate.value = false;

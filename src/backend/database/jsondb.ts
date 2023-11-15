@@ -28,22 +28,22 @@ export class JsonDB {
 
   async get(id: string): Promise<Doc> {
     if (!this.storagePath) throw Error("storagePath not set");
-    for (let folder of [
-      "appState",
-      "layout",
-      "project",
-      "folder",
-      "pdfAnnotation",
-      "pdfState",
-    ]) {
-      let path = await join(
+    const code2Folder = {
+      SP: "project",
+      SA: "pdfAnnotation",
+      SS: "pdfState",
+      SF: "folder",
+    };
+    let path = "";
+    if (id.slice(0, 2) in code2Folder)
+      path = await join(
         this.storagePath,
         ".sophosia",
-        folder,
+        code2Folder[id.slice(0, 2) as "SP" | "SA" | "SS" | "SF"],
         `${id}.json`
       );
-      if (await exists(path)) return JSON.parse(await readTextFile(path));
-    }
+    else path = await join(this.storagePath, ".sophosia", id, `${id}.json`);
+    if (await exists(path)) return JSON.parse(await readTextFile(path));
     throw Error(`data with id=${id} not found`);
   }
 

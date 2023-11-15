@@ -256,8 +256,9 @@ export default class PDFApplication {
 
   async loadState(projectId: string): Promise<PDFState | undefined> {
     try {
-      let docs = (await db.getDocs("pdfState")) as PDFState[];
-      let pdfState = docs.find((state) => state.projectId === projectId);
+      // let docs = (await db.getDocs("pdfState")) as PDFState[];
+      // let pdfState = docs.find((state) => state.projectId === projectId);
+      let pdfState = db.get("SS" + projectId.slice(2));
 
       // default state
       let state = {
@@ -293,7 +294,7 @@ export default class PDFApplication {
     state.scrollTop = this.container.scrollTop;
 
     try {
-      if (!state._id) state._id = `SS${db.nanoid}`;
+      if (!state._id) state._id = `SS${state.projectId.slice(2)}`;
       await db.put(state);
     } catch (error) {
       console.log(error);

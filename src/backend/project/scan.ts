@@ -7,15 +7,39 @@ import {
   writeTextFile,
 } from "@tauri-apps/api/fs";
 import { Edge, idb } from "../database";
-import { metadata } from "tauri-plugin-fs-extra-api";
+import { metadata, Metadata } from "tauri-plugin-fs-extra-api";
 import { updateLinks } from "./graph";
 import { extname, sep } from "@tauri-apps/api/path";
-import { addProject } from "./project";
+
+/**
+ * Process each FileEntry with callback functions
+ * @param entries
+ * @param processFile callback function
+ * @param processDir callback function
+ */
+async function processEntries(
+  entries: FileEntry[],
+  processFile: (file: FileEntry, meta: Metadata) => any,
+  processDir: (dir: FileEntry, meta: Metadata) => any
+) {
+  for (const entry of entries) {
+    // skip hidden folders or files
+    if (entry.name![0] === ".") continue;
+
+    const meta = await metadata(entry.path);
+    if (meta.isFile) {
+      await processFile(entry, meta);
+    } else if (entry.children) {
+      await processDir(entry, meta);
+      await processEntries(entry.children, processFile, processDir);
+    }
+  }
+}
 
 /**
  * Scan all notes and update the links in indexeddb
  */
-export async function scan() {
+export async function scanAndUpdateDB() {
   // no need to scan anything if user is using it the first time
   if (!(await exists("workspace.json", { dir: BaseDirectory.AppConfig })))
     return;
@@ -27,37 +51,38 @@ export async function scan() {
     })
   );
   const { storagePath, lastScanTime } = workspace;
+
+  const processFile = async (file: FileEntry, meta: Metadata) => {
+    // only process markdown file
+    if ((await extname(file.path)) !== "md") return;
+
+    const noteId = file.path.replace(storagePath + sep, "").replace(sep, "/");
+    // push the label and path of the note to indexeddb for faster retrival
+    idb.put("notes", { noteId });
+
+    // if file is modified after last scan, extract its links and update db
+    if (meta.modifiedAt.getTime() > lastScanTime) {
+      const links = await getLinksFromFile(file.path, storagePath);
+      await updateLinks(noteId, links);
+    }
+  };
+
+  const processDir = async (dir: FileEntry, meta: Metadata) => {
+    // TODO: maybe we should do something about the newly created folder as well
+    // add project to db
+    // scan pdf file in the folder (assume there is only 1 pdf)
+    // add pdf to project path
+    return;
+  };
+
+  await idb.clear("notes"); // clear notes store before scaning
   const entries = await readDir(storagePath, { recursive: true });
-  await processEntries(entries, { storagePath, lastScanTime });
+  await processEntries(entries, processFile, processDir);
+
   workspace.lastScanTime = Date.now();
   await writeTextFile("workspace.json", JSON.stringify(workspace), {
     dir: BaseDirectory.AppConfig,
   });
-}
-
-async function processEntries(
-  entries: FileEntry[],
-  params: { storagePath: string; lastScanTime: number }
-) {
-  for (const entry of entries) {
-    // skip hidden folders or files
-    if (entry.name![0] === ".") continue;
-
-    // if dir/file is modified after last scan process it
-    const meta = await metadata(entry.path);
-    if (meta.isFile && meta.modifiedAt.getTime() > params.lastScanTime) {
-      if ((await extname(entry.path)) !== "md") continue;
-      let noteId = entry.path.replace(params.storagePath + sep, "");
-      const links = await getLinksFromText(entry.path, params.storagePath);
-      await updateLinks(noteId, links);
-    } else if (entry.children) {
-      // TODO: maybe we should do something about the newly created folder as well
-      // add project to db
-      // scan pdf file in the folder (assume there is only 1 pdf)
-      // add pdf to project path
-      await processEntries(entry.children, params);
-    }
-  }
 }
 
 /**
@@ -65,7 +90,7 @@ async function processEntries(
  * @param filePath absolute path of the markdown file
  * @returns links in the markdown file
  */
-async function getLinksFromText(
+async function getLinksFromFile(
   filePath: string,
   storagePath: string
 ): Promise<Edge[]> {
@@ -82,4 +107,46 @@ async function getLinksFromText(
     links.push({ source, target });
   }
   return links;
+}
+
+/**
+ * Replace all associated links in all markdown notes if a note is renamed
+ * @param oldNoteId
+ * @param newNoteId
+ */
+export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
+  // no need to scan anything if user is using it the first time
+  if (!(await exists("workspace.json", { dir: BaseDirectory.AppConfig })))
+    return;
+
+  // path in jsondb is not ready yet, must use this
+  const workspace = JSON.parse(
+    await readTextFile("workspace.json", {
+      dir: BaseDirectory.AppConfig,
+    })
+  );
+  const { storagePath, lastScanTime } = workspace;
+
+  const processFile = async (file: FileEntry, meta: Metadata) => {
+    // only process markdown file
+    if ((await extname(file.path)) !== "md") return;
+
+    let content = await readTextFile(file.path);
+    const newContent = content.replaceAll(oldNoteId, newNoteId);
+    await writeTextFile(file.path, newContent);
+
+    const currentNoteId = file.path
+      .replace(storagePath + sep, "")
+      .replace(sep, "/");
+    const key = await idb.getKeyFromIndex("links", "sourceAndTarget", [
+      currentNoteId,
+      oldNoteId,
+    ]);
+    if (key)
+      idb.put("links", { source: currentNoteId, target: newNoteId }, key);
+  };
+  const processDir = async (dir: FileEntry, meta: Metadata) => {};
+
+  const entries = await readDir(storagePath, { recursive: true });
+  await processEntries(entries, processFile, processDir);
 }

@@ -1,4 +1,5 @@
-import { Author, Folder, Project } from "../database";
+import { sep } from "@tauri-apps/api/path";
+import { Author, Folder, Project, db } from "../database";
 type TreeNode = Folder | Project;
 /**
  * Sort children of a tree node by labels
@@ -33,4 +34,24 @@ export function authorToString(authors: Author[] | undefined) {
     else names.push(`${author.given} ${author.family}`);
   }
   return names.join(", ");
+}
+
+/**
+ * Convert a path to noteId
+ * storagePath/projectId/.../noteName.md -> projectId/.../noteName.md
+ * @param path
+ * @returns noteId
+ */
+export function pathToId(path: string) {
+  return path.replace(db.storagePath + sep, "").replace(sep, "/");
+}
+
+/**
+ * Convert a noteId to path
+ * projectId/.../noteName.md -> storagePath/projectId/.../noteName.md
+ * @param noteId
+ * @returns path absolute path
+ */
+export function IdToPath(noteId: string) {
+  return db.storagePath + sep + noteId.replace("/", sep);
 }

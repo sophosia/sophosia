@@ -81,7 +81,8 @@ import PDFApplication from "src/backend/pdfreader";
 import { KEY_pdfApp } from "./injectKeys";
 import Vditor from "vditor/dist/method.min";
 import { useStateStore } from "src/stores/appState";
-import { getItem } from "src/backend/project/graph";
+import { getNote } from "src/backend/project/note";
+import { getProject } from "src/backend/project/project";
 const { luminosity } = colors;
 const stateStore = useStateStore();
 
@@ -179,16 +180,13 @@ function changeLinks() {
           } catch (error) {
             // we just want the document, both getProject or getNote are good
             try {
-              let item = (await getItem(link)) as Note | Project;
+              const item = link.includes("/")
+                ? ((await getNote(link)) as Note)
+                : ((await getProject(link)) as Project);
               let id = item._id;
               let label = item.label;
-              let type = "";
-              let data = { _id: item._id, label: label, path: item.path };
-              if (item.dataType === "project") type = "ReaderPage";
-              else if ((item as Project | Note).dataType === "note") {
-                if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-                else type = "NotePage";
-              }
+              let type =
+                item.dataType === "project" ? "ReaderPage" : "NotePage";
               stateStore.openPage({ id, type, label });
             } catch (error) {
               console.log(error);

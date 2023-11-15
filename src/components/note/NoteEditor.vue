@@ -284,17 +284,12 @@ async function clickLink(e: MouseEvent, link: string) {
   } catch (error) {
     // we just want the document, both getProject or getNote are good
     try {
-      let item = null;
-      if (link.includes("/")) item = (await getNote(link)) as Note;
-      else item = (await getProject(link)) as Project;
+      const item = link.includes("/")
+        ? ((await getNote(link)) as Note)
+        : ((await getProject(link)) as Project);
       let id = item._id;
       let label = item.label;
-      let type = "";
-      if (item.dataType === "project") type = "ReaderPage";
-      else if ((item as Project | Note).dataType === "note") {
-        if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-        else type = "NotePage";
-      }
+      let type = item.dataType === "project" ? "ReaderPage" : "NotePage";
       stateStore.openPage({ id, type, label });
     } catch (error) {
       console.log(error);
@@ -439,7 +434,7 @@ const handleImage = debounce(_hangleImage, 50) as () => void;
 async function filterHints(key: string) {
   let hints = [];
   let projects = (await getAllProjects()) as Project[];
-  let notes = (await getAllNotes()) as Note[];
+  let noteIds = await getAllNotes();
 
   for (let project of projects) {
     if (project.title.toLowerCase().indexOf(key) > -1) {
@@ -459,20 +454,23 @@ async function filterHints(key: string) {
     }
   }
 
-  for (let note of notes) {
-    if (note.label.toLowerCase().indexOf(key) > -1) {
-      let parentProject = await getProject(note.projectId);
-      let citeKey = note.projectId;
-      if (parentProject)
-        citeKey = generateCiteKey(parentProject, "author-year-title", true);
+  for (let noteId of noteIds) {
+    const splits = noteId.split("/");
+    const label = splits[splits.length - 1];
+    const projectId = splits[0];
+    console.log("projectId", projectId);
+    if (label.toLowerCase().indexOf(key) > -1) {
+      let parentProject = await getProject(projectId);
+      let citeKey = projectId;
+      if (parentProject) citeKey = generateCiteKey(parentProject);
       hints.push({
-        value: `[${note.label}](${note._id})`,
+        value: `[${noteId}](${noteId})`,
         html: `
           <p style="font-size: 1rem" class="ellipsis q-my-none">
-            <strong>Note</strong>: ${note.label}
+            <strong>Note</strong>: ${label}
           </p>
           <p class="ellipsis q-my-none">
-            Belongs to: ${citeKey}
+            Belongs to: ${parentProject?.label}
           </p>
           `,
       });

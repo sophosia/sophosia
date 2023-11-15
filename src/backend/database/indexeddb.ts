@@ -1,10 +1,27 @@
-import { openDB, deleteDB } from "idb";
+import { openDB, deleteDB, DBSchema } from "idb";
 
-export const idb = await openDB("linkDB", 1, {
+interface NoteDB extends DBSchema {
+  notes: { key: string; value: { noteId: string } };
+  links: {
+    key: number;
+    value: { source: string; target: string };
+    indexes: {
+      source: string;
+      target: string;
+      sourceAndTarget: [string, string];
+    };
+  };
+}
+
+export const idb = await openDB<NoteDB>("notedb", 1, {
   upgrade(idb) {
-    const store = idb.createObjectStore("links", { autoIncrement: true });
-    store.createIndex("source", "source", { unique: false });
-    store.createIndex("target", "target", { unique: false });
+    const noteStore = idb.createObjectStore("notes", { keyPath: "noteId" });
+    const linkStore = idb.createObjectStore("links", { autoIncrement: true });
+    linkStore.createIndex("source", "source", { unique: false });
+    linkStore.createIndex("target", "target", { unique: false });
+    linkStore.createIndex("sourceAndTarget", ["source", "target"], {
+      unique: true,
+    });
   },
 });
 

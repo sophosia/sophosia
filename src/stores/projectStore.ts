@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { Note, NoteType, Project, AppState } from "src/backend/database";
+import { Note, NoteType, Project, AppState, idb } from "src/backend/database";
 import {
   getNotes,
   getNote,
@@ -186,7 +186,6 @@ export const useProjectStore = defineStore("projectStore", {
 
     async deleteNote(noteId: string) {
       let note = (await this.getNoteFromDB(noteId)) as Note;
-      // await deleteNote(noteId);
       await deleteNote(note);
       let project = await this.getProjectFromDB(note.projectId);
       this._updateProjectUI(project);
