@@ -326,47 +326,12 @@ async function moveFiles(oldPath: string, newPath: string) {
   showProgressDialog.value = true;
   errors.value = [];
 
-  let projects = (await getAllProjects()) as Project[];
-  let notes = (await getAllNotes()) as Note[];
-  let total = projects.length + notes.length + 1;
-  let current = 0;
-
-  // move hidden folders
-  let oldHiddenFolder = await join(oldPath, ".research-helper");
-  let newHiddenFolder = await join(newPath, ".research-helper");
-  let error = await changePath(oldHiddenFolder, newHiddenFolder);
-  if (error) errors.value.push(error);
-  current++;
-  progress.value = current / total;
-
-  // move project folders
-
-  for (let project of projects) {
-    if (!!!project.path) continue;
-    let oldProjectFolder = await join(oldPath, project._id);
-    let newProjectFolder = await join(newPath, project._id);
-    let error = await changePath(oldProjectFolder, newProjectFolder);
-    if (error) errors.value.push(error);
-    project.path = project.path.replace(oldPath, newPath);
-    current++;
-    progress.value = current / total;
-  }
-
-  // change note paths
-  for (let note of notes) {
-    note.path = note.path.replace(oldPath, newPath);
-    current++;
-    progress.value = current / total;
-  }
-
-  try {
-    // await db.bulkDocs(items);
-    await db.bulkDocs(projects);
-    await db.bulkDocs(notes);
-    progress.value = 1.0;
-  } catch (error) {
-    errors.value.push(error as Error);
-  }
+  progress.value = 0.0;
+  await changePath(oldPath, newPath);
+  let interval = setInterval(() => {
+    if (progress.value + 0.1 <= 1.0) progress.value += 0.1;
+    else clearInterval(interval);
+  }, 100);
 }
 
 function citeKeyExample(meta: Meta) {

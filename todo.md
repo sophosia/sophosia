@@ -12,7 +12,7 @@
 - [x] create a markdown note with name projectId.md under each folder, so that when user in obsidian click a link target to the project can navigate to the folder
   - [x] display this note in sophosia with a different label ???
 - [x] It seems no need to separate pageId and itemId as long as we have the oldItemId
-- [ ] change storage path
+- [x] change storage path
 - [ ] get rid of excalidraw
 
 - To enforce data consistent, we use markdown link of format [label](path/to/file.md#^block-id) in ob
