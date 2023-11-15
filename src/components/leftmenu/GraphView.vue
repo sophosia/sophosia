@@ -57,6 +57,8 @@ import cytoscape from "cytoscape";
 import cola from "cytoscape-cola";
 import { EventBus } from "quasar";
 import { getGraph } from "src/backend/project/graph";
+import { getNote } from "src/backend/project/note";
+import { getProject } from "src/backend/project/project";
 cytoscape.use(cola);
 
 const props = defineProps({
@@ -165,8 +167,18 @@ function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
     // we cannot use this to access this.stateStore now
     let id = this.data("id") as string;
     let label = this.data("label") as string;
-    let type = id.includes("/") ? "NotePage" : "ReaderPage";
-    stateStore.openPage({ id, type, label });
+    let isNote = id.includes("/");
+    let type = "";
+    if (isNote) {
+      getNote(id).then((note) => {
+        if (note!.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
+        else type = "NotePage";
+        stateStore.openPage({ id, type, label });
+      });
+    } else {
+      type = "ReaderPage";
+      stateStore.openPage({ id, type, label });
+    }
   });
 }
 

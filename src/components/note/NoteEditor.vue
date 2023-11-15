@@ -289,7 +289,12 @@ async function clickLink(e: MouseEvent, link: string) {
         : ((await getProject(link)) as Project);
       let id = item._id;
       let label = item.label;
-      let type = item.dataType === "project" ? "ReaderPage" : "NotePage";
+      let type = "";
+      if (item.dataType === "project") type = "ReaderPage";
+      else if ((item as Project | Note).dataType === "note") {
+        if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
+        else type = "NotePage";
+      }
       stateStore.openPage({ id, type, label });
     } catch (error) {
       console.log(error);

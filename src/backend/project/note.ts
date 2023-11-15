@@ -24,11 +24,12 @@ import { IdToPath, pathToId } from "./utils";
  */
 export async function createNote(projectId: string, type: NoteType) {
   let i = 1;
-  let label = "Untitled.md";
-  let path = await join(db.storagePath, projectId, label);
+  let ext = type === NoteType.MARKDOWN ? ".md" : ".excalidraw";
+  let name = "Untitled";
+  let path = await join(db.storagePath, projectId, name + ext);
   while (await exists(path)) {
-    label = `Untitled ${i}.md`;
-    path = await join(db.storagePath, projectId, label);
+    name = `Untitled ${i}`;
+    path = await join(db.storagePath, projectId, name + ext);
     i++;
   }
   const noteId = pathToId(path);
@@ -37,7 +38,7 @@ export async function createNote(projectId: string, type: NoteType) {
     _id: noteId,
     dataType: "note",
     projectId: projectId,
-    label: label,
+    label: name + ext,
     path: path,
     type: type,
   } as Note;
@@ -87,7 +88,12 @@ export async function deleteNote(note: Note) {
 export async function updateNote(noteId: string, props: Note) {
   try {
     const oldPath = props.path;
-    if (props.label.slice(-2) !== "md") props.label += ".md";
+    const ext = await extname(oldPath);
+    try {
+      await extname(props.label); // if the label has extension, do nothing
+    } catch (error) {
+      props.label += `.${ext}`; // if not, add extension to the end
+    }
     const splits = props._id.split("/");
     splits[splits.length - 1] = props.label;
     props._id = splits.join("/");
@@ -150,7 +156,9 @@ export async function getNotes(projectId: string): Promise<Note[]> {
       for (const entry of entries) {
         const meta = await metadata(entry.path);
         if (meta.isFile) {
-          if ((await extname(entry.path)) !== "md") continue;
+          // if ((await extname(entry.path)) !== "md") continue;
+          const ext = await extname(entry.path);
+          if (!["md", "excalidraw"].includes(ext)) continue;
 
           const noteId = pathToId(entry.path);
           const splits = noteId.split("/");
@@ -162,7 +170,7 @@ export async function getNotes(projectId: string): Promise<Note[]> {
             projectId: projectId,
             label: label,
             path: entry.path,
-            type: NoteType.MARKDOWN,
+            type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
           } as Note);
         } else if (entry.children) {
           await processEntries(entry.children);

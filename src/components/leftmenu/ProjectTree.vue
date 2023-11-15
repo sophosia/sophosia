@@ -245,8 +245,13 @@ function selectItem(node: Project | Note) {
 
   // open item
   let id = node._id;
-  let type = node.dataType === "project" ? "ReaderPage" : "NotePage";
   let label = node.label;
+  let type = "";
+  if (node.dataType === "project") type = "ReaderPage";
+  else if ((node as Project | Note).dataType === "note") {
+    if (node.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
+    else type = "NotePage";
+  }
   stateStore.openPage({ id, type, label });
 }
 
