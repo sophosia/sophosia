@@ -1,6 +1,5 @@
 import { defineConfig } from "vitest/config";
-// import vue from "@vitejs/plugin-vue";
-import veauryVitePlugins from "veaury/vite/index.js";
+import vue from "@vitejs/plugin-vue";
 import { quasar, transformAssetUrls } from "@quasar/vite-plugin";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -17,13 +16,8 @@ export default defineConfig({
     ],
   },
   plugins: [
-    // vue({
-    //   template: { transformAssetUrls },
-    // }),
-    veauryVitePlugins({
-      type: "vue",
-      // Configuration of @vitejs/plugin-vue
-      vueOptions: { template: { transformAssetUrls } },
+    vue({
+      template: { transformAssetUrls },
     }),
     quasar({
       sassVariables: "src/quasar-variables.scss",

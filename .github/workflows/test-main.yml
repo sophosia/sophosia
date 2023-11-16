@@ -1,0 +1,21 @@
+name: Test on main branch
+
+on: pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js & yarn install if no cache exists
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "yarn"
+      - run: yarn install
+
+      - name: Run tests
+        run: yarn test:ci

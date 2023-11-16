@@ -166,7 +166,6 @@ const addGLComponent = async (
 
   // don't repeatly add components
   if (id in IdToRef) {
-    console.log("IdToRef", IdToRef);
     focusById(id);
     return;
   }
