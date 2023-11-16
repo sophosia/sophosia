@@ -25,7 +25,7 @@
           no-caps
           :label="$t('check-for-updates')"
           color="primary"
-          @click="checkForUpdates"
+          @click="checkForUpdate"
         />
         <q-btn
           v-else
@@ -38,40 +38,60 @@
           @click="downloadUpdate"
           :disable="disabled"
         />
+        <div>{{ updateStatus }}</div>
         <div>{{ updateMsg }}</div>
       </q-card-section>
     </q-card>
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
+import {
+  checkUpdate,
+  installUpdate,
+  onUpdaterEvent,
+} from "@tauri-apps/api/updater";
+import { getVersion } from "@tauri-apps/api/app";
 
-const version = ref("");
+const version = ref("v0.1.0");
 const updateMsg = ref("");
+const updateStatus = ref("");
 const isUpdateAvailable = ref(false);
 const disabled = ref(false);
+const unlisten = ref();
 
-onMounted(() => {
-  version.value = "v0.1.0-alpha";
-  // version.value = window.updater.versionInfo();
-
-  // window.updater.updateAvailable((event, isAvailable) => {
-  //   isUpdateAvailable.value = isAvailable;
-  // });
-
-  // window.updater.updateMessage((event, info) => {
-  //   updateMsg.value = info;
-  // });
+onMounted(async () => {
+  unlisten.value = await onUpdaterEvent(({ error, status }) => {
+    if (error) updateStatus.value = `Error, ${error}`;
+    else updateStatus.value = `Status: ${status}`;
+  });
+  version.value = await getVersion();
+  await checkForUpdate();
+  console.log("unlisten", unlisten.value);
 });
 
-// function checkForUpdates() {
-//   window.updater.checkForUpdates();
-// }
+onBeforeUnmount(() => unlisten.value());
 
-// function downloadUpdate() {
-//   window.updater.downloadUpdate();
-//   disabled.value = true;
-// }
+async function checkForUpdate() {
+  updateMsg.value = "Checking update";
+  const update = await checkUpdate();
+  isUpdateAvailable.value = update.shouldUpdate;
+  if (!update.shouldUpdate) {
+    updateMsg.value = "Up to date";
+    return;
+  }
+  updateMsg.value = "Newer version available\n";
+  if (update.manifest)
+    updateMsg.value += `
+Version: ${update.manifest.version}
+Date: ${update.manifest.date}
+${update.manifest.body}`;
+}
+
+async function downloadUpdate() {
+  updateMsg.value = "Installing update";
+  await installUpdate();
+}
 </script>
 <style scoped>
 .card {

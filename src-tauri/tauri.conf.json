@@ -50,15 +50,6 @@
       },
       "fs": {
         "all": true,
-        "readFile": true,
-        "writeFile": true,
-        "readDir": true,
-        "copyFile": true,
-        "createDir": true,
-        "removeDir": true,
-        "removeFile": true,
-        "renameFile": true,
-        "exists": true,
         "scope": {
           "allow": ["$APPDATA/**", "$HOME/**"],
           "deny": [],
@@ -66,9 +57,6 @@
         }
       },
       "shell": {
-        "all": true,
-        "execute": true,
-        "sidecar": true,
         "open": ".+"
       },
 
@@ -80,10 +68,6 @@
         "assetScope": ["**", "**/.sophosia/**"]
       },
       "dialog": {
-        "all": true,
-        "ask": true,
-        "confirm": true,
-        "message": true,
         "open": true,
         "save": true
       }
@@ -125,7 +109,12 @@
       "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost; style-src 'self' 'unsafe-inline'"
     },
     "updater": {
-      "active": false
+      "active": false,
+      "endpoints": [
+        "https://releases.myapp.com/{{target}}/{{current_version}}"
+      ],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI2REIzMjc5Q0ZGRDkxRDUKUldUVmtmM1BlVExidHZSVS9QMkgyZHRoSmZVOTl1bzFkTCswWDlYdng5N29XVTAyN1M3MXRNalkK"
     },
     "windows": [
       {
