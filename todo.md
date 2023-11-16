@@ -4,9 +4,9 @@
 - [x] able to build tauri
 - [x] remove errors and warning
 - [x] Asset `node_modules/pdfjs-dist/build/pdf.worker.min.js` not found; fallback to node_modules/pdfjs-dist/build/pdf.worker.min.js.html
-- [ ] make sure all tests pass
-  - [ ] feature branch test
-  - [ ] main branch test
+- [x] make sure all tests pass
+  - [x] feature branch test
+  - [x] main branch test
 - [ ] make sure release comes out when taged
 - [ ] check if flask server can retrieve the info
 - [ ] push flask server to gcp
