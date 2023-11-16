@@ -1,4 +1,4 @@
-import { openDB, deleteDB, DBSchema } from "idb";
+import { openDB, deleteDB, DBSchema, IDBPDatabase } from "idb";
 
 interface NoteDB extends DBSchema {
   notes: { key: string; value: { noteId: string } };
@@ -13,7 +13,9 @@ interface NoteDB extends DBSchema {
   };
 }
 
-export const idb = await openDB<NoteDB>("notedb", 1, {
+export let idb: IDBPDatabase<NoteDB>;
+
+openDB<NoteDB>("notedb", 1, {
   upgrade(idb) {
     const noteStore = idb.createObjectStore("notes", { keyPath: "noteId" });
     const linkStore = idb.createObjectStore("links", { autoIncrement: true });
@@ -23,7 +25,9 @@ export const idb = await openDB<NoteDB>("notedb", 1, {
       unique: true,
     });
   },
+}).then((db) => {
+  idb = db;
 });
 
-window.idb = idb;
-window.deleteDB = deleteDB;
+// window.idb = idb;
+// window.deleteDB = deleteDB;
