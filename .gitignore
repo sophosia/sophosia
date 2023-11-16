@@ -36,5 +36,4 @@ yarn-error.log*
 .nyc_output
 coverage/
 
-testing/
-test-storage/
+storage/

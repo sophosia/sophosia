@@ -7,12 +7,13 @@ import {
   moveFolderInto,
   getParentFolder,
 } from "src/backend/project/folder";
-import { db, Folder } from "../database";
+import { db, Folder, SpecialFolder } from "../database";
 
+db.storagePath = "test/test-storage/";
 describe("folder.ts", () => {
   it("getFolderTree", async () => {
     const tree = (await getFolderTree()) as Folder[];
-    expect(tree[0]._id).toBe("library");
+    expect(tree[0]._id).toBe(SpecialFolder.LIBRARY.toString());
   });
 
   it("updateFolder", async () => {

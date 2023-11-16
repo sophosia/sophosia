@@ -60,16 +60,19 @@
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
     "@vitejs/plugin-react": "^4.0.4",
+    "@vitejs/plugin-vue": "^4.4.1",
+    "@vitest/ui": "^0.34.6",
     "@vue/test-utils": "^2.4.1",
     "autoprefixer": "^10.4.2",
+    "cypress": "^12.17.4",
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-cypress": "^2.14.0",
     "eslint-plugin-vue": "^9.0.0",
+    "fake-indexeddb": "^5.0.1",
     "prettier": "^2.5.1",
     "typescript": "^5.1.6",
-    "vitest": "^0.34.0",
-    "cypress": "^12.17.4",
-    "eslint-plugin-cypress": "^2.14.0"
+    "vitest": "^0.34.0"
   },
   "engines": {
     "node": "^20 || ^18 || ^16 || ^14.19",

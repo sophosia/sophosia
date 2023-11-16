@@ -6,3 +6,12 @@
 - [x] make comment and rectangular annotation movable
   - it seems to be an issue of webview ... ondrag event never fired
 - [ ] unit test
+  - [x] mock indexeddb
+  - vitest not working since window.**TAURI_IPC** is not a function
+  - cypress not working since window.**TAURI_IPC** is not a function
+  - mocha not working and don't know why even I use jsdom to add window object
+  - webdriverio not working since it doesn't work like what tutorial said
+  - [ ] folder
+  - [ ] note
+  - [ ] graph
+  - [ ] project
