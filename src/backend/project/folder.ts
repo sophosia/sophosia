@@ -33,18 +33,6 @@ async function getFolderTree(): Promise<Folder[] | undefined> {
       return [library];
     }
 
-    // TODO: remove this few more versions later
-    let flag = false;
-    for (const folder of docs as Folder[])
-      if (!folder.timestampAdded) {
-        folder.timestampAdded = Date.now();
-        folder.timestampModified = Date.now();
-        flag = true;
-      }
-    if (flag) {
-      await db.bulkDocs(docs);
-    }
-
     // create a dict for later use
     const folders: { [k: string]: Folder } = {};
     for (const folder of docs as Folder[]) {

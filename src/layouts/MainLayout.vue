@@ -189,7 +189,6 @@ async function updateComponent(
   state: { id: string; label: string }
 ) {
   if (!layout.value) return;
-  console.log("mainlayout updateComponent");
   layout.value.updateGLComponent(oldItemId, state);
   let config = layout.value.getLayoutConfig();
   await updateLayout(config);

@@ -185,17 +185,7 @@ export async function getProjects(folderId: string): Promise<Project[]> {
         );
         break;
     }
-    // TODO: remove this few more versions later
-    let flag = false;
-    for (const project of projects)
-      if (!project.timestampAdded) {
-        project.timestampAdded = Date.now();
-        project.timestampModified = Date.now();
-        flag = true;
-      }
-    if (flag) {
-      await db.bulkDocs(projects);
-    }
+
     return projects;
   } catch (error) {
     console.log(error);

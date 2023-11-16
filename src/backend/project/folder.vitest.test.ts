@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach, vi, afterAll } from "vitest";
 import {
   getFolderTree,
   addFolder,
@@ -6,13 +6,45 @@ import {
   deleteFolder,
   moveFolderInto,
   getParentFolder,
+  getFolder,
 } from "src/backend/project/folder";
-import { db, Folder } from "../database";
+import { db, Folder, JsonDB, SpecialFolder } from "../database";
+
+const fakeFolder = {
+  _id: "fake",
+  timestampAdded: Date.now(),
+  timestampModified: Date.now(),
+  dataType: "folder",
+  label: "fake",
+  icon: "folder",
+  children: [],
+} as Folder;
+
+const fakeDocs = [] as Folder[];
+
+db.storagePath = "test/test-storage";
+vi.spyOn(db, "get").mockImplementation(
+  async (folderId: string) =>
+    fakeDocs.find((doc) => doc._id === folderId) as any
+);
+vi.spyOn(db, "getDocs").mockImplementation(
+  async (dataType: string) => fakeDocs
+);
+vi.spyOn(db, "put").mockImplementation(async (folder) => {
+  fakeDocs.push(folder);
+});
+vi.spyOn(db, "remove").mockImplementation(async (folder) => {
+  fakeDocs.filter((doc) => doc !== folder._id);
+});
 
 describe("folder.ts", () => {
+  afterAll(() => {
+    vi.clearAllMocks();
+  });
+
   it("getFolderTree", async () => {
     const tree = (await getFolderTree()) as Folder[];
-    expect(tree[0]._id).toBe("library");
+    expect(tree[0]._id).toBe(SpecialFolder.LIBRARY);
   });
 
   it("updateFolder", async () => {
