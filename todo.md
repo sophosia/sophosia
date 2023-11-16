@@ -1,17 +1,14 @@
 - To enforce data consistent, we use markdown link of format [label](path/to/file.md#^block-id) in ob
   1. turn of wikilinks
   2. use absolute path in vault
-- [x] component test
-- [x] clean up code
-- [x] make comment and rectangular annotation movable
-  - it seems to be an issue of webview ... ondrag event never fired
-- [ ] unit test
-  - [x] mock indexeddb
-  - vitest not working since window.**TAURI_IPC** is not a function
-  - cypress not working since window.**TAURI_IPC** is not a function
-  - mocha not working and don't know why even I use jsdom to add window object
-  - webdriverio not working since it doesn't work like what tutorial said
-  - [ ] folder
-  - [ ] note
-  - [ ] graph
-  - [ ] project
+- [x] able to build tauri
+- [x] remove errors and warning
+- [x] Asset `node_modules/pdfjs-dist/build/pdf.worker.min.js` not found; fallback to node_modules/pdfjs-dist/build/pdf.worker.min.js.html
+- [ ] make sure all tests pass
+  - [ ] feature branch test
+  - [ ] main branch test
+- [ ] make sure release comes out when taged
+- [ ] check if flask server can retrieve the info
+- [ ] push flask server to gcp
+- [ ] check update in the app
+- [ ] download update

@@ -1,7 +1,7 @@
 {
   "type": "excalidraw",
   "version": 2,
-  "source": "http://localhost:9000",
+  "source": "tauri://localhost",
   "elements": [
     {
       "type": "freedraw",

@@ -93,5 +93,11 @@ module.exports = {
 
     // turn off no-namespace lint error for cypress
     "@typescript-eslint/no-namespace": "off",
+
+    // allow anothervar = variable!.property
+    "@typescript-eslint/no-non-null-assertion": "off",
+
+    // allow empty functions
+    "@typescript-eslint/no-empty-function": "off"
   },
 };

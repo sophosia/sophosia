@@ -19,8 +19,7 @@ import {
 import * as pdfjsLib from "pdfjs-dist";
 import * as pdfjsViewer from "pdfjs-dist/web/pdf_viewer";
 import { Annotation } from "../pdfannotation/annotations";
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "node_modules/pdfjs-dist/build/pdf.worker.min.js";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js"; // in the public folder
 
 import { readBinaryFile } from "@tauri-apps/api/fs";
 import { open } from "@tauri-apps/api/shell";
