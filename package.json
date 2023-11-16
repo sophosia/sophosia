@@ -12,13 +12,12 @@
     "dev": "yarn tauri dev",
     "debug": "yarn tauri build --debug",
     "build": "yarn tauri build",
-    "test:unit:ci": "vitest run",
     "test:unit": "vitest",
-    "test:e2e": "cross-env NODE_ENV=test start-test \"tauri dev\" http-get://localhost:8080 \"cypress open --e2e\"",
-    "test:e2e:ci": "cross-env NODE_ENV=test start-test \"tauri dev\" http-get://localhost:8080 \"cypress run --e2e\"",
+    "test:unit:ci": "vitest run",
+    "test:unit:ui": "vitest --ui",
     "test:component": "cross-env NODE_ENV=test cypress open --component",
     "test:component:ci": "cross-env NODE_ENV=test cypress run --component",
-    "test:unit:ui": "vitest --ui"
+    "test:ci": "yarn run test:component:ci"
   },
   "dependencies": {
     "@citation-js/plugin-isbn": "^0.4.0",
@@ -60,7 +59,7 @@
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
     "@vitejs/plugin-react": "^4.0.4",
-    "@vitejs/plugin-vue": "^4.4.1",
+    "@vitejs/plugin-vue": "2.3.3",
     "@vitest/ui": "^0.34.6",
     "@vue/test-utils": "^2.4.1",
     "autoprefixer": "^10.4.2",
