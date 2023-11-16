@@ -76,13 +76,21 @@ import { Annotation } from "src/backend/pdfannotation/annotations";
 import AnnotMenu from "./AnnotMenu.vue";
 
 import { copyToClipboard, colors } from "quasar";
-import { AnnotationData, Note, NoteType, Project } from "src/backend/database";
+import {
+  AnnotationData,
+  Note,
+  NoteType,
+  Project,
+  db,
+} from "src/backend/database";
 import PDFApplication from "src/backend/pdfreader";
 import { KEY_pdfApp } from "./injectKeys";
 import Vditor from "vditor/dist/method.min";
 import { useStateStore } from "src/stores/appState";
 import { getNote } from "src/backend/project/note";
 import { getProject } from "src/backend/project/project";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { sep } from "@tauri-apps/api/path";
 const { luminosity } = colors;
 const stateStore = useStateStore();
 
@@ -168,8 +176,8 @@ function changeLinks() {
       // do not open link winthin app
       e.preventDefault();
       let link = linkNode.href
-        .replace("http://localhost:9300/", "") // in dev mode
-        .replace(/^file:.*app\.asar\//, ""); // in production mode
+        .replace("http://localhost:9000/", "") // in dev mode
+        .replace("tauri://localhost/", ""); // in production mode
       for (let linkNode of linkNodes) {
         linkNode.onclick = async (e) => {
           e.preventDefault();
@@ -204,10 +212,18 @@ function changeLinks() {
   let imageNodes = mdContentDiv.value.querySelectorAll(
     "img"
   ) as NodeListOf<HTMLImageElement>;
-  for (let imageNode of imageNodes) {
-    imageNode.src = imageNode.src
-      .replace("http://localhost:9300", props.data.linkBase) // in dev mode
-      .replace(/^file:.*app.sar/, props.data.linkBase); // in production mode
+  for (let img of imageNodes) {
+    if (
+      !img.src.includes("http://localhost:9000/") &&
+      !img.src.includes("tauri://localhost/")
+    )
+      continue;
+    const imgFile = img.src
+      .replace("http://localhost:9000/", "") // in dev mode
+      .replace("tauri://localhost/", ""); // in production mode
+    img.src = convertFileSrc(
+      [db.storagePath, ".sophosia", "image", imgFile].join(sep)
+    );
   }
 }
 </script>
