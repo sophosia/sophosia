@@ -3,7 +3,7 @@
   "description": "A research paper / textbook / note management tool",
   "productName": "sophosia",
   "author": "Hunt Feng",
-  "private": true,
+  "private": false,
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
@@ -35,7 +35,6 @@
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",
     "react": "^18.2.0",
-    "react-async": "^10.0.1",
     "react-dom": "^18.2.0",
     "tauri-plugin-fs-extra-api": "https://github.com/tauri-apps/tauri-plugin-fs-extra#v1",
     "vditor": "^3.9.4",

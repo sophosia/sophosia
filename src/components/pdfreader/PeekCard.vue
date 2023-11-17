@@ -51,8 +51,7 @@ import { nextTick, onMounted, ref, PropType, watch, watchEffect } from "vue";
 
 import * as pdfjsLib from "pdfjs-dist";
 import * as pdfjsViewer from "pdfjs-dist/web/pdf_viewer";
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "node_modules/pdfjs-dist/build/pdf.worker.min.js";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 import { GrabToPan } from "src/backend/pdfreader/grabToPan";
 import { PeekManager } from "src/backend/pdfreader/peekManager";

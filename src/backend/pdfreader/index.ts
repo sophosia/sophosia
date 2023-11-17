@@ -19,7 +19,7 @@ import {
 import * as pdfjsLib from "pdfjs-dist";
 import * as pdfjsViewer from "pdfjs-dist/web/pdf_viewer";
 import { Annotation } from "../pdfannotation/annotations";
-pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js"; // in the public folder
+pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 import { readBinaryFile } from "@tauri-apps/api/fs";
 import { open } from "@tauri-apps/api/shell";
@@ -89,7 +89,7 @@ export default class PDFApplication {
     const link = document.createElement("link");
     link.rel = "resources";
     link.type = "application/l10n";
-    link.href = "l10n/en-US/viewer.properties";
+    link.href = "pdfjs/l10n/en-US/viewer.properties";
     document.head.append(link);
     const l10n = new pdfjsViewer.GenericL10n("en-US");
 
@@ -229,14 +229,8 @@ export default class PDFApplication {
   }
 
   async loadPDF(filePath: string) {
-    // load cmaps for rendering translated fonts
-    let cMapUrl = "";
-    if (process.env.DEV)
-      cMapUrl = new URL("../../../cmaps/", import.meta.url).href;
-    else {
-      cMapUrl = new URL("cmaps/", import.meta.url).href;
-    }
-    // let buffer = window.fs.readFileSync(filePath);
+    const cMapUrl =
+      (process.env.DEV ? "http://localhost:9000/" : "") + "pdfjs/cmaps/";
     let buffer = await readBinaryFile(filePath);
     this.pdfDocument = await pdfjsLib.getDocument({
       data: buffer,

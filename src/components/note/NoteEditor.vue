@@ -16,7 +16,8 @@ import { inject, nextTick, onMounted, ref, watch } from "vue";
 import { Note, NoteType, Project, Edge, db } from "src/backend/database";
 // vditor
 import Vditor from "vditor";
-import "src/css/vditor/index.css";
+import "./index.css";
+// import "src/css/vditor/index.css";
 // db related
 import { useStateStore } from "src/stores/appState";
 import {
@@ -123,7 +124,9 @@ function initEditor() {
     toolbarConfig: {
       pin: true,
     },
-    cdn: "vditor", // the entire vditor folder is in public
+    // don't know why vditor import style sheets from cdn instead of node_module
+    // we put the css in the public folder
+    cdn: "vditor",
     toolbar: toolbar,
     lang: stateStore.settings.language as keyof II18n,
     tab: "    ", // use 4 spaces as tab
