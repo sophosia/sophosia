@@ -62,19 +62,21 @@ const unlisten = ref();
 
 onMounted(async () => {
   unlisten.value = await onUpdaterEvent(({ error, status }) => {
+    console.log("error status", error, status);
     if (error) updateStatus.value = `Error, ${error}`;
     else updateStatus.value = `Status: ${status}`;
   });
   version.value = await getVersion();
   await checkForUpdate();
-  console.log("unlisten", unlisten.value);
 });
 
 onBeforeUnmount(() => unlisten.value());
 
 async function checkForUpdate() {
   updateMsg.value = "Checking update";
+  console.log("clicked");
   const update = await checkUpdate();
+  console.log("here");
   isUpdateAvailable.value = update.shouldUpdate;
   if (!update.shouldUpdate) {
     updateMsg.value = "Up to date";
