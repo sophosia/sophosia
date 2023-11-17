@@ -28,7 +28,7 @@
   "active-projects": "Active Projects",
   "browse": "Browse",
   "select-a-folder-to-fill-up-your-knowledge": "Select a folder to fill up your knowledge",
-  "welcome-to-research-helper": "Welcome to Research Helper",
+  "welcome": "Sophosia: Your Research Helper",
   "download-updates": "Download Updates",
   "check-for-updates": "Check for updates",
   "version": "Version: {0}",
@@ -148,5 +148,7 @@
   "citation-key": "Citation key",
   "update-references": "Update references",
   "duplicate": "There' already a file with the same name",
-  "no-working-projects": "No working projects"
+  "no-working-projects": "No working projects",
+  "scaning": "Scaning",
+  "done": "Done"
 }

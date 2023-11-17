@@ -25,7 +25,7 @@
   "rename": "重命名",
   "delete": "删除",
   "refresh-graphview": "刷新链接图",
-  "welcome-to-research-helper": "欢迎使用研究小助手",
+  "welcome": "Sophosia: 你的研究小助手",
   "select-a-folder-to-fill-up-your-knowledge": "选择一个文件夹作为你的知识仓库吧",
   "browse": "浏览",
   "research-helper": "研究小助手",
@@ -148,5 +148,7 @@
   "citation-key": "引用键",
   "update-references": "更新所有文献",
   "duplicate": "该文件名已存在",
-  "no-working-projects": "无"
+  "no-working-projects": "无",
+  "scaning": "扫描中",
+  "done": "完成"
 }

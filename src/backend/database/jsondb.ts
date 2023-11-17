@@ -133,18 +133,23 @@ export class JsonDB {
 
   async createHiddenFolders() {
     if (!this.storagePath) throw Error("storagePath not set");
-    let sophosia = await join(this.storagePath, ".sophosia");
-    await createDir(sophosia);
-    for (let folder of [
-      "appState",
-      "layout",
-      "project",
-      "folder",
-      "pdfAnnotation",
-      "pdfState",
-      "image",
-    ])
-      await createDir(await join(sophosia, folder));
+    try {
+      let sophosia = await join(this.storagePath, ".sophosia");
+      await createDir(sophosia);
+      for (let folder of [
+        "appState",
+        "layout",
+        "project",
+        "folder",
+        "pdfAnnotation",
+        "pdfState",
+        "image",
+      ])
+        await createDir(await join(sophosia, folder));
+    } catch (error) {
+      // the folders might exists already
+      console.log(error);
+    }
   }
 }
 

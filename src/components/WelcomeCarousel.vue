@@ -9,7 +9,7 @@
       class="column no-wrap flex-center"
     >
       <h2 data-cy="title">
-        {{ $t("welcome-to-research-helper") }}
+        {{ $t("welcome") }}
         <q-icon class="q-ml-lg">
           <img
             src="~assets/logo.svg"
@@ -114,7 +114,6 @@ async function changeStoragePath() {
     stateStore.settings.storagePath = path.value;
     await db.setStoragePath(path.value);
     await db.createHiddenFolders();
-    emit("updateAppState");
   }
 }
 

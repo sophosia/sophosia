@@ -353,8 +353,6 @@ async function renameNote() {
       id: newNote._id,
       label: newNote.label,
     });
-
-    stateStore.showMessage("links has been updated");
   }
 
   if (addingNote.value) selectItem(note); // open the note
