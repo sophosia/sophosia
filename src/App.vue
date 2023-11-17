@@ -1,6 +1,10 @@
 <template>
+  <WelcomeCarousel
+    v-if="showWelcomeCarousel"
+    v-model="showWelcomeCarousel"
+  />
   <div
-    v-if="loading"
+    v-else-if="scanStatus !== 'done'"
     style="margin-top: 50vh"
     class="q-px-xl row justify-center"
   >
@@ -13,10 +17,6 @@
     >
     </q-linear-progress>
   </div>
-  <WelcomeCarousel
-    v-else-if="showWelcomeCarousel"
-    v-model="showWelcomeCarousel"
-  />
   <router-view v-else />
 </template>
 
@@ -37,21 +37,19 @@ const showWelcomeCarousel = ref(true);
 const loading = ref(false);
 
 watchEffect(() => {
-  // once the welcome page is gone, show loading scene
-  // and start to scan the storage path
-  if (!showWelcomeCarousel.value) {
-    loading.value = true;
-    scanAndUpdateDB();
-  }
-});
-
-watchEffect(() => {
-  // loading scene will disappear when the scan is complete
-  if (scanStatus.value === "done") loading.value = false;
+  // once the welcome page is gone
+  // start to scan the storage path
+  if (!showWelcomeCarousel.value) scanAndUpdateDB();
 });
 
 onMounted(async () => {
-  let state = await getAppState(); // if no storage path it returns default state
+  // try to load the storage path see if it exists
+  await db.getStoragePath();
+
+  // regardless of the existence of storagePath
+  // we need to apply settings
+  // if no storage path default state will be used
+  let state = await getAppState();
   stateStore.loadState(state);
   projectStore.loadOpenedProjects(state.openedProjectIds);
 
@@ -62,7 +60,7 @@ onMounted(async () => {
   locale.value = stateStore.settings.language;
 
   // if there is no path, show welcome carousel
-  if (!(await db.getStoragePath())) {
+  if (!db.storagePath) {
     showWelcomeCarousel.value = true;
   } else {
     showWelcomeCarousel.value = false;
