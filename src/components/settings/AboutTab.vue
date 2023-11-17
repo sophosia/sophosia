@@ -7,39 +7,41 @@
       class="q-my-md card"
     >
       <q-card-section>
-        <div class="text-h6 row items-center">
-          <img
-            src="~assets/logo.svg"
-            alt="logo"
-          />
-          <div class="q-ml-sm">{{ $t("research-helper") }}</div>
+        <div class="row items-center justify-between">
+          <div class="text-h6 row items-center">
+            <img
+              src="~assets/logo.svg"
+              alt="logo"
+            />
+            <div class="q-ml-sm">{{ $t("sophosia") + version }}</div>
+          </div>
+          <div>
+            <q-btn
+              v-if="!isUpdateAvailable"
+              unelevated
+              square
+              :ripple="false"
+              no-caps
+              :label="$t('check-for-updates')"
+              color="primary"
+              @click="checkForUpdate"
+            />
+            <q-btn
+              v-else
+              unelevated
+              square
+              :ripple="false"
+              no-caps
+              :label="$t('download-updates')"
+              color="primary"
+              @click="downloadUpdate"
+              :disable="disabled"
+            />
+          </div>
         </div>
       </q-card-section>
       <q-card-section class="q-pt-none">
-        {{ $t("version", [version]) }}
-        <q-btn
-          v-if="!isUpdateAvailable"
-          unelevated
-          square
-          :ripple="false"
-          no-caps
-          :label="$t('check-for-updates')"
-          color="primary"
-          @click="checkForUpdate"
-        />
-        <q-btn
-          v-else
-          unelevated
-          square
-          :ripple="false"
-          no-caps
-          :label="$t('download-updates')"
-          color="primary"
-          @click="downloadUpdate"
-          :disable="disabled"
-        />
-        <div>{{ updateStatus }}</div>
-        <div>{{ updateMsg }}</div>
+        <div style="white-space: pre-wrap">{{ updateMsg }}</div>
       </q-card-section>
     </q-card>
   </div>
@@ -52,41 +54,34 @@ import {
   onUpdaterEvent,
 } from "@tauri-apps/api/updater";
 import { getVersion } from "@tauri-apps/api/app";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n({ useScope: "global" });
 
 const version = ref("v0.1.0");
 const updateMsg = ref("");
-const updateStatus = ref("");
 const isUpdateAvailable = ref(false);
 const disabled = ref(false);
 const unlisten = ref();
 
 onMounted(async () => {
   unlisten.value = await onUpdaterEvent(({ error, status }) => {
-    console.log("error status", error, status);
-    if (error) updateStatus.value = `Error, ${error}`;
-    else updateStatus.value = `Status: ${status}`;
+    if (error) updateMsg.value = `Error: ${error}`;
+    else updateMsg.value = `Status: ${status}`;
   });
-  version.value = await getVersion();
-  await checkForUpdate();
+  version.value = "v" + (await getVersion());
 });
 
 onBeforeUnmount(() => unlisten.value());
 
 async function checkForUpdate() {
   updateMsg.value = "Checking update";
-  console.log("clicked");
   const update = await checkUpdate();
-  console.log("here");
   isUpdateAvailable.value = update.shouldUpdate;
-  if (!update.shouldUpdate) {
-    updateMsg.value = "Up to date";
-    return;
-  }
-  updateMsg.value = "Newer version available\n";
+  if (!update.shouldUpdate) return;
+
   if (update.manifest)
-    updateMsg.value += `
-Version: ${update.manifest.version}
-Date: ${update.manifest.date}
+    updateMsg.value = `${t("newer-version-available")}
+${t("version", ["v" + update.manifest.version])}
 ${update.manifest.body}`;
 }
 

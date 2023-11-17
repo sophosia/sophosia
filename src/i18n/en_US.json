@@ -32,7 +32,7 @@
   "download-updates": "Download Updates",
   "check-for-updates": "Check for updates",
   "version": "Version: {0}",
-  "research-helper": "Research Helper",
+  "sophosia": "Sophosia",
   "light": "Light",
   "dark": "Dark",
   "storage-path": "Storage path:",
@@ -150,5 +150,6 @@
   "duplicate": "There' already a file with the same name",
   "no-working-projects": "No working projects",
   "scaning": "Scaning",
-  "done": "Done"
+  "done": "Done",
+  "newer-version-available": "Newer version available"
 }

@@ -1,6 +1,6 @@
 <template>
   <q-splitter
-    :model-value="40"
+    :model-value="30"
     unit="px"
     :separator-style="{ cursor: 'default' }"
   >
