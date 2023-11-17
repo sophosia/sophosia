@@ -7,8 +7,9 @@
 - [x] make sure all tests pass
   - [x] feature branch test
   - [x] main branch test
-- [ ] make sure release comes out when taged
-- [ ] check if flask server can retrieve the info
-- [ ] push flask server to gcp
-- [ ] check update in the app
-- [ ] download update
+- [x] make sure release comes out when taged
+- [x] signing the updates
+- [x] check if flask server can retrieve the info
+- [x] push flask server to gcp
+- [x] check update in the app
+- [x] download update
