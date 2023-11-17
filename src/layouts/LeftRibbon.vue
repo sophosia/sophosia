@@ -6,11 +6,12 @@
     <div>
       <q-btn-toggle
         v-model="stateStore.ribbonToggledBtnUid"
-        style="width: 40px; display: block"
+        style="position: absolute; height: 36px"
         spread
         unelevated
         square
         clearable
+        padding="xs"
         :ripple="false"
         :options="toggleBtns"
       >
@@ -33,19 +34,21 @@
       <q-btn
         v-for="(btn, index) in pluginBtns"
         :key="index"
-        style="width: 40px"
+        style="width: 30px"
         flat
         square
+        padding="xs"
         :icon="btn.icon"
         @click="onPluginBtnClick(btn)"
       >
         <q-tooltip>{{ btn.tooltip }}</q-tooltip>
       </q-btn>
       <q-btn
-        style="width: 40px"
+        style="width: 30px"
         flat
         square
         icon="home"
+        padding="xs"
         :ripple="false"
         @click="
           $emit('openPage', {
@@ -58,9 +61,10 @@
         <q-tooltip>{{ $t("library") }}</q-tooltip>
       </q-btn>
       <q-btn
-        style="width: 40px"
+        style="width: 30px"
         flat
         square
+        padding="xs"
         :ripple="false"
         icon="help"
         @click="
@@ -74,9 +78,10 @@
         <q-tooltip>{{ $t("help") }}</q-tooltip>
       </q-btn>
       <q-btn
-        style="width: 40px"
+        style="width: 30px"
         flat
         square
+        padding="xs"
         :ripple="false"
         icon="settings"
         @click="

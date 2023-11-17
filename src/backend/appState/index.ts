@@ -10,8 +10,7 @@ async function getAppState(): Promise<AppState> {
   try {
     return (await db.get("appState")) as AppState;
   } catch (error) {
-    // cannot get appState
-
+    // return default app state
     let state: AppState = {
       _id: "appState",
       dataType: "appState",
@@ -34,13 +33,16 @@ async function getAppState(): Promise<AppState> {
         citeKeyRule: "author-title-year",
       },
     };
-    await db.put(state);
     return state;
   }
 }
 
 async function _updateAppState(state: AppState) {
-  await db.put(state);
+  try {
+    await db.put(state);
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 const updateAppState = debounce(_updateAppState, 200);

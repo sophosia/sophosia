@@ -341,7 +341,7 @@ export class Comment extends Annotation {
     section.classList.add("textAnnotation");
 
     let img = document.createElement("img");
-    img.src = "annotation-note-transparent.svg";
+    img.src = "pdfjs/annotation-note-transparent.svg";
     img.style.position = "absolute";
     img.style.left = "0px";
     img.style.top = "0px";

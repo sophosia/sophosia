@@ -37,10 +37,6 @@ export const useStateStore = defineStore("stateStore", {
     openedPage: { id: "", type: "", label: "" },
     closedItemId: "",
     currentItemId: "library",
-
-    // message
-    showMessageDialog: false,
-    message: "",
   }),
 
   actions: {
@@ -177,18 +173,6 @@ export const useStateStore = defineStore("stateStore", {
       // db
       this.settings.language = language;
       this.saveAppState();
-    },
-
-    /**
-     * Show a popup message on the screen
-     */
-    showMessage(message: string) {
-      this.message = message;
-      this.showMessageDialog = true;
-      setTimeout(() => {
-        this.showMessageDialog = false;
-        this.message = "";
-      }, 2000);
     },
 
     async saveAppState() {

@@ -134,8 +134,7 @@ import { copyFileToProjectFolder } from "src/backend/project/file";
 import * as pdfjsLib from "pdfjs-dist";
 import { basename, extname } from "@tauri-apps/api/path";
 import { readBinaryFile } from "@tauri-apps/api/fs";
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "node_modules/pdfjs-dist/build/pdf.worker.min.js";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();

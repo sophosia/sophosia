@@ -10,6 +10,11 @@ import { Edge, idb } from "../database";
 import { metadata, Metadata } from "tauri-plugin-fs-extra-api";
 import { updateLinks } from "./graph";
 import { extname, sep } from "@tauri-apps/api/path";
+import { ref } from "vue";
+import { Notify } from "quasar";
+
+// for informing the loading screen at startup
+export const scanStatus = ref("scaning");
 
 /**
  * Process each FileEntry with callback functions
@@ -83,6 +88,8 @@ export async function scanAndUpdateDB() {
   await writeTextFile("workspace.json", JSON.stringify(workspace), {
     dir: BaseDirectory.AppConfig,
   });
+
+  scanStatus.value = "done";
 }
 
 /**
@@ -149,4 +156,9 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
 
   const entries = await readDir(storagePath, { recursive: true });
   await processEntries(entries, processFile, processDir);
+
+  Notify.create({
+    message: "Links updated",
+    position: "top-right",
+  });
 }
