@@ -14,8 +14,8 @@
         dense
         size="sm"
         color="yellow"
-        checked-icon="star"
-        unchecked-icon="star_border"
+        checked-icon="mdi-star"
+        unchecked-icon="mdi-star-outline"
         :model-value="!!tableProps.row.favorite"
         @update:model-value="(isFavorite: boolean) => menu?.setFavorite(isFavorite)"
         @mousedown.stop
@@ -25,7 +25,7 @@
       <q-icon
         v-if="!!tableProps.row.path || (tableProps.row.children?.length as typeof NaN) > 0"
         size="sm"
-        :name="tableProps.expand ? 'arrow_drop_down' : 'arrow_right'"
+        :name="tableProps.expand ? 'mdi-menu-down' : 'mdi-menu-right'"
         @click="expandRow(!tableProps.expand)"
       />
     </q-td>

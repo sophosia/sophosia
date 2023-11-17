@@ -50,32 +50,32 @@
       :options="[
         {
           value: AnnotationType.CURSOR,
-          icon: 'bi-cursor-text',
+          icon: 'mdi-cursor-text',
           slot: AnnotationType.CURSOR,
         },
         {
           value: AnnotationType.HIGHLIGHT,
-          icon: 'border_color',
+          icon: 'mdi-marker',
           slot: AnnotationType.HIGHLIGHT,
         },
         {
           value: AnnotationType.UNDERLINE,
-          icon: 'format_underlined',
+          icon: 'mdi-format-underline',
           slot: AnnotationType.UNDERLINE,
         },
         {
           value: AnnotationType.STRIKEOUT,
-          icon: 'format_strikethrough',
+          icon: 'mdi-format-strikethrough',
           slot: AnnotationType.STRIKEOUT,
         },
         {
           value: AnnotationType.RECTANGLE,
-          icon: 'rectangle',
+          icon: 'mdi-rectangle',
           slot: AnnotationType.RECTANGLE,
         },
         {
           value: AnnotationType.COMMENT,
-          icon: 'comment',
+          icon: 'mdi-comment-text',
           slot: AnnotationType.COMMENT,
         },
         {
@@ -164,7 +164,7 @@
       size="0.7rem"
       padding="xs"
       toggle-color="primary"
-      :options="[{ value: true, icon: 'list' }]"
+      :options="[{ value: true, icon: 'mdi-format-list-bulleted' }]"
     >
       <template v-slot:default>
         <q-tooltip>{{ $t("toggle-right-menu") }}</q-tooltip>

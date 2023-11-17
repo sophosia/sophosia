@@ -31,13 +31,13 @@
             class="q-pa-none"
           >
             <q-icon
-              :name="props.expanded ? 'arrow_drop_down' : 'arrow_right'"
+              :name="props.expanded ? 'mdi-menu-down' : 'mdi-menu-right'"
             />
           </q-item-section>
           <q-item-section>
             <div
               style="font-size: 1rem"
-              class="non-selectable"
+              class="text-bold non-selectable"
             >
               {{ $t("active-projects") }}
             </div>
@@ -66,13 +66,13 @@
             class="q-pa-none"
           >
             <q-icon
-              :name="props.expanded ? 'arrow_drop_down' : 'arrow_right'"
+              :name="props.expanded ? 'mdi-menu-down' : 'mdi-menu-right'"
             />
           </q-item-section>
           <q-item-section>
             <div
               style="font-size: 1rem"
-              class="non-selectable"
+              class="text-bold non-selectable"
             >
               {{ $t("related-items") }}
             </div>
@@ -84,7 +84,7 @@
               size="sm"
               padding="none"
               class="q-mr-xs"
-              icon="refresh"
+              icon="mdi-refresh"
               @click.stop="graphview?.reload()"
             >
               <q-tooltip>{{ $t("refresh-graphview") }}</q-tooltip>

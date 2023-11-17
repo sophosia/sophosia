@@ -157,8 +157,5 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
   const entries = await readDir(storagePath, { recursive: true });
   await processEntries(entries, processFile, processDir);
 
-  Notify.create({
-    message: "Links updated",
-    position: "top-right",
-  });
+  Notify.create("Links updated");
 }

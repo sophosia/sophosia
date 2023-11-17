@@ -4,7 +4,7 @@
     flat
     square
     :ripple="false"
-    icon="visibility"
+    icon="mdi-eye"
     size="0.7rem"
     padding="xs"
     data-cy="btn-dropdown"
@@ -12,28 +12,27 @@
     <q-tooltip>{{ $t("view") }}</q-tooltip>
     <q-menu data-cy="menu-dropdown">
       <q-list dense>
-        <q-item class="row justify-between items-center">
+        <q-item class="column items-center">
           <q-btn
             dense
             flat
             :ripple="false"
-            icon="expand"
-            class="rotate-90"
+            :label="$t('page-width')"
+            no-caps
+            icon="mdi-arrow-expand-horizontal"
             @click="$emit('changeScale', { scaleValue: 'page-width' })"
             data-cy="btn-page-width"
-          >
-            <q-tooltip>{{ $t("page-width") }}</q-tooltip>
-          </q-btn>
+          />
           <q-btn
             dense
             flat
             :ripple="false"
-            icon="expand"
+            :label="$t('page-height')"
+            no-caps
+            icon="mdi-arrow-expand-vertical"
             @click="$emit('changeScale', { scaleValue: 'page-height' })"
             data-cy="btn-page-height"
-          >
-            <q-tooltip>{{ $t("page-height") }}</q-tooltip>
-          </q-btn>
+          />
         </q-item>
         <q-separator />
         <q-item class="row justify-center items-center">
@@ -41,7 +40,7 @@
             dense
             flat
             :ripple="false"
-            icon="zoom_out"
+            icon="mdi-magnify-minus-outline"
             @click="$emit('changeScale', { delta: -0.1 })"
             data-cy="btn-zoom-out"
           >
@@ -54,7 +53,7 @@
             dense
             flat
             :ripple="false"
-            icon="zoom_in"
+            icon="mdi-magnify-plus-outline"
             @click="$emit('changeScale', { delta: 0.1 })"
             data-cy="btn-zoom-in"
           >
@@ -66,16 +65,27 @@
           <q-btn-toggle
             class="column"
             flat
-            stack
             dense
             square
             no-caps
             :ripple="false"
             toggle-color="primary"
             :options="[
-              { label: $t('no-spreads'), value: 0 },
-              { label: $t('odd-spreads'), value: 1 },
-              { label: $t('even-spreads'), value: 2 },
+              {
+                label: $t('no-spreads'),
+                value: 0,
+                icon: 'mdi-numeric-0-box-outline',
+              },
+              {
+                label: $t('odd-spreads'),
+                value: 1,
+                icon: 'mdi-numeric-1-box-outline',
+              },
+              {
+                label: $t('even-spreads'),
+                value: 2,
+                icon: 'mdi-numeric-2-box-outline',
+              },
             ]"
             :model-value="spreadMode"
             @update:model-value="(mode: number) => $emit('changeSpreadMode',mode)"
@@ -89,27 +99,28 @@
             square
             flat
             :ripple="false"
-            :icon="isFullscreen ? 'fullscreen_exit' : 'fullscreen'"
+            :icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+            :label="
+              isFullscreen ? $t('exit-full-screen') : $t('enter-full-screen')
+            "
+            no-caps
             size="0.9rem"
             padding="none"
             @click="$emit('toggleFullscreen')"
             data-cy="btn-toggle-fullscreen"
-          >
-            <q-tooltip>{{
-              isFullscreen ? $t("exit-full-screen") : $t("enter-full-screen")
-            }}</q-tooltip>
-          </q-btn>
+          />
         </q-item>
 
         <q-separator />
-        <q-item class="justify-center">
+        <q-item class="justify-between items-center">
           <q-toggle
             dense
+            style="font-weight: 500"
             :model-value="darkMode"
             @update:model-value="$emit('toggleDarkMode')"
-            unchecked-icon="light_mode"
-            checked-icon="dark_mode"
-            size="xl"
+            unchecked-icon="mdi-brightness-4"
+            checked-icon="mdi-white-balance-sunny"
+            :label="darkMode ? $t('enter-light-mode') : $t('enter-dark-mode')"
           />
         </q-item>
       </q-list>

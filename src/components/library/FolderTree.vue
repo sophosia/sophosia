@@ -73,7 +73,15 @@
           <!-- icon width: 1.5rem -->
           <q-icon
             size="1.5rem"
-            :name="prop.node.icon"
+            :name="
+                Object.values(SpecialFolder).includes(prop.node._id) 
+                  ? prop.node.icon as string
+                  : (
+                    (prop.node._id === stateStore.selectedFolderId || prop.expanded)
+                    ? 'mdi-folder-open'
+                    : 'mdi-folder'
+                  )
+            "
           />
           <!-- input must have keypress.space.stop since space is default to expand row rather than space in text -->
           <input
@@ -100,7 +108,7 @@
 
 <script setup lang="ts">
 // types
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { Folder, SpecialFolder } from "src/backend/database";
 import { QTree, QTreeNode } from "quasar";
 //db
@@ -148,17 +156,18 @@ watch(
 onMounted(async () => {
   folders.value = (await getFolderTree()) as QTreeNode[];
   folders.value[0].label = t("library");
+  folders.value[0].icon = "mdi-bookshelf";
 
   // add other special folders
   folders.value.push({
-    _id: SpecialFolder.ADDED.toString(),
+    _id: SpecialFolder.ADDED,
     label: t("added"),
-    icon: "history",
+    icon: "mdi-history",
   });
   folders.value.push({
-    _id: SpecialFolder.FAVORITES.toString(),
+    _id: SpecialFolder.FAVORITES,
     label: t("favorites"),
-    icon: "star",
+    icon: "mdi-star",
   });
 });
 
@@ -212,7 +221,6 @@ function deleteFolder(node: Folder) {
     var newNode = [] as Folder[];
     for (let n of oldNode.children) {
       if ((n as Folder)._id !== node._id) {
-        // if (!newNode.children) newNode.children = [];
         newNode.push({
           _id: (n as Folder)._id,
           icon: (n as Folder).icon,

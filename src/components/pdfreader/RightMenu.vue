@@ -9,7 +9,7 @@
   >
     <q-tab
       name="metaInfoTab"
-      icon="info"
+      icon="mdi-information-outline"
       :ripple="false"
       data-cy="tab-meta-info"
     >
@@ -17,7 +17,7 @@
     </q-tab>
     <q-tab
       name="tocTab"
-      icon="toc"
+      icon="mdi-table-of-contents"
       :ripple="false"
       data-cy="tab-toc"
     >
@@ -25,7 +25,7 @@
     </q-tab>
     <q-tab
       name="annotationTab"
-      icon="edit"
+      icon="mdi-comment-edit-outline"
       :ripple="false"
       data-cy="tab-annot-list"
     >

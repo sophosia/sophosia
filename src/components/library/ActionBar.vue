@@ -4,9 +4,10 @@
       flat
       dense
       square
-      icon="add"
+      icon="mdi-plus"
       size="0.8rem"
       padding="none"
+      :ripple="false"
     >
       <q-tooltip>{{ $t("add-project") }}</q-tooltip>
       <q-menu square>
@@ -61,7 +62,7 @@
       <template v-slot:append>
         <q-icon
           class="cursor-pointer"
-          name="search"
+          name="mdi-magnify"
         />
       </template>
     </q-input>
@@ -78,7 +79,7 @@
       padding="none"
       :ripple="false"
       toggle-color="primary"
-      :options="[{ value: true, icon: 'list' }]"
+      :options="[{ value: true, icon: 'mdi-format-list-bulleted' }]"
     >
       <q-tooltip>{{ $t("info") }}</q-tooltip>
     </q-btn-toggle>

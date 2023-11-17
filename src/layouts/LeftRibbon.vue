@@ -7,25 +7,23 @@
       <q-btn-toggle
         v-model="stateStore.ribbonToggledBtnUid"
         style="position: absolute; height: 36px"
+        class="q-mx-xs"
         spread
-        unelevated
+        flat
         square
         clearable
-        padding="xs"
+        padding="none"
         :ripple="false"
         :options="toggleBtns"
       >
         <template
           v-for="toggleBtn in toggleBtns"
           v-slot:[toggleBtn.slot]
+          class="no-hover"
         >
-          <!-- icons do not render properly using the normal way -->
-          <!-- I need to render icons in templates -->
-          <q-icon :name="toggleBtn._icon">
-            <q-tooltip>
-              {{ toggleBtn.tooltip }}
-            </q-tooltip>
-          </q-icon>
+          <q-tooltip>
+            {{ toggleBtn.tooltip }}
+          </q-tooltip>
         </template>
       </q-btn-toggle>
     </div>
@@ -47,7 +45,7 @@
         style="width: 30px"
         flat
         square
-        icon="home"
+        icon="mdi-bookshelf"
         padding="xs"
         :ripple="false"
         @click="
@@ -66,7 +64,7 @@
         square
         padding="xs"
         :ripple="false"
-        icon="help"
+        icon="mdi-help"
         @click="
           $emit('openPage', {
             id: 'help',
@@ -83,7 +81,7 @@
         square
         padding="xs"
         :ripple="false"
-        icon="settings"
+        icon="mdi-cog"
         @click="
           $emit('openPage', {
             id: 'settings',
@@ -123,7 +121,7 @@ const isUpdateAvailable = ref(false);
 const pluginBtns = ref<Button[]>([]);
 const clickedBtnUid = ref("");
 const toggleBtns = ref<
-  { _icon: string; value: string; tooltip: string; slot: string }[]
+  { icon: string; value: string; tooltip: string; slot: string }[]
 >([]);
 
 // change tooltip locale
@@ -163,14 +161,14 @@ function mountBtns() {
   pluginBtns.value = buttons.btns;
   toggleBtns.value = [];
   toggleBtns.value.push({
-    _icon: "account_tree",
+    icon: "mdi-file-tree",
     value: "projectNavigator",
     tooltip: t("openedProjects"),
     slot: "projectNavigator",
   });
   for (let toggleBtn of buttons.toggleBtns) {
     toggleBtns.value.push({
-      _icon: toggleBtn.icon,
+      icon: toggleBtn.icon,
       value: toggleBtn.uid,
       tooltip: toggleBtn.tooltip,
       slot: toggleBtn.uid,

@@ -196,8 +196,8 @@
           <q-btn
             flat
             padding="none"
-            size="xs"
-            icon="bi-box-arrow-up-right"
+            size="md"
+            icon="mdi-link"
             :disable="!!!meta.URL"
             @click="
               (e) => {
@@ -250,12 +250,19 @@
           v-for="(tag, index) in meta.tags"
           :key="index"
           :ripple="false"
-          dense
-          size="1rem"
-          icon="bookmark"
           :label="tag"
+          dense
+          clickable
+          size="1rem"
+          icon="mdi-tag"
           removable
           @remove="removeTag(tag)"
+          @click="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(tag);
+            }
+          "
         />
       </div>
       <div class="row justify-between q-mt-sm">
@@ -273,26 +280,20 @@
           :ripple="false"
           dense
           size="1rem"
-          icon="folder"
+          icon="mdi-folder"
           :label="name"
         />
       </div>
 
       <div class="row justify-between q-mt-sm">
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
+        <div style="font-size: 1rem">
           {{ $t("date-added") }}
         </div>
         <div>{{ new Date(meta.timestampAdded).toLocaleString() }}</div>
       </div>
 
       <div class="row justify-between q-mt-sm">
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
+        <div style="font-size: 1rem">
           {{ $t("date-modified") }}
         </div>
         <div>{{ new Date(meta.timestampModified).toLocaleString() }}</div>
@@ -314,7 +315,7 @@
           anchor="bottom middle"
           self="top middle"
         >
-          Must have one of URL, ISBN or DOI
+          {{ $t("update-meta-requirement") }}
         </q-tooltip>
       </div>
     </q-tab-panel>
@@ -350,6 +351,7 @@ import { getFolder } from "src/backend/project/folder";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/appState";
 import { open } from "@tauri-apps/api/shell";
+import { copyToClipboard } from "quasar";
 const projectStore = useProjectStore();
 const stateStore = useStateStore();
 

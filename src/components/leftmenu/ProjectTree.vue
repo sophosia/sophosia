@@ -101,28 +101,28 @@
 
         <q-icon
           v-if="prop.node.dataType === 'project'"
-          size="1.2rem"
-          name="import_contacts"
+          size="1.4rem"
+          name="mdi-book-open-blank-variant"
         />
         <q-icon
           v-else-if="
             prop.node.dataType === 'note' &&
             prop.node.type === NoteType.EXCALIDRAW
           "
-          size="1.2rem"
-          name="bi-easel"
+          size="1.4rem"
+          name="img:icons/excalidraw.png"
         />
         <!-- markdown note -->
         <q-icon
           v-else
-          size="1.2rem"
-          name="bi-file-earmark-text"
+          size="1.4rem"
+          name="mdi-language-markdown"
         />
         <!-- note icon has 1rem width -->
         <!-- input must have keypress.space.stop since space is default to expand row rather than space in text -->
         <div v-if="prop.node._id == renamingNoteId">
           <input
-            style="width: calc(100% - 1.2rem)"
+            style="width: calc(100% - 1.4rem)"
             v-model="prop.node.label"
             @input="checkDuplicate(prop.node)"
             @keydown.enter="renameNote"
@@ -141,7 +141,7 @@
         <!-- add item-id and type for access of drag source -->
         <div
           v-else
-          style="width: calc(100% - 1.2rem); font-size: 1rem"
+          style="width: calc(100% - 1.4rem); font-size: 1rem"
           class="ellipsis non-selectable"
           :item-id="prop.key"
           :type="prop.node.dataType"
@@ -156,7 +156,7 @@
       </div>
       <q-icon
         v-if="prop.node.dataType == 'project'"
-        name="close"
+        name="mdi-close"
         @click="closeProject(prop.key)"
       >
         <q-tooltip> {{ $t("close-project") }} </q-tooltip>

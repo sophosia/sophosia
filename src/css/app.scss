@@ -141,3 +141,8 @@ html {
 ::-webkit-scrollbar-corner {
   color: transparent;
 }
+
+// no hover effect on the button
+.q-btn .q-focus-helper {
+  display: none;
+}

@@ -11,7 +11,7 @@
           @click="copyID()"
         >
           <div style="font-size: 1rem">
-            <q-icon name="content_copy"></q-icon>
+            <q-icon name="mdi-content-copy"></q-icon>
             {{ $t("copy-annot-id") }}
           </div>
         </div>
@@ -23,7 +23,7 @@
           @click="deleteAnnot()"
         >
           <div style="font-size: 1rem">
-            <q-icon name="delete_outline"></q-icon>
+            <q-icon name="mdi-delete-outline"></q-icon>
             {{ $t("delete-annot") }}
           </div>
         </div>
@@ -35,7 +35,7 @@
           @click="$emit('scrollIntoView')"
         >
           <div style="font-size: 1rem">
-            <q-icon name="gps_not_fixed"> </q-icon>
+            <q-icon name="mdi-crosshairs"> </q-icon>
             {{ $t("scroll-into-view") }}
           </div>
         </div>

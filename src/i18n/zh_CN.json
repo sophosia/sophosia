@@ -151,5 +151,9 @@
   "no-working-projects": "无",
   "scaning": "扫描中",
   "done": "完成",
-  "newer-version-available": "有更新的版本"
+  "newer-version-available": "有更新的版本",
+  "text-copied": "已复制到粘贴版",
+  "update-meta-requirement": "DOI, ISN和URL至少要一个为非空才能使用该选项",
+  "enter-light-mode": "进入亮模式",
+  "enter-dark-mode": "进入暗模式"
 }

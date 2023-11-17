@@ -17,13 +17,13 @@
       >
         <q-icon
           v-if="item.type === NoteType.EXCALIDRAW"
-          style="font-size: 1rem"
-          name="bi-easel-fill"
+          size="xs"
+          name="img:icons/excalidraw.png"
         />
         <q-icon
           v-else
-          style="font-size: 1rem"
-          name="bi-file-text-fill"
+          size="xs"
+          name="mdi-language-markdown"
         />
         <div v-if="renaming">
           <input
@@ -56,8 +56,9 @@
     >
       <div class="row items-center">
         <q-icon
-          style="font-size: 1rem; padding-right: 0.3rem"
-          name="bi-file-pdf-fill"
+          class="q-mr-xs"
+          size="xs"
+          name="img:icons/pdf.png"
         />
         <div
           class="col"
