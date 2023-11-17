@@ -190,24 +190,26 @@
   </div>
 </template>
 <script setup lang="ts">
-// types
 import { computed, reactive, ref } from "vue";
-import { Project, Note, Meta } from "src/backend/database";
 import ProgressDialog from "./ProgressDialog.vue";
 // db
+import { db } from "src/backend/database";
 import { useStateStore } from "src/stores/appState";
 import { updateAppState } from "src/backend/appState";
 import { changePath } from "src/backend/project/file";
 import { getAllProjects } from "src/backend/project/project";
 import { generateCiteKey } from "src/backend/project/meta";
-import { db } from "src/backend/database";
-import { useI18n } from "vue-i18n";
 import pluginManager from "src/backend/plugin";
-import { homeDir, join } from "@tauri-apps/api/path";
+import { homeDir } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
+import { Meta } from "src/backend/database";
+// utils
+import { useI18n } from "vue-i18n";
+import { useQuasar } from "quasar";
+const $q = useQuasar();
 
 const stateStore = useStateStore();
-const { locale } = useI18n({ useScope: "global" });
+const { locale, t } = useI18n({ useScope: "global" });
 
 // progressDialog
 const showProgressDialog = ref(false);
@@ -356,6 +358,7 @@ async function updateCiteKeys() {
       stateStore.settings.citeKeyRule
     );
   await db.bulkDocs(projects);
+  $q.notify(t("citation-keys-updated"));
 }
 
 async function saveAppState() {

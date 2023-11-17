@@ -10,7 +10,7 @@
         <div class="row items-center justify-between">
           <div class="text-h6 row items-center">
             <img
-              src="~assets/logo.svg"
+              src="icons/logo.svg"
               alt="logo"
             />
             <div class="q-ml-sm">{{ $t("sophosia") + version }}</div>

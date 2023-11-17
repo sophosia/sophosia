@@ -23,8 +23,8 @@
             :ripple="false"
           >
             <q-icon
-              name="bi-grid-1x2"
-              size="1.2rem"
+              name="mdi-tune-vertical"
+              size="sm"
             />
             <div style="font-size: 1rem; padding-left: 0.5rem">
               {{ $t("general") }}
@@ -35,8 +35,8 @@
             :ripple="false"
           >
             <q-icon
-              name="bi-plugin"
-              size="1.2rem"
+              name="mdi-toy-brick-outline"
+              size="sm"
             ></q-icon>
             <div style="font-size: 1rem; padding-left: 0.5rem">
               {{ $t("plugins") }}
@@ -47,8 +47,8 @@
             :ripple="false"
           >
             <q-icon
-              name="bi-info-circle"
-              size="1.2rem"
+              name="mdi-information-outline"
+              size="sm"
             ></q-icon>
             <div style="font-size: 1rem; padding-left: 0.5rem">
               {{ $t("about") }}

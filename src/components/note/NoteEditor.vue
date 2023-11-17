@@ -334,7 +334,7 @@ async function hoverLink(linkNode: HTMLElement) {
             "# Excalidraw note",
             `Belongs to: ${generateCiteKey(
               (await getProject(item.projectId)) as Project,
-              "author-year-title",
+              "author_year_title",
               true
             )}`,
           ];

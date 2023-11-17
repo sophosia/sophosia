@@ -35,7 +35,6 @@ module.exports = configure(function (/* ctx */) {
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
-      // "material-icons", // optional, you are not bound to it
       // 'ionicons-v4',
       // 'mdi-v5',
       // 'fontawesome-v6',
@@ -46,6 +45,7 @@ module.exports = configure(function (/* ctx */) {
       // "bootstrap-icons",
 
       "roboto-font", // optional, you are not bound to it
+      "material-icons", // still need it in quasar's components
       "mdi-v7"
     ],
 

@@ -155,5 +155,6 @@
   "text-copied": "已复制到粘贴版",
   "update-meta-requirement": "DOI, ISN和URL至少要一个为非空才能使用该选项",
   "enter-light-mode": "进入亮模式",
-  "enter-dark-mode": "进入暗模式"
+  "enter-dark-mode": "进入暗模式",
+  "citation-keys-updated": "引用键已更新"
 }

@@ -12,7 +12,7 @@
         {{ $t("welcome") }}
         <q-icon class="q-ml-lg">
           <img
-            src="~assets/logo.svg"
+            src="icons/logo.svg"
             alt="logo"
           />
         </q-icon>
