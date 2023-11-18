@@ -351,7 +351,16 @@ async function hoverLink(linkNode: HTMLElement) {
       let rect = linkNode.getBoundingClientRect();
       let parentRect = vditorDiv.value.getBoundingClientRect();
       hoverPane.value.card.$el.style.left = `${rect.left - parentRect.left}px`;
-      hoverPane.value.card.$el.style.top = `${rect.bottom - parentRect.top}px`;
+      if (rect.bottom / parentRect.bottom > 0.5) {
+        hoverPane.value.card.$el.style.bottom = `${
+          parentRect.bottom - rect.top
+        }px`;
+      } else {
+        hoverPane.value.card.$el.style.top = `${
+          rect.bottom - parentRect.top
+        }px`;
+      }
+      console.log(hoverPane.value.card.$el.style);
       hoverPane.value.card.$el.hidden = false;
     } catch (error) {
       console.log(error);
