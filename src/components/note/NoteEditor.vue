@@ -445,7 +445,7 @@ async function filterHints(key: string) {
   for (let project of projects) {
     if (project.title.toLowerCase().indexOf(key) > -1) {
       hints.push({
-        value: `[${generateCiteKey(project, "author-year-title")}](${
+        value: `[${generateCiteKey(project, "author_year_title")}](${
           project._id
         })`,
         html: `
