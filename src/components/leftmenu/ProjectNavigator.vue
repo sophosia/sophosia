@@ -5,7 +5,7 @@
     emit-immediately
     :limits="[36, maxHeight]"
     unit="px"
-    :separator-style="{ background: 'black' }"
+    separator-style="background: var(--q-edge)"
     :separator-class="{
       'q-splitter-separator-horizontal': isGraphViewOpened && isTreeOpened,
       'no-pointer-events': !isGraphViewOpened || !isTreeOpened,
@@ -113,6 +113,8 @@ import ProjectTree from "./ProjectTree.vue";
 
 import { useStateStore } from "src/stores/appState";
 import { useQuasar } from "quasar";
+import { colors } from "quasar";
+const { getPaletteColor } = colors;
 
 const stateStore = useStateStore();
 const $q = useQuasar();

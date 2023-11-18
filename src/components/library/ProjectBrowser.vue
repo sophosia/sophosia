@@ -36,9 +36,10 @@
         style="overflow: hidden"
         reverse
         :limits="[0, 60]"
-        :separator-style="{ background: '#1a1b26' }"
+        separator-style="background: var(--q-edge)"
         :separator-class="{
           'q-splitter-separator': stateStore.showLibraryRightMenu,
+          hidden: !stateStore.showLibraryRightMenu,
         }"
         :disable="!stateStore.showLibraryRightMenu"
         v-model="rightMenuSize"
@@ -105,6 +106,9 @@ import * as pdfjsLib from "pdfjs-dist";
 import { basename, extname } from "@tauri-apps/api/path";
 import { readBinaryFile } from "@tauri-apps/api/fs";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
+// utils
+import { colors } from "quasar";
+const { getPaletteColor } = colors;
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();

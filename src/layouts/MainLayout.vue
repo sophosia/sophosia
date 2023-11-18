@@ -2,7 +2,7 @@
   <q-splitter
     :model-value="30"
     unit="px"
-    :separator-style="{ cursor: 'default', background: '#16161e' }"
+    separator-style="cursor: default; background: var(--q-dark)"
   >
     <template v-slot:before>
       <LeftRibbon
@@ -14,7 +14,7 @@
       <q-splitter
         :limits="[0, 60]"
         emit-immediately
-        :separator-style="{ background: 'black' }"
+        separator-style="background: var(--q-edge)"
         :separator-class="{
           'q-splitter-separator': stateStore.showLeftMenu,
         }"
@@ -54,12 +54,13 @@ import "src/css/goldenlayout/base.scss";
 import "src/css/goldenlayout/theme.scss";
 // db
 import { useStateStore } from "src/stores/appState";
-import { useProjectStore } from "src/stores/projectStore";
 import { getNote } from "src/backend/project/note";
 import { getLayout, updateLayout } from "src/backend/appState";
 // utils
 import { nextTick, onMounted, provide, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { colors } from "quasar";
+const { getPaletteColor } = colors;
 import pluginManager from "src/backend/plugin";
 
 interface PageItem {
@@ -68,7 +69,6 @@ interface PageItem {
 }
 
 const stateStore = useStateStore();
-const projectStore = useProjectStore();
 const { t } = useI18n({ useScope: "global" });
 
 /*************************************************
@@ -138,16 +138,6 @@ watch(
       updateComponent(id, { id: id, label: t(id) });
   }
 );
-
-// /**
-//  * update window tab names when items are updated
-//  */
-// watch(
-//   () => projectStore.updatedProject,
-//   (project: Project) => {
-//     updateComponent(project._id, { id: project._id, label: project.label });
-//   }
-// );
 
 /*******************************************************
  * Methods

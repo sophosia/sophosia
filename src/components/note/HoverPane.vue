@@ -7,7 +7,10 @@
       v-if="content"
       class="q-pa-xs"
     >
-      <div ref="mdContentDiv"></div>
+      <div
+        ref="mdContentDiv"
+        style="background-color: var(--color-hoverpane-bkgd)"
+      ></div>
     </q-card-section>
   </q-card>
 </template>
@@ -96,6 +99,7 @@ defineExpose({ card });
   width: 40%;
   height: 50%;
   overflow: auto;
-  border: 2px solid $dark-blue;
+  border: 2px solid var(--color-hoverpane-border);
+  background-color: var(--color-hoverpane-bkgd);
 }
 </style>

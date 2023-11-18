@@ -1,8 +1,9 @@
 <template>
   <q-splitter
     v-model="leftMenuSize"
+    :limits="[10, 30]"
     class="fit"
-    :separator-style="{ cursor: 'col-resize' }"
+    separator-class="q-splitter-separator"
   >
     <template v-slot:before>
       <div

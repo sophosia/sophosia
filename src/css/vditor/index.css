@@ -25,16 +25,16 @@
  *
  */
 .vditor {
-  --border-color: #f3f3f3;
-  --second-color: #569cd6;
-  --panel-background-color: #fffbf2;
+  --border-color: #b4b4b8;
+  --second-color: #855BC3;
+  --panel-background-color: #e1e2e7;
   --panel-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --toolbar-background-color: #fffbf2;
+  --toolbar-background-color: #b4b4b8;
   --toolbar-icon-color: #595959;
   --toolbar-icon-hover-color: #000000;
   --toolbar-height: 35px;
   --toolbar-divider-margin-top: 8px;
-  --textarea-background-color: #fffbf2;
+  --textarea-background-color: #e1e2e7;
   --textarea-text-color: #000000;
   --resize-icon-color: var(--toolbar-icon-color);
   --resize-background-color: var(--toolbar-background-color);
@@ -43,12 +43,14 @@
   --count-background-color: rgba(27, 31, 35, 0.05);
   --heading-border-color: #eaecef;
   --blockquote-color: #cccccc;
-  --ir-heading-color: #569cd6;
+  --ir-heading-color: #855BC3;
   --ir-title-color: grey;
-  --ir-bi-color: #569cd6;
-  --ir-link-color: #ce9160;
-  --ir-bracket-color: #1976d2;
+  --ir-bi-color: #78b5de;
+  --ir-link-color: #41a6b5;
+  --ir-bracket-color: #78b5de;
   --ir-paren-color: #ff1010;
+  --hint-border-color: #78b5de;
+  --hint-highlight-color: #78b5de;
 }
 .vditor--dark {
   --border-color: #16161e;
@@ -76,7 +78,7 @@
   --ir-bracket-color: #3d59a1;
   --ir-paren-color: #ff1010;
   --hint-border-color: #3d59a1;
-  --hint-highlight-color: #292e42
+  --hint-highlight-color: #292e42;
 }
 /**
  * tool tip.
