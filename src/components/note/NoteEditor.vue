@@ -16,8 +16,7 @@ import { inject, nextTick, onMounted, ref, watch } from "vue";
 import { Note, NoteType, Project, Edge, db } from "src/backend/database";
 // vditor
 import Vditor from "vditor";
-import "./index.css";
-// import "src/css/vditor/index.css";
+import "src/css/vditor/index.css";
 // db related
 import { useStateStore } from "src/stores/appState";
 import {

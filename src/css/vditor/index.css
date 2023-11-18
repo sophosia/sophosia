@@ -53,9 +53,9 @@
 .vditor--dark {
   --border-color: #252526;
   --second-color: #1976d2;
-  --panel-background-color: #1d1d1d;
+  --panel-background-color: #1a1b26;
   --panel-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --toolbar-background-color: #222222;
+  --toolbar-background-color: #16161e;
   --toolbar-icon-color: #85837a;
   --toolbar-icon-hover-color: #ffffff;
   --toolbar-height: 35px;

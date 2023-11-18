@@ -75,12 +75,13 @@
           <q-tabs
             dense
             indicator-color="transparent"
-            active-bg-color="primary"
+            active-color="primary"
             model-value="metaInfoTab"
+            style="background: var(--color-rightmenu-tabs-bkgd)"
           >
             <q-tab
               name="metaInfoTab"
-              icon="info"
+              icon="mdi-information-outline"
               :ripple="false"
             >
               <q-tooltip>{{ $t("info") }}</q-tooltip>

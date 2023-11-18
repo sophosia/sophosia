@@ -84,7 +84,7 @@
         },
         {
           value: AnnotationType.ERASER,
-          slot: 'eraser',
+          slot: AnnotationType.ERASER,
         },
       ]"
     >
