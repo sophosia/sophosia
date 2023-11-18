@@ -14,6 +14,7 @@
       <q-splitter
         :limits="[0, 60]"
         emit-immediately
+        :separator-style="{ background: 'black' }"
         :separator-class="{
           'q-splitter-separator': stateStore.showLeftMenu,
         }"

@@ -5,6 +5,7 @@
     emit-immediately
     :limits="[36, maxHeight]"
     unit="px"
+    :separator-style="{ background: 'black' }"
     :separator-class="{
       'q-splitter-separator-horizontal': isGraphViewOpened && isTreeOpened,
       'no-pointer-events': !isGraphViewOpened || !isTreeOpened,
@@ -21,7 +22,7 @@
         expand-separator
         default-opened
         hide-expand-icon
-        header-class="q-pa-none q-ma-none shadow-1"
+        header-class="q-pa-none q-ma-none"
         header-style="height: 36px"
         :duration="0"
       >
@@ -57,7 +58,7 @@
         switch-toggle-side
         expand-separator
         hide-expand-icon
-        header-class="q-pa-none q-ma-none shadow-1"
+        header-class="q-pa-none q-ma-none"
         :duration="0"
       >
         <template v-slot:header="props">

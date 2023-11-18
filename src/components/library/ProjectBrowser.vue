@@ -36,6 +36,7 @@
         style="overflow: hidden"
         reverse
         :limits="[0, 60]"
+        :separator-style="{ background: '#1a1b26' }"
         :separator-class="{
           'q-splitter-separator': stateStore.showLibraryRightMenu,
         }"
