@@ -53,10 +53,9 @@
         style="cursor: pointer"
         class="tableview-row"
         :class="{
-          'bg-primary':
+          'tableview-highlighted-row':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
             !isClickingPDF,
-          selected: props.selected,
         }"
         draggable="true"
         @dragstart="onDragStart"
@@ -412,6 +411,9 @@ function searchProject(
 
 .tableview-row {
   background: var(--color-library-tableview-row-bkgd);
+}
+.tableview-highlighted-row {
+  background: var(--color-library-tableview-highlighted-row-bkgd);
 }
 
 #projectList td {

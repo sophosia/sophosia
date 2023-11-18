@@ -5,7 +5,7 @@
       flat
       dense
       square
-      icon="add"
+      icon="mdi-plus"
       size="0.8rem"
       padding="none"
       @click="togglePluginStore(true)"
@@ -25,7 +25,7 @@
       <template v-slot:append>
         <q-icon
           class="cursor-pointer"
-          name="search"
+          name="mdi-magnify"
         />
       </template>
     </q-input>
@@ -36,7 +36,7 @@
       dense
       square
       v-close-popup
-      icon="close"
+      icon="mdi-close"
       size="0.8rem"
       padding="none"
     >

@@ -28,14 +28,19 @@
           flat
           padding="none"
           :ripple="false"
-          icon="more_vert"
+          icon="mdi-dots-vertical"
           :class="{ 'text-black': luminosity(annot.data.color) > 0.4 }"
           data-cy="btn-menu"
         >
           <AnnotMenu
             @changeColor="(color: string) => changeColor(color)"
             @deleteAnnot="deleteAnnot()"
-            @copyID="copyToClipboard(annot.data._id)"
+            @copyID="
+              () => {
+                $q.notify($t('text-copied'));
+                copyToClipboard(annot.data._id);
+              }
+            "
             @scrollIntoView="pdfApp.scrollAnnotIntoView(annot.data._id)"
           />
         </q-btn>

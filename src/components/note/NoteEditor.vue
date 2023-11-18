@@ -16,8 +16,7 @@ import { inject, nextTick, onMounted, ref, watch } from "vue";
 import { Note, NoteType, Project, Edge, db } from "src/backend/database";
 // vditor
 import Vditor from "vditor";
-import "./index.css";
-// import "src/css/vditor/index.css";
+import "src/css/vditor/index.css";
 // db related
 import { useStateStore } from "src/stores/appState";
 import {
@@ -334,7 +333,7 @@ async function hoverLink(linkNode: HTMLElement) {
             "# Excalidraw note",
             `Belongs to: ${generateCiteKey(
               (await getProject(item.projectId)) as Project,
-              "author-year-title",
+              "author_year_title",
               true
             )}`,
           ];
@@ -352,7 +351,16 @@ async function hoverLink(linkNode: HTMLElement) {
       let rect = linkNode.getBoundingClientRect();
       let parentRect = vditorDiv.value.getBoundingClientRect();
       hoverPane.value.card.$el.style.left = `${rect.left - parentRect.left}px`;
-      hoverPane.value.card.$el.style.top = `${rect.bottom - parentRect.top}px`;
+      if (rect.bottom / parentRect.bottom > 0.5) {
+        hoverPane.value.card.$el.style.bottom = `${
+          parentRect.bottom - rect.top
+        }px`;
+      } else {
+        hoverPane.value.card.$el.style.top = `${
+          rect.bottom - parentRect.top
+        }px`;
+      }
+      console.log(hoverPane.value.card.$el.style);
       hoverPane.value.card.$el.hidden = false;
     } catch (error) {
       console.log(error);
@@ -446,7 +454,7 @@ async function filterHints(key: string) {
   for (let project of projects) {
     if (project.title.toLowerCase().indexOf(key) > -1) {
       hints.push({
-        value: `[${generateCiteKey(project, "author-year-title")}](${
+        value: `[${generateCiteKey(project, "author_year_title")}](${
           project._id
         })`,
         html: `

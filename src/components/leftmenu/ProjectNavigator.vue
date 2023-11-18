@@ -5,6 +5,7 @@
     emit-immediately
     :limits="[36, maxHeight]"
     unit="px"
+    separator-style="background: var(--q-edge)"
     :separator-class="{
       'q-splitter-separator-horizontal': isGraphViewOpened && isTreeOpened,
       'no-pointer-events': !isGraphViewOpened || !isTreeOpened,
@@ -21,23 +22,23 @@
         expand-separator
         default-opened
         hide-expand-icon
-        header-class="q-pa-none q-ma-none shadow-1"
+        header-class="q-pa-none q-ma-none"
         header-style="height: 36px"
         :duration="0"
       >
         <template v-slot:header="props">
           <q-item-section
             side
-            class="q-pa-none"
+            class="q-pa-none no-shadow"
           >
             <q-icon
-              :name="props.expanded ? 'arrow_drop_down' : 'arrow_right'"
+              :name="props.expanded ? 'mdi-menu-down' : 'mdi-menu-right'"
             />
           </q-item-section>
           <q-item-section>
             <div
               style="font-size: 1rem"
-              class="non-selectable"
+              class="text-bold non-selectable"
             >
               {{ $t("active-projects") }}
             </div>
@@ -57,7 +58,7 @@
         switch-toggle-side
         expand-separator
         hide-expand-icon
-        header-class="q-pa-none q-ma-none shadow-1"
+        header-class="q-pa-none q-ma-none"
         :duration="0"
       >
         <template v-slot:header="props">
@@ -66,13 +67,13 @@
             class="q-pa-none"
           >
             <q-icon
-              :name="props.expanded ? 'arrow_drop_down' : 'arrow_right'"
+              :name="props.expanded ? 'mdi-menu-down' : 'mdi-menu-right'"
             />
           </q-item-section>
           <q-item-section>
             <div
               style="font-size: 1rem"
-              class="non-selectable"
+              class="text-bold non-selectable"
             >
               {{ $t("related-items") }}
             </div>
@@ -84,7 +85,7 @@
               size="sm"
               padding="none"
               class="q-mr-xs"
-              icon="refresh"
+              icon="mdi-refresh"
               @click.stop="graphview?.reload()"
             >
               <q-tooltip>{{ $t("refresh-graphview") }}</q-tooltip>
@@ -112,6 +113,8 @@ import ProjectTree from "./ProjectTree.vue";
 
 import { useStateStore } from "src/stores/appState";
 import { useQuasar } from "quasar";
+import { colors } from "quasar";
+const { getPaletteColor } = colors;
 
 const stateStore = useStateStore();
 const $q = useQuasar();

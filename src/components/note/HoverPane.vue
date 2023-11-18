@@ -3,8 +3,14 @@
     ref="card"
     class="hoverPane"
   >
-    <q-card-section v-if="content">
-      <div ref="mdContentDiv"></div>
+    <q-card-section
+      v-if="content"
+      class="q-pa-xs"
+    >
+      <div
+        ref="mdContentDiv"
+        style="background-color: var(--color-hoverpane-bkgd)"
+      ></div>
     </q-card-section>
   </q-card>
 </template>
@@ -91,7 +97,9 @@ defineExpose({ card });
 .hoverPane {
   position: absolute;
   width: 40%;
-  max-height: 30%;
+  height: 50%;
   overflow: auto;
+  border: 2px solid var(--color-hoverpane-border);
+  background-color: var(--color-hoverpane-bkgd);
 }
 </style>

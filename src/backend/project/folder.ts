@@ -25,7 +25,7 @@ async function getFolderTree(): Promise<Folder[] | undefined> {
         timestampAdded: Date.now(),
         timestampModified: Date.now(),
         label: "Library",
-        icon: "home",
+        icon: "mdi-bookshelf",
         children: [],
         dataType: "folder",
       } as Folder;
@@ -49,7 +49,7 @@ async function getFolderTree(): Promise<Folder[] | undefined> {
     }
 
     const library = {} as Folder;
-    _dfs(folders[SpecialFolder.LIBRARY.toString()], library);
+    _dfs(folders[SpecialFolder.LIBRARY], library);
     sortTree(library);
 
     return [library];
@@ -70,7 +70,7 @@ async function addFolder(parentId: string) {
       timestampAdded: Date.now(),
       timestampModified: Date.now(),
       label: "New Folder",
-      icon: "folder",
+      icon: "mdi-folder",
       children: [],
       dataType: "folder",
     } as Folder;

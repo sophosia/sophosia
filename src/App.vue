@@ -36,10 +36,17 @@ const projectStore = useProjectStore();
 const showWelcomeCarousel = ref(true);
 const loading = ref(false);
 
-watchEffect(() => {
+watchEffect(async () => {
   // once the welcome page is gone
-  // start to scan the storage path
-  if (!showWelcomeCarousel.value) scanAndUpdateDB();
+  // we need to load the app state
+  // so the app doesn't overwrite the already existing app state
+  // then we can start to scan the storage path and build indexeddb (for faster data retrieval)
+  if (!showWelcomeCarousel.value) {
+    let state = await getAppState();
+    stateStore.loadState(state);
+    projectStore.loadOpenedProjects(state.openedProjectIds);
+    scanAndUpdateDB();
+  }
 });
 
 onMounted(async () => {

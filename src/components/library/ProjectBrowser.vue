@@ -36,8 +36,10 @@
         style="overflow: hidden"
         reverse
         :limits="[0, 60]"
+        separator-style="background: var(--q-edge)"
         :separator-class="{
           'q-splitter-separator': stateStore.showLibraryRightMenu,
+          hidden: !stateStore.showLibraryRightMenu,
         }"
         :disable="!stateStore.showLibraryRightMenu"
         v-model="rightMenuSize"
@@ -72,38 +74,7 @@
           />
         </template>
         <template v-slot:after>
-          <q-tabs
-            dense
-            indicator-color="transparent"
-            active-bg-color="primary"
-            model-value="metaInfoTab"
-          >
-            <q-tab
-              name="metaInfoTab"
-              icon="info"
-              :ripple="false"
-            >
-              <q-tooltip>{{ $t("info") }}</q-tooltip>
-            </q-tab>
-          </q-tabs>
-          <!-- q-tab height 36px -->
-          <q-tab-panels
-            style="
-              height: calc(100% - 36px);
-              background: var(--color-rightmenu-tab-panel-bkgd);
-            "
-            model-value="metaInfoTab"
-          >
-            <q-tab-panel
-              name="metaInfoTab"
-              class="q-pa-none"
-            >
-              <MetaInfoTab
-                v-if="!!rightMenuSize"
-                :project="(projectStore.selected[0] as Project)"
-              />
-            </q-tab-panel>
-          </q-tab-panels>
+          <RightMenu />
         </template>
       </q-splitter>
     </template>
@@ -120,7 +91,7 @@ import { TextItem } from "pdfjs-dist/types/src/display/api";
 import ActionBar from "src/components/library/ActionBar.vue";
 import ProjectTable from "src/components/library/ProjectTable.vue";
 import FolderTree from "src/components/library/FolderTree.vue";
-import MetaInfoTab from "src/components/MetaInfoTab.vue";
+import RightMenu from "src/components/library/RightMenu.vue";
 import ExportDialog from "src/components/library/ExportDialog.vue";
 import IdentifierDialog from "src/components/library/IdentifierDialog.vue";
 import DeleteDialog from "src/components/library/DeleteDialog.vue";
@@ -135,6 +106,9 @@ import * as pdfjsLib from "pdfjs-dist";
 import { basename, extname } from "@tauri-apps/api/path";
 import { readBinaryFile } from "@tauri-apps/api/fs";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
+// utils
+import { colors } from "quasar";
+const { getPaletteColor } = colors;
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();

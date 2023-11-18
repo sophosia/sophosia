@@ -35,5 +35,5 @@ yarn-error.log*
 
 .nyc_output
 coverage/
-
 storage/
+todo.md

@@ -1,6 +1,6 @@
 .vditor-reset {
-  color: #cccccc;
-  background-color: #1e1e1e;
+  color: #000000;
+  background-color: #ffffff;
 }
 
 .vditor-reset h1,
@@ -12,8 +12,8 @@
   background-color: #eaecef;
 }
 .vditor-reset blockquote {
-  color: #cacaca !important;
-  border-left: 0.25em solid #3d59a1 !important;
+  color: #000000 !important;
+  border-left: 0.25em solid #78b5de !important;
 }
 .vditor-reset iframe {
   border: 1px solid #d1d5da;
@@ -24,6 +24,7 @@
 }
 .vditor-reset code:not(.hljs):not(.highlight-chroma) {
   background-color: rgba(27, 31, 35, 0.05);
+  color: var(--textarea-text-color);
 }
 .vditor-reset kbd {
   color: #24292e;
@@ -38,7 +39,7 @@
 }
 .vditor-speech--current,
 .vditor-speech:hover {
-  color: #4285f4;
+  color: #000080;
 }
 .vditor-linkcard a {
   background-color: #f6f8fa;

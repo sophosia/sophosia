@@ -12,6 +12,8 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
+// these will be set in run time using --q-primary
+// see app.scss
 $primary: #1976d2;
 $secondary: #26a69a;
 $accent: #9c27b0;
@@ -19,5 +21,5 @@ $positive: #21ba45;
 $negative: #c10015;
 $info: #31ccec;
 $warning: #f2c037;
-$dark: #1d1d1d;
-$dark-page: #1d1d1d;
+$dark: #16161e;
+$dark-page: #1a1b26;

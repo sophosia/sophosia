@@ -1,90 +1,61 @@
 // app global css in SCSS form
-body {
-  --color-text: black;
-  --color-layout-base-bkgd: transparent;
-  --color-layout-single-pane-content-bkgd: transparent;
-  --color-layout-splitter-dragging-bkgd: #444444;
-
-  // golden-layout tabs
-  --color-layout-active-tab-bkgd: #fffbf2;
-  --color-layout-active-tab-fore: black;
-  --color-layout-focused-tab-bkgd: #fffbf2;
-  --color-layout-single-tab-container-fore: black;
-  --color-layout-single-tab-container-bkgd: #f0ece0;
-  --color-layout-header-bkgd: #eee8d5;
-
-  // left menu
-  --color-leftmenu-bkgd: #eee8d5;
-
-  // project tree
-  --color-projecttree-bkgd: #eee8d5;
-
-  // library page
-  --color-library-tableview-header-bkgd: #615f5b;
-  --color-library-tableview-row-bkgd: #fffbf2;
-  --color-library-toolbar-bkgd: #fffbf2;
-  --color-library-tableview-bkgd: #fffbf2;
-  --color-library-treeview-bkgd: #fffbf2;
-
-  // settings page
-  --color-settings-tabs-area-bkgd: #fffbf2;
-  --color-settings-tab-panel-bkgd: #fffbf2;
-  --color-settings-card-bkgd: #ffffff;
-
-  // reader page
-  --color-pdfreader-viewer-bkgd: grey;
-  --color-pdfreader-toolbar-bkgd: #fffbf2;
-  --color-pdfreader-colorpicker-bkgd: lightgrey;
-
-  // right menu
-  --color-rightmenu-tabs-bkgd: #fffbf2;
-  --color-rightmenu-tab-panel-bkgd: #fffbf2;
-
-  // plugin store
-  --color-pluginstore-dialog-bkgd: #fffbf2;
+body.body--dark {
+  --q-primary: #3d59a1;
+  --q-dark: #16161e;
+  --q-dark-page: #1a1b26;
+  --q-edge: black;
+  --color-text: white;
 }
 
-body.body--dark {
-  --color-text: white;
+body {
+  --q-primary: #78b5de;
+  --q-dark: #d4d6e4;
+  --q-dark-page: #e1e2e7;
+  --q-edge: white;
+  --color-text: black;
 
   // golden-layout tabs
-  --color-layout-active-tab-bkgd: #2a2a2a;
-  --color-layout-active-tab-fore: #dddddd;
-  --color-layout-focused-tab-bkgd: #1d1d1d;
-  --color-layout-single-tab-container-fore: #999999;
-  --color-layout-single-tab-container-bkgd: #2a2a2a;
-  --color-layout-header-bkgd: #222121;
+  --color-layout-active-tab-bkgd: var(--q-dark-page);
+  --color-layout-active-tab-fore: var(--color-text);
+  --color-layout-focused-tab-bkgd: var(--q-dark-page);
+  --color-layout-single-tab-container-fore: var(--color-text);
+  --color-layout-single-tab-container-bkgd: var(--q-dark);
+  --color-layout-header-bkgd: var(--q-dark);
 
   // left menu
-  --color-leftmenu-bkgd: #1d1d1d;
+  --color-leftmenu-bkgd: var(--q-dark);
 
   // project tree
-  --color-projecttree-bkgd: #1d1d1d;
+  --color-projecttree-bkgd: var(--q-dark);
 
   // library page
-  // --color-library-tableview-header-bkgd: #2f2f2f;
-  --color-library-tableview-header-bkgd: #1d1d1d;
-  --color-library-tableview-row-bkgd: #1d1d1d;
-  --color-library-toolbar-bkgd: #1d1d1d;
-  --color-library-tableview-bkgd: #1d1d1d;
-  --color-library-treeview-bkgd: #1d1d1d;
+  --color-library-tableview-header-bkgd: var(--q-dark-page);
+  --color-library-tableview-row-bkgd: var(--q-dark-page);
+  --color-library-tableview-highlighted-row-bkgd: var(--q-primary);
+  --color-library-toolbar-bkgd: var(--q-dark);
+  --color-library-tableview-bkgd: var(--q-dark-page);
+  --color-library-treeview-bkgd: var(--q-dark-page);
 
   // settings page
-  --color-settings-tabs-area-bkgd: #1d1d1d;
-  --color-settings-tab-panel-bkgd: #1d1d1d;
-  --color-settings-card-bkgd: #2a2a2a;
+  --color-settings-tabs-area-bkgd: var(--q-dark-page);
+  --color-settings-tab-panel-bkgd: var(--q-dark-page);
+  --color-settings-card-bkgd: var(--q-dark);
 
   // reader page
-  --color-pdfreader-viewer-bkgd: #2a2a2a;
-  --color-pdfreader-toolbar-bkgd: #1d1d1d;
-  --color-pdfreader-colorpicker-bkgd: #1d1d1d;
+  --color-pdfreader-viewer-bkgd: var(--q-dark-page);
+  --color-pdfreader-toolbar-bkgd: var(--q-dark);
+  --color-pdfreader-colorpicker-bkgd: var(--q-dark);
 
   // right menu
-  --color-rightmenu-tabs-bkgd: #1d1d1d;
-  --color-rightmenu-tab-panel-bkgd: #1d1d1d;
+  --color-rightmenu-tabs-bkgd: var(--q-dark);
+  --color-rightmenu-tab-panel-bkgd: var(--q-dark);
 
   // plugin store
-  --color-pluginstore-dialog-bkgd: #1d1d1d;
+  --color-pluginstore-dialog-bkgd: var(--q-dark);
+
+  // hoverPane
+  --color-hoverpane-border: var(--q-primary);
+  --color-hoverpane-bkgd: var(--q-dark-page);
 }
 
 html {
@@ -100,24 +71,26 @@ html {
 }
 
 .q-splitter-separator {
+  background-color: var(--q-edge) !important;
   &:hover {
-    width: 2px;
-    background-color: $primary;
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
   }
   &:active {
-    width: 2px;
-    background-color: $primary;
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
   }
 }
 
 .q-splitter-separator-horizontal {
+  background-color: var(--q-edge) !important;
   &:hover {
-    height: 2px;
-    background-color: $primary;
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
   }
   &:active {
-    height: 2px;
-    background-color: $primary;
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
   }
 }
 
@@ -140,4 +113,9 @@ html {
 /* corner */
 ::-webkit-scrollbar-corner {
   color: transparent;
+}
+
+// no hover effect on the button
+.q-btn .q-focus-helper {
+  display: none;
 }

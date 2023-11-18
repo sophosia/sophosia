@@ -14,7 +14,10 @@
     v-if="!!meta"
     v-model="tab"
   >
-    <q-tab-panel name="meta">
+    <q-tab-panel
+      name="meta"
+      class="tab-panel"
+    >
       <div class="row justify-between">
         <div
           class="col"
@@ -132,11 +135,18 @@
           :key="index"
           dense
           size="1rem"
-          class="col-12"
+          class="chip col-12"
           :ripple="false"
           :label="author"
           removable
+          clickable
           @remove="removeAuthor(index)"
+          @click="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(author);
+            }
+          "
           :data-cy="`q-chip-${index}`"
         >
         </q-chip>
@@ -196,8 +206,8 @@
           <q-btn
             flat
             padding="none"
-            size="xs"
-            icon="bi-box-arrow-up-right"
+            size="md"
+            icon="mdi-link"
             :disable="!!!meta.URL"
             @click="
               (e) => {
@@ -249,13 +259,21 @@
         <q-chip
           v-for="(tag, index) in meta.tags"
           :key="index"
+          class="chip"
           :ripple="false"
-          dense
-          size="1rem"
-          icon="bookmark"
           :label="tag"
+          dense
+          clickable
+          size="1rem"
+          icon="mdi-tag"
           removable
           @remove="removeTag(tag)"
+          @click="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(tag);
+            }
+          "
         />
       </div>
       <div class="row justify-between q-mt-sm">
@@ -269,30 +287,25 @@
       <div class="q-pb-sm">
         <q-chip
           v-for="(name, index) in categories"
+          class="chip"
           :key="index"
           :ripple="false"
           dense
           size="1rem"
-          icon="folder"
+          icon="mdi-folder"
           :label="name"
         />
       </div>
 
       <div class="row justify-between q-mt-sm">
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
+        <div style="font-size: 1rem">
           {{ $t("date-added") }}
         </div>
         <div>{{ new Date(meta.timestampAdded).toLocaleString() }}</div>
       </div>
 
       <div class="row justify-between q-mt-sm">
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
+        <div style="font-size: 1rem">
           {{ $t("date-modified") }}
         </div>
         <div>{{ new Date(meta.timestampModified).toLocaleString() }}</div>
@@ -314,12 +327,15 @@
           anchor="bottom middle"
           self="top middle"
         >
-          Must have one of URL, ISBN or DOI
+          {{ $t("update-meta-requirement") }}
         </q-tooltip>
       </div>
     </q-tab-panel>
 
-    <q-tab-panel name="reference">
+    <q-tab-panel
+      name="reference"
+      class="tab-panel"
+    >
       <div
         v-for="(ref, ind) of references"
         :key="ind"
@@ -350,6 +366,7 @@ import { getFolder } from "src/backend/project/folder";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/appState";
 import { open } from "@tauri-apps/api/shell";
+import { copyToClipboard } from "quasar";
 const projectStore = useProjectStore();
 const stateStore = useStateStore();
 
@@ -567,6 +584,10 @@ function openURL(url: string | undefined) {
 }
 </script>
 <style lang="scss" scoped>
+.tab-panel {
+  background: var(--color-rightmenu-tab-panel-bkgd);
+}
+
 .input {
   color: var(--color-text);
   background: var(--color-rightmenu-tab-panel-bkgd);
@@ -586,5 +607,8 @@ function openURL(url: string | undefined) {
   &:hover {
     cursor: pointer;
   }
+}
+.chip {
+  background-color: var(--color-rightmenu-tab-panel-bkgd);
 }
 </style>

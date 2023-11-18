@@ -9,7 +9,7 @@
       <div class="text-subtitle1 text-bold">
         {{ meta.name }}
         <q-icon
-          name="bi-star"
+          name="mdi-star"
           class="q-ml-md"
         />
         {{ star }}
@@ -27,7 +27,7 @@
         size="0.7rem"
         padding="xs"
         :ripple="false"
-        icon="bi-gear"
+        icon="mdi-cog-outline"
         @click="openSettingPage(meta)"
       >
         <q-tooltip>{{ $t("settings") }}</q-tooltip>
@@ -40,7 +40,7 @@
         size="0.7rem"
         padding="xs"
         :ripple="false"
-        icon="bi-arrow-up"
+        icon="mdi-arrow-up"
         @click="$emit('install')"
       >
         <q-tooltip>{{ $t("update") }}</q-tooltip>
@@ -53,7 +53,7 @@
         size="0.7rem"
         padding="xs"
         :ripple="false"
-        icon="bi-trash"
+        icon="mdi-trash-can-outline"
         @click="$emit('uninstall')"
       >
         <q-tooltip>{{ $t("delete") }}</q-tooltip>

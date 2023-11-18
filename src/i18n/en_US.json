@@ -151,5 +151,10 @@
   "no-working-projects": "No working projects",
   "scaning": "Scaning",
   "done": "Done",
-  "newer-version-available": "Newer version available"
+  "newer-version-available": "Newer version available",
+  "text-copied": "Text copied to clipboard",
+  "update-meta-requirement": "To update meta, one of URL, ISBN or DOI bust be filled ",
+  "enter-light-mode": "Enter light mode",
+  "enter-dark-mode": "Enter dark mode",
+  "citation-keys-updated": "Citation keys updated"
 }
