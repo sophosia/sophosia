@@ -8,3 +8,4 @@
 - [ ] tool bar in the projectTree area top
 - [x] change edges to black
   - [x] use box shadow instead of changing width
+- [x] openedProjects are gone if selecting a already exists folder in welcomecarousel
