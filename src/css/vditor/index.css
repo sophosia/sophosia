@@ -60,7 +60,7 @@
   --toolbar-icon-hover-color: #ffffff;
   --toolbar-height: 35px;
   --toolbar-divider-margin-top: 8px;
-  --textarea-background-color: #1d1d1d;
+  --textarea-background-color: #1a1b26;
   --textarea-text-color: #cccccc;
   --resize-icon-color: var(--toolbar-icon-color);
   --resize-background-color: var(--toolbar-background-color);
@@ -75,6 +75,8 @@
   --ir-link-color: #ce9160;
   --ir-bracket-color: #1976d2;
   --ir-paren-color: #ff1010;
+  --hint-border-color: #3d59a1;
+  --hint-highlight-color: #292e42
 }
 /**
  * tool tip.
@@ -734,6 +736,7 @@
   position: absolute;
   box-shadow: var(--panel-shadow);
   border-radius: 3px;
+  border: 2px solid var(--hint-border-color);
   padding: 5px 0;
   z-index: 4;
   line-height: 20px;
@@ -775,7 +778,8 @@
 }
 .vditor-hint--current,
 .vditor-hint button:not(.vditor-menu--disabled):hover {
-  background-color: var(--toolbar-background-color) !important;
+  /* background-color: var(--toolbar-background-color) !important; */
+  background-color: var(--hint-highlight-color) !important;
   color: var(--toolbar-icon-hover-color) !important;
 }
 .vditor-hint__emoji {
