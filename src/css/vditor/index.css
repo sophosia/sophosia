@@ -52,7 +52,7 @@
 }
 .vditor--dark {
   --border-color: #252526;
-  --second-color: #1976d2;
+  --second-color: #9d7cd8;
   --panel-background-color: #1a1b26;
   --panel-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   --toolbar-background-color: #16161e;
@@ -69,11 +69,11 @@
   --count-background-color: rgba(27, 31, 35, 0.05);
   --heading-border-color: #eaecef;
   --blockquote-color: #cccccc;
-  --ir-heading-color: #569cd6;
+  --ir-heading-color: #9d7cd8;
   --ir-title-color: grey;
-  --ir-bi-color: #569cd6;
-  --ir-link-color: #ce9160;
-  --ir-bracket-color: #1976d2;
+  --ir-bi-color: #3d59a1;
+  --ir-link-color: #41a6b5;
+  --ir-bracket-color: #3d59a1;
   --ir-paren-color: #ff1010;
   --hint-border-color: #3d59a1;
   --hint-highlight-color: #292e42
