@@ -6,3 +6,5 @@
   - [ ] light
 - [ ] tool bar in folder tree area top
 - [ ] tool bar in the projectTree area top
+- [x] change edges to black
+  - [x] use box shadow instead of changing width

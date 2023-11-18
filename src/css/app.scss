@@ -100,24 +100,26 @@ html {
 }
 
 .q-splitter-separator {
+  background-color: black !important;
   &:hover {
-    width: 2px;
-    background-color: $primary;
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
   }
   &:active {
-    width: 2px;
-    background-color: $primary;
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
   }
 }
 
 .q-splitter-separator-horizontal {
+  background-color: black !important;
   &:hover {
-    height: 2px;
-    background-color: $primary;
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
   }
   &:active {
-    height: 2px;
-    background-color: $primary;
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
   }
 }
 

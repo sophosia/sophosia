@@ -28,7 +28,7 @@
         <template v-slot:header="props">
           <q-item-section
             side
-            class="q-pa-none"
+            class="q-pa-none no-shadow"
           >
             <q-icon
               :name="props.expanded ? 'mdi-menu-down' : 'mdi-menu-right'"

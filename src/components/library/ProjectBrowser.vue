@@ -72,39 +72,7 @@
           />
         </template>
         <template v-slot:after>
-          <q-tabs
-            dense
-            indicator-color="transparent"
-            active-color="primary"
-            model-value="metaInfoTab"
-            style="background: var(--color-rightmenu-tabs-bkgd)"
-          >
-            <q-tab
-              name="metaInfoTab"
-              icon="mdi-information-outline"
-              :ripple="false"
-            >
-              <q-tooltip>{{ $t("info") }}</q-tooltip>
-            </q-tab>
-          </q-tabs>
-          <!-- q-tab height 36px -->
-          <q-tab-panels
-            style="
-              height: calc(100% - 36px);
-              background: var(--color-rightmenu-tab-panel-bkgd);
-            "
-            model-value="metaInfoTab"
-          >
-            <q-tab-panel
-              name="metaInfoTab"
-              class="q-pa-none"
-            >
-              <MetaInfoTab
-                v-if="!!rightMenuSize"
-                :project="(projectStore.selected[0] as Project)"
-              />
-            </q-tab-panel>
-          </q-tab-panels>
+          <RightMenu />
         </template>
       </q-splitter>
     </template>
@@ -121,7 +89,7 @@ import { TextItem } from "pdfjs-dist/types/src/display/api";
 import ActionBar from "src/components/library/ActionBar.vue";
 import ProjectTable from "src/components/library/ProjectTable.vue";
 import FolderTree from "src/components/library/FolderTree.vue";
-import MetaInfoTab from "src/components/MetaInfoTab.vue";
+import RightMenu from "src/components/library/RightMenu.vue";
 import ExportDialog from "src/components/library/ExportDialog.vue";
 import IdentifierDialog from "src/components/library/IdentifierDialog.vue";
 import DeleteDialog from "src/components/library/DeleteDialog.vue";

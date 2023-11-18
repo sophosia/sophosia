@@ -2,7 +2,7 @@
   <q-splitter
     :model-value="30"
     unit="px"
-    :separator-style="{ cursor: 'default' }"
+    :separator-style="{ cursor: 'default', background: '#16161e' }"
   >
     <template v-slot:before>
       <LeftRibbon
