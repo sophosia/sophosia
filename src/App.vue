@@ -44,7 +44,7 @@ watchEffect(async () => {
   if (!showWelcomeCarousel.value) {
     let state = await getAppState();
     stateStore.loadState(state);
-    projectStore.loadOpenedProjects(state.openedProjectIds);
+    await projectStore.loadOpenedProjects(state.openedProjectIds);
     scanAndUpdateDB();
   }
 });
@@ -58,7 +58,7 @@ onMounted(async () => {
   // if no storage path default state will be used
   let state = await getAppState();
   stateStore.loadState(state);
-  projectStore.loadOpenedProjects(state.openedProjectIds);
+  await projectStore.loadOpenedProjects(state.openedProjectIds);
 
   // apply settings
   stateStore.changeTheme(stateStore.settings.theme);
