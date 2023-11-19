@@ -10,17 +10,49 @@
       style="background: var(--color-pdfreader-toolbar-bkgd)"
       class="q-py-none"
     >
-      <div class="row justify-between q-py-xs">
+      <div
+        style="cursor: move"
+        class="row justify-between q-py-xs"
+      >
         <span>{{ props.link.id }}</span>
         <div>
+          <q-btn
+            unelevated
+            square
+            dense
+            size="md"
+            icon="mdi-magnify-plus-outline"
+            :ripple="false"
+            @mousedown="
+              () => {
+                pinned = true;
+                zoom(0.1);
+              }
+            "
+          ></q-btn>
+          <q-btn
+            unelevated
+            square
+            dense
+            size="md"
+            icon="mdi-magnify-minus-outline"
+            :ripple="false"
+            @mousedown="
+              () => {
+                pinned = true;
+                zoom(-0.1);
+              }
+            "
+          ></q-btn>
           <q-checkbox
             dense
             unelevated
             square
             size="md"
             :ripple="false"
-            unchecked-icon="bi-pin-angle-fill"
-            checked-icon="bi-pin-fill"
+            :class="{ 'rotate-45': !pinned }"
+            unchecked-icon="mdi-pin"
+            checked-icon="mdi-pin"
             v-model="pinned"
           />
           <q-btn
@@ -30,13 +62,13 @@
             size="md"
             padding="none"
             :ripple="false"
-            icon="close"
+            icon="mdi-close"
             @click="close(true)"
           />
         </div>
       </div>
     </q-card-section>
-    <q-card-section style="height: calc(100% - 32px)">
+    <q-card-section style="height: calc(100% - 32px - 1rem)">
       <div
         class="peekContainer"
         ref="peekContainer"
@@ -44,10 +76,21 @@
         <div class="pdfViewer"></div>
       </div>
     </q-card-section>
+    <q-icon
+      style="cursor: se-resize; right: 0px; bottom: 0px; position: absolute"
+      size="1.5rem"
+      name="mdi-resize-bottom-right"
+      @mousedown="
+        (e:MouseEvent) => {
+          pinned = true;
+          resizeCard(e);
+        }
+      "
+    ></q-icon>
   </q-card>
 </template>
 <script setup lang="ts">
-import { nextTick, onMounted, ref, PropType, watch, watchEffect } from "vue";
+import { onMounted, ref, PropType, watchEffect } from "vue";
 
 import * as pdfjsLib from "pdfjs-dist";
 import * as pdfjsViewer from "pdfjs-dist/web/pdf_viewer";
@@ -64,6 +107,7 @@ const props = defineProps({
 const card = ref();
 const peekContainer = ref();
 const pinned = ref(false);
+let pdfSinglePageViewer: pdfjsViewer.PDFSinglePageViewer;
 
 watchEffect(() => {
   setViewMode(props.darkMode);
@@ -77,7 +121,7 @@ onMounted(() => {
   const pdfLinkService = new pdfjsViewer.PDFLinkService({
     eventBus,
   });
-  const pdfSinglePageViewer = new pdfjsViewer.PDFSinglePageViewer({
+  pdfSinglePageViewer = new pdfjsViewer.PDFSinglePageViewer({
     container: peekContainer.value,
     eventBus: eventBus,
     linkService: pdfLinkService,
@@ -102,9 +146,11 @@ onMounted(() => {
   // set event listener
   // handle zoom event
   card.value.$el.addEventListener("mousewheel", (e: WheelEvent) => {
-    e.preventDefault();
     if (!pdfSinglePageViewer) return;
-    pdfSinglePageViewer.currentScale += e.deltaY < 0 ? 0.1 : -0.1;
+    if (e.ctrlKey === true) {
+      e.preventDefault();
+      zoom(e.deltaY < 0 ? 0.1 : -0.1);
+    }
   });
 
   // handle mouseleave
@@ -125,49 +171,37 @@ onMounted(() => {
  * @param viewerContainer
  */
 function setPos(linkAnnot: HTMLElement) {
-  let annotLayer = linkAnnot.parentElement;
-  if (!card.value || !annotLayer) return;
+  let viewerContainer = linkAnnot.parentElement?.parentElement?.parentElement
+    ?.parentElement as HTMLElement;
+  if (!card.value || !viewerContainer) return;
 
-  let viewerRect = annotLayer.getBoundingClientRect();
+  let viewerRect = viewerContainer.getBoundingClientRect();
   let linkRect = linkAnnot.getBoundingClientRect();
 
   // peekCard dimension (in px)
-  let vw = viewerRect.width;
-  let vh = viewerRect.height;
-
-  let x1 = linkRect.x - viewerRect.x;
-  let y1 = linkRect.y - viewerRect.y;
-
-  let w = (viewerRect.width * 2) / 3;
-  let h = viewerRect.height / 2;
+  const h = (Math.min(viewerRect.width, viewerRect.height) * 2) / 3;
+  const w = h;
 
   // anchor point
   let left = linkRect.x - viewerRect.x;
   let top = linkRect.y - viewerRect.y;
 
-  // set anchor point to center bottom
+  // default is to show the card at center top of the link
   left -= w / 2;
-  top -= h + 5;
+  top -= h;
+  // check if top has enough space, if no then shift it down
+  if (top < 0) top = 5;
+  // check if left has enough space, if no then shift it right
+  if (left < 0) left = 5;
+  // check if right has enough space, if no then shift it to left
+  if (left + w > viewerRect.width) left = viewerRect.width - w - 5;
 
-  if (x1 < w / 2) {
-    // left region
-    left += w / 2 + linkRect.width;
-  } else if (x1 > vw - w / 2) {
-    // right region
-    left -= w / 2;
-  }
-
-  if (y1 < h) {
-    // up region
-    top += linkRect.height + h + 10;
-  }
-
-  // position relative to viewerContainer
-  card.value.$el.style.position = "relative";
-  card.value.$el.style.top = top + "px";
-  card.value.$el.style.left = left + "px";
+  // card.value.$el.style.position = "relative";
+  // card.value.$el.style.position = "absolute";
   card.value.$el.style.width = w + "px";
   card.value.$el.style.height = h + "px";
+  card.value.$el.style.top = top + "px";
+  card.value.$el.style.left = left + "px";
   card.value.$el.style.zIndex = "1000";
 }
 
@@ -181,6 +215,11 @@ function show() {
 function enableGrabToPan() {
   const handtool = new GrabToPan({ element: peekContainer.value });
   handtool.activate();
+}
+
+function zoom(delta: number) {
+  if (!pdfSinglePageViewer) return;
+  pdfSinglePageViewer.currentScale += delta;
 }
 
 /**
@@ -216,22 +255,55 @@ function enableDragToMove() {
 
     // when dragging, automatically set pinned for better interaction
     pinned.value = true;
+
+    // listen to the move and up event in parentElement will make things smoother
+    // so that no text selection will happen while dragging
+    dom.parentElement.onmousemove = (e: MouseEvent) => {
+      // use this to prevent text selection
+      e.preventDefault();
+      // when drag is released, e.pageX and e.pageY will jump to 0, weird
+      // need to calculate tmpLeft/tmpTop first to avoid this
+      left = e.pageX - offsetX - shiftX;
+      top = e.pageY - offsetY - shiftY;
+
+      if (left < 0 || left + domRect.width > annotLayerRect.width) return;
+      if (top < 0 || top + domRect.height > annotLayerRect.height) return;
+
+      dom.style.left = `${left}px`;
+      dom.style.top = `${top}px`;
+    };
+
+    dom.parentElement.onmouseup = (e: MouseEvent) => {
+      dom.parentElement.onmousemove = null;
+      dom.parentElement.onmouseup = null;
+    };
   };
 
-  dom.ondrag = (e: DragEvent) => {
-    // when drag is released, e.pageX and e.pageY will jump to 0, weird
-    // need to calculate tmpLeft/tmpTop first to avoid this
-    left = e.pageX - offsetX - shiftX;
-    top = e.pageY - offsetY - shiftY;
+  // Webkit can' deal with these events, have to use the above implementations
+  // dom.ondrag = (e: DragEvent) => {
+  //   console.log("on drag", e);
+  //   // when drag is released, e.pageX and e.pageY will jump to 0, weird
+  //   // need to calculate tmpLeft/tmpTop first to avoid this
+  //   left = e.pageX - offsetX - shiftX;
+  //   top = e.pageY - offsetY - shiftY;
 
-    if (left < 0 || left + domRect.width > annotLayerRect.width) return;
-    if (top < 0 || top + domRect.height > annotLayerRect.height) return;
+  //   if (left < 0 || left + domRect.width > annotLayerRect.width) return;
+  //   if (top < 0 || top + domRect.height > annotLayerRect.height) return;
 
-    dom.style.left = `${left}px`;
-    dom.style.top = `${top}px`;
-  };
+  //   dom.style.left = `${left}px`;
+  //   dom.style.top = `${top}px`;
+  // };
+
+  // dom.ondragend = (e: DragEvent) => {
+  //   console.log("on drag end", e);
+  //   dom.onmousemove = null;
+  // };
 }
 
+/**
+ * Set dark or light mode of the peekCard
+ * @param darkMode
+ */
 function setViewMode(darkMode: boolean) {
   if (!peekContainer.value) return;
   let viewer = peekContainer.value.querySelector(".pdfViewer") as HTMLElement;
@@ -241,19 +313,37 @@ function setViewMode(darkMode: boolean) {
       "invert(64%) contrast(228%) brightness(80%) hue-rotate(180deg)";
   else peekContainer.value.style.filter = "unset";
 }
+
+function resizeCard(e: MouseEvent) {
+  // prevent dragging the card
+  e.preventDefault();
+  if (!card.value) return;
+  const el = card.value.$el as HTMLElement;
+  const rect = el.getBoundingClientRect();
+  el.parentElement!.onmousemove = (ev: MouseEvent) => {
+    el.style.width = ev.pageX - rect.left + "px";
+    el.style.height = ev.pageY - rect.top + "px";
+  };
+  el.parentElement!.onmouseup = (ev: MouseEvent) => {
+    el.parentElement!.onmousemove = null;
+    el.parentElement!.onmouseup = null;
+  };
+}
 </script>
 <style lang="scss">
 .peekCard {
   position: absolute !important;
   background: var(--color-pdfreader-viewer-bkgd);
   display: none;
-  max-height: 40vh;
-  max-width: 40vw;
-  cursor: grab;
   z-index: 1000;
+  border: 1px solid var(--q-edge);
 
   &:hover {
-    border: solid $primary 2px;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.8) !important;
+    z-index: 1001 !important;
+  }
+  &:active {
+    box-shadow: 0 0 0px 2px rgba($primary, 0.8) !important;
     z-index: 1001 !important;
   }
 }

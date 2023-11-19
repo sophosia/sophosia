@@ -102,38 +102,84 @@ export abstract class Annotation {
       offsetY = annotLayerRect.top;
       shiftX = e.clientX - domRect.left;
       shiftY = e.clientY - domRect.top;
+
+      // no ghost image when dragging
+      if (e.dataTransfer)
+        e.dataTransfer.setDragImage(document.createElement("img"), 0, 0);
+
+      // listen to following events in pageDiv makes bahavior more smooth
+      // so that no text selection will be made when dragging
+      const pageDiv = dom.parentElement!.parentElement as HTMLElement;
+      pageDiv.onmousemove = (e) => {
+        // use this to prevent text selection
+        e.preventDefault();
+        // when drag is released, e.pageX and e.pageY will jump to 0, weird
+        // need to calculate tmpLeft/tmpTop first to avoid this
+        tmpLeft = e.pageX - offsetX - shiftX;
+        tmpTop = e.pageY - offsetY - shiftY;
+
+        if (tmpLeft < 0 || tmpLeft + domRect.width > annotLayerRect.width)
+          return;
+        if (tmpTop < 0 || tmpTop + domRect.height > annotLayerRect.height)
+          return;
+
+        left = (tmpLeft / annotLayerRect.width) * 100;
+        top = (tmpTop / annotLayerRect.height) * 100;
+
+        dom.style.left = `${left}%`;
+        dom.style.top = `${top}%`;
+      };
+
+      pageDiv.onmouseup = (e) => {
+        // left and top are in percentage
+        // width and height are in px
+        this.update({
+          rects: [
+            {
+              left: left,
+              top: top,
+              width: parseFloat(dom.style.width),
+              height: parseFloat(dom.style.height),
+            },
+          ],
+        } as AnnotationData);
+
+        pageDiv.onmousemove = null;
+        pageDiv.onmouseup = null;
+      };
     };
 
-    dom.ondrag = (e) => {
-      // when drag is released, e.pageX and e.pageY will jump to 0, weird
-      // need to calculate tmpLeft/tmpTop first to avoid this
-      tmpLeft = e.pageX - offsetX - shiftX;
-      tmpTop = e.pageY - offsetY - shiftY;
+    // webview can't handle these events, must use the above implementations
+    // dom.ondrag = (e) => {
+    //   // when drag is released, e.pageX and e.pageY will jump to 0, weird
+    //   // need to calculate tmpLeft/tmpTop first to avoid this
+    //   tmpLeft = e.pageX - offsetX - shiftX;
+    //   tmpTop = e.pageY - offsetY - shiftY;
 
-      if (tmpLeft < 0 || tmpLeft + domRect.width > annotLayerRect.width) return;
-      if (tmpTop < 0 || tmpTop + domRect.height > annotLayerRect.height) return;
+    //   if (tmpLeft < 0 || tmpLeft + domRect.width > annotLayerRect.width) return;
+    //   if (tmpTop < 0 || tmpTop + domRect.height > annotLayerRect.height) return;
 
-      left = (tmpLeft / annotLayerRect.width) * 100;
-      top = (tmpTop / annotLayerRect.height) * 100;
+    //   left = (tmpLeft / annotLayerRect.width) * 100;
+    //   top = (tmpTop / annotLayerRect.height) * 100;
 
-      dom.style.left = `${left}%`;
-      dom.style.top = `${top}%`;
-    };
+    //   dom.style.left = `${left}%`;
+    //   dom.style.top = `${top}%`;
+    // };
 
-    dom.ondragend = (e) => {
-      // left and top are in percentage
-      // width and height are in px
-      this.update({
-        rects: [
-          {
-            left: left,
-            top: top,
-            width: parseFloat(dom.style.width),
-            height: parseFloat(dom.style.height),
-          },
-        ],
-      } as AnnotationData);
-    };
+    // dom.ondragend = (e) => {
+    //   // left and top are in percentage
+    //   // width and height are in px
+    //   this.update({
+    //     rects: [
+    //       {
+    //         left: left,
+    //         top: top,
+    //         width: parseFloat(dom.style.width),
+    //         height: parseFloat(dom.style.height),
+    //       },
+    //     ],
+    //   } as AnnotationData);
+    // };
 
     this.hasEvtHandler = true;
   }

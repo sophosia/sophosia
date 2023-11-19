@@ -106,7 +106,8 @@
         "height": 600,
         "width": 800,
         "resizable": true,
-        "title": "Sophosia"
+        "title": "Sophosia",
+        "fileDropEnabled": false
       }
     ]
   }

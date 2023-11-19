@@ -431,6 +431,7 @@ onMounted(async () => {
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {
                 annot.draw(e);
+                annot.enableDragToMove();
                 pdfApp.annotStore.add(annot, true);
               }
               e.source.div.onmousemove = null;
@@ -470,6 +471,7 @@ onMounted(async () => {
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {
                 annot.draw(e);
+                annot.enableDragToMove();
                 pdfApp.annotStore.add(annot, true);
               }
             };
