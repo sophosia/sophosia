@@ -10,16 +10,48 @@
       style="background: var(--color-pdfreader-toolbar-bkgd)"
       class="q-py-none"
     >
-      <div class="row justify-between q-py-xs">
+      <div
+        style="cursor: move"
+        class="row justify-between q-py-xs"
+      >
         <span>{{ props.link.id }}</span>
         <div>
+          <q-btn
+            unelevated
+            square
+            dense
+            size="md"
+            icon="mdi-magnify-plus-outline"
+            :ripple="false"
+            @mousedown="
+              () => {
+                pinned = true;
+                zoom(0.1);
+              }
+            "
+          ></q-btn>
+          <q-btn
+            unelevated
+            square
+            dense
+            size="md"
+            icon="mdi-magnify-minus-outline"
+            :ripple="false"
+            @mousedown="
+              () => {
+                pinned = true;
+                zoom(-0.1);
+              }
+            "
+          ></q-btn>
           <q-checkbox
             dense
             unelevated
             square
             size="md"
             :ripple="false"
-            unchecked-icon="mdi-pin-off"
+            :class="{ 'rotate-45': !pinned }"
+            unchecked-icon="mdi-pin"
             checked-icon="mdi-pin"
             v-model="pinned"
           />
@@ -48,12 +80,17 @@
       style="cursor: se-resize; right: 0px; bottom: 0px; position: absolute"
       size="1.5rem"
       name="mdi-resize-bottom-right"
-      @mousedown="resizeCard"
+      @mousedown="
+        (e:MouseEvent) => {
+          pinned = true;
+          resizeCard(e);
+        }
+      "
     ></q-icon>
   </q-card>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, PropType, watch, watchEffect } from "vue";
+import { onMounted, ref, PropType, watchEffect } from "vue";
 
 import * as pdfjsLib from "pdfjs-dist";
 import * as pdfjsViewer from "pdfjs-dist/web/pdf_viewer";
@@ -70,6 +107,7 @@ const props = defineProps({
 const card = ref();
 const peekContainer = ref();
 const pinned = ref(false);
+let pdfSinglePageViewer: pdfjsViewer.PDFSinglePageViewer;
 
 watchEffect(() => {
   setViewMode(props.darkMode);
@@ -83,7 +121,7 @@ onMounted(() => {
   const pdfLinkService = new pdfjsViewer.PDFLinkService({
     eventBus,
   });
-  const pdfSinglePageViewer = new pdfjsViewer.PDFSinglePageViewer({
+  pdfSinglePageViewer = new pdfjsViewer.PDFSinglePageViewer({
     container: peekContainer.value,
     eventBus: eventBus,
     linkService: pdfLinkService,
@@ -108,9 +146,11 @@ onMounted(() => {
   // set event listener
   // handle zoom event
   card.value.$el.addEventListener("mousewheel", (e: WheelEvent) => {
-    e.preventDefault();
     if (!pdfSinglePageViewer) return;
-    pdfSinglePageViewer.currentScale += e.deltaY < 0 ? 0.1 : -0.1;
+    if (e.ctrlKey === true) {
+      e.preventDefault();
+      zoom(e.deltaY < 0 ? 0.1 : -0.1);
+    }
   });
 
   // handle mouseleave
@@ -145,17 +185,15 @@ function setPos(linkAnnot: HTMLElement) {
   // anchor point
   let left = linkRect.x - viewerRect.x;
   let top = linkRect.y - viewerRect.y;
-  // let left = linkRect.x;
-  // let top = linkRect.y;
 
+  // default is to show the card at center top of the link
   left -= w / 2;
-  // default is to show the card at center bottom of the link
-  // show on center top of the link if there are space
-  if (top > h) top -= h;
-
-  // check if left has enough space, if no then shift it to right
-  // check if right has enough space, if no then shift it to left
+  top -= h;
+  // check if top has enough space, if no then shift it down
+  if (top < 0) top = 5;
+  // check if left has enough space, if no then shift it right
   if (left < 0) left = 5;
+  // check if right has enough space, if no then shift it to left
   if (left + w > viewerRect.width) left = viewerRect.width - w - 5;
 
   // card.value.$el.style.position = "relative";
@@ -177,6 +215,11 @@ function show() {
 function enableGrabToPan() {
   const handtool = new GrabToPan({ element: peekContainer.value });
   handtool.activate();
+}
+
+function zoom(delta: number) {
+  if (!pdfSinglePageViewer) return;
+  pdfSinglePageViewer.currentScale += delta;
 }
 
 /**
@@ -292,9 +335,6 @@ function resizeCard(e: MouseEvent) {
   position: absolute !important;
   background: var(--color-pdfreader-viewer-bkgd);
   display: none;
-  // max-height: 40vh;
-  // max-width: 40vw;
-  cursor: grab;
   z-index: 1000;
   border: 1px solid var(--q-edge);
 
