@@ -4,9 +4,9 @@
 
 ## Official sites
 
-- [Official Site](https://researchhelper.github.io)
-- [GitHub Page](https://github.com/ResearchHelper/research-helper)
-- [Documentation](https://researchhelper.github.io/docs.research.helper/)
+- [Official Site](https://sophosia.app)
+- [GitHub Page](https://github.com/sophosia/sophosia)
+- Documentation: Coming
 
 ## Markdown basics
 
