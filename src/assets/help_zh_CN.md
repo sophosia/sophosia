@@ -4,9 +4,9 @@
 
 ## 官方网站
 
-- [官方网站](https://researchhelper.github.io)
-- [GitHub 页面](https://github.com/ResearchHelper/research-helper)
-- [用户及开发者手册](https://researchhelper.github.io/docs.research.helper/)
+- [官方网站](https://sophosia.app)
+- [GitHub 页面](https://github.com/sophosia/sophosia)
+- 用户及开发者手册: 即将上线
 
 ## Markdown 基础
 
