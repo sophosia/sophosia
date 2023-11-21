@@ -114,13 +114,17 @@ const annotContent = computed({
   set(text: string) {
     if (mdContentDiv.value)
       Vditor.preview(mdContentDiv.value, text, {
-        theme: stateStore.settings.theme === "dark" ? "dark" : "classic",
+        theme: {
+          current: stateStore.settings.theme,
+          path: "vditor/dist/css/content-theme",
+        },
         mode: stateStore.settings.theme,
         hljs: {
           lineNumber: true,
-          style: stateStore.settings.theme === "dark" ? "native" : "emacs",
+          style: "native",
         },
         after: changeLinks,
+        cdn: "vditor", // use local cdn
       });
     pdfApp.annotStore?.update(props.annot.data._id, {
       content: text,
@@ -131,13 +135,17 @@ const annotContent = computed({
 onMounted(() => {
   if (mdContentDiv.value)
     Vditor.preview(mdContentDiv.value, props.annot.data.content, {
-      theme: stateStore.settings.theme === "dark" ? "dark" : "classic",
+      theme: {
+        current: stateStore.settings.theme,
+        path: "vditor/dist/css/content-theme",
+      },
       mode: stateStore.settings.theme,
       hljs: {
         lineNumber: true,
-        style: stateStore.settings.theme === "dark" ? "native" : "emacs",
+        style: "native",
       },
       after: changeLinks,
+      cdn: "vditor", // use local cdn
     });
 });
 
