@@ -45,6 +45,7 @@ async function processEntries(
  * Scan all notes and update the links in indexeddb
  */
 export async function scanAndUpdateDB() {
+  console.log("scan and updatedb");
   // no need to scan anything if user is using it the first time
   if (!(await exists("workspace.json", { dir: BaseDirectory.AppConfig })))
     return;
@@ -60,16 +61,13 @@ export async function scanAndUpdateDB() {
   const processFile = async (file: FileEntry, meta: Metadata) => {
     // only process note file
     if (!["md", "excalidraw"].includes(await extname(file.path))) return;
-
     const noteId = file.path.replace(storagePath + sep, "").replace(sep, "/");
     // push the label and path of the note to indexeddb for faster retrival
     idb.put("notes", { noteId });
 
     // if file is modified after last scan, extract its links and update db
-    if (meta.modifiedAt.getTime() > lastScanTime) {
-      const links = await getLinksFromFile(file.path, storagePath);
-      await updateLinks(noteId, links);
-    }
+    const links = await getLinksFromFile(file.path, storagePath);
+    await updateLinks(noteId, links);
   };
 
   const processDir = async (dir: FileEntry, meta: Metadata) => {
@@ -81,6 +79,7 @@ export async function scanAndUpdateDB() {
   };
 
   await idb.clear("notes"); // clear notes store before scaning
+  await idb.clear("links"); // clear links store before scaning
   const entries = await readDir(storagePath, { recursive: true });
   await processEntries(entries, processFile, processDir);
 
