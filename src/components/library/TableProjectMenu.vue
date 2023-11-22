@@ -129,7 +129,7 @@
 <script setup lang="ts">
 // types
 import { Ref, inject, nextTick } from "vue";
-import { NoteType, Project, SpecialFolder } from "src/backend/database";
+import { NoteType, Project, SpecialFolder, db } from "src/backend/database";
 import { QMenu } from "quasar";
 import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
 // db
@@ -186,7 +186,7 @@ function copyProjectId() {
 async function showInExplorer() {
   // don't use project.path because it might not exists
   for (let project of projectStore.selected) {
-    let path = await join(stateStore.settings.storagePath, project._id);
+    let path = await join(db.storagePath, project._id);
     await invoke("show_in_folder", {
       path: path,
     });

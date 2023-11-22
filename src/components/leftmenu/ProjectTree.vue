@@ -173,8 +173,8 @@ import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { getProject } from "src/backend/project/project";
 import { join } from "@tauri-apps/api/path";
-import { open } from "@tauri-apps/api/shell";
 import { exists } from "@tauri-apps/api/fs";
+import { invoke } from "@tauri-apps/api";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -256,17 +256,11 @@ function selectItem(node: Project | Note) {
 }
 
 async function showInExplorer(node: Project | Note) {
-  let path = "";
-  if (node.path) {
-    path = node.path;
-  } else {
-    // window.path.join(stateStore.settings.storagePath, node._id);
-    await join(stateStore.settings.storagePath, node._id);
-  }
   // don't use props.row.path because it might not exists
-  // let path = window.path.join(stateStore.settings.storagePath, props.row._id);
-  // window.fileBrowser.showFileInFolder(path);
-  await open(path);
+  const path = node.path || (await join(db.storagePath, node._id));
+  await invoke("show_in_folder", {
+    path: path,
+  });
 }
 
 async function closeProject(projectId: string) {

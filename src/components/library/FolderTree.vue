@@ -28,10 +28,11 @@
           }"
           draggable="true"
           @dragstart="(e: DragEvent) => onDragStart(e, prop.node)"
-          @dragover="(e: DragEvent) => onDragOver(e, prop.node)"
+          @dragenter="(e: DragEvent) => onDragEnter(e, prop.node)"
           @dragleave="(e: DragEvent) => onDragLeave(e, prop.node)"
           @drop="((e: DragEvent) => onDrop(e, prop.node) as any)"
         >
+          <!-- @dragover="(e: DragEvent) => onDragOver(e, prop.node)" -->
           <q-menu
             touch-position
             context-menu
@@ -140,7 +141,7 @@ const expandedKeys = ref([SpecialFolder.LIBRARY.toString()]);
 const renamingFolderId = ref("");
 const draggingNode = ref<Folder | null>(null);
 const dragoverNode = ref<Folder | null>(null);
-const enterTime = ref(0);
+let delayedExpandFolder: NodeJS.Timeout | undefined;
 
 // change folder lable if locale changed
 watch(
@@ -295,23 +296,21 @@ function onDragStart(e: DragEvent, node: Folder) {
 }
 
 /**
- * When dragging node is over the folder, highlight and expand it.
+ * When dragging node enters the folder, highlight and expand it.
  * @param e - dragevent
  * @param node - the folder user is dragging
  */
-function onDragOver(e: DragEvent, node: Folder) {
+function onDragEnter(e: DragEvent, node: Folder) {
   // enable drop on the node
   e.preventDefault();
 
   // hightlight the dragover folder
   dragoverNode.value = node;
 
-  // expand the node if this function is called over many times
-  enterTime.value++;
-  if (enterTime.value > 15) {
+  delayedExpandFolder = setTimeout(() => {
     if (node._id in expandedKeys.value) return;
     expandedKeys.value.push(node._id);
-  }
+  }, 500);
 }
 
 /**
@@ -320,7 +319,8 @@ function onDragOver(e: DragEvent, node: Folder) {
  * @param node
  */
 function onDragLeave(e: DragEvent, node: Folder) {
-  enterTime.value = 0;
+  delayedExpandFolder = undefined;
+  dragoverNode.value = null; // dehighlight the folder
 }
 
 /**

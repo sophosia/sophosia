@@ -97,7 +97,7 @@
           square
           readonly
           input-style="cursor: pointer; font-size: 1rem"
-          v-model="stateStore.settings.storagePath"
+          :model-value="storagePathRef"
           @click="showFolderPicker"
         >
           <template v-slot:before>
@@ -215,6 +215,8 @@ const { locale, t } = useI18n({ useScope: "global" });
 const showProgressDialog = ref(false);
 const errors = ref<Error[]>([]);
 const progress = ref(0.0);
+// only for reactively displaying the stoagePath
+const storagePathRef = ref(db.storagePath);
 
 // options
 const languageOptions = [
@@ -313,13 +315,13 @@ async function showFolderPicker() {
 
 async function changeStoragePath(newStoragePath: string) {
   // update db
-  let oldStoragePath = stateStore.settings.storagePath;
-  stateStore.settings.storagePath = newStoragePath;
-  await saveAppState();
+  const oldStoragePath = db.storagePath;
   await db.setStoragePath(newStoragePath);
   await moveFiles(oldStoragePath, newStoragePath);
   pluginManager.changePath(newStoragePath);
   await pluginManager.reloadAll(); // reload plugins
+
+  storagePathRef.value = db.storagePath;
 }
 
 async function moveFiles(oldPath: string, newPath: string) {
