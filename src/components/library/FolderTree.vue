@@ -28,7 +28,7 @@
           }"
           draggable="true"
           @dragstart="(e: DragEvent) => onDragStart(e, prop.node)"
-          @dragenter="(e: DragEvent) => onDragEnter(e, prop.node)"
+          @dragover="(e: DragEvent) => onDragOver(e, prop.node)"
           @dragleave="(e: DragEvent) => onDragLeave(e, prop.node)"
           @drop="((e: DragEvent) => onDrop(e, prop.node) as any)"
         >
@@ -141,7 +141,7 @@ const expandedKeys = ref([SpecialFolder.LIBRARY.toString()]);
 const renamingFolderId = ref("");
 const draggingNode = ref<Folder | null>(null);
 const dragoverNode = ref<Folder | null>(null);
-let delayedExpandFolder: NodeJS.Timeout | undefined;
+const enterTime = ref(0);
 
 // change folder lable if locale changed
 watch(
@@ -236,6 +236,13 @@ function deleteFolder(node: Folder) {
 
   // remove from db
   deleteFolderDB(node._id);
+
+  // select another folder after this to refresh the table
+  // if user is delete folder that are not currently selected, table won't refresh
+  // but that's fine becase the database has been updated and the frontend is working as expected
+  // it's just one line saying id=SFxxxx not found in console
+  if (stateStore.selectedFolderId === node._id)
+    stateStore.selectedFolderId = SpecialFolder.LIBRARY;
 }
 
 /**
@@ -300,17 +307,19 @@ function onDragStart(e: DragEvent, node: Folder) {
  * @param e - dragevent
  * @param node - the folder user is dragging
  */
-function onDragEnter(e: DragEvent, node: Folder) {
+function onDragOver(e: DragEvent, node: Folder) {
   // enable drop on the node
   e.preventDefault();
 
   // hightlight the dragover folder
   dragoverNode.value = node;
 
-  delayedExpandFolder = setTimeout(() => {
+  // expand the node if this function is called over many times
+  enterTime.value++;
+  if (enterTime.value > 15) {
     if (node._id in expandedKeys.value) return;
     expandedKeys.value.push(node._id);
-  }, 500);
+  }
 }
 
 /**
@@ -319,7 +328,7 @@ function onDragEnter(e: DragEvent, node: Folder) {
  * @param node
  */
 function onDragLeave(e: DragEvent, node: Folder) {
-  delayedExpandFolder = undefined;
+  enterTime.value = 0;
   dragoverNode.value = null; // dehighlight the folder
 }
 
