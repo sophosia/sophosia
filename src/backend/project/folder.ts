@@ -1,4 +1,5 @@
-import { db, Folder, SpecialFolder } from "../database";
+import { db, Folder, Project, SpecialFolder } from "../database";
+import { updateProject } from "./project";
 import { sortTree } from "./utils";
 
 async function getFolder(folderId: string): Promise<Folder | undefined> {
@@ -105,7 +106,7 @@ async function updateFolder(folderId: string, props: Folder) {
 }
 
 /**
- * Delete a folder
+ * Delete a folder and also remove the folderId from associated projects
  * @param folderId
  */
 async function deleteFolder(folderId: string) {
@@ -121,13 +122,25 @@ async function deleteFolder(folderId: string) {
     for (const doc of docs) folders[doc._id] = doc as Folder;
 
     function _dfs(root: Folder) {
+      const removedFolderIds = [] as string[];
       db.remove(root);
+      removedFolderIds.push(root._id);
       for (const childId of root.children) {
-        _dfs(folders[childId as string]);
+        removedFolderIds.push(..._dfs(folders[childId as string]));
       }
+      return removedFolderIds;
     }
 
-    _dfs(folders[folderId]);
+    const removedFolderIds = _dfs(folders[folderId]);
+
+    // update associated projects
+    const projects = (await db.getDocs("project")) as Project[];
+    for (const project of projects) {
+      const folderIds = project.folderIds.filter(
+        (id) => !removedFolderIds.includes(id)
+      );
+      updateProject(project._id, { folderIds } as Project);
+    }
   } catch (err) {
     console.log(err);
   }

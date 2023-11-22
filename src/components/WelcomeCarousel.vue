@@ -111,7 +111,6 @@ async function changeStoragePath() {
   });
   if (result !== undefined && result != null && !!result[0]) {
     path.value = result[0];
-    stateStore.settings.storagePath = path.value;
     await db.setStoragePath(path.value);
     await db.createHiddenFolders();
   }

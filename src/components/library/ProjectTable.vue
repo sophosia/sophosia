@@ -272,7 +272,7 @@ function toggleContextMenu(
  * @param projectId
  */
 function onDragStart(e: DragEvent) {
-  let rows = document.querySelectorAll("tr.selected");
+  let rows = document.querySelectorAll("tr.tableview-highlighted-row");
   let div = document.createElement("div");
   div.id = "drag-group";
   div.style.position = "absolute";

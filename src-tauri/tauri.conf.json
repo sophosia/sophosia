@@ -98,7 +98,7 @@
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI2REIzMjc5Q0ZGRDkxRDUKUldUVmtmM1BlVExidHZSVS9QMkgyZHRoSmZVOTl1bzFkTCswWDlYdng5N29XVTAyN1M3MXRNalkK"
     },
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost; style-src 'self' 'unsafe-inline'"
+      "csp": "default-src 'self' https:; img-src 'self' data: asset: https://asset.localhost; style-src 'self' 'unsafe-inline'"
     },
     "windows": [
       {

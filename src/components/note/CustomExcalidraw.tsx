@@ -16,7 +16,7 @@ import {
   ExcalidrawImperativeAPI,
   LibraryItems,
 } from "@excalidraw/excalidraw/types/types";
-import { Note } from "src/backend/database";
+import { Note, db } from "src/backend/database";
 import { join } from "@tauri-apps/api/path";
 import {
   readTextFile,
@@ -79,8 +79,7 @@ export default function CustomExcalidraw(props: {
   ) => void;
 
   async function loadExcalidrawLibrary(): Promise<LibraryItems> {
-    let storagePath = stateStore.settings.storagePath;
-    let hiddenFolder = await join(storagePath, ".research-helper");
+    let hiddenFolder = await join(db.storagePath, ".sophosia", "excalidraw");
     let filePath = await join(hiddenFolder, "library.excalidrawlib");
     if (!(await exists(filePath))) return [] as LibraryItems;
     return JSON.parse(await readTextFile(filePath))
@@ -90,10 +89,9 @@ export default function CustomExcalidraw(props: {
   async function saveExcalidrawLibrary(items: LibraryItems) {
     // do not save anything when loading library
     if (!ready) return;
-    let storagePath = stateStore.settings.storagePath;
     try {
-      let hiddenFolder = await join(storagePath, ".research-helper");
-      if (!(await exists(hiddenFolder))) createDir(hiddenFolder);
+      let hiddenFolder = await join(db.storagePath, ".sophosia", "excalidraw");
+      if (!(await exists(hiddenFolder))) createDir(hiddenFolder, {recursive: true});
       let filePath = await join(hiddenFolder, "library.excalidrawlib");
       let jsonString = serializeLibraryAsJSON(items);
       await writeTextFile(filePath, jsonString);

@@ -32,6 +32,7 @@
           @dragleave="(e: DragEvent) => onDragLeave(e, prop.node)"
           @drop="((e: DragEvent) => onDrop(e, prop.node) as any)"
         >
+          <!-- @dragover="(e: DragEvent) => onDragOver(e, prop.node)" -->
           <q-menu
             touch-position
             context-menu
@@ -235,6 +236,13 @@ function deleteFolder(node: Folder) {
 
   // remove from db
   deleteFolderDB(node._id);
+
+  // select another folder after this to refresh the table
+  // if user is delete folder that are not currently selected, table won't refresh
+  // but that's fine becase the database has been updated and the frontend is working as expected
+  // it's just one line saying id=SFxxxx not found in console
+  if (stateStore.selectedFolderId === node._id)
+    stateStore.selectedFolderId = SpecialFolder.LIBRARY;
 }
 
 /**
@@ -295,7 +303,7 @@ function onDragStart(e: DragEvent, node: Folder) {
 }
 
 /**
- * When dragging node is over the folder, highlight and expand it.
+ * When dragging node enters the folder, highlight and expand it.
  * @param e - dragevent
  * @param node - the folder user is dragging
  */
@@ -321,6 +329,7 @@ function onDragOver(e: DragEvent, node: Folder) {
  */
 function onDragLeave(e: DragEvent, node: Folder) {
   enterTime.value = 0;
+  dragoverNode.value = null; // dehighlight the folder
 }
 
 /**

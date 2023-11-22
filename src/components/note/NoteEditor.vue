@@ -284,7 +284,7 @@ async function clickLink(e: MouseEvent, link: string) {
     new URL(link);
     await open(link);
   } catch (error) {
-    // we just want the document, both getProject or getNote are good
+    link = link.replaceAll("%20", " "); // convert all %20 to spaces
     try {
       const item = link.includes("/")
         ? ((await getNote(link)) as Note)
@@ -313,7 +313,7 @@ async function hoverLink(linkNode: HTMLElement) {
     // valid external url, open it externally
     new URL(link);
   } catch (error) {
-    // we just want the document, both getProject or getNote are good
+    link = link.replaceAll("%20", " "); // convert all %20 to space
     try {
       let item = null;
       if (link.includes("/")) item = (await getNote(link)) as Note;
@@ -477,8 +477,9 @@ async function filterHints(key: string) {
       let parentProject = await getProject(projectId);
       let citeKey = projectId;
       if (parentProject) citeKey = generateCiteKey(parentProject);
+      // all spaces must be converted to %20, otherwise vditor won't render it
       hints.push({
-        value: `[${noteId}](${noteId})`,
+        value: `[${noteId}](${noteId.replaceAll(" ", "%20")})`,
         html: `
           <p style="font-size: 1rem" class="ellipsis q-my-none">
             <strong>Note</strong>: ${label}
