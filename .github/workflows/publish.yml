@@ -36,7 +36,5 @@ jobs:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
-          includeDebug: true # only release the the debug build because we can open dev tool
-          includeRelease: false
           tagName: "v__VERSION__"
           releaseName: "Sophosia v__VERSION__"
