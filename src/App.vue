@@ -50,6 +50,12 @@ watchEffect(async () => {
 });
 
 onMounted(async () => {
+  if (process.env.PROD) {
+    // disable default context menu
+    // use ctrl+shift+i on window / linux, command+option+i on macos to open dev tool
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+  }
+
   // try to load the storage path see if it exists
   await db.getStoragePath();
 
