@@ -109,8 +109,8 @@ async function getLinksFromFile(
   for (const match of matches) {
     const submatch = match.match(/\(.*\)/)![0];
     const [mdPath, blockRef] = submatch.slice(1, -1).split("#"); // remove bracket and split
-    let source = filePath.replace(storagePath + sep, "");
-    let target = mdPath.replace(storagePath + sep, "");
+    let source = pathToId(filePath);
+    let target = pathToId(mdPath);
     links.push({ source, target });
   }
   return links;
