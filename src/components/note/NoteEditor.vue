@@ -4,6 +4,7 @@
     ref="vditorDiv"
   ></div>
   <HoverPane
+    v-if="hoverContent"
     :content="hoverContent"
     :data="hoverData"
     @clickLink="(e:MouseEvent, link:string) => clickLink(e,link)"
@@ -129,6 +130,7 @@ function initEditor() {
     toolbar: toolbar,
     lang: stateStore.settings.language as keyof II18n,
     tab: "    ", // use 4 spaces as tab
+    theme: stateStore.settings.theme === "dark" ? "dark" : "classic",
     preview: {
       theme: {
         current: stateStore.settings.theme,
@@ -144,7 +146,6 @@ function initEditor() {
         style: "native",
       },
     },
-    placeholder: t("live-markdown-editor-latex-supported"),
     cache: {
       enable: false,
     },
@@ -161,7 +162,6 @@ function initEditor() {
     after: async () => {
       if (!showEditor.value) return;
       await setContent();
-      setTheme(stateStore.settings.theme);
       changeLinks();
       handleImage();
     },

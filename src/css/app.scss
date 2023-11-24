@@ -13,7 +13,9 @@ body {
   --q-dark-page: #e1e2e7;
   --q-edge: white;
   --color-text: black;
-
+  
+  // golden-layout background
+  --color-layout-base-bkgd: var(--q-dark-page);
   // golden-layout tabs
   --color-layout-active-tab-bkgd: var(--q-dark-page);
   --color-layout-active-tab-fore: var(--color-text);
