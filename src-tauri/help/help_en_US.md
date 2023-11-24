@@ -1,4 +1,4 @@
-# Research Helper
+# Sophosia
 
 > **Warning**: This note will be reset every time. **DO NOT** save anything important here.
 
