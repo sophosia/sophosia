@@ -87,7 +87,8 @@
       "targets": "all",
       "windows": {
         "digestAlgorithm": "sha256"
-      }
+      },
+      "resources": ["help/*"]
     },
     "updater": {
       "active": true,

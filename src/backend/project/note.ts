@@ -238,7 +238,6 @@ export async function saveNote(
  * @param {File} file
  */
 export async function uploadImage(
-  noteId: string,
   file: File
 ): Promise<{ imgName: string; imgPath: string } | undefined> {
   if (!file.type.includes("image")) return;

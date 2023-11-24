@@ -66,11 +66,18 @@
         :ripple="false"
         icon="mdi-help"
         @click="
-          $emit('openPage', {
-            id: 'help',
-            label: t('help'),
-            type: 'HelpPage',
-          })
+          async () => {
+            $emit('openPage', {
+              id: 'help',
+              label: t('help'),
+              type: 'HelpPage',
+              data: {
+                path: await resolveResource(
+                  `help/help_${stateStore.settings.language}.md`
+                ),
+              },
+            });
+          }
         "
       >
         <q-tooltip>{{ $t("help") }}</q-tooltip>
@@ -108,6 +115,7 @@ import pluginManager from "src/backend/plugin";
 import { Button, ComponentName, ToggleButton } from "src/backend/database";
 import { useI18n } from "vue-i18n";
 import { useStateStore } from "src/stores/appState";
+import { resolveResource } from "@tauri-apps/api/path";
 
 const stateStore = useStateStore();
 const { t, locale } = useI18n({ useScope: "global" });

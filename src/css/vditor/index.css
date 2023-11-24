@@ -333,7 +333,7 @@
 .vditor-toolbar {
   background-color: var(--toolbar-background-color);
   border-bottom: 1px solid var(--border-color);
-  padding: 0 5px;
+  padding: 0 5px !important;
   line-height: 1;
 }
 .vditor-toolbar--pin {

@@ -4,6 +4,7 @@
     ref="vditorDiv"
   ></div>
   <HoverPane
+    v-if="hoverContent"
     :content="hoverContent"
     :data="hoverData"
     @clickLink="(e:MouseEvent, link:string) => clickLink(e,link)"
@@ -50,9 +51,12 @@ const props = defineProps({
   noteId: { type: String, required: true },
   hasToolbar: { type: Boolean, required: true },
   data: { type: Object, required: false },
+  save: { type: Boolean, required: true, default: true },
 });
-
-const noteId = ref(props.noteId); // noteId might change as user rename
+// noteId might change as user rename
+// data.path won't change since it will be some special note
+// content will be read/write to path
+const noteId = ref(props.noteId);
 const vditor = ref<Vditor | null>(null);
 const vditorDiv = ref<HTMLElement | null>(null);
 const showEditor = ref(false);
@@ -74,13 +78,15 @@ watch(
   () => projectStore.renamedNote,
   (note: Note) => {
     noteId.value = note._id;
+    if (vditorDiv.value)
+      vditorDiv.value.setAttribute("id", `vditor-${noteId.value}`);
   }
 );
 
 onMounted(async () => {
   if (!vditorDiv.value) return;
-  links.value = await getForwardLinks(props.noteId);
-  vditorDiv.value.setAttribute("id", `vditor-${props.noteId}`);
+  links.value = await getForwardLinks(noteId.value);
+  vditorDiv.value.setAttribute("id", `vditor-${noteId.value}`);
   showEditor.value = true;
   initEditor();
   await nextTick();
@@ -117,7 +123,7 @@ function initEditor() {
       { name: "help", tipPosition: "s" },
     ];
 
-  vditor.value = new Vditor("vditor-" + props.noteId, {
+  vditor.value = new Vditor("vditor-" + noteId.value, {
     height: "100%",
     mode: "ir",
     toolbarConfig: {
@@ -129,6 +135,7 @@ function initEditor() {
     toolbar: toolbar,
     lang: stateStore.settings.language as keyof II18n,
     tab: "    ", // use 4 spaces as tab
+    theme: stateStore.settings.theme === "dark" ? "dark" : "classic",
     preview: {
       theme: {
         current: stateStore.settings.theme,
@@ -144,7 +151,6 @@ function initEditor() {
         style: "native",
       },
     },
-    placeholder: t("live-markdown-editor-latex-supported"),
     cache: {
       enable: false,
     },
@@ -161,7 +167,6 @@ function initEditor() {
     after: async () => {
       if (!showEditor.value) return;
       await setContent();
-      setTheme(stateStore.settings.theme);
       changeLinks();
       handleImage();
     },
@@ -177,7 +182,7 @@ function initEditor() {
       accept: "image/*",
       handler: (files: File[]): null => {
         for (let file of files) {
-          uploadImage(props.noteId, file).then((uploaded) => {
+          uploadImage(file).then((uploaded) => {
             if (uploaded === undefined) return;
             if (!vditor.value) return;
             vditor.value.insertValue(
@@ -209,17 +214,17 @@ function setTheme(theme: string) {
  *****************************************/
 
 async function setContent() {
-  if (!vditor.value) return;
-  let content = await loadNote(props.noteId);
+  if (!vditor.value || (!noteId.value && !props.data?.path)) return;
+  let content = await loadNote(noteId.value, props.data?.path);
   vditor.value.setValue(content);
 }
 
 async function _saveContent() {
   // save the content when it's blur
   // this will be called before unmount
-  if (!vditor.value) return;
+  if (!vditor.value || !props.save) return;
   let content = vditor.value.getValue();
-  await saveNote(noteId.value, content);
+  await saveNote(noteId.value, content, props.data?.path);
   await saveLinks(); // only save links if it's a built-in note
 }
 

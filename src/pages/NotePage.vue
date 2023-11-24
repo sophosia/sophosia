@@ -4,6 +4,7 @@
     :has-toolbar="true"
     :noteId="itemId"
     :data="data"
+    :save="true"
   />
 </template>
 <script setup lang="ts">
@@ -15,9 +16,3 @@ const props = defineProps({
   data: { type: Object as PropType<{ path: String }>, required: false },
 });
 </script>
-<style lang="scss">
-.vditor-reset > pre {
-  // Fix padding no matter what window size it is
-  padding: 10px 35px !important;
-}
-</style>
