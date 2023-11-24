@@ -22,7 +22,7 @@ async function getFolderTree(): Promise<Folder[] | undefined> {
     if (docs.length == 0) {
       // create library folder for user if there is none
       const library = {
-        _id: "SFlibrary",
+        _id: SpecialFolder.LIBRARY,
         timestampAdded: Date.now(),
         timestampModified: Date.now(),
         label: "Library",
