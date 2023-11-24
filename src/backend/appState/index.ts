@@ -1,4 +1,4 @@
-import { db, AppState, Layout } from "../database";
+import { db, AppState, Layout, SpecialFolder } from "../database";
 import { LayoutConfig, ResolvedLayoutConfig } from "golden-layout";
 import { debounce } from "quasar";
 
@@ -22,7 +22,7 @@ async function getAppState(): Promise<AppState> {
       showPDFRightMenu: false,
       libraryRightMenuSize: 30,
       showLibraryRightMenu: false,
-      selectedFolderId: "library",
+      selectedFolderId: SpecialFolder.LIBRARY,
       currentItemId: "library",
       openedProjectIds: [],
       settings: {
@@ -77,7 +77,7 @@ async function getLayout(): Promise<Layout> {
               type: "component",
               title: "Library",
               componentType: "LibraryPage",
-              componentState: { id: "library" },
+              componentState: { id: SpecialFolder.LIBRARY },
             },
           ],
         },
