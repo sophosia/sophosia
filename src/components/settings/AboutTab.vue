@@ -9,11 +9,12 @@
       <q-card-section>
         <div class="row items-center justify-between">
           <div class="text-h6 row items-center">
-            <img
-              src="icons/logo.svg"
+            <q-icon
+              name="img:icons/logo.svg"
+              size="lg"
               alt="logo"
             />
-            <div class="q-ml-sm">{{ $t("sophosia") + version }}</div>
+            <div class="q-ml-sm">{{ `${$t("sophosia")} ${version}` }}</div>
           </div>
           <div>
             <q-btn
