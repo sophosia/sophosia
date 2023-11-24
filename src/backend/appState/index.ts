@@ -77,7 +77,7 @@ async function getLayout(): Promise<Layout> {
               type: "component",
               title: "Library",
               componentType: "LibraryPage",
-              componentState: { id: SpecialFolder.LIBRARY },
+              componentState: { id: "library" },
             },
           ],
         },

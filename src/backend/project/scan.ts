@@ -12,6 +12,7 @@ import { updateLinks } from "./graph";
 import { extname, sep } from "@tauri-apps/api/path";
 import { ref } from "vue";
 import { Notify } from "quasar";
+import { pathToId } from "./utils";
 
 // for informing the loading screen at startup
 export const scanStatus = ref("scaning");
@@ -45,7 +46,7 @@ async function processEntries(
  * Scan all notes and update the links in indexeddb
  */
 export async function scanAndUpdateDB() {
-  console.log("scan and updatedb");
+  console.log("scan and update db");
   // no need to scan anything if user is using it the first time
   if (!(await exists("workspace.json", { dir: BaseDirectory.AppConfig })))
     return;
@@ -61,7 +62,7 @@ export async function scanAndUpdateDB() {
   const processFile = async (file: FileEntry, meta: Metadata) => {
     // only process note file
     if (!["md", "excalidraw"].includes(await extname(file.path))) return;
-    const noteId = file.path.replace(storagePath + sep, "").replace(sep, "/");
+    const noteId = pathToId(file.path);
     // push the label and path of the note to indexeddb for faster retrival
     idb.put("notes", { noteId });
 
