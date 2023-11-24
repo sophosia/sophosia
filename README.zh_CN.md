@@ -4,7 +4,7 @@ style="width: 100px; vertical-align:middle">
 <br>
 <h2 align="center">Sophosia: 你的研究小助手</h2>
 <br>
-<a title="Build Status" target="_blank" href="https://github.com/sophosia/sophosia/actions"><img src="https://img.shields.io/github/actions/workflow/status/sophosia/sophosia/release.yml?style=flat-square"></a>
+<a title="Build Status" target="_blank" href="https://github.com/sophosia/sophosia/actions"><img src="https://img.shields.io/github/actions/workflow/status/sophosia/sophosia/publish.yml?style=flat-square"></a>
 <a title="Release" target="_blank" href="https://github.com/sophosia/sophosia/releases"><img src="https://img.shields.io/github/v/release/sophosia/sophosia?style=flat-square"></a>
 <a title="Downloads" target="_blank" href="https://github.com/sophosia/sophosia/releases"><img src="https://img.shields.io/github/downloads/sophosia/sophosia/total?style=flat-square"></a>
 <a title="Stars" target="_blank" href="https://github.com/sophosia/sophosia"><img src="https://img.shields.io/github/stars/sophosia/sophosia?style=flat-square"></a>
@@ -16,9 +16,9 @@ style="width: 100px; vertical-align:middle">
 </p>
 
 <p align="center">
-<a href="https://github.com/sophosia/sophosia/README.md">English</a>
+<a href="https://github.com/sophosia/sophosia/blob/main/README.md">English</a>
 |
-<a href="https://github.com/sophosia/sophosia/README.zh_CN.md">中文</a>
+<a href="https://github.com/sophosia/sophosia/blob/main/README.zh_CN.md">中文</a>
 </p>
 
 # 研究小助手
