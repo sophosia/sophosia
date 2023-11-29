@@ -7,7 +7,10 @@ import {
 import { basename, extname } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
 import { renameFile } from "@tauri-apps/api/fs";
-import { IdToPath } from "./utils";
+import { authorToString, IdToPath } from "./utils";
+import { i18n } from "src/boot/i18n";
+import { saveNote } from "./note";
+const { t } = i18n.global;
 
 /**
  * Create a project data
@@ -16,7 +19,7 @@ import { IdToPath } from "./utils";
 export function createProject(folderId: string) {
   // create empty project entry
   const projectId = `SP${db.nanoid}`;
-  const noteLabel = `${projectId}.md`; // we'll change this to "Overview.md" in frontend
+  const noteLabel = `${projectId}.md`; // we'll hide in frontend
   const noteId = `${projectId}/${projectId}.md`;
   const notePath = IdToPath(noteId);
   const project = {
@@ -24,8 +27,8 @@ export function createProject(folderId: string) {
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
     dataType: "project",
-    label: "New Project",
-    title: "New Project",
+    label: t("new-project"),
+    title: t("new-project"),
     path: "",
     tags: [] as string[],
     folderIds: [SpecialFolder.LIBRARY.toString()],
@@ -122,6 +125,15 @@ export async function updateProject(
     Object.assign(project, props);
     project.label = project.title; // also update label
     await db.put(project);
+
+    // update folder note as well
+    const content = `
+# ${project.label}
+${t("author")}: ${authorToString(project.author)}
+${t("abstract")}: ${project.abstract || ""}
+
+${t("note-is-auto-manged")}`;
+    await saveNote(`${projectId}/${projectId}.md`, content);
     return project;
   } catch (error) {
     console.log(error);

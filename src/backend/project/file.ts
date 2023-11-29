@@ -11,9 +11,12 @@ import {
   writeTextFile,
 } from "@tauri-apps/api/fs";
 import { authorToString } from "./utils";
+import { i18n } from "src/boot/i18n";
+const { t } = i18n.global;
 
 /**
  * Create project folder in storage path
+ * And create folder note inside this folder
  * @param projectId
  */
 async function createProjectFolder(project: Project) {
@@ -27,10 +30,12 @@ async function createProjectFolder(project: Project) {
     if (!(await exists(projectPath))) await createDir(projectPath);
     if (!(await exists(projectNotePath))) {
       const content = `
-# Overview of ${project.label}
-- This note is auto managed, do not change the file name of this note.
-- Remove these lines as you wish, and enjoy note taking!
-      `;
+# ${project.label}
+${t("author")}: ${authorToString(project.author)}
+${t("abstract")}: ${project.abstract || ""}
+
+${t("note-is-auto-manged")}
+`;
       await writeTextFile(projectNotePath, content);
     }
   } catch (error) {

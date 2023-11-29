@@ -37,14 +37,17 @@
           </q-item-section>
           <q-item-section>
             <div
-              style="font-size: 1rem"
-              class="text-bold non-selectable"
+              style="font-size: 1rem; width: 100%"
+              class="text-bold non-selectable ellipsis"
             >
               {{ $t("active-projects") }}
             </div>
           </q-item-section>
         </template>
-        <div :style="`height: ${treeSize - 36}px; overflow-y: auto`">
+        <div
+          :style="`height: ${treeSize - 36}px; overflow-y: auto`"
+          class="q-px-xs"
+        >
           <ProjectTree />
         </div>
       </q-expansion-item>
@@ -58,7 +61,7 @@
         switch-toggle-side
         expand-separator
         hide-expand-icon
-        header-class="q-pa-none q-ma-none"
+        header-class="q-pa-none q-ma-none ellipsis"
         :duration="0"
       >
         <template v-slot:header="props">
@@ -72,8 +75,8 @@
           </q-item-section>
           <q-item-section>
             <div
-              style="font-size: 1rem"
-              class="text-bold non-selectable"
+              style="font-size: 1rem; width: 100%"
+              class="text-bold non-selectable ellipsis"
             >
               {{ $t("related-items") }}
             </div>
