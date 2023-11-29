@@ -156,5 +156,7 @@
   "update-meta-requirement": "To update meta, one of URL, ISBN or DOI bust be filled ",
   "enter-light-mode": "Enter light mode",
   "enter-dark-mode": "Enter dark mode",
-  "citation-keys-updated": "Citation keys updated"
+  "citation-keys-updated": "Citation keys updated",
+  "note-is-auto-manged": "> This note is auto managed, **DO NOT change its file name or write anything here**.",
+  "new-note": "New Note"
 }

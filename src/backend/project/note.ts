@@ -16,6 +16,8 @@ import { batchReplaceLink } from "./scan";
 import { updateLinks } from "./graph";
 import { metadata } from "tauri-plugin-fs-extra-api";
 import { IdToPath, pathToId } from "./utils";
+import { i18n } from "src/boot/i18n";
+const { t } = i18n.global;
 
 /**
  * Create a note
@@ -25,10 +27,10 @@ import { IdToPath, pathToId } from "./utils";
 export async function createNote(projectId: string, type: NoteType) {
   let i = 1;
   let ext = type === NoteType.MARKDOWN ? ".md" : ".excalidraw";
-  let name = "Untitled";
+  let name = t("new-note");
   let path = await join(db.storagePath, projectId, name + ext);
   while (await exists(path)) {
-    name = `Untitled ${i}`;
+    name = `${t("new-note")} ${i}`;
     path = await join(db.storagePath, projectId, name + ext);
     i++;
   }
@@ -155,13 +157,14 @@ export async function getNotes(projectId: string): Promise<Note[]> {
       for (const entry of entries) {
         const meta = await metadata(entry.path);
         if (meta.isFile) {
-          // if ((await extname(entry.path)) !== "md") continue;
           const ext = await extname(entry.path);
           if (!["md", "excalidraw"].includes(ext)) continue;
 
           const noteId = pathToId(entry.path);
           const splits = noteId.split("/");
           const projectId = splits[0];
+          // skip folder note
+          if (noteId === `${projectId}/${projectId}.md`) continue;
           const label = splits[splits.length - 1];
           notes.push({
             _id: noteId,
