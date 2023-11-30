@@ -1,6 +1,6 @@
 [package]
 name = "sophosia"
-version = "0.1.9"
+version = "0.1.10"
 description = "A research paper / textbook / note management tool"
 authors = ["Hunt Feng"]
 license = "GPL-3.0"
