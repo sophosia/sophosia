@@ -104,7 +104,6 @@
               isFullscreen ? $t('exit-full-screen') : $t('enter-full-screen')
             "
             no-caps
-            size="0.9rem"
             padding="none"
             @click="$emit('toggleFullscreen')"
             data-cy="btn-toggle-fullscreen"
