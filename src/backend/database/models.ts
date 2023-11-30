@@ -78,7 +78,7 @@ export interface Project extends Meta {
   timestampModified: number; // timestamp when data is updated
   dataType: "project"; // for database search
   label: string;
-  children?: Note[];
+  children: Note[];
   path: undefined | string; // attached file path
   tags: string[]; // user defined keywords for easier search
   folderIds: string[]; // array of folderIDs containing this project

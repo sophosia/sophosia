@@ -14,11 +14,22 @@ import { save } from "@tauri-apps/api/dialog";
  * @returns citation data
  */
 export async function getMeta(
-  identifier: string | string[] | object[],
+  identifier: string | string[],
   format?: string,
   options?: { format?: string; template?: string }
 ): Promise<Meta[] | string> {
   try {
+    // only use the doi section of the url
+    // Tauri is not able to allow http call except using http module ...
+    if (typeof identifier === "string") {
+      if (identifier.match(/http:\/\/.*doi.*/))
+        identifier = identifier.split("/").slice(-2).join("/");
+    } else {
+      for (const [index, str] of identifier.entries()) {
+        if (str.match(/http:\/\/.*doi.*/))
+          identifier[index] = str.split("/").slice(-2).join("/");
+      }
+    }
     const data = await Cite.async(identifier);
     if (!format || format === "json") {
       let metas = data.data;

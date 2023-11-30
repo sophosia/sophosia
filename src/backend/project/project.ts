@@ -18,12 +18,8 @@ const { t } = i18n.global;
  */
 export function createProject(folderId: string) {
   // create empty project entry
-  const projectId = `SP${db.nanoid}`;
-  const noteLabel = `${projectId}.md`; // we'll hide in frontend
-  const noteId = `${projectId}/${projectId}.md`;
-  const notePath = IdToPath(noteId);
   const project = {
-    _id: projectId,
+    _id: `SP${db.nanoid}`,
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
     dataType: "project",
@@ -33,16 +29,7 @@ export function createProject(folderId: string) {
     tags: [] as string[],
     folderIds: [SpecialFolder.LIBRARY.toString()],
     favorite: false,
-    children: [
-      {
-        _id: noteId,
-        dataType: "note",
-        projectId: projectId,
-        label: noteLabel,
-        path: notePath,
-        type: "markdown",
-      } as Note,
-    ],
+    children: [] as Note[],
   } as Project;
   if (folderId != SpecialFolder.LIBRARY.toString())
     project.folderIds.push(folderId);
