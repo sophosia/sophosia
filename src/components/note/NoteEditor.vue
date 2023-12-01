@@ -42,6 +42,7 @@ import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { useProjectStore } from "src/stores/projectStore";
 import { getForwardLinks, updateLinks } from "src/backend/project/graph";
+import { isLinkUpdated } from "src/backend/project/scan";
 
 const stateStore = useStateStore();
 const { t } = useI18n({ useScope: "global" });
@@ -82,6 +83,16 @@ watch(
       vditorDiv.value.setAttribute("id", `vditor-${noteId.value}`);
   }
 );
+
+watch(isLinkUpdated, async () => {
+  if (!isLinkUpdated.value) return;
+  // load note again
+  await setContent();
+  changeLinks();
+  handleImage();
+  // set this to false and wait for next update
+  isLinkUpdated.value = false;
+});
 
 onMounted(async () => {
   if (!vditorDiv.value) return;

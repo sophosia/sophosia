@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { Dark } from "quasar";
-import { updateAppState } from "src/backend/appState";
+import { updateAppState, getAppState } from "src/backend/appState";
 import { AppState, Page, Settings, SpecialFolder } from "src/backend/database";
 import { useProjectStore } from "./projectStore";
 import darkContent from "src/css/vditor/dark.css?raw";
@@ -40,7 +40,8 @@ export const useStateStore = defineStore("stateStore", {
   }),
 
   actions: {
-    async loadState(state: AppState) {
+    async loadState() {
+      const state = await getAppState();
       this.leftMenuSize = state.leftMenuSize || this.leftMenuSize;
       this.showLeftMenu = state.showLeftMenu || this.showLeftMenu;
       this.showPDFMenuView = state.showPDFMenuView || this.showPDFMenuView;
@@ -58,7 +59,7 @@ export const useStateStore = defineStore("stateStore", {
       this.ready = true;
     },
 
-    saveState(): AppState {
+    getState(): AppState {
       return {
         _id: "appState",
         dataType: "appState",
@@ -176,8 +177,9 @@ export const useStateStore = defineStore("stateStore", {
     },
 
     async saveAppState() {
+      if (!this.ready) return;
       const projectStore = useProjectStore();
-      let state = this.saveState();
+      let state = this.getState();
       state.openedProjectIds = projectStore.openedProjects.map(
         (project) => project._id
       );

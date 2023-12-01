@@ -173,9 +173,7 @@ onMounted(async () => {
 });
 
 async function saveState() {
-  if (!stateStore.ready) return;
-  let state = stateStore.saveState();
-  await updateAppState(state);
+  await stateStore.saveAppState();
 }
 
 /**************************

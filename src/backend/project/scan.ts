@@ -16,9 +16,8 @@ import { pathToId } from "./utils";
 import { i18n } from "src/boot/i18n";
 const { t } = i18n.global;
 
-// for informing the loading screen at startup
-export const scanStatus = ref("scaning");
-
+export const isScanned = ref(false); // to notify loading screen initially
+export const isLinkUpdated = ref(false); // to notify the reloading of note editor
 /**
  * Process each FileEntry with callback functions
  * @param entries
@@ -91,7 +90,7 @@ export async function scanAndUpdateDB() {
     dir: BaseDirectory.AppConfig,
   });
 
-  scanStatus.value = "done";
+  isScanned.value = true;
 }
 
 /**
@@ -156,7 +155,6 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
       "m"
     ); // remove g modifier to make match return after first found
     const matches = content.match(localRegex);
-    console.log("matches", matches);
     if (!matches) return;
     const oldIdAndHashtag = matches[0].match(/\[.*\]/)![0].slice(1, -1); // remove bracket using slice
     const oldLinkAndHashtag = matches[0].match(/\(.*\)/)![0].slice(1, -1);
@@ -170,7 +168,6 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
       `[${newIdAndHashtag}](${newLinkAndHashtag})`
     );
     await writeTextFile(file.path, newContent);
-    console.log("new content", newContent);
 
     const currentNoteId = file.path
       .replace(storagePath + sep, "")
@@ -188,4 +185,5 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
   await processEntries(entries, processFile, processDir);
 
   Notify.create(t("links-updated"));
+  isLinkUpdated.value = true;
 }
