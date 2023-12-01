@@ -4,11 +4,11 @@
     v-model="showWelcomeCarousel"
   />
   <div
-    v-else-if="scanStatus !== 'done'"
+    v-else-if="!isScanned"
     style="margin-top: 50vh"
     class="q-px-xl row justify-center"
   >
-    <div class="text-h6">{{ $t(scanStatus) + "..." }}</div>
+    <div class="text-h6">{{ $t("scaning") + "..." }}</div>
     <q-linear-progress
       v-if="loading"
       size="md"
@@ -23,12 +23,11 @@
 <script setup lang="ts">
 import WelcomeCarousel from "src/components/WelcomeCarousel.vue";
 import { onMounted, ref, watchEffect } from "vue";
-import { getAppState } from "src/backend/appState";
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { useI18n } from "vue-i18n";
 import { db } from "src/backend/database";
-import { scanStatus, scanAndUpdateDB } from "src/backend/project/scan";
+import { scanAndUpdateDB, isScanned } from "src/backend/project/scan";
 const { locale } = useI18n({ useScope: "global" });
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -42,9 +41,8 @@ watchEffect(async () => {
   // so the app doesn't overwrite the already existing app state
   // then we can start to scan the storage path and build indexeddb (for faster data retrieval)
   if (!showWelcomeCarousel.value) {
-    let state = await getAppState();
-    stateStore.loadState(state);
-    await projectStore.loadOpenedProjects(state.openedProjectIds);
+    await stateStore.loadState();
+    await projectStore.loadOpenedProjects(stateStore.openedProjectIds);
     scanAndUpdateDB();
   }
 });
@@ -62,9 +60,8 @@ onMounted(async () => {
   // regardless of the existence of storagePath
   // we need to apply settings
   // if no storage path default state will be used
-  let state = await getAppState();
-  stateStore.loadState(state);
-  await projectStore.loadOpenedProjects(state.openedProjectIds);
+  await stateStore.loadState();
+  await projectStore.loadOpenedProjects(stateStore.openedProjectIds);
 
   // apply settings
   stateStore.changeTheme(stateStore.settings.theme);

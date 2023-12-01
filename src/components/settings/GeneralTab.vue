@@ -349,7 +349,7 @@ function updateCiteKeyRule() {
   stateStore.settings.citeKeyRule = citeKeyPartKeys.join(
     citeKeyConnector.value
   );
-  saveAppState();
+  stateStore.saveAppState();
 }
 
 async function updateCiteKeys() {
@@ -361,11 +361,6 @@ async function updateCiteKeys() {
     );
   await db.bulkDocs(projects);
   $q.notify(t("citation-keys-updated"));
-}
-
-async function saveAppState() {
-  let state = stateStore.saveState();
-  await updateAppState(state);
 }
 </script>
 

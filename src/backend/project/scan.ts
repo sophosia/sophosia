@@ -13,10 +13,11 @@ import { extname, sep } from "@tauri-apps/api/path";
 import { ref } from "vue";
 import { Notify } from "quasar";
 import { pathToId } from "./utils";
+import { i18n } from "src/boot/i18n";
+const { t } = i18n.global;
 
-// for informing the loading screen at startup
-export const scanStatus = ref("scaning");
-
+export const isScanned = ref(false); // to notify loading screen initially
+export const isLinkUpdated = ref(false); // to notify the reloading of note editor
 /**
  * Process each FileEntry with callback functions
  * @param entries
@@ -89,7 +90,7 @@ export async function scanAndUpdateDB() {
     dir: BaseDirectory.AppConfig,
   });
 
-  scanStatus.value = "done";
+  isScanned.value = true;
 }
 
 /**
@@ -139,7 +140,33 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
     if ((await extname(file.path)) !== "md") return;
 
     let content = await readTextFile(file.path);
-    const newContent = content.replaceAll(oldNoteId, newNoteId);
+    const regex = new RegExp(
+      `\\[${oldNoteId}\\#?\\w*\\]\\(${oldNoteId.replaceAll(
+        " ",
+        "%20"
+      )}\\#?\\w*\\)`,
+      "gm"
+    );
+    const localRegex = new RegExp(
+      `\\[${oldNoteId}\\#?\\w*\\]\\(${oldNoteId.replaceAll(
+        " ",
+        "%20"
+      )}\\#?\\w*\\)`,
+      "m"
+    ); // remove g modifier to make match return after first found
+    const matches = content.match(localRegex);
+    if (!matches) return;
+    const oldIdAndHashtag = matches[0].match(/\[.*\]/)![0].slice(1, -1); // remove bracket using slice
+    const oldLinkAndHashtag = matches[0].match(/\(.*\)/)![0].slice(1, -1);
+    const newIdAndHashtag = oldIdAndHashtag.replace(oldNoteId, newNoteId);
+    const newLinkAndHashtag = oldLinkAndHashtag.replace(
+      oldNoteId.replaceAll(" ", "%20"),
+      newNoteId.replaceAll(" ", "%20")
+    );
+    const newContent = content.replaceAll(
+      regex,
+      `[${newIdAndHashtag}](${newLinkAndHashtag})`
+    );
     await writeTextFile(file.path, newContent);
 
     const currentNoteId = file.path
@@ -157,5 +184,6 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
   const entries = await readDir(storagePath, { recursive: true });
   await processEntries(entries, processFile, processDir);
 
-  Notify.create("Links updated");
+  Notify.create(t("links-updated"));
+  isLinkUpdated.value = true;
 }
