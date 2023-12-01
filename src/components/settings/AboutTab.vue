@@ -66,10 +66,12 @@ const unlisten = ref();
 
 onMounted(async () => {
   unlisten.value = await onUpdaterEvent(({ error, status }) => {
-    if (error) updateMsg.value = `Error: ${error}`;
-    else {
+    if (error) {
+      updateMsg.value = `Error: ${error}`;
+      disabled.value = false; // allow user to try again
+    } else {
       updateMsg.value = `Status: ${status}`;
-      disabled.value = false;
+      disabled.value = true; // the thing is already downloading
     }
   });
   version.value = "v" + (await getVersion());

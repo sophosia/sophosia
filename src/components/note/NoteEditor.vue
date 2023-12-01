@@ -310,9 +310,7 @@ async function clickLink(e: MouseEvent, link: string) {
   }
 }
 async function hoverLink(linkNode: HTMLElement) {
-  console.log("here");
   if (!hoverPane.value) return;
-  console.log("here1");
   let link = (
     linkNode.querySelector("span.vditor-ir__marker--link") as HTMLElement
   ).innerHTML;
@@ -321,7 +319,6 @@ async function hoverLink(linkNode: HTMLElement) {
     new URL(link);
   } catch (error) {
     link = link.replaceAll("%20", " "); // convert all %20 to space
-    console.log("hovering");
     try {
       let item = null;
       if (link.includes("/")) item = (await getNote(link)) as Note;
@@ -335,7 +332,6 @@ async function hoverLink(linkNode: HTMLElement) {
         ];
         hoverContent.value = lines.join("\n");
         hoverData.value.content = lines.join("\n");
-        console.log("hovercontent", hoverContent.value);
       } else if (item.dataType === "note") {
         if (item.type === "excalidraw") {
           let lines = [
@@ -369,7 +365,6 @@ async function hoverLink(linkNode: HTMLElement) {
           rect.bottom - parentRect.top
         }px`;
       }
-      console.log(hoverPane.value.card.$el.style);
       hoverPane.value.card.$el.hidden = false;
     } catch (error) {
       console.log(error);
