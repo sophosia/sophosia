@@ -14,7 +14,7 @@ import { save } from "@tauri-apps/api/dialog";
  * @returns citation data
  */
 export async function getMeta(
-  identifier: string | string[],
+  identifier: string | string[] | Project[],
   format?: string,
   options?: { format?: string; template?: string }
 ): Promise<Meta[] | string> {
@@ -24,7 +24,7 @@ export async function getMeta(
     if (typeof identifier === "string") {
       if (identifier.match(/http:\/\/.*doi.*/))
         identifier = identifier.split("/").slice(-2).join("/");
-    } else {
+    } else if (typeof identifier[0] === "string") {
       for (const [index, str] of identifier.entries()) {
         if (str.match(/http:\/\/.*doi.*/))
           identifier[index] = str.split("/").slice(-2).join("/");
@@ -70,7 +70,14 @@ export async function exportMeta(
       if (["bibtex", "biblatex"].includes(format)) extension = "bib";
       else if (format === "bibliography") extension = "txt";
       else if (format === "ris") extension = "ris";
-      let path = await save();
+      let path = await save({
+        filters: [
+          {
+            name: extension,
+            extensions: [extension],
+          },
+        ],
+      });
       if (path) {
         if (path.slice(-4).indexOf(`.${extension}`) === -1)
           path += `.${extension}`;
