@@ -116,8 +116,8 @@ watch(
   () => stateStore.closedItemId,
   async (id: string) => {
     if (!!!id) return;
-    let note = (await getNote(id)) as Note;
-    if (note.dataType == "note" && note.type == NoteType.EXCALIDRAW) {
+    let note = await getNote(id);
+    if (note && note.type == NoteType.EXCALIDRAW) {
       // have to wait until the excalidraw component disappear
       setTimeout(() => {
         removeComponent(id);
