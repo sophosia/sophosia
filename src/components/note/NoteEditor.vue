@@ -129,9 +129,6 @@ function initEditor() {
       { name: "table", tipPosition: "s" },
       "|",
       { name: "upload", tipPosition: "s", tip: t("upload-image") },
-      { name: "export", tipPosition: "s" },
-      "|",
-      { name: "help", tipPosition: "s" },
     ];
 
   vditor.value = new Vditor("vditor-" + noteId.value, {
@@ -393,12 +390,14 @@ async function _hangleImage() {
   for (let img of imgs) {
     if (
       !img.src.includes("http://localhost:9000/") &&
-      !img.src.includes("tauri://localhost/")
+      !img.src.includes("tauri://localhost/") &&
+      !img.src.includes("https://tauri.localhost/")
     )
       continue;
     const imgFile = img.src
       .replace("http://localhost:9000/", "") // in dev mode
-      .replace("tauri://localhost/", ""); // in production mode
+      .replace("tauri://localhost/", "") // in production mode, mac, linux
+      .replace("https://tauri.localhost/", ""); // in production mode, windows
     img.src = convertFileSrc(
       [db.storagePath, ".sophosia", "image", imgFile].join(sep)
     );
