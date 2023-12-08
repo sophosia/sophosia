@@ -43,7 +43,8 @@
       <q-item
         v-if="projectStore.selected.length == 1"
         clickable
-        @mouseover="($refs.submenu as QMenu).show()"
+        v-close-popup
+        @click="onAttachFile()"
       >
         <q-item-section>
           {{
@@ -52,42 +53,6 @@
               : $t("attach-file")
           }}
         </q-item-section>
-        <q-item-section side>
-          <q-icon name="arrow_right" />
-        </q-item-section>
-        <q-menu
-          square
-          anchor="top end"
-          self="top start"
-          ref="submenu"
-        >
-          <q-list dense>
-            <q-item
-              clickable
-              v-close-popup
-            >
-              <q-item-section @click="onAttachFile(true)">
-                {{
-                  !!projectStore.selected[0].path
-                    ? $t("replace-stored-copy-of-file")
-                    : $t("attach-stored-copy-of-file")
-                }}
-              </q-item-section>
-            </q-item>
-            <q-item
-              clickable
-              v-close-popup
-            >
-              <q-item-section @click="onAttachFile(false)">
-                {{
-                  !!projectStore.selected[0].path
-                    ? $t("replace-path-to-file")
-                    : $t("attach-path-to-file")
-                }}
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-menu>
       </q-item>
 
       <q-separator />
@@ -206,10 +171,9 @@ function searchMeta() {
 
 /**
  * Attach PDF to a project
- * @param replaceStoredCopy - replace the copy in storage?
  */
-async function onAttachFile(replaceStoredCopy: boolean) {
-  await projectStore.attachPDF(props.projectId, replaceStoredCopy);
+async function onAttachFile() {
+  await projectStore.attachPDF(props.projectId);
   expandRow(true);
 }
 
