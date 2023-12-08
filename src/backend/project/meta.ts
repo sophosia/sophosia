@@ -2,7 +2,7 @@ import Cite from "citation-js";
 import "@citation-js/plugin-isbn"; // must import this so we can use isbn as identifier
 import { getProjects } from "./project";
 
-import { Author, Folder, Meta, Project } from "../database";
+import { AppState, Author, Folder, Meta, Project, db } from "../database";
 import { readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import { save } from "@tauri-apps/api/dialog";
 
@@ -14,7 +14,7 @@ import { save } from "@tauri-apps/api/dialog";
  * @returns citation data
  */
 export async function getMeta(
-  identifier: string | string[],
+  identifier: string | string[] | Project[],
   format?: string,
   options?: { format?: string; template?: string }
 ): Promise<Meta[] | string> {
@@ -24,7 +24,7 @@ export async function getMeta(
     if (typeof identifier === "string") {
       if (identifier.match(/http:\/\/.*doi.*/))
         identifier = identifier.split("/").slice(-2).join("/");
-    } else {
+    } else if (typeof identifier[0] === "string") {
       for (const [index, str] of identifier.entries()) {
         if (str.match(/http:\/\/.*doi.*/))
           identifier[index] = str.split("/").slice(-2).join("/");
@@ -33,7 +33,13 @@ export async function getMeta(
     const data = await Cite.async(identifier);
     if (!format || format === "json") {
       let metas = data.data;
-      for (let i in metas) delete metas[i]._graph;
+      const appState = (await db.get("appState")) as AppState;
+      const citeKeyRule = appState.settings.citeKeyRule;
+      for (let i in metas) {
+        delete metas[i]._graph;
+        if (!metas[i]["citation-key"])
+          metas[i]["citation-key"] = generateCiteKey(metas[i], citeKeyRule);
+      }
       return metas;
     } else if (!options) return data.format(format);
     else return data.format(format, options);
@@ -70,7 +76,14 @@ export async function exportMeta(
       if (["bibtex", "biblatex"].includes(format)) extension = "bib";
       else if (format === "bibliography") extension = "txt";
       else if (format === "ris") extension = "ris";
-      let path = await save();
+      let path = await save({
+        filters: [
+          {
+            name: extension,
+            extensions: [extension],
+          },
+        ],
+      });
       if (path) {
         if (path.slice(-4).indexOf(`.${extension}`) === -1)
           path += `.${extension}`;
@@ -100,7 +113,7 @@ export async function importMeta(filePath: string): Promise<Meta[]> {
  */
 export function generateCiteKey(
   meta: Meta,
-  rule = "author_title_year",
+  rule = "author_year_title",
   longTitle = false
 ): string {
   // parsing the rule
@@ -141,7 +154,8 @@ export function generateCiteKey(
       }
     }
 
-    lastNames = familyNames.join(connector);
+    // sometimes the last name contains multiple words, remove the space
+    lastNames = familyNames.join(connector).replaceAll(" ", "");
   }
   parts.author = lastNames;
 

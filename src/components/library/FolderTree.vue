@@ -96,7 +96,7 @@
           />
           <div
             v-else
-            style="font-size: 1rem"
+            style="font-size: 1rem; width: calc(100% - 1.5rem)"
             class="ellipsis"
           >
             {{ prop.node.label }}

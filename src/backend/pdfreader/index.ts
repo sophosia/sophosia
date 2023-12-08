@@ -249,9 +249,7 @@ export default class PDFApplication {
 
   async loadState(projectId: string): Promise<PDFState | undefined> {
     try {
-      // let docs = (await db.getDocs("pdfState")) as PDFState[];
-      // let pdfState = docs.find((state) => state.projectId === projectId);
-      let pdfState = db.get("SS" + projectId.slice(2));
+      let pdfState = await db.get("SS" + projectId.slice(2));
 
       // default state
       let state = {

@@ -198,7 +198,9 @@ $headerBkgdColor: var(--color-layout-header-bkgd, #2a2a2a);
 
 // Dropdown arrow for additional tabs when too many to be displayed
 .lm_header .lm_controls .lm_tabdropdown:before {
+  font-size: 1rem;
   color: $dropDownArrowForeColor;
+  visibility: visible !important;
 }
 
 // Pane controls (popout, maximize, minimize, close)

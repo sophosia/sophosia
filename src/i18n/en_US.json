@@ -159,5 +159,6 @@
   "citation-keys-updated": "Citation keys updated",
   "note-is-auto-manged": "> This note is auto managed, **DO NOT change its file name or write anything here**.",
   "new-note": "New Note",
-  "links-updated": "Links updated"
+  "links-updated": "Links updated",
+  "open-link": "Open Link"
 }

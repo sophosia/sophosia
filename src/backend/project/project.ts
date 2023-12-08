@@ -4,7 +4,7 @@ import {
   createProjectFolder,
   deleteProjectFolder,
 } from "./file";
-import { basename, extname } from "@tauri-apps/api/path";
+import { basename, extname, join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
 import { renameFile } from "@tauri-apps/api/fs";
 import { authorToString, IdToPath } from "./utils";
@@ -223,19 +223,17 @@ export async function renamePDF(project: Project) {
 }
 
 /**
- * Attach a PDF file
- * @param replaceStoredCopy
+ * Attach a PDF file and returns the new relative path to file
+ * @param projectId
  */
-export async function attachPDF(projectId: string, replaceStoredCopy: boolean) {
+export async function attachPDF(
+  projectId: string
+): Promise<string | undefined> {
   const filePath = await open({
     multiple: false,
     filters: [{ name: "*.pdf", extensions: ["pdf"] }],
   });
 
-  if (typeof filePath === "string") {
-    let dstPath = filePath;
-    if (replaceStoredCopy)
-      dstPath = (await copyFileToProjectFolder(dstPath, projectId)) as string;
-    return await updateProject(projectId, { path: dstPath } as Project);
-  }
+  if (typeof filePath !== "string") return;
+  return await copyFileToProjectFolder(filePath, projectId);
 }

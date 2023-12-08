@@ -82,6 +82,7 @@ import { Ink } from "src/backend/pdfannotation/annotations";
 import { QSplitter, throttle } from "quasar";
 import { Annotation } from "src/backend/pdfannotation/annotations";
 import { db } from "src/backend/database";
+import { join } from "@tauri-apps/api/path";
 
 /**********************************
  * Props, Data, and component refs
@@ -237,16 +238,13 @@ function highlightText(color: string) {
 /***************************
  * PDF realated
  ***************************/
-async function loadPDF(id: string) {
-  project.value = (await getProject(id)) as Project;
-  if (project.value.dataType != "project") return;
+async function loadPDF(projectId: string) {
+  project.value = (await getProject(projectId)) as Project;
   if (!project.value.path) return; // if no attached file
+  const filePath = await join(db.storagePath, projectId, project.value.path);
   // load state before loading pdf
-  Object.assign(
-    pdfApp.state,
-    (await pdfApp.loadState(project.value._id)) as PDFState
-  );
-  await pdfApp.loadPDF(project.value.path);
+  await pdfApp.loadState(project.value._id);
+  await pdfApp.loadPDF(filePath);
   await pdfApp.loadAnnotations();
 }
 

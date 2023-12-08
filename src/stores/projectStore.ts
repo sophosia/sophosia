@@ -145,12 +145,12 @@ export const useProjectStore = defineStore("projectStore", {
       if (project) Object.assign(project, await renamePDF(project));
     },
 
-    async attachPDF(projectId: string, replaceStoredCopy: boolean) {
+    async attachPDF(projectId: string) {
       // update db
-      let newProject = await attachPDF(projectId, replaceStoredCopy);
+      const filename = await attachPDF(projectId);
       // update ui
-      let project = this.getProject(projectId);
-      if (newProject && project) Object.assign(project, newProject);
+      if (filename)
+        this.updateProject(projectId, { path: filename } as Project);
     },
 
     /**
