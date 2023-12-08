@@ -79,7 +79,7 @@ export interface Project extends Meta {
   dataType: "project"; // for database search
   label: string;
   children: Note[];
-  path: undefined | string; // attached file path
+  pdf: undefined | string; // attached pdf file name
   tags: string[]; // user defined keywords for easier search
   folderIds: string[]; // array of folderIDs containing this project
   favorite?: boolean;

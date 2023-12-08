@@ -26,8 +26,8 @@ export const isLinkUpdated = ref(false); // to notify the reloading of note edit
  */
 async function processEntries(
   entries: FileEntry[],
-  processFile: (file: FileEntry, meta: Metadata) => any,
-  processDir: (dir: FileEntry, meta: Metadata) => any
+  processFile?: (file: FileEntry, meta: Metadata) => any,
+  processDir?: (dir: FileEntry, meta: Metadata) => any
 ) {
   for (const entry of entries) {
     // skip hidden folders or files
@@ -35,9 +35,9 @@ async function processEntries(
 
     const meta = await metadata(entry.path);
     if (meta.isFile) {
-      await processFile(entry, meta);
+      if (processFile) await processFile(entry, meta);
     } else if (entry.children) {
-      await processDir(entry, meta);
+      if (processDir) await processDir(entry, meta);
       await processEntries(entry.children, processFile, processDir);
     }
   }
@@ -67,23 +67,15 @@ export async function scanAndUpdateDB() {
     // push the label and path of the note to indexeddb for faster retrival
     idb.put("notes", { noteId });
 
-    // if file is modified after last scan, extract its links and update db
+    // prepare links in indexed db
     const links = await getLinksFromFile(file.path, storagePath);
     await updateLinks(noteId, links);
-  };
-
-  const processDir = async (dir: FileEntry, meta: Metadata) => {
-    // TODO: maybe we should do something about the newly created folder as well
-    // add project to db
-    // scan pdf file in the folder (assume there is only 1 pdf)
-    // add pdf to project path
-    return;
   };
 
   await idb.clear("notes"); // clear notes store before scaning
   await idb.clear("links"); // clear links store before scaning
   const entries = await readDir(storagePath, { recursive: true });
-  await processEntries(entries, processFile, processDir);
+  await processEntries(entries, processFile);
 
   workspace.lastScanTime = Date.now();
   await writeTextFile("workspace.json", JSON.stringify(workspace), {
@@ -179,10 +171,9 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
     if (key)
       idb.put("links", { source: currentNoteId, target: newNoteId }, key);
   };
-  const processDir = async (dir: FileEntry, meta: Metadata) => {};
 
   const entries = await readDir(storagePath, { recursive: true });
-  await processEntries(entries, processFile, processDir);
+  await processEntries(entries, processFile);
 
   Notify.create(t("links-updated"));
   isLinkUpdated.value = true;

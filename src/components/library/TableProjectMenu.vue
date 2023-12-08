@@ -149,7 +149,6 @@ function copyProjectId() {
 }
 
 async function showInExplorer() {
-  // don't use project.path because it might not exists
   for (let project of projectStore.selected) {
     let path = await join(db.storagePath, project._id);
     await invoke("show_in_folder", {

@@ -1,4 +1,4 @@
-import { db, Note, Project, SpecialFolder } from "../database";
+import { AppState, db, Note, Project, SpecialFolder } from "../database";
 import {
   copyFileToProjectFolder,
   createProjectFolder,
@@ -10,6 +10,7 @@ import { renameFile } from "@tauri-apps/api/fs";
 import { authorToString, IdToPath } from "./utils";
 import { i18n } from "src/boot/i18n";
 import { saveNote } from "./note";
+import { generateCiteKey } from "./meta";
 const { t } = i18n.global;
 
 /**
@@ -25,7 +26,7 @@ export function createProject(folderId: string) {
     dataType: "project",
     label: t("new-project"),
     title: t("new-project"),
-    path: "",
+    pdf: "",
     tags: [] as string[],
     folderIds: [SpecialFolder.LIBRARY.toString()],
     favorite: false,
@@ -83,7 +84,6 @@ export async function deleteProject(
       }
 
       // remove the acutual files
-      // (do not rely on project.path because it might be empty)
       await deleteProjectFolder(projectId);
     } else {
       if (folderId === undefined) throw new Error("folderId is needed");
@@ -193,32 +193,13 @@ export async function getProjects(folderId: string): Promise<Project[]> {
 }
 
 export async function renamePDF(project: Project) {
-  if (project.path === undefined) return;
-  let author = "";
-  const year = project.issued?.["date-parts"][0][0] || "Unknown";
-  const title = project.title;
-  const extension = await extname(project.path);
-  if (!project.author || project.author.length === 0) {
-    // no author
-    author = "Unknown";
-  } else {
-    // 1 author
-    const author0 = project.author[0];
-    author = !!author0.family ? author0.family : (author0.literal as string);
-
-    // more than 1 authors
-    if (project.author.length > 1) author += " et al.";
-  }
-  // replace all "/" to "" and ":" to "-" to avoid bad nameing
-  const fileName = `${author} - ${year} - ${title}.${extension}`
-    .replaceAll("/", "")
-    .replaceAll(":", "-");
-
-  // update backend
-  const newPath = project.path.replace(await basename(project.path), fileName);
-  await renameFile(project.path, newPath);
+  if (project.pdf === undefined) return;
+  const oldPath = await join(db.storagePath, project._id, project.pdf);
+  const fileName = generateCiteKey(project, undefined, true) + ".pdf";
+  const newPath = await join(db.storagePath, project._id, fileName);
+  await renameFile(oldPath, newPath);
   return await updateProject(project._id, {
-    path: newPath,
+    pdf: newPath,
   } as Project);
 }
 

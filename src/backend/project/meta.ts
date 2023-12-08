@@ -109,7 +109,7 @@ export async function importMeta(filePath: string): Promise<Meta[]> {
 /**
  * Generate citation-key according to given meta
  * @param meta
- * @param rule - example: "author_title_year", "author year title" (space means no connector in between) ...
+ * @param rule - example: "author_year_title", "author year title" (space means no connector in between) ...
  */
 export function generateCiteKey(
   meta: Meta,

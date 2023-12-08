@@ -234,8 +234,18 @@
             padding="none"
             size="md"
             icon="mdi-open-in-new"
-            :disable="!meta.path"
-            @click="invoke('show_in_folder', { path: meta!.path })"
+            :disable="!meta.pdf"
+            @click="
+              async () => {
+                await invoke('show_in_folder', {
+                  path: await join(
+                    db.storagePath,
+                    meta!._id,
+                    meta!.pdf as string
+                  ),
+                });
+              }
+            "
           >
             <q-tooltip> {{ $t("show-in-explorer") }}</q-tooltip>
           </q-btn>
@@ -243,7 +253,7 @@
         <input
           class="col-8 input"
           type="text"
-          v-model="meta.path"
+          v-model="meta.pdf"
           @blur="modifyInfo()"
         />
       </div>
@@ -366,7 +376,7 @@
 // types
 import { ref, watch, computed, onMounted, inject } from "vue";
 import type { PropType } from "vue";
-import { Author, Folder, Meta, Project } from "src/backend/database";
+import { Author, Folder, Meta, Project, db } from "src/backend/database";
 // backend stuff
 import { generateCiteKey, getMeta } from "src/backend/project/meta";
 import { getFolder } from "src/backend/project/folder";
@@ -375,6 +385,7 @@ import { useStateStore } from "src/stores/appState";
 import { open } from "@tauri-apps/api/shell";
 import { copyToClipboard } from "quasar";
 import { invoke } from "@tauri-apps/api";
+import { join } from "@tauri-apps/api/path";
 const projectStore = useProjectStore();
 const stateStore = useStateStore();
 
