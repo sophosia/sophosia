@@ -240,8 +240,8 @@ function highlightText(color: string) {
  ***************************/
 async function loadPDF(projectId: string) {
   project.value = (await getProject(projectId)) as Project;
-  if (!project.value.path) return; // if no attached file
-  const filePath = await join(db.storagePath, projectId, project.value.path);
+  if (!project.value.pdf) return; // if no attached file
+  const filePath = await join(db.storagePath, projectId, project.value.pdf);
   // load state before loading pdf
   await pdfApp.loadState(project.value._id);
   await pdfApp.loadPDF(filePath);
