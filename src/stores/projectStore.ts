@@ -147,9 +147,10 @@ export const useProjectStore = defineStore("projectStore", {
 
     async attachPDF(projectId: string) {
       // update db
-      const relPath = await attachPDF(projectId);
+      const filename = await attachPDF(projectId);
       // update ui
-      if (relPath) this.updateProject(projectId, { path: relPath } as Project);
+      if (filename)
+        this.updateProject(projectId, { path: filename } as Project);
     },
 
     /**

@@ -57,7 +57,7 @@ async function deleteProjectFolder(projectId: string) {
 }
 
 /**
- * Copy file to the corresponding project folder and returns the new file relative path
+ * Copy file to the corresponding project folder and returns the filename
  * @param srcPath
  * @param projectId
  * @returns dstPath
@@ -68,11 +68,10 @@ async function copyFileToProjectFolder(
 ): Promise<string | undefined> {
   try {
     const fileName = await basename(srcPath);
-    const dstRelPath = await join(projectId, fileName);
-    const dstPath = await join(await db.getStoragePath(), dstRelPath);
+    const dstPath = await join(await db.getStoragePath(), projectId, fileName);
     await copyFile(srcPath, dstPath);
 
-    return dstRelPath;
+    return fileName;
   } catch (error) {
     console.log(error);
   }
