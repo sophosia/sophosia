@@ -207,15 +207,12 @@
             flat
             padding="none"
             size="md"
-            icon="mdi-link"
+            icon="mdi-open-in-new"
             :disable="!!!meta.URL"
-            @click="
-              (e) => {
-                e.preventDefault();
-                openURL(meta?.URL);
-              }
-            "
-          />
+            @click="openURL(meta?.URL)"
+          >
+            <q-tooltip> {{ $t("open-link") }}</q-tooltip>
+          </q-btn>
         </div>
         <input
           class="col-8 input"
@@ -232,6 +229,16 @@
           style="font-size: 1rem"
         >
           {{ $t("file") }}
+          <q-btn
+            flat
+            padding="none"
+            size="md"
+            icon="mdi-open-in-new"
+            :disable="!meta.path"
+            @click="invoke('show_in_folder', { path: meta!.path })"
+          >
+            <q-tooltip> {{ $t("show-in-explorer") }}</q-tooltip>
+          </q-btn>
         </div>
         <input
           class="col-8 input"
@@ -367,6 +374,7 @@ import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/appState";
 import { open } from "@tauri-apps/api/shell";
 import { copyToClipboard } from "quasar";
+import { invoke } from "@tauri-apps/api";
 const projectStore = useProjectStore();
 const stateStore = useStateStore();
 
