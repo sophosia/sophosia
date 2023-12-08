@@ -2,7 +2,7 @@ import Cite from "citation-js";
 import "@citation-js/plugin-isbn"; // must import this so we can use isbn as identifier
 import { getProjects } from "./project";
 
-import { Author, Folder, Meta, Project } from "../database";
+import { AppState, Author, Folder, Meta, Project, db } from "../database";
 import { readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 import { save } from "@tauri-apps/api/dialog";
 
@@ -33,7 +33,13 @@ export async function getMeta(
     const data = await Cite.async(identifier);
     if (!format || format === "json") {
       let metas = data.data;
-      for (let i in metas) delete metas[i]._graph;
+      const appState = (await db.get("appState")) as AppState;
+      const citeKeyRule = appState.settings.citeKeyRule;
+      for (let i in metas) {
+        delete metas[i]._graph;
+        if (!metas[i]["citation-key"])
+          metas[i]["citation-key"] = generateCiteKey(metas[i], citeKeyRule);
+      }
       return metas;
     } else if (!options) return data.format(format);
     else return data.format(format, options);
@@ -107,7 +113,7 @@ export async function importMeta(filePath: string): Promise<Meta[]> {
  */
 export function generateCiteKey(
   meta: Meta,
-  rule = "author_title_year",
+  rule = "author_year_title",
   longTitle = false
 ): string {
   // parsing the rule
@@ -148,7 +154,8 @@ export function generateCiteKey(
       }
     }
 
-    lastNames = familyNames.join(connector);
+    // sometimes the last name contains multiple words, remove the space
+    lastNames = familyNames.join(connector).replaceAll(" ", "");
   }
   parts.author = lastNames;
 
