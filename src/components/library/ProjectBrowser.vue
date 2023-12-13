@@ -223,14 +223,13 @@ async function addProjectsByFiles(filePaths: string[]) {
     try {
       let project = projectStore.createProject(stateStore.selectedFolderId);
       projectStore.addProject(project, true);
-      let path = (await copyFileToProjectFolder(
+      let filename = (await copyFileToProjectFolder(
         filePath,
         project._id
       )) as string;
-      // let title = window.path.basename(path, ".pdf");
-      let title = await basename(path, ".pdf");
+      let title = await basename(filename, ".pdf");
       let props = {
-        path: path,
+        pdf: filename,
         title: title,
         label: title,
       };
