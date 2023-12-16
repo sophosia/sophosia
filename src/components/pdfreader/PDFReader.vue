@@ -495,6 +495,11 @@ onMounted(async () => {
   width: 100%; // so the right scroll bar does not touch right edge
   margin-right: 10px;
   background-color: var(--color-pdfreader-viewer-bkgd);
+  // enable selections
+  user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  -webkit-user-select: auto;
 }
 
 .page {

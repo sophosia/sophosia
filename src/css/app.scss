@@ -61,8 +61,14 @@ body {
 }
 
 html {
-  /* hide the global scrollbar */
+  // hide the global scrollbar
   overflow: hidden;
+  // not allow user selection in the app
+  // enable selection in specific places
+  user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none
 }
 
 .q-tooltip {
