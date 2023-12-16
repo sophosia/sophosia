@@ -43,9 +43,10 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     async getProjectFromDB(projectId: string) {
-      let project = (await getProject(projectId)) as Project;
-      project.children = await getNotes(projectId);
-      return project;
+      return (await getProject(projectId, {
+        includePDF: true,
+        includeNotes: true,
+      })) as Project;
     },
 
     async loadOpenedProjects(openedProjectIds: string[] | Set<string>) {
@@ -132,24 +133,25 @@ export const useProjectStore = defineStore("projectStore", {
      * @param folderId
      */
     async loadProjects(folderId: string) {
-      this.projects = await getProjects(folderId);
-      for (let project of this.projects)
-        project.children = await getNotes(project._id);
-
+      this.projects = await getProjects(folderId, {
+        includePDF: true,
+        includeNotes: true,
+      });
       this.ready = true;
     },
 
     async renamePDF(projectId: string) {
       let project = this.getProject(projectId);
-      // update db and ui
-      if (project) Object.assign(project, await renamePDF(project));
+      // update ui
+      if (project) Object.assign(project, { path: await renamePDF(project) });
     },
 
     async attachPDF(projectId: string) {
       // update db
       const filename = await attachPDF(projectId);
       // update ui
-      if (filename) this.updateProject(projectId, { pdf: filename } as Project);
+      if (filename)
+        this.updateProject(projectId, { path: filename } as Project);
     },
 
     /**

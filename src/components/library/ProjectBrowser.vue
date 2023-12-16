@@ -106,9 +106,6 @@ import * as pdfjsLib from "pdfjs-dist";
 import { basename, extname } from "@tauri-apps/api/path";
 import { readBinaryFile } from "@tauri-apps/api/fs";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
-// utils
-import { colors } from "quasar";
-const { getPaletteColor } = colors;
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -229,7 +226,7 @@ async function addProjectsByFiles(filePaths: string[]) {
       )) as string;
       let title = await basename(filename, ".pdf");
       let props = {
-        pdf: filename,
+        path: filename,
         title: title,
         label: title,
       };
@@ -411,7 +408,7 @@ watch(
 );
 
 function resizeRightMenu(size: number) {
-  if (size < 8) {
+  if (size < 20) {
     rightMenuSize.value = 0;
     stateStore.showLibraryRightMenu = false;
   }

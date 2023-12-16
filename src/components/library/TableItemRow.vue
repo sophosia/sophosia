@@ -159,6 +159,7 @@ import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
 // utils
 import { useI18n } from "vue-i18n";
+import { getPDF } from "src/backend/project/project";
 const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
@@ -179,18 +180,10 @@ const updateComponent = inject("updateComponent") as (
   state: { id: string; label: string }
 ) => Promise<void>;
 
-// label has to be reactive
-// once props.item.path is changed
-// we also need to change the label
 watchEffect(async () => {
-  if (props.item.dataType === "note") {
-    label.value =
-      props.item.label === props.item.projectId + ".md"
-        ? "Overview.md"
-        : props.item.label;
-  } else if (props.item.dataType === "project") {
-    label.value = await basename(props.item.path as string);
-  }
+  // label changes whenever pdf is renamed
+  if (props.item.dataType === "project" && props.item.path)
+    label.value = await basename(props.item.path);
 
   // if the note is newly added, rename it immediately
   if (renamingNoteId.value === props.item._id) setRenaming();

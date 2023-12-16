@@ -76,7 +76,7 @@ import AnnotCard from "./AnnotCard.vue";
 import FloatingMenu from "./FloatingMenu.vue";
 import PeekCard from "./PeekCard.vue";
 
-import { getProject } from "src/backend/project/project";
+import { getPDF, getProject } from "src/backend/project/project";
 import PDFApplication from "src/backend/pdfreader";
 import { Ink } from "src/backend/pdfannotation/annotations";
 import { QSplitter, throttle } from "quasar";
@@ -239,12 +239,13 @@ function highlightText(color: string) {
  * PDF realated
  ***************************/
 async function loadPDF(projectId: string) {
-  project.value = (await getProject(projectId)) as Project;
-  if (!project.value.pdf) return; // if no attached file
-  const filePath = await join(db.storagePath, projectId, project.value.pdf);
+  project.value = (await getProject(projectId, {
+    includePDF: true,
+  })) as Project;
+  if (!project.value.path) return;
   // load state before loading pdf
   await pdfApp.loadState(project.value._id);
-  await pdfApp.loadPDF(filePath);
+  await pdfApp.loadPDF(project.value.path);
   await pdfApp.loadAnnotations();
 }
 

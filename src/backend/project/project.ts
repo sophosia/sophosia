@@ -6,11 +6,12 @@ import {
 } from "./file";
 import { basename, extname, join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
-import { renameFile } from "@tauri-apps/api/fs";
+import { readDir, renameFile } from "@tauri-apps/api/fs";
 import { authorToString, IdToPath } from "./utils";
 import { i18n } from "src/boot/i18n";
-import { saveNote } from "./note";
+import { getNotes, saveNote } from "./note";
 import { generateCiteKey } from "./meta";
+import { metadata } from "tauri-plugin-fs-extra-api";
 const { t } = i18n.global;
 
 /**
@@ -26,7 +27,7 @@ export function createProject(folderId: string) {
     dataType: "project",
     label: t("new-project"),
     title: t("new-project"),
-    pdf: "",
+    path: undefined,
     tags: [] as string[],
     folderIds: [SpecialFolder.LIBRARY.toString()],
     favorite: false,
@@ -129,14 +130,19 @@ ${t("note-is-auto-manged")}`;
 
 /**
  * Get project from database by projectId
- * @param {string} projectId
- * @returns {Project|undefined} project
+ * @param projectId
+ * @param options
+ * @returns Project
  */
 export async function getProject(
-  projectId: string
+  projectId: string,
+  options?: { includePDF?: boolean; includeNotes?: boolean }
 ): Promise<Project | undefined> {
   try {
-    return (await db.get(projectId)) as Project;
+    const project = (await db.get(projectId)) as Project;
+    if (options?.includePDF) project.path = await getPDF(projectId);
+    if (options?.includeNotes) project.children = await getNotes(projectId);
+    return project;
   } catch (error) {
     console.log(error);
   }
@@ -144,18 +150,31 @@ export async function getProject(
 
 /**
  * Get all projects from database
+ * @param options
  * @returns {Project[]} array of projects
  */
-export async function getAllProjects(): Promise<Project[]> {
-  return (await db.getDocs("project")) as Project[];
+export async function getAllProjects(options?: {
+  includePDF?: boolean;
+  includeNotes?: boolean;
+}): Promise<Project[]> {
+  const projects = (await db.getDocs("project")) as Project[];
+  for (const project of projects) {
+    if (options?.includePDF) project.path = await getPDF(project._id);
+    if (options?.includeNotes) project.children = await getNotes(project._id);
+  }
+  return projects;
 }
 
 /**
  * Get corresponding projects given the ID of folder containing them
  * @param folderId
+ * @param options
  * @returns array of projects
  */
-export async function getProjects(folderId: string): Promise<Project[]> {
+export async function getProjects(
+  folderId: string,
+  options?: { includePDF?: boolean; includeNotes?: boolean }
+): Promise<Project[]> {
   try {
     let projects = [] as Project[];
     switch (folderId) {
@@ -185,6 +204,11 @@ export async function getProjects(folderId: string): Promise<Project[]> {
         break;
     }
 
+    for (const project of projects) {
+      if (options?.includePDF) project.path = await getPDF(project._id);
+      if (options?.includeNotes) project.children = await getNotes(project._id);
+    }
+
     return projects;
   } catch (error) {
     console.log(error);
@@ -192,15 +216,18 @@ export async function getProjects(folderId: string): Promise<Project[]> {
   }
 }
 
+/**
+ * Rename the PDF file and then return the new path
+ * @param project
+ * @returns newPath
+ */
 export async function renamePDF(project: Project) {
-  if (project.pdf === undefined) return;
-  const oldPath = await join(db.storagePath, project._id, project.pdf);
+  if (project.path === undefined) return;
+  const oldPath = project.path;
   const fileName = generateCiteKey(project, undefined, true) + ".pdf";
   const newPath = await join(db.storagePath, project._id, fileName);
   await renameFile(oldPath, newPath);
-  return await updateProject(project._id, {
-    pdf: newPath,
-  } as Project);
+  return newPath;
 }
 
 /**
@@ -217,4 +244,22 @@ export async function attachPDF(
 
   if (typeof filePath !== "string") return;
   return await copyFileToProjectFolder(filePath, projectId);
+}
+
+/**
+ * Return the path of the pdf of a project
+ * @param projectId
+ */
+export async function getPDF(projectId: string) {
+  try {
+    const projectFolder = await join(db.storagePath, projectId);
+    const entries = await readDir(projectFolder);
+    for (const entry of entries) {
+      try {
+        if ((await extname(entry.path)) === "pdf") return entry.path;
+      } catch (error) {}
+    }
+  } catch (error) {
+    console.log(error);
+  }
 }
