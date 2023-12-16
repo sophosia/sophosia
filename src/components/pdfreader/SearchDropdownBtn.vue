@@ -23,6 +23,7 @@
           class="col q-mt-sm"
           dense
           outlined
+          autofocus
           hide-bottom-space
           :placeholder="$t('search')"
           v-model="search.query"
