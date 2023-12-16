@@ -123,6 +123,7 @@ export const useProjectStore = defineStore("projectStore", {
       if (ind > -1) {
         // update ui
         this.projects.splice(ind, 1);
+        this.selected = this.selected.filter((p) => p._id === projectId);
         // update db
         await deleteProject(projectId, deleteFromDB, folderId);
       }
