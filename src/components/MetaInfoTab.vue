@@ -234,15 +234,11 @@
             padding="none"
             size="md"
             icon="mdi-open-in-new"
-            :disable="!meta.pdf"
+            :disable="!meta.path"
             @click="
               async () => {
                 await invoke('show_in_folder', {
-                  path: await join(
-                    db.storagePath,
-                    meta!._id,
-                    meta!.pdf as string
-                  ),
+                  path: meta!.path as string,
                 });
               }
             "
@@ -250,12 +246,23 @@
             <q-tooltip> {{ $t("show-in-explorer") }}</q-tooltip>
           </q-btn>
         </div>
-        <input
-          class="col-8 input"
-          type="text"
-          v-model="meta.pdf"
-          @blur="modifyInfo()"
-        />
+        <q-chip
+          dense
+          size="1rem"
+          class="chip"
+          :ripple="false"
+          clickable
+          @click="
+            stateStore.openPage({
+              id: meta?._id,
+              label: meta?.title,
+              type: 'ReaderPage',
+            })
+          "
+        >
+          <q-icon name="img:icons/pdf.png"></q-icon>
+          <span class="q-ml-xs">{{ file }}</span>
+        </q-chip>
       </div>
 
       <div class="row justify-between q-mt-sm">
@@ -374,7 +381,7 @@
 
 <script setup lang="ts">
 // types
-import { ref, watch, computed, onMounted, inject } from "vue";
+import { ref, watch, computed, onMounted, inject, watchEffect } from "vue";
 import type { PropType } from "vue";
 import { Author, Folder, Meta, Project, db } from "src/backend/database";
 // backend stuff
@@ -385,7 +392,8 @@ import { useStateStore } from "src/stores/appState";
 import { open } from "@tauri-apps/api/shell";
 import { copyToClipboard } from "quasar";
 import { invoke } from "@tauri-apps/api";
-import { join } from "@tauri-apps/api/path";
+import { basename, join } from "@tauri-apps/api/path";
+import { getPDF } from "src/backend/project/project";
 const projectStore = useProjectStore();
 const stateStore = useStateStore();
 
@@ -395,6 +403,7 @@ const name = ref(""); // author name
 const tag = ref(""); // project tag
 const categories = ref<string[]>([]);
 const references = ref<{ text: string; link: string }[]>([]);
+const file = ref(""); // pdf file
 
 const meta = computed(() => props.project);
 const title = computed({
@@ -443,34 +452,26 @@ const updateComponent = inject("updateComponent") as (
 watch(tab, () => {
   if (tab.value === "reference") getReferences();
 });
-watch(
-  () => props.project?.folderIds,
-  async () => {
-    await getCategories();
-  },
-  { deep: true }
-);
 
-onMounted(async () => {
-  await getCategories();
+watchEffect(async () => {
+  // get parentFolder labels of a projects
+  let ids = props.project?.folderIds;
+  if (!ids) return;
+  categories.value = [];
+  for (let id of ids) {
+    let folder = (await getFolder(id)) as Folder | undefined;
+    if (folder) categories.value.push(folder.label);
+  }
+});
+
+watchEffect(async () => {
+  if (!props.project?.path) return;
+  file.value = await basename(props.project.path);
 });
 
 /**********************************************
  * Methods
  **********************************************/
-/**
- * Get parentFolder labels of a project
- */
-async function getCategories() {
-  categories.value = [];
-  let ids = props.project?.folderIds;
-  if (!ids) return;
-  for (let id of ids) {
-    let folder = (await getFolder(id)) as Folder | undefined;
-    if (folder) categories.value.push(folder.label);
-  }
-}
-
 /**
  * Update project info
  * @param updateEdgeData - if true, also modify the edge data

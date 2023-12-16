@@ -1,11 +1,17 @@
 import Cite from "citation-js";
 import "@citation-js/plugin-isbn"; // must import this so we can use isbn as identifier
 import { getProjects } from "./project";
-
 import { AppState, Author, Folder, Meta, Project, db } from "../database";
-import { readTextFile, writeTextFile } from "@tauri-apps/api/fs";
+import {
+  readBinaryFile,
+  readTextFile,
+  writeTextFile,
+} from "@tauri-apps/api/fs";
 import { save } from "@tauri-apps/api/dialog";
-
+// util (to scan identifier in PDF)
+import * as pdfjsLib from "pdfjs-dist";
+import { TextItem } from "pdfjs-dist/types/src/display/api";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 /**
  * Get artible/book info given an identifier using citation.js
  * @param identifier - identifier(s)
@@ -194,4 +200,50 @@ export function generateCiteKey(
       .replaceAll(" ", "");
   }
   return citeKey;
+}
+
+export async function getMetaFromFile(
+  filePath: string
+): Promise<Meta | undefined> {
+  try {
+    let buffer = await readBinaryFile(filePath);
+    let pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+    for (
+      let pageNumber = 1;
+      pageNumber <= Math.min(10, pdf.numPages);
+      pageNumber++
+    ) {
+      let page = await pdf.getPage(pageNumber);
+      let content = await page.getTextContent();
+      for (let item of content.items) {
+        let identifier = null;
+        // match ISBN-10 or ISBN-13
+        let isbns = (item as TextItem).str.match(
+          /^ISBN.* (?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/
+        );
+        if (!!isbns) {
+          let matched = isbns[0].match(
+            /(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+/
+          );
+          if (matched) identifier = matched[0];
+        }
+        // match DOI
+        let dois = (item as TextItem).str.match(/http.*doi.*/);
+        if (!!dois) identifier = dois[0];
+        else {
+          let match = (item as TextItem).str.match(/doi(.*)/i);
+          if (!!match && match[1]) identifier = match[1].replace(":", "");
+        }
+
+        // update project meta
+        if (!!identifier) {
+          console.log(identifier);
+          let metas = await getMeta(identifier, "json");
+          return metas[0] as Meta;
+        }
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
 }
