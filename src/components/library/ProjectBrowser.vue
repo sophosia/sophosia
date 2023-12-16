@@ -86,7 +86,6 @@ import { ref, watch, provide, onMounted, inject, nextTick } from "vue";
 // types
 import { Folder, Note, Project } from "src/backend/database";
 import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
-import { TextItem } from "pdfjs-dist/types/src/display/api";
 // components
 import ActionBar from "src/components/library/ActionBar.vue";
 import ProjectTable from "src/components/library/ProjectTable.vue";
@@ -99,13 +98,14 @@ import ImportDialog from "src/components/library/ImportDialog.vue";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
-import { getMeta, exportMeta, importMeta } from "src/backend/project/meta";
+import {
+  getMeta,
+  exportMeta,
+  importMeta,
+  getMetaFromFile,
+} from "src/backend/project/meta";
 import { copyFileToProjectFolder } from "src/backend/project/file";
-// util (to scan identifier in PDF)
-import * as pdfjsLib from "pdfjs-dist";
 import { basename, extname } from "@tauri-apps/api/path";
-import { readBinaryFile } from "@tauri-apps/api/fs";
-pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -219,56 +219,21 @@ async function addProjectsByFiles(filePaths: string[]) {
   for (let filePath of filePaths) {
     try {
       let project = projectStore.createProject(stateStore.selectedFolderId);
-      projectStore.addProject(project, true);
+      await projectStore.addProject(project, true);
       let filename = (await copyFileToProjectFolder(
         filePath,
         project._id
       )) as string;
       let title = await basename(filename, ".pdf");
-      let props = {
+      await projectStore.updateProject(project._id, {
         path: filename,
         title: title,
         label: title,
-      };
-      // get meta
-      // let buffer = window.fs.readFileSync(filePath);
-      let buffer = await readBinaryFile(filePath);
-      let pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-      for (
-        let pageNumber = 1;
-        pageNumber <= Math.min(10, pdf.numPages);
-        pageNumber++
-      ) {
-        let page = await pdf.getPage(pageNumber);
-        let content = await page.getTextContent();
-        for (let item of content.items) {
-          let identifier = null;
-          // match ISBN-10 or ISBN-13
-          let isbns = (item as TextItem).str.match(
-            /^ISBN.* (?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/
-          );
-          if (!!isbns) {
-            let matched = isbns[0].match(
-              /(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+/
-            );
-            if (matched) identifier = matched[0];
-          }
-          // match DOI
-          let dois = (item as TextItem).str.match(/^http.*doi.*/);
-          if (!!dois) identifier = dois[0];
-
-          // update project meta
-          if (!!identifier) {
-            console.log(identifier);
-            let metas = await getMeta(identifier, "json");
-            let meta = metas[0];
-            Object.assign(props, meta);
-            break;
-          }
-        }
-      }
-
-      await projectStore.updateProject(project._id, props as Project);
+      } as Project);
+      // do not use await since this task takes time
+      getMetaFromFile(filePath).then((meta) => {
+        if (meta) projectStore.updateProject(project._id, meta as Project);
+      });
     } catch (error) {
       console.log(error);
     }
