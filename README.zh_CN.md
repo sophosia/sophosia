@@ -25,31 +25,25 @@ style="width: 100px; vertical-align:middle">
 
 研究小助手是一款开源的文献管理工具。它有着内置的 PDF 阅读器，所见即所得的 Markdown 编辑器以及 Excalidraw 画板。你可以很好地用它来管理自己的电子书，文献以及笔记。
 
-## 文献管理
+## 管理文献及笔记
 
-你可以在书库页面管理你的文献。
+创建笔记、删除笔记、收藏文献、修改文献信息、搜索文献、管理标签……所有基本功能都在这里。
+![library-page.png](./galleries/library-page.png)
 
-- 收藏、分类、标签、搜索，基本功能一应俱全
-- 能根据 DOI 等信息一键获取该文献的详细信息以及相关文献
-  ![library-page.png](./galleries/library-page.png)
+## 阅读和注释 PDF
 
-## 文献阅读
+PDF 阅读器带有内部链接查看器，无需来回翻页即可阅读数字、表格和公式。当然，PDF 阅读器支持注释，且注释支持 LaTeX 输入。非常适合理工研究人员。
+![reader-page.png](./galleries/reader-page.png)
 
-自带的 PDF 阅读器能够让你浏览你的文献。
+## 用 Markdown 做笔记
 
-- 可调节页面布局、明暗模式、全屏模式等
-- 注释支持 markdown 格式,以及 latex 语法
-- 内部链接可在悬浮窗预览，轻松查看公式与图表
-  ![reader-page.png](./galleries/reader-page.png)
+所见及所得的 Markdown 是最优雅的记笔记方式。借助双链的力量，您可以构建属于自己的知识网络。
+![note-page.png](./galleries/note-page.png)
 
-## 笔记系统
+## 使用 Excalidraw 画图
 
-得益于多窗口布局，阅读文献的同时记笔记是如此轻松
-
-- 笔记分为所见即所得的 markdown 笔记以及自由画板的 excalidraw 笔记两种类型
-- markdown 笔记能轻松引用别的文献或笔记
-- markdown 笔记支持数学公式、代码块、思维导图等的渲染
-  ![note-page.png](./galleries/note-page.png)
+利用无边框的画布释放您的思维。非常适合喜欢用笔书写和画图的人。
+![excalidraw-page.png](./galleries/excalidraw-page.png)
 
 # 为研究小助手作贡献
 

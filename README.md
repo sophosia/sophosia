@@ -24,33 +24,27 @@
 
 Sophosia is a paper/book/note management tool. It is a reference management tool with various useful functionalities such as: built-in PDF reader, live markdown note and excalidraw note.
 
-## Reference Management
+## Manage References and Notes
 
-References can be managed in library page.
+Manage your references and corresponding notes in one place. Seting favorites, modifying meta infomation of a reference, managing tags, searching for references... All esential functionalities are here.
+![library-page.png](./galleries/library-page.png)
 
-- Favorites, folders, tags, search, etc. All essential functions are there
-- Able to one-click-retrieve meta information and related reference by providing identifier such as DOI
-  ![library-page.png](./galleries/library-page.png)
+## Read and Annotate PDFs
 
-## PDF Reader
+PDF reader comes with an internal link peeker, no need to flip back and forward to read figures, tables and formulas now. Of course, PDF reader supports annotations, and LaTeX is supported in the annotaiton. Perfect for STEM researchers.
+![reader-page.png](./galleries/reader-page.png)
 
-Research helper has a built-in PDF reader.
+## Take Notes with Markdown
 
-- Able to adjust page layout, light/dark mode and more
-- Support markdown comment (also latex) in annotations
-- Able to preview internal links in hover windows
-  ![reader-page.png](./galleries/reader-page.png)
+WYSIWYG Markdown is the most elegant way to take notes. Together with the power of internal link, you could build your own knowledge network.
+![note-page.png](./galleries/note-page.png)
 
-## Note-taking System
+## Draft with Excalidraw
 
-Due to the flexible multi-window layout, it is never this easy to take notes while reading.
+Free your mind using the canvas without border. Perfect for people who like to write and / or draw things with pen.
+![excalidraw-page.png](./galleries/excalidraw-page.png)
 
-- Support WYSIWYG markdown note and excalidraw note
-- Able to cite other references/notes in markdown note
-- Support math(latex), code block, mindmap and more in markdown down
-  ![note-page.png](./galleries/note-page.png)
-
-# Contribute to Research-Helper
+# Contribute to Sophosia
 
 Research Helper uses [QUASAR](https://quasar.dev) as framework. In this project, the combination of [Vue.js3](https://vuejs.org) and [Tauri](https://tauri.app) is used.
 
