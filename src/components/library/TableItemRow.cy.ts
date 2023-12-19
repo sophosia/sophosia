@@ -7,14 +7,27 @@ describe("<TableItemRow />", () => {
     const stateStore = useStateStore();
     cy.wrap(stateStore).as("stateStore");
   });
-  it("renders", () => {
+  it("render label (linux)", () => {
     let item = {
       _id: "testId",
-      label: "test node",
       dataType: "note",
+      path: "/home/user/sophosia/label.pdf",
     } as Note;
     cy.mount(TableItemRow, { props: { item } });
-    cy.dataCy("content").should("contain.text", item.label);
+    // TODO: tauri's basename() cannot be used in cypress
+    // cy.dataCy("content").should("contain.text", "label.pdf");
+    cy.dataCy("content").rightclick();
+    cy.dataCy("menu").should("exist");
+  });
+
+  it("render label (windows)", () => {
+    let item = {
+      _id: "testId",
+      dataType: "note",
+      path: "C:\\user\\sophosia\\label.pdf",
+    } as Note;
+    cy.mount(TableItemRow, { props: { item } });
+    // cy.dataCy("content").should("contain.text", "label.pdf");
     cy.dataCy("content").rightclick();
     cy.dataCy("menu").should("exist");
   });

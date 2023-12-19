@@ -62,6 +62,17 @@
         style="width: 30px"
         flat
         square
+        icon="mdi-safe"
+        padding="xs"
+        :ripple="false"
+        @click="stateStore.toggleWelcome(true)"
+      >
+        <q-tooltip>{{ $t("workspace") }}</q-tooltip>
+      </q-btn>
+      <q-btn
+        style="width: 30px"
+        flat
+        square
         padding="xs"
         :ripple="false"
         icon="mdi-help"

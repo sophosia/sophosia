@@ -17,6 +17,7 @@ export const useStateStore = defineStore("stateStore", {
     showPDFMenuView: false,
     libraryRightMenuSize: 30,
     showLibraryRightMenu: false,
+    showWelcomeCarousel: true,
 
     // tree view
     selectedFolderId: SpecialFolder.LIBRARY.toString(),
@@ -94,6 +95,14 @@ export const useStateStore = defineStore("stateStore", {
     closePage(pageId: string) {
       if (!pageId) return;
       this.closedItemId = pageId;
+    },
+
+    toggleWelcome(visible?: boolean) {
+      if (visible === undefined) {
+        this.showWelcomeCarousel = !this.showWelcomeCarousel;
+      } else {
+        this.showWelcomeCarousel = visible;
+      }
     },
 
     /**

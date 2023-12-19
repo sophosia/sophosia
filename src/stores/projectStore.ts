@@ -50,6 +50,7 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     async loadOpenedProjects(openedProjectIds: string[] | Set<string>) {
+      this.openedProjects = [];
       let pushedIds = this.openedProjects.map((p) => p._id);
       for (let projectId of openedProjectIds) {
         if (pushedIds.includes(projectId)) continue;

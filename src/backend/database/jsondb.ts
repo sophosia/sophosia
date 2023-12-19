@@ -5,6 +5,7 @@ import {
   readDir,
   readTextFile,
   removeFile,
+  renameFile,
   writeTextFile,
 } from "@tauri-apps/api/fs";
 import { appConfigDir, join } from "@tauri-apps/api/path";
@@ -120,11 +121,29 @@ export class JsonDB {
     try {
       if (!(await exists(await appConfigDir())))
         await createDir(await appConfigDir());
-      await writeTextFile(
-        "workspace.json",
-        JSON.stringify({ storagePath: path, lastScanTime: 0 }),
-        { dir: BaseDirectory.AppConfig }
-      );
+      let config = {} as {
+        storagePath: string;
+        lastScanTime: number;
+        storagePaths: string[];
+      };
+      if (await exists(await join(await appConfigDir(), "workspace.json"))) {
+        config = JSON.parse(
+          await readTextFile("workspace.json", { dir: BaseDirectory.AppConfig })
+        );
+        config.storagePath = path;
+        if (!config.storagePaths) config.storagePaths = [];
+        if (!config.storagePaths.includes(path)) config.storagePaths.push(path);
+      } else {
+        config = {
+          storagePath: path,
+          lastScanTime: 0,
+          storagePaths: [path],
+        };
+      }
+
+      await writeTextFile("workspace.json", JSON.stringify(config), {
+        dir: BaseDirectory.AppConfig,
+      });
       this.storagePath = path;
     } catch (error) {
       console.log(error);
@@ -135,7 +154,7 @@ export class JsonDB {
     if (!this.storagePath) throw Error("storagePath not set");
     try {
       let sophosia = await join(this.storagePath, ".sophosia");
-      await createDir(sophosia);
+      if (!(await exists(sophosia))) await createDir(sophosia);
       for (let folder of [
         "appState",
         "layout",
@@ -144,12 +163,75 @@ export class JsonDB {
         "pdfAnnotation",
         "pdfState",
         "image",
-      ])
-        await createDir(await join(sophosia, folder));
+      ]) {
+        const folderPath = await join(sophosia, folder);
+        if (!(await exists(folderPath))) await createDir(folderPath);
+      }
     } catch (error) {
       // the folders might exists already
       console.log(error);
     }
+  }
+
+  /**
+   * Get all workspaces
+   */
+  async getStoragePaths(): Promise<string[]> {
+    try {
+      const config = JSON.parse(
+        await readTextFile("workspace.json", { dir: BaseDirectory.AppConfig })
+      );
+      const storagePaths = config.storagePaths || [];
+      if (storagePaths.length === 0 && config.storagePath)
+        storagePaths.push(config.storagePath);
+      return storagePaths;
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  }
+
+  /**
+   * Remove path from the workspace list
+   * @param path
+   */
+  async removeStoragePath(path: string) {
+    try {
+      const config = JSON.parse(
+        await readTextFile("workspace.json", { dir: BaseDirectory.AppConfig })
+      );
+      config.storagePaths = config.storagePaths.filter(
+        (p: string) => p !== path
+      );
+      if (config.storagePath === path) config.storagePath = "";
+      await writeTextFile("workspace.json", JSON.stringify(config), {
+        dir: BaseDirectory.AppConfig,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  /**
+   * change path of a workspace
+   * @param path
+   */
+  async moveWorkspace(oldPath: string, newPath: string) {
+    try {
+      // update config
+      const config = JSON.parse(
+        await readTextFile("workspace.json", { dir: BaseDirectory.AppConfig })
+      );
+      for (const [index, path] of config.storagePaths.entries()) {
+        if (path === oldPath) config.storagePaths[index] = newPath;
+      }
+      if (config.storagePath === oldPath) config.storagePath = newPath;
+      await writeTextFile("workspace.json", JSON.stringify(config), {
+        dir: BaseDirectory.AppConfig,
+      });
+      // move the actual folder
+      await renameFile(oldPath, newPath);
+    } catch (error) {}
   }
 }
 
