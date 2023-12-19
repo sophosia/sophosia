@@ -61,12 +61,18 @@ export enum NoteType {
  * Note datatype, both for database and for UI display
  */
 export interface Note {
-  _id: string; // unique id handled by database
+  _id: string; // unique id of the note
   dataType: "note"; // for database search
   projectId: string; // the project it belongs to
   path: string; // path to actual markdown file
   label: string; // markdown file name
   type: NoteType;
+}
+
+export interface NoteBook {
+  _id: string;
+  dataType: "notebook";
+  label: string;
 }
 
 /**

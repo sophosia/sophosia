@@ -182,8 +182,7 @@ const updateComponent = inject("updateComponent") as (
 
 watchEffect(async () => {
   // label changes whenever pdf is renamed
-  if (props.item.dataType === "project" && props.item.path)
-    label.value = await basename(props.item.path);
+  if (props.item.path) label.value = await basename(props.item.path);
 
   // if the note is newly added, rename it immediately
   if (renamingNoteId.value === props.item._id) setRenaming();
