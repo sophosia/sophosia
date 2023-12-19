@@ -1,11 +1,5 @@
 <template>
   <div class="q-pb-md">
-    <ProgressDialog
-      v-model="showProgressDialog"
-      :progress="progress"
-      :errors="errors"
-    />
-
     <q-card
       square
       bordered
@@ -78,32 +72,6 @@
           v-model="language"
           :options="languageOptions"
         />
-      </q-card-section>
-    </q-card>
-
-    <q-card
-      square
-      bordered
-      flat
-      class="q-my-md card"
-    >
-      <q-card-section>
-        <div class="text-h6">{{ $t("storage") }}</div>
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <q-input
-          dense
-          outlined
-          square
-          readonly
-          input-style="cursor: pointer; font-size: 1rem"
-          :model-value="storagePathRef"
-          @click="showFolderPicker"
-        >
-          <template v-slot:before>
-            <div style="font-size: 1rem">{{ $t("storage-path") }}</div>
-          </template>
-        </q-input>
       </q-card-section>
     </q-card>
 
@@ -191,17 +159,11 @@
 </template>
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
-import ProgressDialog from "./ProgressDialog.vue";
 // db
 import { db } from "src/backend/database";
 import { useStateStore } from "src/stores/appState";
-import { updateAppState } from "src/backend/appState";
-import { changePath } from "src/backend/project/file";
 import { getAllProjects } from "src/backend/project/project";
 import { generateCiteKey } from "src/backend/project/meta";
-import pluginManager from "src/backend/plugin";
-import { homeDir } from "@tauri-apps/api/path";
-import { open } from "@tauri-apps/api/dialog";
 import { Meta } from "src/backend/database";
 // utils
 import { useI18n } from "vue-i18n";
@@ -210,13 +172,6 @@ const $q = useQuasar();
 
 const stateStore = useStateStore();
 const { locale, t } = useI18n({ useScope: "global" });
-
-// progressDialog
-const showProgressDialog = ref(false);
-const errors = ref<Error[]>([]);
-const progress = ref(0.0);
-// only for reactively displaying the stoagePath
-const storagePathRef = ref(db.storagePath);
 
 // options
 const languageOptions = [
@@ -300,42 +255,6 @@ const citeKeyConnector = ref(
 /*********************
  * Methods
  *********************/
-async function showFolderPicker() {
-  // let result = window.fileBrowser.showFolderPicker();
-  let result = await open({
-    directory: true,
-    multiple: false,
-    defaultPath: await homeDir(),
-  });
-  if (result !== undefined && result != null && !!result) {
-    let storagePath = result as string; // do not update texts in label yet
-    await changeStoragePath(storagePath);
-  }
-}
-
-async function changeStoragePath(newStoragePath: string) {
-  // update db
-  const oldStoragePath = db.storagePath;
-  await db.setStoragePath(newStoragePath);
-  await moveFiles(oldStoragePath, newStoragePath);
-  pluginManager.changePath(newStoragePath);
-  await pluginManager.reloadAll(); // reload plugins
-
-  storagePathRef.value = db.storagePath;
-}
-
-async function moveFiles(oldPath: string, newPath: string) {
-  // show progress bar
-  showProgressDialog.value = true;
-  errors.value = [];
-
-  progress.value = 0.0;
-  await changePath(oldPath, newPath);
-  let interval = setInterval(() => {
-    if (progress.value + 0.1 <= 1.0) progress.value += 0.1;
-    else clearInterval(interval);
-  }, 100);
-}
 
 function citeKeyExample(meta: Meta) {
   return `title: ${meta.title}, year: ${
