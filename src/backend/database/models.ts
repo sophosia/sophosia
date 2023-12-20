@@ -76,6 +76,18 @@ export interface NoteBook {
 }
 
 /**
+ * Multilevel note and folder support
+ */
+export interface FolderOrNote {
+  _id: string;
+  label: string;
+  dataType: string;
+  path: string;
+  type?: NoteType;
+  children?: FolderOrNote[];
+}
+
+/**
  * Project datatype, goes into database
  */
 export interface Project extends Meta {
@@ -84,7 +96,7 @@ export interface Project extends Meta {
   timestampModified: number; // timestamp when data is updated
   dataType: "project"; // for database search
   label: string;
-  children: Note[];
+  children: FolderOrNote[];
   path: undefined | string; // attached pdf file path
   tags: string[]; // user defined keywords for easier search
   folderIds: string[]; // array of folderIDs containing this project

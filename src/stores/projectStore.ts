@@ -158,11 +158,11 @@ export const useProjectStore = defineStore("projectStore", {
 
     /**
      * Create a note data
-     * @param projectId
+     * @param folderId
      * @param type
      */
-    async createNote(projectId: string, type: NoteType) {
-      return await createNote(projectId, type);
+    async createNote(folderId: string, type: NoteType) {
+      return await createNote(folderId, type);
     },
 
     /**
@@ -172,8 +172,10 @@ export const useProjectStore = defineStore("projectStore", {
     async addNote(note: Note) {
       // update db
       note = (await addNote(note)) as Note;
+      console.log("note", note);
       // update ui
-      let project = await this.getProjectFromDB(note.projectId);
+      const project = await this.getProjectFromDB(note.projectId);
+      sortTree(project);
       this._updateProjectUI(project);
     },
 
@@ -183,6 +185,7 @@ export const useProjectStore = defineStore("projectStore", {
       this.renamedNote = note;
       // update ui
       let project = await this.getProjectFromDB(note.projectId);
+      sortTree(project);
       this._updateProjectUI(project);
       return note;
     },
@@ -191,6 +194,7 @@ export const useProjectStore = defineStore("projectStore", {
       let note = (await this.getNoteFromDB(noteId)) as Note;
       await deleteNote(note);
       let project = await this.getProjectFromDB(note.projectId);
+      sortTree(project);
       this._updateProjectUI(project);
     },
 

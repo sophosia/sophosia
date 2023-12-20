@@ -24,7 +24,7 @@ export const isLinkUpdated = ref(false); // to notify the reloading of note edit
  * @param processFile callback function
  * @param processDir callback function
  */
-async function processEntries(
+export async function processEntries(
   entries: FileEntry[],
   processFile?: (file: FileEntry, meta: Metadata) => any,
   processDir?: (dir: FileEntry, meta: Metadata) => any

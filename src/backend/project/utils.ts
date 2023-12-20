@@ -1,6 +1,9 @@
 import { sep } from "@tauri-apps/api/path";
-import { Author, Folder, Project, db } from "../database";
-type TreeNode = Folder | Project;
+import { Author, db } from "../database";
+interface TreeNode {
+  label: string;
+  children?: (string | TreeNode)[];
+}
 /**
  * Sort children of a tree node by labels
  * @param root - the root treenode

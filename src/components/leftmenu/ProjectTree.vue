@@ -18,7 +18,18 @@
       <div
         style="width: calc(100% - 23px)"
         class="row"
+        :class="{
+          dragover:
+            !!dragoverNode &&
+            dragoverNode == prop.node &&
+            draggingNode != prop.node,
+        }"
         @click="selectItem(prop.node)"
+        :draggable="prop.node.dataType !== 'project'"
+        @dragstart="(e) => onDragStart(e, prop.node)"
+        @dragover="(e) => onDragOver(e, prop.node)"
+        @dragleave="(e) => onDragLeave(e, prop.node)"
+        @drop="(e) => onDrop(e, prop.node)"
       >
         <q-menu
           square
@@ -105,6 +116,11 @@
           name="mdi-book-open-blank-variant"
         />
         <q-icon
+          v-else-if="prop.node.dataType === 'folder'"
+          size="1.4rem"
+          :name="prop.expanded ? 'mdi-folder-open' : 'mdi-folder'"
+        />
+        <q-icon
           v-else-if="
             prop.node.dataType === 'note' &&
             prop.node.type === NoteType.EXCALIDRAW
@@ -167,27 +183,38 @@
 <script setup lang="ts">
 import { inject, nextTick, onMounted, ref, watch } from "vue";
 import { QTree } from "quasar";
-import { Note, NoteType, Page, Project, db } from "src/backend/database";
+import {
+  FolderOrNote,
+  Note,
+  NoteType,
+  Page,
+  Project,
+  db,
+} from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { getProject } from "src/backend/project/project";
-import { join } from "@tauri-apps/api/path";
-import { exists } from "@tauri-apps/api/fs";
+import { dirname, join } from "@tauri-apps/api/path";
+import { exists, renameFile } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
+import { metadata } from "tauri-plugin-fs-extra-api";
+import { pathToId } from "src/backend/project/utils";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 
 const tree = ref<QTree | null>(null);
 const renameInput = ref<HTMLInputElement | null>(null);
-// const renamingNote = ref<QTreeNode | null>(null);
 const renamingNoteId = ref("");
 const oldNoteName = ref("");
 const pathDuplicate = ref(false);
 const addingNote = ref(false);
 const expanded = ref<string[]>([]);
 const showProjectMenu = ref(true);
+const draggingNode = ref<FolderOrNote | null>(null);
+const dragoverNode = ref<FolderOrNote | null>(null);
+const enterTime = ref(0);
 
 const updateComponent = inject("updateComponent") as (
   oldItemId: string,
@@ -237,26 +264,24 @@ function menuSwitch(node: Project | Note) {
   }
 }
 
-function selectItem(node: Project | Note) {
+function selectItem(node: Project | FolderOrNote) {
   console.log("node", node);
   stateStore.currentItemId = node._id;
-  if (node.dataType === "project" && (node.children?.length as number) > 0)
-    expanded.value.push(node._id);
+  if ((node.children?.length as number) > 0) expanded.value.push(node._id);
+  if (node.dataType === "folder") return;
 
   // open item
   let id = node._id;
   let label = node.label;
   let type = "";
   if (node.dataType === "project") type = "ReaderPage";
-  else if ((node as Project | Note).dataType === "note") {
-    if (node.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-    else type = "NotePage";
-  }
+  else if (node.dataType === "note")
+    type = node.type === NoteType.EXCALIDRAW ? "ExcalidrawPage" : "NotePage";
+
   stateStore.openPage({ id, type, label });
 }
 
 async function showInExplorer(node: Project | Note) {
-  // don't use props.row.path because it might not exists
   const path = node.path || (await join(db.storagePath, node._id));
   await invoke("show_in_folder", {
     path: path,
@@ -286,10 +311,10 @@ async function closeProject(projectId: string) {
   }, 50);
 }
 
-async function addNote(project: Project, type: NoteType) {
-  let note = await projectStore.createNote(project._id, type);
+async function addNote(node: Project | FolderOrNote, type: NoteType) {
+  const note = await projectStore.createNote(node._id, type);
   await projectStore.addNote(note);
-  expanded.value.push(project._id);
+  expanded.value.push(node._id);
   addingNote.value = true;
   // rename note
   await nextTick(); // wait until ui updates
@@ -316,6 +341,7 @@ async function deleteNote(note: Note) {
 }
 
 function setRenameNote(noteId: string) {
+  console.log("noteId", noteId);
   // set renaming note and show input
   renamingNoteId.value = noteId;
   oldNoteName.value = (
@@ -358,13 +384,101 @@ async function renameNote() {
 async function checkDuplicate(note: Note) {
   if (!note) return;
   const extension = note.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
-  const path = await join(
-    db.storagePath,
-    note.projectId,
-    note.label + extension
-  );
+  const path = await join(await dirname(note.path), note.label + extension);
 
   if ((await exists(path)) && path !== note.path) pathDuplicate.value = true;
   else pathDuplicate.value = false;
 }
+
+/**
+ * Drag and Drop
+ */
+/**
+ * On dragstart, set the dragging folder
+ * @param e - dragevent
+ * @param node - the folder user is dragging
+ */
+function onDragStart(e: DragEvent, node: FolderOrNote) {
+  draggingNode.value = node;
+  // need to set transfer data for some browsers to work
+  e.dataTransfer?.setData("draggingNode", JSON.stringify(node));
+}
+
+/**
+ * When dragging node enters the folder, highlight and expand it.
+ * @param e - dragevent
+ * @param node - the folder user is dragging over
+ */
+function onDragOver(e: DragEvent, node: FolderOrNote) {
+  // enable drop on the node
+  e.preventDefault();
+
+  // hightlight the dragover folder
+  dragoverNode.value = node;
+
+  // expand the node if this function is called over many times
+  enterTime.value++;
+  if (enterTime.value > 15) {
+    if (node._id in expanded.value) return;
+    expanded.value.push(node._id);
+  }
+}
+
+/**
+ * When the dragging node leaves the folders, reset the timer
+ * @param e
+ * @param node
+ */
+function onDragLeave(e: DragEvent, node: FolderOrNote) {
+  enterTime.value = 0;
+  dragoverNode.value = null; // dehighlight the folder
+}
+
+/**
+ * If draggedProjects is not empty, then we are dropping projects into folder
+ * Otherwise we are dropping folder into another folder
+ * @param e - dragevent
+ * @param node - the folder / project user is dragging over
+ */
+async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
+  // record this first otherwise dragend event makes it null
+  if (draggingNode.value === null || draggingNode.value == node) return;
+
+  // move the dragging file / folder
+  const dragId = draggingNode.value._id;
+  const oldPath = draggingNode.value.path;
+  const label = draggingNode.value.label;
+  let newPath = "";
+  if (node.dataType === "project") {
+    newPath = await join(db.storagePath, node._id, label);
+  } else {
+    const meta = await metadata((node as FolderOrNote).path);
+    if (!meta.isDir) return;
+    newPath = await join((node as FolderOrNote).path, label);
+  }
+  await renameFile(oldPath, newPath);
+
+  // update ui
+  if (!tree.value) return;
+  const dirId = await dirname(dragId);
+  let dragParentNode = tree.value.getNodeByKey(dirId) as FolderOrNote;
+  dragParentNode.children = dragParentNode.children!.filter(
+    (child) => (child as FolderOrNote)._id != dragId
+  );
+  if (!node.children) node.children = [];
+
+  draggingNode.value.path = newPath;
+  draggingNode.value._id = pathToId(newPath);
+  node.children.push(draggingNode.value);
+
+  projectStore.renamedNote = draggingNode;
+  draggingNode.value = null;
+  dragoverNode.value = null;
+}
 </script>
+<style lang="scss" scoped>
+.dragover {
+  border: 1px solid aqua;
+  background-color: rgba(0, 255, 255, 0.5);
+}
+</style>

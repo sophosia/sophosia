@@ -1,6 +1,5 @@
-import { db, idb, Note, NoteType } from "../database";
+import { db, FolderOrNote, idb, Note, NoteType } from "../database";
 import { Buffer } from "buffer";
-import { createFile, deleteFile } from "./file";
 import {
   exists,
   createDir,
@@ -9,29 +8,32 @@ import {
   writeBinaryFile,
   readDir,
   renameFile,
+  removeFile,
 } from "@tauri-apps/api/fs";
 import { join, extname, basename, sep } from "@tauri-apps/api/path";
 import type { FileEntry } from "@tauri-apps/api/fs";
 import { batchReplaceLink } from "./scan";
 import { updateLinks } from "./graph";
-import { metadata } from "tauri-plugin-fs-extra-api";
-import { IdToPath, pathToId } from "./utils";
+import { metadata, Metadata } from "tauri-plugin-fs-extra-api";
+import { IdToPath, pathToId, sortTree } from "./utils";
 import { i18n } from "src/boot/i18n";
 const { t } = i18n.global;
 
 /**
  * Create a note
- * @param projectId
+ * @param folderId
  * @param type
  */
-export async function createNote(projectId: string, type: NoteType) {
-  let i = 1;
+export async function createNote(folderId: string, type: NoteType) {
+  const splits = folderId.split("/");
+  const projectId = splits[0];
   let ext = type === NoteType.MARKDOWN ? ".md" : ".excalidraw";
   let name = t("new-note");
-  let path = await join(db.storagePath, projectId, name + ext);
+  let path = await join(db.storagePath, ...splits, name + ext);
+  let i = 1;
   while (await exists(path)) {
     name = `${t("new-note")} ${i}`;
-    path = await join(db.storagePath, projectId, name + ext);
+    path = await join(db.storagePath, ...splits, name + ext);
     i++;
   }
   const noteId = pathToId(path);
@@ -56,7 +58,7 @@ export async function createNote(projectId: string, type: NoteType) {
 export async function addNote(note: Note): Promise<Note | undefined> {
   try {
     // create actual file
-    await createFile(note.projectId, note.label);
+    await writeTextFile(note.path, "");
 
     // add to db
     await idb.put("notes", { noteId: note._id });
@@ -72,7 +74,7 @@ export async function addNote(note: Note): Promise<Note | undefined> {
  */
 export async function deleteNote(note: Note) {
   try {
-    await deleteFile(note.path);
+    await removeFile(note.path);
 
     // update db
     await idb.delete("notes", note._id);
@@ -100,6 +102,7 @@ export async function updateNote(noteId: string, props: Note) {
     splits[splits.length - 1] = props.label;
     props._id = splits.join("/");
     props.path = IdToPath(props._id);
+    props.projectId = splits[0];
 
     await renameFile(oldPath, props.path);
 
@@ -150,8 +153,6 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
  */
 export async function getNotes(projectId: string): Promise<Note[]> {
   try {
-    // TODO: support folders in project folder
-    // see example of readDir in https://tauri.app/v1/api/js/fs/
     const notes = [] as Note[];
     async function processEntries(entries: FileEntry[]) {
       for (const entry of entries) {
@@ -189,6 +190,41 @@ export async function getNotes(projectId: string): Promise<Note[]> {
     console.log(error);
     return [];
   }
+}
+
+/**
+ * Get notes of a project and returns the tree of these notes
+ */
+export async function getNoteTree(projectId: string) {
+  async function _dfs(entries: FileEntry[], children: FolderOrNote[]) {
+    for (const entry of entries) {
+      const meta = await metadata(entry.path);
+      const node = {} as FolderOrNote;
+      node._id = pathToId(entry.path);
+      node.label = entry.name as string;
+      node.path = entry.path;
+      if (meta.isFile) {
+        const ext = await extname(entry.path);
+        if (!["md", "excalidraw"].includes(ext)) continue;
+        if (entry.name == projectId + ".md") continue; // skip project note
+        node.dataType = "note";
+        node.type = ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW;
+        node.path = entry.path;
+      } else if (entry.children) {
+        node.dataType = "folder";
+        node.children = [] as FolderOrNote[];
+        await _dfs(entry.children, node.children);
+      }
+      children.push(node);
+    }
+  }
+
+  const entries = await readDir(await join(db.storagePath, projectId), {
+    recursive: true,
+  });
+  const notes = [] as FolderOrNote[];
+  await _dfs(entries, notes);
+  return notes;
 }
 
 /**

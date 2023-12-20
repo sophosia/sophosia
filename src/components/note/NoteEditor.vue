@@ -84,6 +84,7 @@ watch(
   }
 );
 
+// FIXME: I want the content to be updated after the new noteId is obtained
 watch(isLinkUpdated, async () => {
   if (!isLinkUpdated.value) return;
   // load note again
@@ -130,7 +131,6 @@ function initEditor() {
       "|",
       { name: "upload", tipPosition: "s", tip: t("upload-image") },
     ];
-
   vditor.value = new Vditor("vditor-" + noteId.value, {
     height: "100%",
     mode: "ir",
@@ -223,7 +223,9 @@ function setTheme(theme: string) {
 
 async function setContent() {
   if (!vditor.value || (!noteId.value && !props.data?.path)) return;
+  console.log("noteId", noteId.value);
   let content = await loadNote(noteId.value, props.data?.path);
+  console.log("set content?", content);
   vditor.value.setValue(content);
 }
 
