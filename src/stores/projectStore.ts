@@ -1,7 +1,12 @@
 import { defineStore } from "pinia";
-import { Note, NoteType, Project, AppState, idb } from "src/backend/database";
+import { Note, NoteType, Project, FolderOrNote } from "src/backend/database";
 import {
-  getNotes,
+  addFolder,
+  createFolder,
+  deleteFolder,
+  renameFolder,
+} from "src/backend/project/note";
+import {
   getNote,
   addNote,
   deleteNote,
@@ -204,6 +209,37 @@ export const useProjectStore = defineStore("projectStore", {
 
     async getNoteFromDB(noteId: string) {
       return await getNote(noteId);
+    },
+
+    async createFolder(parentFolderId: string) {
+      return await createFolder(parentFolderId);
+    },
+
+    async addFolder(folder: FolderOrNote) {
+      await addFolder(folder);
+      // update ui
+      const projectId = folder._id.split("/")[0];
+      const project = await this.getProjectFromDB(projectId);
+      sortTree(project);
+      this._updateProjectUI(project);
+    },
+
+    async deleteFolder(folderId: string) {
+      await deleteFolder(folderId);
+      // update ui
+      const projectId = folderId.split("/")[0];
+      const project = await this.getProjectFromDB(projectId);
+      sortTree(project);
+      this._updateProjectUI(project);
+    },
+
+    async renameFolder(oldFolderId: string, newFolderId: string) {
+      await renameFolder(oldFolderId, newFolderId);
+      // update ui
+      const projectId = newFolderId.split("/")[0];
+      const project = await this.getProjectFromDB(projectId);
+      sortTree(project);
+      this._updateProjectUI(project);
     },
   },
 });

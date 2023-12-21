@@ -9,6 +9,7 @@ import {
   readDir,
   renameFile,
   removeFile,
+  removeDir,
 } from "@tauri-apps/api/fs";
 import { join, extname, basename, sep } from "@tauri-apps/api/path";
 import type { FileEntry } from "@tauri-apps/api/fs";
@@ -147,11 +148,11 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
 }
 
 /**
- * Get all notes belong to specific project
- * @param projectId
+ * Get all notes in a specific folder
+ * @param folderId
  * @returns array of notes
  */
-export async function getNotes(projectId: string): Promise<Note[]> {
+export async function getNotes(folderId: string): Promise<Note[]> {
   try {
     const notes = [] as Note[];
     async function processEntries(entries: FileEntry[]) {
@@ -180,9 +181,7 @@ export async function getNotes(projectId: string): Promise<Note[]> {
         }
       }
     }
-    const entries = await readDir(await join(db.storagePath, projectId), {
-      recursive: true,
-    });
+    const entries = await readDir(IdToPath(folderId), { recursive: true });
     await processEntries(entries);
     // sort by label
     return notes.sort((n1, n2) => (n1.label < n2.label ? -1 : 1));
@@ -292,6 +291,81 @@ export async function uploadImage(
     const arrayBuffer: ArrayBuffer = await file.arrayBuffer();
     await writeBinaryFile(imgPath, Buffer.from(arrayBuffer));
     return { imgName: imgName, imgPath: imgName };
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function createFolder(parentFolderId: string) {
+  let name = t("new-folder");
+  let path = await join(IdToPath(parentFolderId), name);
+  let i = 1;
+  while (await exists(path)) {
+    name = `${t("new-folder")} ${i}`;
+    path = await join(IdToPath(parentFolderId), name);
+    i++;
+  }
+
+  const folder = {
+    _id: pathToId(path),
+    dataType: "folder",
+    label: name,
+    path: path,
+    children: [],
+  } as FolderOrNote;
+
+  return folder;
+}
+
+export async function addFolder(folder: FolderOrNote) {
+  try {
+    await createDir(folder.path);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+/**
+ * Delete a folder and its containing notes
+ * Also delete the links in indexeddb
+ * @param folderId
+ */
+export async function deleteFolder(folderId: string) {
+  try {
+    // remove notes from indexeddb first
+    const notes = await getNotes(folderId);
+    for (const note of notes) {
+      await idb.delete("notes", note._id);
+      await updateLinks(note._id, []); // delete all links starting from this note
+    }
+
+    // remove the actual folder
+    await removeDir(IdToPath(folderId), { recursive: true });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+/**
+ * Rename folder and update note links
+ * @param oldFolderId
+ * @param newFolderId
+ */
+export async function renameFolder(oldFolderId: string, newFolderId: string) {
+  try {
+    // update indexeddb
+    const notes = await getNotes(oldFolderId);
+    for (const note of notes) {
+      await idb.delete("notes", note._id);
+      const newNoteId = note._id.replace(oldFolderId, newFolderId);
+      await idb.put("notes", { noteId: newNoteId });
+      await batchReplaceLink(note._id, newNoteId);
+    }
+
+    // rename actual folder
+    const oldPath = IdToPath(oldFolderId);
+    const newPath = IdToPath(newFolderId);
+    await renameFile(oldPath, newPath);
   } catch (error) {
     console.log(error);
   }

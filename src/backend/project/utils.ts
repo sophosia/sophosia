@@ -40,21 +40,23 @@ export function authorToString(authors: Author[] | undefined) {
 }
 
 /**
- * Convert a path to noteId
+ * Convert a path to folderId / noteId
  * storagePath/projectId/.../noteName.md -> projectId/.../noteName.md
+ * storagePath/projectId/.../folderName -> projectId/.../folderName
  * @param path
- * @returns noteId
+ * @returns id
  */
 export function pathToId(path: string) {
   return path.replace(db.storagePath + sep, "").replace(sep, "/");
 }
 
 /**
- * Convert a noteId to path
+ * Convert a noteId / folerId to path
  * projectId/.../noteName.md -> storagePath/projectId/.../noteName.md
- * @param noteId
+ * projectId/.../folderName -> storagePath/projectId/.../folderName
+ * @param id
  * @returns path absolute path
  */
-export function IdToPath(noteId: string) {
-  return db.storagePath + sep + noteId.replace("/", sep);
+export function IdToPath(id: string) {
+  return db.storagePath + sep + id.replace("/", sep);
 }
