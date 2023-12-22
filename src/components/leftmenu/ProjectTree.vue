@@ -155,7 +155,7 @@ const projectStore = useProjectStore();
 const tree = ref<QTree | null>(null);
 const renameInput = ref<HTMLInputElement | null>(null);
 const renamingNodeId = ref("");
-const renamingNodeType = ref("");
+const renamingNodeType = ref<"folder" | "note">("folder");
 const oldNoteName = ref("");
 const pathDuplicate = ref(false);
 const addingNode = ref(false);
@@ -203,16 +203,6 @@ watch(
   { deep: true }
 );
 
-function menuSwitch(node: Project | Note) {
-  if (node.dataType == "note") {
-    // show context menu for notes
-    showProjectMenu.value = false;
-  } else {
-    // show context menu for project
-    showProjectMenu.value = true;
-  }
-}
-
 function selectItem(node: Project | FolderOrNote) {
   console.log("node", node);
   stateStore.currentItemId = node._id;
@@ -231,7 +221,7 @@ function selectItem(node: Project | FolderOrNote) {
 }
 
 async function showInExplorer(node: Project | Note) {
-  const path = node.path || (await join(db.storagePath, node._id));
+  const path = IdToPath(node._id);
   await invoke("show_in_folder", {
     path: path,
   });
@@ -268,18 +258,10 @@ async function closeProject(projectId: string) {
 async function addNode(
   parentNodeId: string,
   nodeType: "folder" | "note",
-  noteType?: NoteType
+  noteType: NoteType = NoteType.MARKDOWN
 ) {
-  let node;
-  if (nodeType === "note" && noteType) {
-    node = await projectStore.createNote(parentNodeId, noteType);
-    await projectStore.addNote(node);
-  } else if (nodeType === "folder") {
-    node = await projectStore.createFolder(parentNodeId);
-    await projectStore.addFolder(node);
-  }
-
-  if (!node) return;
+  const node = await projectStore.createNode(parentNodeId, nodeType, noteType);
+  await projectStore.addNode(node);
 
   expanded.value.push(parentNodeId);
   addingNode.value = true;
@@ -311,12 +293,12 @@ async function renameNode() {
   const node = tree.value?.getNodeByKey(renamingNodeId.value) as FolderOrNote;
   if (!!!node) return;
 
+  const oldNodeId = renamingNodeId.value;
+  const newNodeId = await oldToNewId(oldNodeId, node.label);
+  const newLabel = newNodeId.split("/").at(-1) as string;
   if (pathDuplicate.value) {
     node.label = oldNoteName.value;
   } else {
-    const oldNodeId = renamingNodeId.value;
-    const newLabel = node.label;
-    const newNodeId = await oldToNewId(oldNodeId, newLabel);
     if (renamingNodeType.value === "note") {
       // update window tab name
       updateComponent(oldNodeId, {
@@ -324,10 +306,11 @@ async function renameNode() {
         label: newLabel,
       });
       await nextTick(); // wait until itemId changes in the page
-      await projectStore.renameNote(oldNodeId, newNodeId);
-    } else if (renamingNodeType.value === "folder") {
-      await projectStore.renameFolder(oldNodeId, newNodeId);
     }
+    await projectStore.renameNode(oldNodeId, newNodeId, renamingNodeType.value);
+
+    node._id = newNodeId;
+    node.label = newLabel;
   }
 
   if (addingNode.value) selectItem(node); // select after adding it
@@ -339,21 +322,24 @@ async function renameNode() {
 async function checkDuplicate(note: Note) {
   if (!note) return;
   const extension = note.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
-  const path = await join(await dirname(note.path), note.label + extension);
+  const path = await join(
+    await dirname(IdToPath(note._id)),
+    note.label + extension
+  );
 
-  if ((await exists(path)) && path !== note.path) pathDuplicate.value = true;
+  if ((await exists(path)) && path !== IdToPath(note._id))
+    pathDuplicate.value = true;
   else pathDuplicate.value = false;
 }
 
 async function deleteNode(node: FolderOrNote) {
   if (node.dataType === "note") {
     stateStore.closePage(node._id);
-    await projectStore.deleteNote(node._id);
   } else if (node.dataType === "folder") {
     const notes = await getNotes(node._id);
     for (const note of notes) stateStore.closePage(note._id);
-    await projectStore.deleteFolder(node._id);
   }
+  await projectStore.deleteNode(node._id, node.dataType);
   // select something else if the selectedItem is deleted
   if (node._id === projectStore.selected[0]?._id) {
     const projectId = node._id.split("/")[0];
@@ -440,13 +426,15 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
       const newNoteId = oldNoteId.replace(dragId, newId);
       updateComponent(oldNoteId, { id: newNoteId, label: note.label });
     }
-    await nextTick(); // wait until the itemId is updated
-    await projectStore.renameFolder(dragId, newId);
   } else {
     updateComponent(dragId, { id: newId, label: label });
-    await nextTick(); // wait until the itemId is updated
-    await projectStore.renameNote(dragId, newId);
   }
+  await nextTick(); // wait until the itemId is updated
+  await projectStore.renameNode(
+    dragId,
+    newId,
+    isDragNodeDir ? "folder" : "note"
+  );
 
   draggingNode.value = null;
   dragoverNode.value = null;

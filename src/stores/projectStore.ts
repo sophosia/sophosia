@@ -33,7 +33,6 @@ export const useProjectStore = defineStore("projectStore", {
     openedProjects: [] as Project[], // array of opened projects
 
     updatedProject: {} as Project, // for updating window tab name
-    renamingNoteId: "",
   }),
 
   actions: {
@@ -160,82 +159,54 @@ export const useProjectStore = defineStore("projectStore", {
         this.updateProject(projectId, { path: filename } as Project);
     },
 
-    /**
-     * Create a note data
-     * @param folderId
-     * @param type
-     */
-    async createNote(folderId: string, type: NoteType) {
-      return await createNote(folderId, type);
-    },
-
-    /**
-     * Add a note to database
-     * and creates the actual markdown file in project folder
-     */
-    async addNote(note: Note) {
-      // update db
-      note = (await addNote(note)) as Note;
-      console.log("note", note);
-      // update ui
-      const project = await this.getProjectFromDB(note.projectId);
-      sortTree(project);
-      this._updateProjectUI(project);
-    },
-
-    async renameNote(oldNoteId: string, newNoteId: string): Promise<Note> {
-      // update db
-      let note = (await renameNote(oldNoteId, newNoteId)) as Note;
-      // update ui
-      let project = await this.getProjectFromDB(note.projectId);
-      sortTree(project);
-      this._updateProjectUI(project);
-      return note;
-    },
-
-    async deleteNote(noteId: string) {
-      let note = (await this.getNoteFromDB(noteId)) as Note;
-      await deleteNote(note);
-      let project = await this.getProjectFromDB(note.projectId);
-      sortTree(project);
-      this._updateProjectUI(project);
-    },
-
-    setRenameNote(noteId: string) {
-      this.renamingNoteId = noteId;
-    },
-
     async getNoteFromDB(noteId: string) {
       return await getNote(noteId);
     },
 
-    async createFolder(parentFolderId: string) {
-      return await createFolder(parentFolderId);
+    async createNode(
+      parentNodeId: string,
+      nodeType: "folder" | "note",
+      noteType: NoteType = NoteType.MARKDOWN
+    ) {
+      if (nodeType === "folder") return await createFolder(parentNodeId);
+      else return await createNote(parentNodeId, noteType);
     },
 
-    async addFolder(folder: FolderOrNote) {
-      await addFolder(folder);
+    async addNode(node: FolderOrNote) {
+      // update db
+      if (node.dataType === "folder") await addFolder(node);
+      else await addNote(node as Note);
       // update ui
-      const projectId = folder._id.split("/")[0];
+      const projectId = node._id.split("/")[0];
       const project = await this.getProjectFromDB(projectId);
       sortTree(project);
       this._updateProjectUI(project);
     },
 
-    async deleteFolder(folderId: string) {
-      await deleteFolder(folderId);
+    async renameNode(
+      oldNodeId: string,
+      newNodeId: string,
+      nodeType: "folder" | "note"
+    ) {
+      // update db
+      if (nodeType === "folder") await renameFolder(oldNodeId, newNodeId);
+      else await renameNote(oldNodeId, newNodeId);
       // update ui
-      const projectId = folderId.split("/")[0];
-      const project = await this.getProjectFromDB(projectId);
-      sortTree(project);
-      this._updateProjectUI(project);
+      const oldProjectId = oldNodeId.split("/")[0];
+      const newProjectId = newNodeId.split("/")[0];
+      for (const projectId of new Set([oldProjectId, newProjectId])) {
+        let project = await this.getProjectFromDB(projectId);
+        sortTree(project);
+        this._updateProjectUI(project);
+      }
     },
 
-    async renameFolder(oldFolderId: string, newFolderId: string) {
-      await renameFolder(oldFolderId, newFolderId);
+    async deleteNode(nodeId: string, nodeType: "folder" | "note") {
+      if (nodeType === "folder") await deleteFolder(nodeId);
+      else await deleteNote(nodeId);
       // update ui
-      const projectId = newFolderId.split("/")[0];
-      const project = await this.getProjectFromDB(projectId);
+      const projectId = nodeId.split("/")[0];
+      let project = await this.getProjectFromDB(projectId);
       sortTree(project);
       this._updateProjectUI(project);
     },

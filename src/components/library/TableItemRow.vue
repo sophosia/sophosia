@@ -7,6 +7,7 @@
   >
     <q-td auto-width></q-td>
     <q-td auto-width></q-td>
+    <q-td auto-width></q-td>
     <q-td
       v-if="item.dataType === 'note'"
       colspan="100%"
@@ -51,7 +52,7 @@
       </div>
     </q-td>
     <q-td
-      v-else
+      v-else-if="item.dataType === 'project'"
       colspan="100%"
     >
       <div class="row items-center">
@@ -59,6 +60,24 @@
           class="q-mr-xs"
           size="xs"
           name="img:icons/pdf.png"
+        />
+        <div
+          class="col"
+          style="font-size: 1rem"
+        >
+          {{ label }}
+        </div>
+      </div>
+    </q-td>
+    <q-td
+      v-else
+      colspan="100%"
+    >
+      <div class="row items-center">
+        <q-icon
+          class="q-mr-xs"
+          size="xs"
+          name="mdi-folder"
         />
         <div
           class="col"
@@ -120,7 +139,7 @@
       </q-list>
 
       <q-list
-        v-else
+        v-else-if="item.dataType === 'project'"
         dense
       >
         <q-item
@@ -154,10 +173,10 @@ import { Project, Note, NoteType, db } from "src/backend/database";
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { copyToClipboard } from "quasar";
-import { basename, join } from "@tauri-apps/api/path";
+import { basename, dirname, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
-import { oldToNewId } from "src/backend/project/utils";
+import { IdToPath, oldToNewId } from "src/backend/project/utils";
 
 const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
@@ -179,7 +198,8 @@ const updateComponent = inject("updateComponent") as (
 
 watchEffect(async () => {
   // label changes whenever pdf is renamed
-  if (props.item.path) label.value = await basename(props.item.path);
+  const path = props.item.path || IdToPath(props.item._id);
+  label.value = await basename(path);
 
   // if the note is newly added, rename it immediately
   if (renamingNoteId.value === props.item._id) setRenaming();
@@ -190,10 +210,12 @@ function copyID() {
 }
 
 async function showInExplorer() {
-  if (!props.item.path) return;
-  await invoke("show_in_folder", {
-    path: props.item.path,
-  });
+  const path =
+    props.item.dataType === "project"
+      ? props.item.path
+      : IdToPath(props.item._id);
+  if (!path) return;
+  await invoke("show_in_folder", { path: path });
 }
 
 function clickItem() {
@@ -206,7 +228,7 @@ function openItem() {
   let type = "";
   if (props.item.dataType === "project") {
     if (props.item.path) type = "ReaderPage";
-  } else if ((props.item as Project | Note).dataType === "note") {
+  } else if (props.item.dataType === "note") {
     if (props.item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
     else type = "NotePage";
   }
@@ -240,7 +262,7 @@ async function renameNote() {
       label: newLabel,
     });
     await nextTick(); // wait until itemId changes in the page
-    await projectStore.renameNote(oldNoteId, newNoteId);
+    await projectStore.renameNode(oldNoteId, newNoteId, "note");
   }
   renaming.value = false;
   renamingNoteId.value = "";
@@ -248,7 +270,7 @@ async function renameNote() {
 }
 
 async function deleteItem() {
-  await projectStore.deleteNote(props.item._id);
+  await projectStore.deleteNode(props.item._id, "note");
 }
 
 async function renameFile() {
@@ -259,12 +281,11 @@ async function checkDuplicate() {
   const extension =
     props.item.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
   const path = await join(
-    db.storagePath,
-    props.item.projectId,
+    await dirname(IdToPath(props.item._id)),
     label.value + extension
   );
 
-  if ((await exists(path)) && path !== props.item.path)
+  if ((await exists(path)) && path !== IdToPath(props.item._id))
     pathDuplicate.value = true;
   else pathDuplicate.value = false;
 }

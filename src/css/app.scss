@@ -71,6 +71,10 @@ html {
   -webkit-user-select: none
 }
 
+a {
+  color: var(--q-primary);
+}
+
 .q-tooltip {
   font-size: 0.8rem;
   // fixed weired line breaks for chinese tooltip

@@ -1,9 +1,10 @@
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import * as pdfjsLib from "pdfjs-dist";
 
 export class PeekManager {
   links = reactive<HTMLAnchorElement[]>([]);
   pdfDocument: pdfjsLib.PDFDocumentProxy | undefined;
+  supposeToDestroy = false;
 
   setDocument(pdfDocument: pdfjsLib.PDFDocumentProxy) {
     this.pdfDocument = pdfDocument;
@@ -25,6 +26,7 @@ export class PeekManager {
    * Destroy the peeker of the given peekerId
    */
   destroy(elementId: string) {
+    if (!this.supposeToDestroy) return;
     // don't know why filter doesn't work here
     let ind = this.links.findIndex((link) => link.id === elementId);
     if (ind > -1) this.links.splice(ind, 1);

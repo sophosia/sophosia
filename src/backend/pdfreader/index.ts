@@ -134,14 +134,19 @@ export default class PDFApplication {
           if (!link) return;
           if (section.hasAttribute("data-internal-link")) {
             // peek internal links
-            link.onmouseover = () => {
-              if (!link) return;
-              let timeoutId = setTimeout(() => {
+            link.onmouseenter = () => {
+              this.peekManager.supposeToDestroy = false;
+              setTimeout(() => {
                 if (!link) return;
                 if (this.peekManager) this.peekManager.create(link);
-              }, 500);
-
-              link.onmouseleave = () => clearTimeout(timeoutId);
+              }, 200);
+            };
+            link.onmouseleave = () => {
+              this.peekManager.supposeToDestroy = true;
+              setTimeout(() => {
+                if (!link) return;
+                if (this.peekManager) this.peekManager.destroy(link.id);
+              }, 200);
             };
           } else {
             // external links must open using default browser

@@ -153,6 +153,10 @@ onMounted(() => {
     }
   });
 
+  card.value.$el.addEventListener("mouseenter", (e: MouseEvent) => {
+    props.peekManager.supposeToDestroy = false;
+  });
+
   // handle mouseleave
   card.value.$el.addEventListener("mouseleave", (e: MouseEvent) => {
     close();
@@ -226,6 +230,7 @@ function zoom(delta: number) {
  * User can close the PeekCard even if it's pinned
  */
 function close(force?: boolean) {
+  props.peekManager.supposeToDestroy = true;
   if (!!force || !pinned.value) props.peekManager.destroy(props.link.id);
 }
 
@@ -329,6 +334,8 @@ function resizeCard(e: MouseEvent) {
     el.parentElement!.onmouseup = null;
   };
 }
+
+defineExpose({ close });
 </script>
 <style lang="scss">
 .peekCard {

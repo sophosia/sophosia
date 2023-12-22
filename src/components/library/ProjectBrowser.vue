@@ -251,7 +251,6 @@ async function addProjectsByCollection(isCreateFolder: boolean) {
     if (!treeview.value) return;
     let rootNode = treeview.value.getLibraryNode();
     if (!rootNode) return;
-    // let folderName = window.path.parse(collectionPath.value).name;
     let folderName = await basename(
       collectionPath.value,
       `.${await extname(collectionPath.value)}`

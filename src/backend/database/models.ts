@@ -88,6 +88,17 @@ export interface FolderOrNote {
 }
 
 /**
+ * Multilevel note and folder support
+ */
+export interface FolderOrNote {
+  _id: string;
+  label: string;
+  dataType: "folder" | "note";
+  type?: NoteType;
+  children?: FolderOrNote[];
+}
+
+/**
  * Project datatype, goes into database
  */
 export interface Project extends Meta {

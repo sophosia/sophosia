@@ -24,6 +24,7 @@ import {
   exists,
   createDir,
 } from "@tauri-apps/api/fs";
+import { IdToPath } from "src/backend/project/utils";
 
 interface InitialData {
   elements: ExcalidrawElement[];
@@ -101,9 +102,7 @@ export default function CustomExcalidraw(props: {
   }
 
   useEffect(() => {
-    getNote(props.noteId).then((note: Note | undefined) => {
-      if (note) setNotePath(note.path);
-    });
+    setNotePath(IdToPath(props.noteId))
   }, [props.noteId]);
 
   useEffect(() => {

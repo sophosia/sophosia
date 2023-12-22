@@ -33,6 +33,7 @@ const props = defineProps({
 const emit = defineEmits(["clickLink"]);
 const card = ref();
 const mdContentDiv = ref();
+const supposeToClose = ref(true);
 
 watchEffect(() => {
   if (props.data.content && mdContentDiv.value)
@@ -51,11 +52,17 @@ watchEffect(() => {
 onMounted(async () => {
   if (!card.value) return;
   card.value.$el.onmouseenter = () => {
-    card.value.$el.onmouseleave = () => {
-      card.value.$el.hidden = true;
-    };
+    supposeToClose.value = false;
   };
+  card.value.$el.onmouseleave = close;
 });
+
+function close() {
+  supposeToClose.value = true;
+  setTimeout(() => {
+    if (supposeToClose.value) card.value.$el.hidden = true;
+  }, 200);
+}
 
 function changeLinks() {
   if (!mdContentDiv.value) return;
@@ -95,7 +102,7 @@ function changeLinks() {
   }
 }
 
-defineExpose({ card });
+defineExpose({ card, close });
 </script>
 <style lang="scss">
 .hoverPane {
