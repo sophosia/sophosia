@@ -59,11 +59,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, provide, onMounted, computed } from "vue";
+import { ref, watch, provide, onMounted, computed, nextTick } from "vue";
 import {
   AnnotationData,
   AnnotationType,
-  PDFState,
   Project,
   Rect,
 } from "src/backend/database";
@@ -76,18 +75,20 @@ import AnnotCard from "./AnnotCard.vue";
 import FloatingMenu from "./FloatingMenu.vue";
 import PeekCard from "./PeekCard.vue";
 
-import { getPDF, getProject } from "src/backend/project/project";
+import { getProject } from "src/backend/project/project";
 import PDFApplication from "src/backend/pdfreader";
 import { Ink } from "src/backend/pdfannotation/annotations";
 import { QSplitter, throttle } from "quasar";
 import { Annotation } from "src/backend/pdfannotation/annotations";
 import { db } from "src/backend/database";
-import { join } from "@tauri-apps/api/path";
 
 /**********************************
  * Props, Data, and component refs
  **********************************/
-const props = defineProps({ projectId: { type: String, required: true } });
+const props = defineProps({
+  projectId: { type: String, required: true },
+  focusAnnotId: { type: String, required: false },
+});
 
 // viewer containers
 const viewerContainer = ref<HTMLDivElement>();
@@ -245,8 +246,8 @@ async function loadPDF(projectId: string) {
   if (!project.value.path) return;
   // load state before loading pdf
   await pdfApp.loadState(project.value._id);
-  await pdfApp.loadPDF(project.value.path);
   await pdfApp.loadAnnotations();
+  await pdfApp.loadPDF(project.value.path);
 }
 
 /******************
@@ -264,6 +265,14 @@ watch(pdfApp.state, (state) => {
   pdfApp.saveState(state);
 });
 
+watch(
+  () => props.focusAnnotId,
+  () => {
+    // scroll to annot when focusAnnotId changes
+    if (props.focusAnnotId) pdfApp.scrollAnnotIntoView(props.focusAnnotId);
+  }
+);
+
 /**************************************************
  * Implement eventhandlers and init PDFApplication
  **************************************************/
@@ -271,6 +280,10 @@ onMounted(async () => {
   if (!viewerContainer.value) return;
   pdfApp.init(viewerContainer.value as HTMLDivElement);
 
+  // scroll to annot when pages are ready
+  pdfApp.eventBus?.on("pagesinit", () => {
+    if (props.focusAnnotId) pdfApp.scrollAnnotIntoView(props.focusAnnotId);
+  });
   pdfApp.eventBus?.on(
     "annotationeditorlayerrendered",
     async (e: {

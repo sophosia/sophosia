@@ -3,6 +3,9 @@
     v-show="showEditor"
     ref="vditorDiv"
     :id="`vditor-${props.noteId}`"
+    @dragover="onDragOver"
+    @dragleave="onDragLeave"
+    @drop="onDrop"
   ></div>
   <HoverPane
     v-show="hoverContent"
@@ -15,7 +18,14 @@
 <script setup lang="ts">
 // types
 import { inject, nextTick, onMounted, ref, watch } from "vue";
-import { Note, NoteType, Project, Edge, db } from "src/backend/database";
+import {
+  Note,
+  NoteType,
+  Project,
+  Edge,
+  db,
+  AnnotationData,
+} from "src/backend/database";
 // vditor
 import Vditor from "vditor";
 import "src/css/vditor/index.css";
@@ -289,17 +299,28 @@ async function clickLink(e: MouseEvent, link: string) {
     try {
       const item = link.includes("/")
         ? ((await getNote(link)) as Note)
-        : ((await getProject(link)) as Project);
-      let id = item._id;
-      let label = item.label;
+        : ((await db.get(link)) as Project | AnnotationData);
+      let id = "";
+      let label = "";
       let type = "";
-      if (item.dataType === "project") type = "ReaderPage";
-      else if ((item as Project | Note).dataType === "note") {
+      let data = undefined;
+      if (item.dataType === "project") {
+        id = item._id;
+        label = item.label;
+        type = "ReaderPage";
+      } else if (item.dataType === "note") {
+        id = item._id;
+        label = item.label;
         if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
         else type = "NotePage";
+      } else if (item.dataType === "pdfAnnotation") {
+        const project = (await getProject(item.projectId)) as Project;
+        id = project._id;
+        label = project?.label;
+        type = "ReaderPage";
+        data = { focusAnnotId: item._id };
       }
-      console.log("clicked item", item);
-      stateStore.openPage({ id, type, label });
+      stateStore.openPage({ id, type, label, data });
     } catch (error) {
       console.log(error);
     }
@@ -495,23 +516,35 @@ async function filterHints(key: string) {
   }
   return hints;
 }
+
+/**
+ * Annotation drag and drop
+ */
+
+function onDragOver(e: DragEvent) {
+  // enable drop
+  e.preventDefault();
+
+  (vditorDiv.value as HTMLElement).classList.add("highlight-editor");
+}
+
+function onDragLeave(e: DragEvent) {
+  (vditorDiv.value as HTMLElement).classList.remove("highlight-editor");
+}
+
+function onDrop(e: DragEvent) {
+  (vditorDiv.value as HTMLElement).classList.remove("highlight-editor");
+  const data = e.dataTransfer?.getData("annot");
+  if (!data || !vditor.value) return;
+  const annot = JSON.parse(data) as AnnotationData;
+  const content = `[${annot.type.toLocaleUpperCase()} - page${
+    annot.pageNumber
+  }](${annot._id})`;
+  vditor.value.insertValue(content);
+}
 </script>
-<style lang="scss">
-pre.vditor-reset {
-  /* do not change padding after resizing */
-  padding: 10px 35px !important;
-}
-
-.vditor-toolbar--pin {
-  /* do this so that the toolbar does not block the golden dropdown tab lists*/
-  z-index: 0;
-}
-
-.vditor-hint {
-  max-width: 50%;
-}
-
-.vditor-reset img {
-  max-width: 80%;
+<style scoped lang="scss">
+.highlight-editor {
+  border: 2px dashed rgba($primary, 0.5);
 }
 </style>

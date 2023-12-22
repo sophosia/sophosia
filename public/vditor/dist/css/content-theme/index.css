@@ -339,7 +339,9 @@
 .vditor-toolbar--pin {
   position: sticky;
   top: 0;
-  z-index: 1;
+
+  /* do this so that the toolbar does not block the golden dropdown tab lists*/
+  z-index: 0;
 }
 .vditor-toolbar--hide {
   transition: all 0.15s ease-in-out;
@@ -745,7 +747,7 @@
   list-style: none;
   font-size: 12px;
   margin: 0;
-  max-width: 250px;
+  max-width: 50%;
   min-width: 80px;
   display: none;
 }
@@ -1586,6 +1588,9 @@
   white-space: pre-wrap;
   height: 100%;
   box-sizing: border-box;
+
+  /* do not change padding after resizing */
+  padding: 10px 35px !important;
 }
 .vditor-ir pre.vditor-reset[contenteditable="false"] {
   opacity: 0.3;

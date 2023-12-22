@@ -4,6 +4,8 @@
     bordered
     flat
     @dblclick="editing = true"
+    draggable="true"
+    @dragstart="onDragStart"
   >
     <q-card-section
       :style="`background: ${annot.data.color}`"
@@ -211,5 +213,9 @@ function changeLinks() {
       [db.storagePath, ".sophosia", "image", imgFile].join(sep)
     );
   }
+}
+
+function onDragStart(e: DragEvent) {
+  e.dataTransfer?.setData("annot", JSON.stringify(props.annot.data));
 }
 </script>

@@ -84,7 +84,7 @@ const AllComponents = ref(
     {
       component: any;
       id: string;
-      data?: { path: string };
+      data?: { path?: string; focusAnnotId?: string };
     }
   >()
 );
@@ -167,6 +167,8 @@ const addGLComponent = async (
   // don't repeatly add components
   if (id in IdToRef) {
     focusById(id);
+    const component = AllComponents.value.get(IdToRef[id]);
+    if (component && data) component.data = data;
     return;
   }
 
