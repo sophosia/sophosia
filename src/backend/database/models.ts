@@ -69,6 +69,24 @@ export interface Note {
   type: NoteType;
 }
 
+export interface NoteBook {
+  _id: string;
+  dataType: "notebook";
+  label: string;
+}
+
+/**
+ * Multilevel note and folder support
+ */
+export interface FolderOrNote {
+  _id: string;
+  label: string;
+  dataType: string;
+  path: string;
+  type?: NoteType;
+  children?: FolderOrNote[];
+}
+
 /**
  * Multilevel note and folder support
  */
