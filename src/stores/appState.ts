@@ -5,6 +5,7 @@ import { AppState, Page, Settings, SpecialFolder } from "src/backend/database";
 import { useProjectStore } from "./projectStore";
 import darkContent from "src/css/vditor/dark.css?raw";
 import lightContent from "src/css/vditor/light.css?raw";
+import { getPDF } from "src/backend/project/project";
 
 export const useStateStore = defineStore("stateStore", {
   state: () => ({
@@ -83,8 +84,11 @@ export const useStateStore = defineStore("stateStore", {
 
     async openPage(page: Page) {
       const projectStore = useProjectStore();
-      if (page.type === "ReaderPage") await projectStore.openProject(page.id);
-      else {
+      if (page.type === "ReaderPage") {
+        await projectStore.openProject(page.id);
+        // do not open page if there is no pdf
+        if (!(await getPDF(page.id))) return;
+      } else {
         let note = await projectStore.getNoteFromDB(page.id);
         if (note && note.projectId)
           await projectStore.openProject(note.projectId);
