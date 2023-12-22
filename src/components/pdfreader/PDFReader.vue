@@ -104,7 +104,7 @@ const showRightMenu = computed({
   },
   set(visible: boolean) {
     if (visible) {
-      rightMenuSize.value = Math.max(prvRightMenuSize.value, 15);
+      rightMenuSize.value = Math.max(prvRightMenuSize.value, 25);
     } else {
       prvRightMenuSize.value = rightMenuSize.value;
       rightMenuSize.value = 0;

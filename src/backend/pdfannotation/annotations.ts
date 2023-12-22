@@ -152,24 +152,11 @@ export abstract class Annotation {
     this.hasEvtHandler = true;
   }
 
-  /**
-   * Save annotation to databse
-   */
-  async save() {
-    try {
-      await db.put(this.data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   private async _updateDB(props: AnnotationData) {
     try {
-      let annot = (await db.get(this.data._id)) as AnnotationData;
       props.timestampModified = Date.now();
-      Object.assign(annot, props);
-      await db.put(annot);
-      this.data = annot;
+      Object.assign(this.data, props);
+      await db.put(this.data);
     } catch (err) {
       console.log(err);
     }
@@ -190,6 +177,7 @@ export abstract class Annotation {
         else dom.style.background = props.color;
       }
     }
+    Object.assign(this.data, props);
 
     // update db
     this.updateDB(props);
