@@ -328,6 +328,8 @@ async function clickLink(e: MouseEvent, link: string) {
 }
 async function hoverLink(linkNode: HTMLElement) {
   if (!hoverPane.value) return;
+  // when hover on link, keep the hoverPane
+  hoverPane.value.supposeToClose = false;
   let link = (
     linkNode.querySelector("span.vditor-ir__marker--link") as HTMLElement
   ).innerHTML;
@@ -339,7 +341,7 @@ async function hoverLink(linkNode: HTMLElement) {
     try {
       let item = null;
       if (link.includes("/")) item = (await getNote(link)) as Note;
-      else item = (await getProject(link)) as Project;
+      else item = (await db.get(link)) as Project | AnnotationData;
       if (item.dataType === "project") {
         let lines = [
           `# ${item.title}`,
@@ -366,6 +368,17 @@ async function hoverLink(linkNode: HTMLElement) {
           hoverContent.value = content;
           hoverData.value.content = content;
         }
+      } else if (item.dataType === "pdfAnnotation") {
+        const project = (await getProject(item.projectId)) as Project;
+        let lines = [
+          `## ${item.type.toLocaleUpperCase()}`,
+          `page: ${item.pageNumber}`,
+          `project: ${project.label}`,
+          `content:`,
+          item.content,
+        ];
+        hoverContent.value = lines.join("\n");
+        hoverData.value.content = lines.join("\n");
       }
 
       // set position for hoverpane
