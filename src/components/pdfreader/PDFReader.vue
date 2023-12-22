@@ -36,6 +36,7 @@
           v-if="showAnnotCard && pdfApp.annotStore.selected"
           :style="style"
           :annot="(pdfApp.annotStore.selected as Annotation)"
+          ref="card"
         />
         <FloatingMenu
           v-if="showFloatingMenu"
@@ -114,6 +115,7 @@ const showRightMenu = computed({
 });
 
 // annot card & colorpicker
+const card = ref();
 const showAnnotCard = ref(false);
 const showFloatingMenu = ref(false);
 const selectionPage = ref(0);
@@ -183,6 +185,9 @@ function toggleAnnotCard(show: boolean, annot?: Annotation) {
     if (!annot) return;
     setPosition(annot.doms.map((dom) => dom.getBoundingClientRect()));
     showAnnotCard.value = true;
+    nextTick(() => {
+      enableDragToMoveAnnotCard();
+    });
   }
 }
 
@@ -215,6 +220,34 @@ function setPosition(rects: DOMRect[] | DOMRectList) {
   min-width: 400px;
   z-index: 100;
   `;
+}
+
+function enableDragToMoveAnnotCard() {
+  if (!card.value) return;
+  card.value.isMovable = true;
+  const cardEl = card.value.$el as HTMLElement;
+  const cardHandleEl = cardEl.firstChild as HTMLElement;
+  cardHandleEl.onmousedown = (e: MouseEvent) => {
+    let x = e.clientX;
+    let y = e.clientY;
+    let shiftX = 0;
+    let shiftY = 0;
+    let top = parseFloat(cardEl.style.top);
+    let left = parseFloat(cardEl.style.left);
+    const parentDiv = cardEl.parentElement as HTMLElement;
+    parentDiv.onmousemove = (ev: MouseEvent) => {
+      ev.preventDefault();
+      shiftX = ev.clientX - x;
+      shiftY = ev.clientY - y;
+      cardEl.style.left = `${left + shiftX}px`;
+      cardEl.style.top = `${top + shiftY}px`;
+    };
+
+    cardHandleEl.onmouseup = () => {
+      // cardHandleEl.onmousedown = null;
+      parentDiv.onmousemove = null;
+    };
+  };
 }
 
 function highlightText(color: string) {
