@@ -2,6 +2,7 @@
   <PDFReader
     v-if="visible"
     :projectId="itemId"
+    :focusAnnotId="data?.focusAnnotId"
   />
 </template>
 
@@ -11,6 +12,9 @@ import { PropType } from "vue";
 const props = defineProps({
   itemId: { type: String, required: true },
   visible: { type: Boolean, reqruied: true },
-  data: { type: Object as PropType<{ path: String }>, required: false },
+  data: {
+    type: Object as PropType<{ path?: String; focusAnnotId?: string }>,
+    required: false,
+  },
 });
 </script>

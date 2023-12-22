@@ -30,9 +30,7 @@ export default class AnnotationStore {
    * @param saveToDB
    */
   async add(annot: Annotation, saveToDB?: boolean) {
-    if (saveToDB) {
-      await annot.save();
-    }
+    if (saveToDB) await annot.update({} as AnnotationData);
     if (!this.getById(annot.data._id)) this.annots.push(annot);
   }
 

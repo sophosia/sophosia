@@ -152,24 +152,11 @@ export abstract class Annotation {
     this.hasEvtHandler = true;
   }
 
-  /**
-   * Save annotation to databse
-   */
-  async save() {
-    try {
-      await db.put(this.data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   private async _updateDB(props: AnnotationData) {
     try {
-      let annot = (await db.get(this.data._id)) as AnnotationData;
       props.timestampModified = Date.now();
-      Object.assign(annot, props);
-      await db.put(annot);
-      this.data = annot;
+      Object.assign(this.data, props);
+      await db.put(this.data);
     } catch (err) {
       console.log(err);
     }
@@ -190,6 +177,7 @@ export abstract class Annotation {
         else dom.style.background = props.color;
       }
     }
+    Object.assign(this.data, props);
 
     // update db
     this.updateDB(props);
@@ -213,10 +201,10 @@ export abstract class Annotation {
 }
 
 export class Highlight extends Annotation {
-  draw(e: RenderEvt): void {
-    if (this.isDrawn(e) || !this.data._id) return;
+  constructor(annotData: AnnotationData) {
+    super(annotData);
 
-    let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    // create doms immediately, no need to wait for draw function to call
     for (let rect of this.data.rects) {
       // update UI
       let section = document.createElement("section");
@@ -234,17 +222,21 @@ export class Highlight extends Annotation {
       section.style.zIndex = "3";
       section.className = "highlightAnnotation";
 
-      // put dom on the annotation layer
-      canvasWrapper.appendChild(section);
       this.doms.push(section);
     }
   }
-}
-export class Underline extends Annotation {
+
   draw(e: RenderEvt): void {
     if (this.isDrawn(e) || !this.data._id) return;
 
     let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    canvasWrapper.append(...this.doms);
+  }
+}
+export class Underline extends Annotation {
+  constructor(annotData: AnnotationData) {
+    super(annotData);
+
     for (let rect of this.data.rects) {
       // update UI
       let section = document.createElement("section");
@@ -263,18 +255,21 @@ export class Underline extends Annotation {
       section.style.zIndex = "3";
 
       section.classList.add("underlineAnnotation");
-
-      // put dom on the annotation layer
-      canvasWrapper.appendChild(section);
       this.doms.push(section);
     }
   }
-}
-export class Strikeout extends Annotation {
+
   draw(e: RenderEvt): void {
     if (this.isDrawn(e) || !this.data._id) return;
 
     let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    canvasWrapper.append(...this.doms);
+  }
+}
+export class Strikeout extends Annotation {
+  constructor(annotData: AnnotationData) {
+    super(annotData);
+
     for (let rect of this.data.rects) {
       // update UI
       let section = document.createElement("section");
@@ -301,17 +296,21 @@ export class Strikeout extends Annotation {
       div.style.borderBottomWidth = "2px";
 
       section.append(div);
-      // put dom on the annotation layer
-      canvasWrapper.appendChild(section);
       this.doms.push(section);
     }
   }
-}
-export class Rectangle extends Annotation {
+
   draw(e: RenderEvt): void {
     if (this.isDrawn(e) || !this.data._id) return;
 
     let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    canvasWrapper.append(...this.doms);
+  }
+}
+export class Rectangle extends Annotation {
+  constructor(annotData: AnnotationData) {
+    super(annotData);
+
     // update UI
     let section = document.createElement("section");
     section.setAttribute("annotation-id", this.data._id);
@@ -327,17 +326,22 @@ export class Rectangle extends Annotation {
     section.style.mixBlendMode = "multiply";
     section.style.zIndex = "3";
     section.classList.add("rectangleAnnotation");
-    canvasWrapper.appendChild(section);
 
     this.doms.push(section);
   }
-}
 
-export class Comment extends Annotation {
   draw(e: RenderEvt): void {
     if (this.isDrawn(e) || !this.data._id) return;
 
     let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    canvasWrapper.append(...this.doms);
+  }
+}
+
+export class Comment extends Annotation {
+  constructor(annotData: AnnotationData) {
+    super(annotData);
+
     // update UI
     let section = document.createElement("section");
     section.setAttribute("annotation-id", this.data._id);
@@ -362,9 +366,14 @@ export class Comment extends Annotation {
     img.draggable = false; // only the section tag to be draggable
     section.append(img);
 
-    canvasWrapper.appendChild(section);
-
     this.doms.push(section);
+  }
+
+  draw(e: RenderEvt): void {
+    if (this.isDrawn(e) || !this.data._id) return;
+
+    let canvasWrapper = e.source.canvas?.parentElement as HTMLElement;
+    canvasWrapper.append(...this.doms);
   }
 }
 

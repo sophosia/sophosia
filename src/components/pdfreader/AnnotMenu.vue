@@ -2,13 +2,15 @@
   <q-menu data-cy="annot-menu">
     <q-list dense>
       <q-item>
-        <ColorPicker @selected="(color: string) => changeColor(color)" />
+        <ColorPicker
+          @selected="(color: string) => $emit('changeColor', color)"
+        />
       </q-item>
       <q-item>
         <div
           class="button full-width"
           v-close-popup
-          @click="copyID()"
+          @click="$emit('copyID')"
         >
           <div style="font-size: 1rem">
             <q-icon name="mdi-content-copy"></q-icon>
@@ -20,7 +22,19 @@
         <div
           class="button full-width"
           v-close-popup
-          @click="deleteAnnot()"
+          @click="$emit('copyAsLink')"
+        >
+          <div style="font-size: 1rem">
+            <q-icon name="mdi-content-copy"></q-icon>
+            {{ $t("copy-annot-as-link") }}
+          </div>
+        </div>
+      </q-item>
+      <q-item>
+        <div
+          class="button full-width"
+          v-close-popup
+          @click="$emit('deleteAnnot')"
         >
           <div style="font-size: 1rem">
             <q-icon name="mdi-delete-outline"></q-icon>
@@ -52,10 +66,8 @@ const emit = defineEmits([
   "deleteAnnot",
   "copyID",
   "scrollIntoView",
+  "copyAsLink",
 ]);
-const changeColor = (color: string) => emit("changeColor", color);
-const deleteAnnot = () => emit("deleteAnnot");
-const copyID = () => emit("copyID");
 </script>
 
 <style scoped lang="scss">

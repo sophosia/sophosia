@@ -6,8 +6,10 @@
     @dblclick="editing = true"
   >
     <q-card-section
-      :style="`background: ${annot.data.color}`"
-      class="q-py-none"
+      :style="`background: ${annot.data.color}; ${
+        isMovable ? 'cursor: move' : ''
+      }`"
+      class="q-py-none non-selectable"
     >
       <div
         :annot-card-id="annot.data._id"
@@ -39,6 +41,16 @@
               () => {
                 $q.notify($t('text-copied'));
                 copyToClipboard(annot.data._id);
+              }
+            "
+            @copyAsLink="
+              () => {
+                $q.notify($t('text-copied'));
+                copyToClipboard(
+                  `[${annot.data.type.toLocaleUpperCase()} - page${
+                    annot.data.pageNumber
+                  }](${annot.data._id})`
+                );
               }
             "
             @scrollIntoView="pdfApp.scrollAnnotIntoView(annot.data._id)"
@@ -75,7 +87,7 @@
   </q-card>
 </template>
 <script setup lang="ts">
-import { ref, inject, PropType, computed, onMounted } from "vue";
+import { ref, inject, PropType, computed, watchEffect, onMounted } from "vue";
 import { Annotation } from "src/backend/pdfannotation/annotations";
 
 import AnnotMenu from "./AnnotMenu.vue";
@@ -112,29 +124,17 @@ const annotContent = computed({
     return props.annot.data.content;
   },
   set(text: string) {
-    if (mdContentDiv.value)
-      Vditor.preview(mdContentDiv.value, text, {
-        theme: {
-          current: stateStore.settings.theme,
-          path: "vditor/dist/css/content-theme",
-        },
-        mode: stateStore.settings.theme,
-        hljs: {
-          lineNumber: true,
-          style: "native",
-        },
-        after: changeLinks,
-        cdn: "vditor", // use local cdn
-      });
     pdfApp.annotStore?.update(props.annot.data._id, {
       content: text,
     } as AnnotationData);
   },
 });
+const isMovable = ref(false);
+defineExpose({ isMovable });
 
-onMounted(() => {
+watchEffect(() => {
   if (mdContentDiv.value)
-    Vditor.preview(mdContentDiv.value, props.annot.data.content, {
+    Vditor.preview(mdContentDiv.value, annotContent.value, {
       theme: {
         current: stateStore.settings.theme,
         path: "vditor/dist/css/content-theme",
@@ -144,7 +144,13 @@ onMounted(() => {
         lineNumber: true,
         style: "native",
       },
-      after: changeLinks,
+      after: () => {
+        // remove <br> tags so that line space is correct
+        (mdContentDiv.value as HTMLElement)
+          .querySelectorAll("p > br")
+          .forEach((el) => el.remove());
+        changeLinks();
+      },
       cdn: "vditor", // use local cdn
     });
 });
@@ -158,25 +164,6 @@ const changeColor = (color: string) => {
 const deleteAnnot = () => {
   pdfApp.annotStore?.delete(props.annot.data._id);
 };
-
-// function changeLinks() {
-//   if (!mdContentDiv.value) return;
-//   let linkNodes = mdContentDiv.value.querySelectorAll(
-//     "a"
-//   ) as NodeListOf<HTMLAnchorElement>;
-//   for (let linkNode of linkNodes) {
-//     linkNode.onclick = (e) => {
-//       e.preventDefault();
-//       try {
-//         // valid external url, open it externally
-//         new URL(linkNode.href);
-//         window.browser.openURL(linkNode.href);
-//       } catch (error) {
-//         console.log(error);
-//       }
-//     };
-//   }
-// }
 
 function changeLinks() {
   if (!mdContentDiv.value) return;

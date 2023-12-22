@@ -500,6 +500,10 @@ export default class PDFApplication {
     let annot = this.annotStore.getById(annotId) as Annotation;
     // change number first in case the dom is not rendered
     this.changePageNumber(annot.data.pageNumber);
+    annot.doms[0].scrollIntoView({
+      block: "center",
+      inline: "center",
+    });
     nextTick(() => {
       this.annotStore.setActive(annotId);
     });

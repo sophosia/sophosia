@@ -165,5 +165,6 @@
   "remove-from-list": "从列表中移除",
   "change-path": "改变路径",
   "new-folder": "新建文件夹",
-  "relaunch-app": "请重新启动 Sophosia"
+  "relaunch-app": "请重新启动 Sophosia",
+  "copy-annot-as-link": "复制注释为连接"
 }

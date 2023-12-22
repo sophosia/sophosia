@@ -81,18 +81,6 @@ export interface NoteBook {
 export interface FolderOrNote {
   _id: string;
   label: string;
-  dataType: string;
-  path: string;
-  type?: NoteType;
-  children?: FolderOrNote[];
-}
-
-/**
- * Multilevel note and folder support
- */
-export interface FolderOrNote {
-  _id: string;
-  label: string;
   dataType: "folder" | "note";
   type?: NoteType;
   children?: FolderOrNote[];
@@ -299,7 +287,7 @@ export interface Page {
   id: string;
   type: string;
   label: string;
-  data?: { path: string };
+  data?: { path?: string; focusAnnotId?: string };
 }
 
 /*******************

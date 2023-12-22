@@ -36,6 +36,7 @@
           v-if="showAnnotCard && pdfApp.annotStore.selected"
           :style="style"
           :annot="(pdfApp.annotStore.selected as Annotation)"
+          ref="card"
         />
         <FloatingMenu
           v-if="showFloatingMenu"
@@ -59,11 +60,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, provide, onMounted, computed } from "vue";
+import { ref, watch, provide, onMounted, computed, nextTick } from "vue";
 import {
   AnnotationData,
   AnnotationType,
-  PDFState,
   Project,
   Rect,
 } from "src/backend/database";
@@ -76,18 +76,20 @@ import AnnotCard from "./AnnotCard.vue";
 import FloatingMenu from "./FloatingMenu.vue";
 import PeekCard from "./PeekCard.vue";
 
-import { getPDF, getProject } from "src/backend/project/project";
+import { getProject } from "src/backend/project/project";
 import PDFApplication from "src/backend/pdfreader";
 import { Ink } from "src/backend/pdfannotation/annotations";
 import { QSplitter, throttle } from "quasar";
 import { Annotation } from "src/backend/pdfannotation/annotations";
 import { db } from "src/backend/database";
-import { join } from "@tauri-apps/api/path";
 
 /**********************************
  * Props, Data, and component refs
  **********************************/
-const props = defineProps({ projectId: { type: String, required: true } });
+const props = defineProps({
+  projectId: { type: String, required: true },
+  focusAnnotId: { type: String, required: false },
+});
 
 // viewer containers
 const viewerContainer = ref<HTMLDivElement>();
@@ -104,7 +106,7 @@ const showRightMenu = computed({
   },
   set(visible: boolean) {
     if (visible) {
-      rightMenuSize.value = Math.max(prvRightMenuSize.value, 15);
+      rightMenuSize.value = Math.max(prvRightMenuSize.value, 25);
     } else {
       prvRightMenuSize.value = rightMenuSize.value;
       rightMenuSize.value = 0;
@@ -113,6 +115,7 @@ const showRightMenu = computed({
 });
 
 // annot card & colorpicker
+const card = ref();
 const showAnnotCard = ref(false);
 const showFloatingMenu = ref(false);
 const selectionPage = ref(0);
@@ -182,6 +185,9 @@ function toggleAnnotCard(show: boolean, annot?: Annotation) {
     if (!annot) return;
     setPosition(annot.doms.map((dom) => dom.getBoundingClientRect()));
     showAnnotCard.value = true;
+    nextTick(() => {
+      enableDragToMoveAnnotCard();
+    });
   }
 }
 
@@ -211,9 +217,37 @@ function setPosition(rects: DOMRect[] | DOMRectList) {
   position: absolute;
   left: ${mid - bgRect.left - 75}px;
   top: ${top - bgRect.top + 20}px;
-  min-width: 150px;
+  min-width: 400px;
   z-index: 100;
   `;
+}
+
+function enableDragToMoveAnnotCard() {
+  if (!card.value) return;
+  card.value.isMovable = true;
+  const cardEl = card.value.$el as HTMLElement;
+  const cardHandleEl = cardEl.firstChild as HTMLElement;
+  cardHandleEl.onmousedown = (e: MouseEvent) => {
+    let x = e.clientX;
+    let y = e.clientY;
+    let shiftX = 0;
+    let shiftY = 0;
+    let top = parseFloat(cardEl.style.top);
+    let left = parseFloat(cardEl.style.left);
+    const parentDiv = cardEl.parentElement as HTMLElement;
+    parentDiv.onmousemove = (ev: MouseEvent) => {
+      ev.preventDefault();
+      shiftX = ev.clientX - x;
+      shiftY = ev.clientY - y;
+      cardEl.style.left = `${left + shiftX}px`;
+      cardEl.style.top = `${top + shiftY}px`;
+    };
+
+    cardHandleEl.onmouseup = () => {
+      // cardHandleEl.onmousedown = null;
+      parentDiv.onmousemove = null;
+    };
+  };
 }
 
 function highlightText(color: string) {
@@ -245,8 +279,8 @@ async function loadPDF(projectId: string) {
   if (!project.value.path) return;
   // load state before loading pdf
   await pdfApp.loadState(project.value._id);
-  await pdfApp.loadPDF(project.value.path);
   await pdfApp.loadAnnotations();
+  await pdfApp.loadPDF(project.value.path);
 }
 
 /******************
@@ -264,6 +298,14 @@ watch(pdfApp.state, (state) => {
   pdfApp.saveState(state);
 });
 
+watch(
+  () => props.focusAnnotId,
+  () => {
+    // scroll to annot when focusAnnotId changes
+    if (props.focusAnnotId) pdfApp.scrollAnnotIntoView(props.focusAnnotId);
+  }
+);
+
 /**************************************************
  * Implement eventhandlers and init PDFApplication
  **************************************************/
@@ -271,6 +313,10 @@ onMounted(async () => {
   if (!viewerContainer.value) return;
   pdfApp.init(viewerContainer.value as HTMLDivElement);
 
+  // scroll to annot when pages are ready
+  pdfApp.eventBus?.on("pagesinit", () => {
+    if (props.focusAnnotId) pdfApp.scrollAnnotIntoView(props.focusAnnotId);
+  });
   pdfApp.eventBus?.on(
     "annotationeditorlayerrendered",
     async (e: {
