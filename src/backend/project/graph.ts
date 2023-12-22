@@ -1,20 +1,9 @@
 /**
  * For drawing the graphs in cytoscape.
  */
-import { Edge, EdgeUI, NodeUI, Note, Project, db, idb } from "../database";
+import { Edge, EdgeUI, NodeUI, Note, Project, idb } from "../database";
 import { getNote, getNotes } from "./note";
 import { getProject } from "./project";
-import { exists } from "@tauri-apps/api/fs";
-import { join } from "@tauri-apps/api/path";
-
-async function itemExists(itemId: string) {
-  const item = itemId.includes("/")
-    ? await getNote(itemId)
-    : await getProject(itemId);
-  if (!item) return false;
-  else if (item.dataType === "note") return await exists(item.path);
-  else return await exists(await join(db.storagePath, item._id));
-}
 
 /**
  * Update links of a note

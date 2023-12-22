@@ -59,7 +59,7 @@ export async function createNote(folderId: string, type: NoteType) {
 export async function addNote(note: Note): Promise<Note | undefined> {
   try {
     // create actual file
-    await writeTextFile(note.path, "");
+    await writeTextFile(IdToPath(note._id), "");
 
     // add to db
     await idb.put("notes", { noteId: note._id });
@@ -204,14 +204,12 @@ export async function getNoteTree(projectId: string) {
       const node = {} as FolderOrNote;
       node._id = pathToId(entry.path);
       node.label = entry.name as string;
-      node.path = entry.path;
       if (meta.isFile) {
         const ext = await extname(entry.path);
         if (!["md", "excalidraw"].includes(ext)) continue;
         if (entry.name == projectId + ".md") continue; // skip project note
         node.dataType = "note";
         node.type = ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW;
-        node.path = entry.path;
       } else if (entry.children) {
         node.dataType = "folder";
         node.children = [] as FolderOrNote[];
@@ -248,7 +246,7 @@ export async function loadNote(
 ): Promise<string> {
   try {
     const note = (await getNote(noteId)) as Note;
-    return await readTextFile(notePath || note.path);
+    return await readTextFile(notePath || IdToPath(note._id));
   } catch (error) {
     return "";
   }
@@ -266,7 +264,7 @@ export async function saveNote(
 ) {
   try {
     const note = (await getNote(noteId)) as Note;
-    await writeTextFile(notePath || note.path, content);
+    await writeTextFile(notePath || IdToPath(note._id), content);
   } catch (error) {
     console.log(error);
   }
@@ -286,7 +284,6 @@ export async function uploadImage(
   try {
     const imgType: string = await extname(file.name); // png
     const imgName: string = `SI${db.nanoid}.${imgType}`; // use nanoid as img name
-    // const imgFolder: string = await join(await dirname(note.path), "img");
     const imgFolder: string = await join(db.storagePath, ".sophosia", "image");
     const imgPath: string = await join(imgFolder, imgName);
     if (!(await exists(imgFolder))) await createDir(imgFolder);
@@ -322,7 +319,7 @@ export async function createFolder(parentFolderId: string) {
 
 export async function addFolder(folder: FolderOrNote) {
   try {
-    await createDir(folder.path);
+    await createDir(IdToPath(folder._id));
   } catch (error) {
     console.log(error);
   }

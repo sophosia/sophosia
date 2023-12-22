@@ -154,10 +154,10 @@ import { Project, Note, NoteType, db } from "src/backend/database";
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { copyToClipboard } from "quasar";
-import { basename, join } from "@tauri-apps/api/path";
+import { basename, dirname, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
-import { oldToNewId } from "src/backend/project/utils";
+import { IdToPath, oldToNewId } from "src/backend/project/utils";
 
 const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
@@ -190,10 +190,12 @@ function copyID() {
 }
 
 async function showInExplorer() {
-  if (!props.item.path) return;
-  await invoke("show_in_folder", {
-    path: props.item.path,
-  });
+  const path =
+    props.item.dataType === "project"
+      ? props.item.path
+      : IdToPath(props.item._id);
+  if (!path) return;
+  await invoke("show_in_folder", { path: path });
 }
 
 function clickItem() {
@@ -206,7 +208,7 @@ function openItem() {
   let type = "";
   if (props.item.dataType === "project") {
     if (props.item.path) type = "ReaderPage";
-  } else if ((props.item as Project | Note).dataType === "note") {
+  } else if (props.item.dataType === "note") {
     if (props.item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
     else type = "NotePage";
   }
@@ -259,12 +261,11 @@ async function checkDuplicate() {
   const extension =
     props.item.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
   const path = await join(
-    db.storagePath,
-    props.item.projectId,
+    await dirname(IdToPath(props.item._id)),
     label.value + extension
   );
 
-  if ((await exists(path)) && path !== props.item.path)
+  if ((await exists(path)) && path !== IdToPath(props.item._id))
     pathDuplicate.value = true;
   else pathDuplicate.value = false;
 }
