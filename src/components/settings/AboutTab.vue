@@ -72,6 +72,7 @@ onMounted(async () => {
     } else {
       updateMsg.value = `Status: ${status}`;
       disabled.value = true; // the thing is already downloading
+      if (status === "DONE") updateMsg.value += "\n" + t("relaunch-app");
     }
   });
   version.value = "v" + (await getVersion());
@@ -80,7 +81,7 @@ onMounted(async () => {
 onBeforeUnmount(() => unlisten.value());
 
 async function checkForUpdate() {
-  updateMsg.value = "Checking update";
+  updateMsg.value = t("check-for-updates");
   const update = await checkUpdate();
   isUpdateAvailable.value = update.shouldUpdate;
   if (!update.shouldUpdate) return;
