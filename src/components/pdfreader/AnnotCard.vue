@@ -4,10 +4,12 @@
     bordered
     flat
     @dblclick="editing = true"
+    ref="card"
   >
     <q-card-section
-      :style="`background: ${annot.data.color}`"
-      class="q-py-none"
+      :style="`background: ${annot.data.color}; cursor: move`"
+      class="q-py-none non-selectable"
+      ref="cardHandle"
     >
       <div
         :annot-card-id="annot.data._id"
@@ -85,7 +87,7 @@
   </q-card>
 </template>
 <script setup lang="ts">
-import { ref, inject, PropType, computed, watchEffect } from "vue";
+import { ref, inject, PropType, computed, watchEffect, onMounted } from "vue";
 import { Annotation } from "src/backend/pdfannotation/annotations";
 
 import AnnotMenu from "./AnnotMenu.vue";
@@ -127,6 +129,8 @@ const annotContent = computed({
     } as AnnotationData);
   },
 });
+const card = ref();
+const cardHandle = ref();
 
 watchEffect(() => {
   if (mdContentDiv.value)
@@ -222,4 +226,36 @@ function changeLinks() {
     );
   }
 }
+
+function enableDragToMove() {
+  if (!card.value && !cardHandle.value) return;
+
+  const cardEl = card.value.$el as HTMLElement;
+  const cardHandleEl = cardHandle.value.$el as HTMLElement;
+  cardHandleEl.onmousedown = (e: MouseEvent) => {
+    let x = e.clientX;
+    let y = e.clientY;
+    let shiftX = 0;
+    let shiftY = 0;
+    let top = parseFloat(cardEl.style.top);
+    let left = parseFloat(cardEl.style.left);
+    const parentDiv = cardEl.parentElement as HTMLElement;
+    parentDiv.onmousemove = (ev: MouseEvent) => {
+      ev.preventDefault();
+      shiftX = ev.clientX - x;
+      shiftY = ev.clientY - y;
+      cardEl.style.left = `${left + shiftX}px`;
+      cardEl.style.top = `${top + shiftY}px`;
+    };
+
+    cardHandleEl.onmouseup = () => {
+      cardHandleEl.onmousedown = null;
+      parentDiv.onmousemove = null;
+    };
+  };
+}
+
+onMounted(() => {
+  enableDragToMove();
+});
 </script>
