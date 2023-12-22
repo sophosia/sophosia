@@ -41,7 +41,6 @@ import { dirname, join, sep } from "@tauri-apps/api/path";
 import HoverPane from "./HoverPane.vue";
 import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
-import { useProjectStore } from "src/stores/projectStore";
 import { getForwardLinks, updateLinks } from "src/backend/project/graph";
 import { isLinkUpdated } from "src/backend/project/scan";
 
@@ -351,14 +350,16 @@ async function hoverLink(linkNode: HTMLElement) {
       if (!vditorDiv.value) return;
       let rect = linkNode.getBoundingClientRect();
       let parentRect = vditorDiv.value.getBoundingClientRect();
+      console.log("parentRect", parentRect);
+      console.log("rect", rect);
       hoverPane.value.card.$el.style.left = `${rect.left - parentRect.left}px`;
-      if (rect.bottom / parentRect.bottom > 0.5) {
+      // default the hoverPane appears below the link
+      hoverPane.value.card.$el.style.top = `${rect.bottom - parentRect.top}px`;
+      if (rect.bottom + 0.5 * parentRect.height > parentRect.bottom) {
+        // if the hoverPane is below the bottom, we place it above the link
+        hoverPane.value.card.$el.style.top = "";
         hoverPane.value.card.$el.style.bottom = `${
           parentRect.bottom - rect.top
-        }px`;
-      } else {
-        hoverPane.value.card.$el.style.top = `${
-          rect.bottom - parentRect.top
         }px`;
       }
       hoverPane.value.card.$el.hidden = false;
