@@ -334,7 +334,7 @@ function onDragLeave(e: DragEvent, node: Folder) {
  * If draggedProjects is not empty, then we are dropping projects into folder
  * Otherwise we are dropping folder into another folder
  * @param e - dragevent
- * @param node - the folder / project user is dragging
+ * @param node - the folder / project user is dragging over
  */
 async function onDrop(e: DragEvent, node: Folder) {
   // record this first otherwise dragend events makes it null

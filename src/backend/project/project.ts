@@ -1,4 +1,4 @@
-import { AppState, db, Note, Project, SpecialFolder } from "../database";
+import { db, FolderOrNote, Note, Project, SpecialFolder } from "../database";
 import {
   copyFileToProjectFolder,
   createProjectFolder,
@@ -9,7 +9,7 @@ import { open } from "@tauri-apps/api/dialog";
 import { readDir, renameFile } from "@tauri-apps/api/fs";
 import { authorToString, IdToPath } from "./utils";
 import { i18n } from "src/boot/i18n";
-import { getNotes, saveNote } from "./note";
+import { getNotes, getNoteTree, saveNote } from "./note";
 import { generateCiteKey } from "./meta";
 import { metadata } from "tauri-plugin-fs-extra-api";
 const { t } = i18n.global;
@@ -31,7 +31,7 @@ export function createProject(folderId: string) {
     tags: [] as string[],
     folderIds: [SpecialFolder.LIBRARY.toString()],
     favorite: false,
-    children: [] as Note[],
+    children: [] as FolderOrNote[],
   } as Project;
   if (folderId != SpecialFolder.LIBRARY.toString())
     project.folderIds.push(folderId);
@@ -141,7 +141,8 @@ export async function getProject(
   try {
     const project = (await db.get(projectId)) as Project;
     if (options?.includePDF) project.path = await getPDF(projectId);
-    if (options?.includeNotes) project.children = await getNotes(projectId);
+    // if (options?.includeNotes) project.children = await getNotes(projectId);
+    if (options?.includeNotes) project.children = await getNoteTree(projectId);
     return project;
   } catch (error) {
     console.log(error);

@@ -1,11 +1,16 @@
 import { defineStore } from "pinia";
-import { Note, NoteType, Project, AppState, idb } from "src/backend/database";
+import { Note, NoteType, Project, FolderOrNote } from "src/backend/database";
 import {
-  getNotes,
+  addFolder,
+  createFolder,
+  deleteFolder,
+  renameFolder,
+} from "src/backend/project/note";
+import {
   getNote,
   addNote,
   deleteNote,
-  updateNote,
+  renameNote,
   createNote,
 } from "src/backend/project/note";
 import {
@@ -29,7 +34,6 @@ export const useProjectStore = defineStore("projectStore", {
 
     updatedProject: {} as Project, // for updating window tab name
     renamingNoteId: "",
-    renamedNote: {} as Note, // for notifying note editor the note has been renamed
   }),
 
   actions: {
@@ -158,11 +162,11 @@ export const useProjectStore = defineStore("projectStore", {
 
     /**
      * Create a note data
-     * @param projectId
+     * @param folderId
      * @param type
      */
-    async createNote(projectId: string, type: NoteType) {
-      return await createNote(projectId, type);
+    async createNote(folderId: string, type: NoteType) {
+      return await createNote(folderId, type);
     },
 
     /**
@@ -172,17 +176,19 @@ export const useProjectStore = defineStore("projectStore", {
     async addNote(note: Note) {
       // update db
       note = (await addNote(note)) as Note;
+      console.log("note", note);
       // update ui
-      let project = await this.getProjectFromDB(note.projectId);
+      const project = await this.getProjectFromDB(note.projectId);
+      sortTree(project);
       this._updateProjectUI(project);
     },
 
-    async updateNote(noteId: string, props: Note): Promise<Note> {
+    async renameNote(oldNoteId: string, newNoteId: string): Promise<Note> {
       // update db
-      let note = (await updateNote(noteId, props)) as Note;
-      this.renamedNote = note;
+      let note = (await renameNote(oldNoteId, newNoteId)) as Note;
       // update ui
       let project = await this.getProjectFromDB(note.projectId);
+      sortTree(project);
       this._updateProjectUI(project);
       return note;
     },
@@ -191,6 +197,7 @@ export const useProjectStore = defineStore("projectStore", {
       let note = (await this.getNoteFromDB(noteId)) as Note;
       await deleteNote(note);
       let project = await this.getProjectFromDB(note.projectId);
+      sortTree(project);
       this._updateProjectUI(project);
     },
 
@@ -200,6 +207,37 @@ export const useProjectStore = defineStore("projectStore", {
 
     async getNoteFromDB(noteId: string) {
       return await getNote(noteId);
+    },
+
+    async createFolder(parentFolderId: string) {
+      return await createFolder(parentFolderId);
+    },
+
+    async addFolder(folder: FolderOrNote) {
+      await addFolder(folder);
+      // update ui
+      const projectId = folder._id.split("/")[0];
+      const project = await this.getProjectFromDB(projectId);
+      sortTree(project);
+      this._updateProjectUI(project);
+    },
+
+    async deleteFolder(folderId: string) {
+      await deleteFolder(folderId);
+      // update ui
+      const projectId = folderId.split("/")[0];
+      const project = await this.getProjectFromDB(projectId);
+      sortTree(project);
+      this._updateProjectUI(project);
+    },
+
+    async renameFolder(oldFolderId: string, newFolderId: string) {
+      await renameFolder(oldFolderId, newFolderId);
+      // update ui
+      const projectId = newFolderId.split("/")[0];
+      const project = await this.getProjectFromDB(projectId);
+      sortTree(project);
+      this._updateProjectUI(project);
     },
   },
 });

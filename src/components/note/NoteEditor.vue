@@ -2,6 +2,7 @@
   <div
     v-show="showEditor"
     ref="vditorDiv"
+    :id="`vditor-${props.noteId}`"
   ></div>
   <HoverPane
     v-show="hoverContent"
@@ -57,7 +58,6 @@ const props = defineProps({
 // noteId might change as user rename
 // data.path won't change since it will be some special note
 // content will be read/write to path
-const noteId = ref(props.noteId);
 const vditor = ref<Vditor | null>(null);
 const vditorDiv = ref<HTMLElement | null>(null);
 const showEditor = ref(false);
@@ -65,22 +65,12 @@ const hoverPane = ref();
 const hoverContent = ref("");
 // tells HoverPane the hovered project path prefix and the content to show
 const hoverData = ref({ content: "" });
-const projectStore = useProjectStore();
 const links = ref<Edge[]>([]);
 
 watch(
   () => stateStore.settings.theme,
   (theme: string) => {
     setTheme(theme);
-  }
-);
-
-watch(
-  () => projectStore.renamedNote,
-  (note: Note) => {
-    noteId.value = note._id;
-    if (vditorDiv.value)
-      vditorDiv.value.setAttribute("id", `vditor-${noteId.value}`);
   }
 );
 
@@ -96,8 +86,7 @@ watch(isLinkUpdated, async () => {
 
 onMounted(async () => {
   if (!vditorDiv.value) return;
-  links.value = await getForwardLinks(noteId.value);
-  vditorDiv.value.setAttribute("id", `vditor-${noteId.value}`);
+  links.value = await getForwardLinks(props.noteId);
   showEditor.value = true;
   initEditor();
   await nextTick();
@@ -130,8 +119,7 @@ function initEditor() {
       "|",
       { name: "upload", tipPosition: "s", tip: t("upload-image") },
     ];
-
-  vditor.value = new Vditor("vditor-" + noteId.value, {
+  vditor.value = new Vditor("vditor-" + props.noteId, {
     height: "100%",
     mode: "ir",
     toolbarConfig: {
@@ -222,8 +210,8 @@ function setTheme(theme: string) {
  *****************************************/
 
 async function setContent() {
-  if (!vditor.value || (!noteId.value && !props.data?.path)) return;
-  let content = await loadNote(noteId.value, props.data?.path);
+  if (!vditor.value || (!props.noteId && !props.data?.path)) return;
+  let content = await loadNote(props.noteId, props.data?.path);
   vditor.value.setValue(content);
 }
 
@@ -232,7 +220,7 @@ async function _saveContent() {
   // this will be called before unmount
   if (!vditor.value || !props.save) return;
   let content = vditor.value.getValue();
-  await saveNote(noteId.value, content, props.data?.path);
+  await saveNote(props.noteId, content, props.data?.path);
   await saveLinks(); // only save links if it's a built-in note
 }
 
@@ -252,7 +240,7 @@ async function saveLinks() {
       // this is a valid url, do nothing
     } catch (error) {
       // this is an invalid url, might be an id
-      newLinks.push({ source: noteId.value, target: href });
+      newLinks.push({ source: props.noteId, target: href });
     }
   }
 
@@ -261,7 +249,7 @@ async function saveLinks() {
   let newLinkIds = Array.from(new Set(newLinks.map((link) => link.target)));
   if (!_.isEqual(linkIds, newLinkIds)) {
     // update indexeddb
-    await updateLinks(noteId.value, newLinks);
+    await updateLinks(props.noteId, newLinks);
     links.value = newLinks;
     // notify graphview to update
     bus.emit("updateGraph");

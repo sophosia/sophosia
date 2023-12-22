@@ -18,91 +18,50 @@
       <div
         style="width: calc(100% - 23px)"
         class="row"
+        :class="{
+          dragover:
+            !!dragoverNode &&
+            dragoverNode == prop.node &&
+            draggingNode != prop.node,
+        }"
         @click="selectItem(prop.node)"
+        :draggable="prop.node.dataType !== 'project'"
+        @dragstart="(e) => onDragStart(e, prop.node)"
+        @dragover="(e) => onDragOver(e, prop.node)"
+        @dragleave="(e) => onDragLeave(e, prop.node)"
+        @drop="(e) => onDrop(e, prop.node)"
       >
-        <q-menu
-          square
-          touch-position
-          context-menu
-          @before-show="menuSwitch(prop.node)"
-        >
-          <!-- menu for project -->
-          <q-list
-            dense
-            v-if="showProjectMenu"
-          >
-            <q-item
-              clickable
-              v-close-popup
-              @click="addNote(prop.node, NoteType.MARKDOWN)"
-            >
-              <q-item-section>
-                {{ $t("add-markdown-note") }}
-              </q-item-section>
-            </q-item>
-            <q-item
-              clickable
-              v-close-popup
-              @click="addNote(prop.node, NoteType.EXCALIDRAW)"
-            >
-              <q-item-section>
-                {{ $t("add-excalidraw") }}
-              </q-item-section>
-            </q-item>
-            <q-separator />
-            <q-item
-              clickable
-              v-close-popup
-              @click="showInExplorer(prop.node)"
-            >
-              <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
-            </q-item>
-            <q-item
-              clickable
-              v-close-popup
-              @click="closeProject(prop.key)"
-            >
-              <q-item-section>
-                {{ $t("close-project") }}
-              </q-item-section>
-            </q-item>
-          </q-list>
-
-          <!-- menu for notes -->
-          <q-list
-            dense
-            v-else
-          >
-            <q-item
-              clickable
-              v-close-popup
-              @click="showInExplorer(prop.node)"
-            >
-              <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
-            </q-item>
-            <q-item
-              clickable
-              v-close-popup
-              @click="setRenameNote(prop.node._id)"
-              :disable="prop.node.label === prop.node.projectId + '.md'"
-            >
-              <q-item-section> {{ $t("rename") }} </q-item-section>
-            </q-item>
-            <q-item
-              clickable
-              v-close-popup
-              @click="deleteNote(prop.node)"
-              :disable="prop.node.label === prop.node.projectId + '.md'"
-            >
-              <q-item-section> {{ $t("delete") }} </q-item-section>
-            </q-item>
-          </q-list>
-        </q-menu>
+        <ProjectMenu
+          v-if="prop.node.dataType === 'project'"
+          @showInExplorer="showInExplorer(prop.node)"
+          @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
+          @addFolder="addNode(prop.node._id, 'folder')"
+          @closeProject="closeProject(prop.node._id)"
+        />
+        <NoteMenu
+          v-else-if="prop.node.dataType === 'note'"
+          @showInExplorer="showInExplorer(prop.node)"
+          @rename="setRenameNode(prop.node)"
+          @delete="deleteNode(prop.node)"
+        />
+        <FolderMenu
+          v-else
+          @showInExplorer="showInExplorer(prop.node)"
+          @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
+          @addFolder="addNode(prop.node._id, 'folder')"
+          @renameFolder="setRenameNode(prop.node)"
+          @deleteFolder="deleteNode(prop.node)"
+        />
 
         <q-icon
           v-if="prop.node.dataType === 'project'"
           size="1.4rem"
           name="mdi-book-open-blank-variant"
+        />
+        <q-icon
+          v-else-if="prop.node.dataType === 'folder'"
+          size="1.4rem"
+          :name="prop.expanded ? 'mdi-folder-open' : 'mdi-folder'"
         />
         <q-icon
           v-else-if="
@@ -120,13 +79,13 @@
         />
         <!-- note icon has 1rem width -->
         <!-- input must have keypress.space.stop since space is default to expand row rather than space in text -->
-        <div v-if="prop.node._id == renamingNoteId">
+        <div v-if="prop.node._id == renamingNodeId">
           <input
             style="width: calc(100% - 1.4rem)"
             v-model="prop.node.label"
             @input="checkDuplicate(prop.node)"
-            @keydown.enter="renameNote"
-            @blur="renameNote"
+            @keydown.enter="renameNode"
+            @blur="renameNode"
             @keypress.space.stop
             ref="renameInput"
           />
@@ -167,27 +126,44 @@
 <script setup lang="ts">
 import { inject, nextTick, onMounted, ref, watch } from "vue";
 import { QTree } from "quasar";
-import { Note, NoteType, Page, Project, db } from "src/backend/database";
+import {
+  FolderOrNote,
+  Note,
+  NoteType,
+  Page,
+  Project,
+  db,
+} from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { getProject } from "src/backend/project/project";
-import { join } from "@tauri-apps/api/path";
-import { exists } from "@tauri-apps/api/fs";
+import { dirname, join } from "@tauri-apps/api/path";
+import { exists, renameFile } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
+import { metadata } from "tauri-plugin-fs-extra-api";
+import { IdToPath, oldToNewId, pathToId } from "src/backend/project/utils";
+//components
+import NoteMenu from "./NoteMenu.vue";
+import ProjectMenu from "./ProjectMenu.vue";
+import FolderMenu from "./FolderMenu.vue";
+import { getNotes } from "src/backend/project/note";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 
 const tree = ref<QTree | null>(null);
 const renameInput = ref<HTMLInputElement | null>(null);
-// const renamingNote = ref<QTreeNode | null>(null);
-const renamingNoteId = ref("");
+const renamingNodeId = ref("");
+const renamingNodeType = ref("");
 const oldNoteName = ref("");
 const pathDuplicate = ref(false);
-const addingNote = ref(false);
+const addingNode = ref(false);
 const expanded = ref<string[]>([]);
 const showProjectMenu = ref(true);
+const draggingNode = ref<FolderOrNote | null>(null);
+const dragoverNode = ref<FolderOrNote | null>(null);
+const enterTime = ref(0);
 
 const updateComponent = inject("updateComponent") as (
   oldItemId: string,
@@ -237,26 +213,24 @@ function menuSwitch(node: Project | Note) {
   }
 }
 
-function selectItem(node: Project | Note) {
+function selectItem(node: Project | FolderOrNote) {
   console.log("node", node);
   stateStore.currentItemId = node._id;
-  if (node.dataType === "project" && (node.children?.length as number) > 0)
-    expanded.value.push(node._id);
+  if ((node.children?.length as number) > 0) expanded.value.push(node._id);
+  if (node.dataType === "folder") return;
 
   // open item
   let id = node._id;
   let label = node.label;
   let type = "";
   if (node.dataType === "project") type = "ReaderPage";
-  else if ((node as Project | Note).dataType === "note") {
-    if (node.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-    else type = "NotePage";
-  }
+  else if (node.dataType === "note")
+    type = node.type === NoteType.EXCALIDRAW ? "ExcalidrawPage" : "NotePage";
+
   stateStore.openPage({ id, type, label });
 }
 
 async function showInExplorer(node: Project | Note) {
-  // don't use props.row.path because it might not exists
   const path = node.path || (await join(db.storagePath, node._id));
   await invoke("show_in_folder", {
     path: path,
@@ -286,40 +260,40 @@ async function closeProject(projectId: string) {
   }, 50);
 }
 
-async function addNote(project: Project, type: NoteType) {
-  let note = await projectStore.createNote(project._id, type);
-  await projectStore.addNote(note);
-  expanded.value.push(project._id);
-  addingNote.value = true;
-  // rename note
-  await nextTick(); // wait until ui updates
-  setRenameNote(note._id);
-}
-
-async function deleteNote(note: Note) {
-  stateStore.closePage(note._id);
-  await projectStore.deleteNote(note._id);
-  // select something else if the selectedItem is deleted
-  if (note._id === projectStore.selected[0]?._id) {
-    let project = projectStore.openedProjects.find(
-      (p) => p._id === note.projectId
-    );
-
-    if (project && project.children) {
-      if (project.children.length == 0) {
-        selectItem(project);
-      } else {
-        selectItem(project.children[0]);
-      }
-    }
+/**
+ * Add a node with nodeType under the parent node
+ * @param parentNodeId add node under this parent node
+ * @param noteType (optional) the added note type
+ */
+async function addNode(
+  parentNodeId: string,
+  nodeType: "folder" | "note",
+  noteType?: NoteType
+) {
+  let node;
+  if (nodeType === "note" && noteType) {
+    node = await projectStore.createNote(parentNodeId, noteType);
+    await projectStore.addNote(node);
+  } else if (nodeType === "folder") {
+    node = await projectStore.createFolder(parentNodeId);
+    await projectStore.addFolder(node);
   }
+
+  if (!node) return;
+
+  expanded.value.push(parentNodeId);
+  addingNode.value = true;
+  // rename node
+  await nextTick(); // wait until ui updates
+  setRenameNode(node);
 }
 
-function setRenameNote(noteId: string) {
+function setRenameNode(node: FolderOrNote) {
   // set renaming note and show input
-  renamingNoteId.value = noteId;
+  renamingNodeId.value = node._id;
+  renamingNodeType.value = node.dataType;
   oldNoteName.value = (
-    tree.value!.getNodeByKey(renamingNoteId.value) as Note
+    tree.value!.getNodeByKey(renamingNodeId.value) as Note
   ).label;
   pathDuplicate.value = false;
 
@@ -333,38 +307,154 @@ function setRenameNote(noteId: string) {
   }, 100);
 }
 
-async function renameNote() {
-  const note = tree.value?.getNodeByKey(renamingNoteId.value) as Note;
-  if (!!!note) return;
+async function renameNode() {
+  const node = tree.value?.getNodeByKey(renamingNodeId.value) as FolderOrNote;
+  if (!!!node) return;
 
   if (pathDuplicate.value) {
-    note.label = oldNoteName.value;
+    node.label = oldNoteName.value;
   } else {
-    let newNote = await projectStore.updateNote(note._id, note);
-
-    // update window tab name
-    updateComponent(renamingNoteId.value, {
-      id: newNote._id,
-      label: newNote.label,
-    });
+    const oldNodeId = renamingNodeId.value;
+    const newLabel = node.label;
+    const newNodeId = await oldToNewId(oldNodeId, newLabel);
+    if (renamingNodeType.value === "note") {
+      // update window tab name
+      updateComponent(oldNodeId, {
+        id: newNodeId,
+        label: newLabel,
+      });
+      await nextTick(); // wait until itemId changes in the page
+      await projectStore.renameNote(oldNodeId, newNodeId);
+    } else if (renamingNodeType.value === "folder") {
+      await projectStore.renameFolder(oldNodeId, newNodeId);
+    }
   }
 
-  if (addingNote.value) selectItem(note); // open the note
-  addingNote.value = false;
-  renamingNoteId.value = "";
+  if (addingNode.value) selectItem(node); // select after adding it
+  addingNode.value = false;
+  renamingNodeId.value = "";
   oldNoteName.value = "";
 }
 
 async function checkDuplicate(note: Note) {
   if (!note) return;
   const extension = note.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
-  const path = await join(
-    db.storagePath,
-    note.projectId,
-    note.label + extension
-  );
+  const path = await join(await dirname(note.path), note.label + extension);
 
   if ((await exists(path)) && path !== note.path) pathDuplicate.value = true;
   else pathDuplicate.value = false;
 }
+
+async function deleteNode(node: FolderOrNote) {
+  if (node.dataType === "note") {
+    stateStore.closePage(node._id);
+    await projectStore.deleteNote(node._id);
+  } else if (node.dataType === "folder") {
+    const notes = await getNotes(node._id);
+    for (const note of notes) stateStore.closePage(note._id);
+    await projectStore.deleteFolder(node._id);
+  }
+  // select something else if the selectedItem is deleted
+  if (node._id === projectStore.selected[0]?._id) {
+    const projectId = node._id.split("/")[0];
+    let project = projectStore.openedProjects.find((p) => p._id === projectId);
+
+    if (project && project.children) {
+      if (project.children.length == 0) {
+        selectItem(project);
+      } else {
+        selectItem(project.children[0]);
+      }
+    }
+  }
+}
+
+/**
+ * Drag and Drop
+ */
+/**
+ * On dragstart, set the dragging folder
+ * @param e - dragevent
+ * @param node - the folder user is dragging
+ */
+function onDragStart(e: DragEvent, node: FolderOrNote) {
+  draggingNode.value = node;
+  // need to set transfer data for some browsers to work
+  e.dataTransfer?.setData("draggingNode", JSON.stringify(node));
+}
+
+/**
+ * When dragging node enters the folder, highlight and expand it.
+ * @param e - dragevent
+ * @param node - the folder user is dragging over
+ */
+function onDragOver(e: DragEvent, node: FolderOrNote) {
+  // enable drop on the node
+  e.preventDefault();
+
+  // hightlight the dragover folder
+  dragoverNode.value = node;
+
+  // expand the node if this function is called over many times
+  enterTime.value++;
+  if (enterTime.value > 15) {
+    if (node._id in expanded.value) return;
+    expanded.value.push(node._id);
+  }
+}
+
+/**
+ * When the dragging node leaves the folders, reset the timer
+ * @param e
+ * @param node
+ */
+function onDragLeave(e: DragEvent, node: FolderOrNote) {
+  enterTime.value = 0;
+  dragoverNode.value = null; // dehighlight the folder
+}
+
+/**
+ * If draggedProjects is not empty, then we are dropping projects into folder
+ * Otherwise we are dropping folder into another folder
+ * @param e - dragevent
+ * @param node - the folder / project user is dragging over
+ */
+async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
+  // record this first otherwise dragend event makes it null
+  if (draggingNode.value === null || draggingNode.value == node) return;
+
+  // move the dragging file / folder
+  const dragId = draggingNode.value._id;
+  const dragNodeMeta = await metadata(IdToPath(dragId));
+  const isDragNodeDir = dragNodeMeta.isDir;
+  const dropNodeMeta = await metadata(IdToPath(node._id));
+  const isDropNodeDir = dropNodeMeta.isDir;
+  if (!isDropNodeDir) return;
+  const label = draggingNode.value.label;
+  const newId = `${node._id}/${label}`;
+
+  if (isDragNodeDir) {
+    const notes = await getNotes(dragId);
+    for (const note of notes) {
+      const oldNoteId = note._id;
+      const newNoteId = oldNoteId.replace(dragId, newId);
+      updateComponent(oldNoteId, { id: newNoteId, label: note.label });
+    }
+    await nextTick(); // wait until the itemId is updated
+    await projectStore.renameFolder(dragId, newId);
+  } else {
+    updateComponent(dragId, { id: newId, label: label });
+    await nextTick(); // wait until the itemId is updated
+    await projectStore.renameNote(dragId, newId);
+  }
+
+  draggingNode.value = null;
+  dragoverNode.value = null;
+}
 </script>
+<style lang="scss" scoped>
+.dragover {
+  border: 1px solid aqua;
+  background-color: rgba(0, 255, 255, 0.5);
+}
+</style>

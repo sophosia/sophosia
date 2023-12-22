@@ -163,5 +163,7 @@
   "open-link": "Open Link",
   "workspace": "Workspace",
   "remove-from-list": "Remove From List",
-  "change-path": "Change Path"
+  "change-path": "Change Path",
+  "new-folder": "New Folder",
+  "relaunch-app": "Please relaunch Sophosia"
 }

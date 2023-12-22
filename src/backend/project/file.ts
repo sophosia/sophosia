@@ -1,13 +1,12 @@
-import { db, AppState, Project } from "../database";
+import { db, Project } from "../database";
 
-import { join, basename, dirname } from "@tauri-apps/api/path";
+import { join, basename } from "@tauri-apps/api/path";
 import {
   createDir,
   removeDir,
   copyFile,
   exists,
   renameFile,
-  removeFile,
   writeTextFile,
 } from "@tauri-apps/api/fs";
 import { authorToString } from "./utils";
@@ -78,38 +77,6 @@ async function copyFileToProjectFolder(
 }
 
 /**
- * Create a file inside project folder
- * @param projectId
- * @param fileName - the created file's name
- * @returns filePath - the created file's path
- */
-async function createFile(
-  projectId: string,
-  fileName: string
-): Promise<string | undefined> {
-  try {
-    const filePath = await join(await db.getStoragePath(), projectId, fileName);
-    await writeTextFile(filePath, "");
-    if (await exists(filePath)) return filePath;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-/**
- * Delete file
- * @param filePath
- */
-async function deleteFile(filePath: string) {
-  try {
-    // we can ignore this error since rmSync is there
-    await removeFile(filePath);
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-/**
  * Move folder
  * @param srcPath source path
  * @param dstPath destination path
@@ -130,7 +97,5 @@ export {
   createProjectFolder,
   deleteProjectFolder,
   copyFileToProjectFolder,
-  createFile,
-  deleteFile,
   changePath,
 };

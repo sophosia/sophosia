@@ -163,5 +163,7 @@
   "open-link": "打开链接",
   "workspace": "仓库",
   "remove-from-list": "从列表中移除",
-  "change-path": "改变路径"
+  "change-path": "改变路径",
+  "new-folder": "新建文件夹",
+  "relaunch-app": "请重新启动 Sophosia"
 }

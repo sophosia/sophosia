@@ -1,6 +1,5 @@
-import { db, idb, Note, NoteType } from "../database";
+import { db, FolderOrNote, idb, Note, NoteType } from "../database";
 import { Buffer } from "buffer";
-import { createFile, deleteFile } from "./file";
 import {
   exists,
   createDir,
@@ -9,29 +8,33 @@ import {
   writeBinaryFile,
   readDir,
   renameFile,
+  removeFile,
+  removeDir,
 } from "@tauri-apps/api/fs";
 import { join, extname, basename, sep } from "@tauri-apps/api/path";
 import type { FileEntry } from "@tauri-apps/api/fs";
 import { batchReplaceLink } from "./scan";
 import { updateLinks } from "./graph";
-import { metadata } from "tauri-plugin-fs-extra-api";
-import { IdToPath, pathToId } from "./utils";
+import { metadata, Metadata } from "tauri-plugin-fs-extra-api";
+import { IdToPath, pathToId, sortTree } from "./utils";
 import { i18n } from "src/boot/i18n";
 const { t } = i18n.global;
 
 /**
  * Create a note
- * @param projectId
+ * @param folderId
  * @param type
  */
-export async function createNote(projectId: string, type: NoteType) {
-  let i = 1;
+export async function createNote(folderId: string, type: NoteType) {
+  const splits = folderId.split("/");
+  const projectId = splits[0];
   let ext = type === NoteType.MARKDOWN ? ".md" : ".excalidraw";
   let name = t("new-note");
-  let path = await join(db.storagePath, projectId, name + ext);
+  let path = await join(db.storagePath, ...splits, name + ext);
+  let i = 1;
   while (await exists(path)) {
     name = `${t("new-note")} ${i}`;
-    path = await join(db.storagePath, projectId, name + ext);
+    path = await join(db.storagePath, ...splits, name + ext);
     i++;
   }
   const noteId = pathToId(path);
@@ -56,7 +59,7 @@ export async function createNote(projectId: string, type: NoteType) {
 export async function addNote(note: Note): Promise<Note | undefined> {
   try {
     // create actual file
-    await createFile(note.projectId, note.label);
+    await writeTextFile(note.path, "");
 
     // add to db
     await idb.put("notes", { noteId: note._id });
@@ -72,7 +75,7 @@ export async function addNote(note: Note): Promise<Note | undefined> {
  */
 export async function deleteNote(note: Note) {
   try {
-    await deleteFile(note.path);
+    await removeFile(note.path);
 
     // update db
     await idb.delete("notes", note._id);
@@ -87,30 +90,34 @@ export async function deleteNote(note: Note) {
  * @param noteId
  * @param props - update properties
  */
-export async function updateNote(noteId: string, props: Note) {
+export async function renameNote(oldNoteId: string, newNoteId: string) {
   try {
-    const oldPath = props.path;
+    const oldPath = IdToPath(oldNoteId);
     const ext = await extname(oldPath);
     try {
-      await extname(props.label); // if the label has extension, do nothing
+      await extname(newNoteId); // if the label has extension, do nothing
     } catch (error) {
-      props.label += `.${ext}`; // if not, add extension to the end
+      newNoteId += `.${ext}`; // if not, add extension to the end
     }
-    const splits = props._id.split("/");
-    splits[splits.length - 1] = props.label;
-    props._id = splits.join("/");
-    props.path = IdToPath(props._id);
+    const newPath = IdToPath(newNoteId);
 
-    await renameFile(oldPath, props.path);
+    await renameFile(oldPath, newPath);
 
     // update db
     // update note in notes store
-    await idb.delete("notes", noteId);
-    await idb.put("notes", { noteId: props._id });
+    await idb.delete("notes", oldNoteId);
+    await idb.put("notes", { noteId: newNoteId });
     // replace all related links in other markdown files and update indexeddb
-    await batchReplaceLink(noteId, props._id);
+    await batchReplaceLink(oldNoteId, newNoteId);
 
-    return props;
+    return {
+      _id: newNoteId,
+      dataType: "note",
+      type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
+      projectId: newNoteId.split("/")[0],
+      path: newPath,
+      label: await basename(newNoteId),
+    } as Note;
   } catch (error) {
     console.log(error);
   }
@@ -144,14 +151,12 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
 }
 
 /**
- * Get all notes belong to specific project
- * @param projectId
+ * Get all notes in a specific folder
+ * @param folderId
  * @returns array of notes
  */
-export async function getNotes(projectId: string): Promise<Note[]> {
+export async function getNotes(folderId: string): Promise<Note[]> {
   try {
-    // TODO: support folders in project folder
-    // see example of readDir in https://tauri.app/v1/api/js/fs/
     const notes = [] as Note[];
     async function processEntries(entries: FileEntry[]) {
       for (const entry of entries) {
@@ -179,9 +184,7 @@ export async function getNotes(projectId: string): Promise<Note[]> {
         }
       }
     }
-    const entries = await readDir(await join(db.storagePath, projectId), {
-      recursive: true,
-    });
+    const entries = await readDir(IdToPath(folderId), { recursive: true });
     await processEntries(entries);
     // sort by label
     return notes.sort((n1, n2) => (n1.label < n2.label ? -1 : 1));
@@ -189,6 +192,41 @@ export async function getNotes(projectId: string): Promise<Note[]> {
     console.log(error);
     return [];
   }
+}
+
+/**
+ * Get notes of a project and returns the tree of these notes
+ */
+export async function getNoteTree(projectId: string) {
+  async function _dfs(entries: FileEntry[], children: FolderOrNote[]) {
+    for (const entry of entries) {
+      const meta = await metadata(entry.path);
+      const node = {} as FolderOrNote;
+      node._id = pathToId(entry.path);
+      node.label = entry.name as string;
+      node.path = entry.path;
+      if (meta.isFile) {
+        const ext = await extname(entry.path);
+        if (!["md", "excalidraw"].includes(ext)) continue;
+        if (entry.name == projectId + ".md") continue; // skip project note
+        node.dataType = "note";
+        node.type = ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW;
+        node.path = entry.path;
+      } else if (entry.children) {
+        node.dataType = "folder";
+        node.children = [] as FolderOrNote[];
+        await _dfs(entry.children, node.children);
+      }
+      children.push(node);
+    }
+  }
+
+  const entries = await readDir(await join(db.storagePath, projectId), {
+    recursive: true,
+  });
+  const notes = [] as FolderOrNote[];
+  await _dfs(entries, notes);
+  return notes;
 }
 
 /**
@@ -256,6 +294,81 @@ export async function uploadImage(
     const arrayBuffer: ArrayBuffer = await file.arrayBuffer();
     await writeBinaryFile(imgPath, Buffer.from(arrayBuffer));
     return { imgName: imgName, imgPath: imgName };
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function createFolder(parentFolderId: string) {
+  let name = t("new-folder");
+  let path = await join(IdToPath(parentFolderId), name);
+  let i = 1;
+  while (await exists(path)) {
+    name = `${t("new-folder")} ${i}`;
+    path = await join(IdToPath(parentFolderId), name);
+    i++;
+  }
+
+  const folder = {
+    _id: pathToId(path),
+    dataType: "folder",
+    label: name,
+    path: path,
+    children: [],
+  } as FolderOrNote;
+
+  return folder;
+}
+
+export async function addFolder(folder: FolderOrNote) {
+  try {
+    await createDir(folder.path);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+/**
+ * Delete a folder and its containing notes
+ * Also delete the links in indexeddb
+ * @param folderId
+ */
+export async function deleteFolder(folderId: string) {
+  try {
+    // remove notes from indexeddb first
+    const notes = await getNotes(folderId);
+    for (const note of notes) {
+      await idb.delete("notes", note._id);
+      await updateLinks(note._id, []); // delete all links starting from this note
+    }
+
+    // remove the actual folder
+    await removeDir(IdToPath(folderId), { recursive: true });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+/**
+ * Rename folder and update note links
+ * @param oldFolderId
+ * @param newFolderId
+ */
+export async function renameFolder(oldFolderId: string, newFolderId: string) {
+  try {
+    // update indexeddb
+    const notes = await getNotes(oldFolderId);
+    for (const note of notes) {
+      await idb.delete("notes", note._id);
+      const newNoteId = note._id.replace(oldFolderId, newFolderId);
+      await idb.put("notes", { noteId: newNoteId });
+      await batchReplaceLink(note._id, newNoteId);
+    }
+
+    // rename actual folder
+    const oldPath = IdToPath(oldFolderId);
+    const newPath = IdToPath(newFolderId);
+    await renameFile(oldPath, newPath);
   } catch (error) {
     console.log(error);
   }

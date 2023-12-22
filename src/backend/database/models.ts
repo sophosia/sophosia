@@ -61,12 +61,30 @@ export enum NoteType {
  * Note datatype, both for database and for UI display
  */
 export interface Note {
-  _id: string; // unique id handled by database
+  _id: string; // unique id of the note
   dataType: "note"; // for database search
   projectId: string; // the project it belongs to
   path: string; // path to actual markdown file
   label: string; // markdown file name
   type: NoteType;
+}
+
+export interface NoteBook {
+  _id: string;
+  dataType: "notebook";
+  label: string;
+}
+
+/**
+ * Multilevel note and folder support
+ */
+export interface FolderOrNote {
+  _id: string;
+  label: string;
+  dataType: string;
+  path: string;
+  type?: NoteType;
+  children?: FolderOrNote[];
 }
 
 /**
@@ -78,7 +96,7 @@ export interface Project extends Meta {
   timestampModified: number; // timestamp when data is updated
   dataType: "project"; // for database search
   label: string;
-  children: Note[];
+  children: FolderOrNote[];
   path: undefined | string; // attached pdf file path
   tags: string[]; // user defined keywords for easier search
   folderIds: string[]; // array of folderIDs containing this project
