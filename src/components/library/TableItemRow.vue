@@ -7,6 +7,7 @@
   >
     <q-td auto-width></q-td>
     <q-td auto-width></q-td>
+    <q-td auto-width></q-td>
     <q-td
       v-if="item.dataType === 'note'"
       colspan="100%"
@@ -51,7 +52,7 @@
       </div>
     </q-td>
     <q-td
-      v-else
+      v-else-if="item.dataType === 'project'"
       colspan="100%"
     >
       <div class="row items-center">
@@ -59,6 +60,24 @@
           class="q-mr-xs"
           size="xs"
           name="img:icons/pdf.png"
+        />
+        <div
+          class="col"
+          style="font-size: 1rem"
+        >
+          {{ label }}
+        </div>
+      </div>
+    </q-td>
+    <q-td
+      v-else
+      colspan="100%"
+    >
+      <div class="row items-center">
+        <q-icon
+          class="q-mr-xs"
+          size="xs"
+          name="mdi-folder"
         />
         <div
           class="col"
@@ -120,7 +139,7 @@
       </q-list>
 
       <q-list
-        v-else
+        v-else-if="item.dataType === 'project'"
         dense
       >
         <q-item
@@ -179,7 +198,8 @@ const updateComponent = inject("updateComponent") as (
 
 watchEffect(async () => {
   // label changes whenever pdf is renamed
-  if (props.item.path) label.value = await basename(props.item.path);
+  const path = props.item.path || IdToPath(props.item._id);
+  label.value = await basename(path);
 
   // if the note is newly added, rename it immediately
   if (renamingNoteId.value === props.item._id) setRenaming();

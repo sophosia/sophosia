@@ -1,17 +1,16 @@
-import { db, FolderOrNote, Note, Project, SpecialFolder } from "../database";
+import { db, FolderOrNote, Project, SpecialFolder } from "../database";
 import {
   copyFileToProjectFolder,
   createProjectFolder,
   deleteProjectFolder,
 } from "./file";
-import { basename, extname, join } from "@tauri-apps/api/path";
+import { extname, join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
 import { readDir, renameFile } from "@tauri-apps/api/fs";
-import { authorToString, IdToPath } from "./utils";
+import { authorToString } from "./utils";
 import { i18n } from "src/boot/i18n";
 import { getNotes, getNoteTree, saveNote } from "./note";
 import { generateCiteKey } from "./meta";
-import { metadata } from "tauri-plugin-fs-extra-api";
 const { t } = i18n.global;
 
 /**
@@ -141,7 +140,6 @@ export async function getProject(
   try {
     const project = (await db.get(projectId)) as Project;
     if (options?.includePDF) project.path = await getPDF(projectId);
-    // if (options?.includeNotes) project.children = await getNotes(projectId);
     if (options?.includeNotes) project.children = await getNoteTree(projectId);
     return project;
   } catch (error) {
@@ -207,7 +205,8 @@ export async function getProjects(
 
     for (const project of projects) {
       if (options?.includePDF) project.path = await getPDF(project._id);
-      if (options?.includeNotes) project.children = await getNotes(project._id);
+      if (options?.includeNotes)
+        project.children = await getNoteTree(project._id);
     }
 
     return projects;
