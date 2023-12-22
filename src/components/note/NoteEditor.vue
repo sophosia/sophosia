@@ -270,6 +270,7 @@ function _changeLinks() {
     ).innerHTML;
     linkNode.onclick = (e) => clickLink(e, link);
     linkNode.onmouseover = () => hoverLink(linkNode);
+    linkNode.onmouseleave = () => hoverPane.value.close();
   }
 }
 const changeLinks = debounce(_changeLinks, 50) as () => void;
@@ -350,8 +351,6 @@ async function hoverLink(linkNode: HTMLElement) {
       if (!vditorDiv.value) return;
       let rect = linkNode.getBoundingClientRect();
       let parentRect = vditorDiv.value.getBoundingClientRect();
-      console.log("parentRect", parentRect);
-      console.log("rect", rect);
       hoverPane.value.card.$el.style.left = `${rect.left - parentRect.left}px`;
       // default the hoverPane appears below the link
       hoverPane.value.card.$el.style.top = `${rect.bottom - parentRect.top}px`;
