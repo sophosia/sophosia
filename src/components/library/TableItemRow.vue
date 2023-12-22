@@ -240,7 +240,7 @@ async function renameNote() {
       label: newLabel,
     });
     await nextTick(); // wait until itemId changes in the page
-    await projectStore.renameNote(oldNoteId, newNoteId);
+    await projectStore.renameNode(oldNoteId, newNoteId, "note");
   }
   renaming.value = false;
   renamingNoteId.value = "";
@@ -248,7 +248,7 @@ async function renameNote() {
 }
 
 async function deleteItem() {
-  await projectStore.deleteNote(props.item._id);
+  await projectStore.deleteNode(props.item._id, "note");
 }
 
 async function renameFile() {

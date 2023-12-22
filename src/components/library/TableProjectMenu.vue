@@ -125,10 +125,10 @@ function expandRow(isExpand: boolean) {
   emit("expandRow", isExpand);
 }
 
-async function addNote(type: NoteType) {
+async function addNote(noteType: NoteType) {
   let project = projectStore.selected[0];
-  let note = await projectStore.createNote(project._id, type);
-  await projectStore.addNote(note);
+  let note = await projectStore.createNode(project._id, "note", noteType);
+  await projectStore.addNode(note);
   expandRow(true);
   await nextTick();
   renamingNoteId.value = note._id;

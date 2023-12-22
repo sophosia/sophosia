@@ -81,7 +81,7 @@ export interface NoteBook {
 export interface FolderOrNote {
   _id: string;
   label: string;
-  dataType: string;
+  dataType: "folder" | "note";
   path: string;
   type?: NoteType;
   children?: FolderOrNote[];

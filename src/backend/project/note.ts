@@ -73,13 +73,13 @@ export async function addNote(note: Note): Promise<Note | undefined> {
  * Delete a note from disk
  * @param noteId
  */
-export async function deleteNote(note: Note) {
+export async function deleteNote(noteId: string) {
   try {
-    await removeFile(note.path);
+    await removeFile(IdToPath(noteId));
 
     // update db
-    await idb.delete("notes", note._id);
-    await updateLinks(note._id, []); // delete all links starting from this note
+    await idb.delete("notes", noteId);
+    await updateLinks(noteId, []); // delete all links starting from this note
   } catch (error) {
     console.log(error);
   }
