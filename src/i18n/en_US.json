@@ -43,8 +43,8 @@
   "theme": "Theme",
   "files-were-successfully-transfer-to-new-path": "Files were successfully transfer to new path.",
   "moving-files": "Moving Files",
-  "delete-annot": "Delete Annot",
-  "copy-annot-id": "Copy Annot ID",
+  "delete-annot": "Delete annot",
+  "copy-annot-id": "Copy annot ID",
   "phrase-not-found": "phrase not found",
   "matchescount-current-of-matchescount-total-matches": "{0} of {1} matches",
   "toggle-right-menu": "Toggle right menu",
@@ -165,5 +165,6 @@
   "remove-from-list": "Remove From List",
   "change-path": "Change Path",
   "new-folder": "New Folder",
-  "relaunch-app": "Please relaunch Sophosia"
+  "relaunch-app": "Please relaunch Sophosia",
+  "copy-annot-as-link": "Copy annot as link"
 }

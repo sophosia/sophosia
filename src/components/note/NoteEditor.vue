@@ -3,9 +3,6 @@
     v-show="showEditor"
     ref="vditorDiv"
     :id="`vditor-${props.noteId}`"
-    @dragover="onDragOver"
-    @dragleave="onDragLeave"
-    @drop="onDrop"
   ></div>
   <HoverPane
     v-show="hoverContent"
@@ -528,32 +525,6 @@ async function filterHints(key: string) {
     }
   }
   return hints;
-}
-
-/**
- * Annotation drag and drop
- */
-
-function onDragOver(e: DragEvent) {
-  // enable drop
-  e.preventDefault();
-
-  (vditorDiv.value as HTMLElement).classList.add("highlight-editor");
-}
-
-function onDragLeave(e: DragEvent) {
-  (vditorDiv.value as HTMLElement).classList.remove("highlight-editor");
-}
-
-function onDrop(e: DragEvent) {
-  (vditorDiv.value as HTMLElement).classList.remove("highlight-editor");
-  const data = e.dataTransfer?.getData("annot");
-  if (!data || !vditor.value) return;
-  const annot = JSON.parse(data) as AnnotationData;
-  const content = `[${annot.type.toLocaleUpperCase()} - page${
-    annot.pageNumber
-  }](${annot._id})`;
-  vditor.value.insertValue(content);
 }
 </script>
 <style scoped lang="scss">

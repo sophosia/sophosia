@@ -4,8 +4,6 @@
     bordered
     flat
     @dblclick="editing = true"
-    draggable="true"
-    @dragstart="onDragStart"
   >
     <q-card-section
       :style="`background: ${annot.data.color}`"
@@ -41,6 +39,16 @@
               () => {
                 $q.notify($t('text-copied'));
                 copyToClipboard(annot.data._id);
+              }
+            "
+            @copyAsLink="
+              () => {
+                $q.notify($t('text-copied'));
+                copyToClipboard(
+                  `[${annot.data.type.toLocaleUpperCase()} - page${
+                    annot.data.pageNumber
+                  }](${annot.data._id})`
+                );
               }
             "
             @scrollIntoView="pdfApp.scrollAnnotIntoView(annot.data._id)"
@@ -213,9 +221,5 @@ function changeLinks() {
       [db.storagePath, ".sophosia", "image", imgFile].join(sep)
     );
   }
-}
-
-function onDragStart(e: DragEvent) {
-  e.dataTransfer?.setData("annot", JSON.stringify(props.annot.data));
 }
 </script>
