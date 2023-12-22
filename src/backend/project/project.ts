@@ -6,7 +6,7 @@ import {
 } from "./file";
 import { extname, join } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
-import { readDir, renameFile } from "@tauri-apps/api/fs";
+import { exists, readDir, removeFile, renameFile } from "@tauri-apps/api/fs";
 import { authorToString } from "./utils";
 import { i18n } from "src/boot/i18n";
 import { getNotes, getNoteTree, saveNote } from "./note";
@@ -105,12 +105,18 @@ export async function updateProject(
   props: Project
 ): Promise<Project | undefined> {
   try {
-    // need to remomve _graph property if update by meta
-    delete props._graph;
-    const project = (await db.get(projectId)) as Project;
-    props.timestampModified = Date.now();
+    const project = (await getProject(projectId, {
+      includeNotes: true,
+      includePDF: true,
+    })) as Project;
+    const notes = project.children;
+    const path = project.path;
     Object.assign(project, props);
     project.label = project.title; // also update label
+    project.timestampModified = Date.now();
+    delete project._graph; // remomve _graph property if update by meta
+    delete project.path; // no need to save path
+    project.children = []; // no need to save notes
     await db.put(project);
 
     // update folder note as well
@@ -121,6 +127,9 @@ ${t("abstract")}: ${project.abstract || ""}
 
 ${t("note-is-auto-manged")}`;
     await saveNote(`${projectId}/${projectId}.md`, content);
+    // add these back since the vue components need this
+    project.children = notes;
+    project.path = path;
     return project;
   } catch (error) {
     console.log(error);
@@ -243,6 +252,8 @@ export async function attachPDF(
   });
 
   if (typeof filePath !== "string") return;
+  const oldPDFPath = await getPDF(projectId);
+  if (oldPDFPath) await removeFile(oldPDFPath);
   return await copyFileToProjectFolder(filePath, projectId);
 }
 
