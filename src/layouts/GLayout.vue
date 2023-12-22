@@ -274,6 +274,12 @@ const updateGLComponent = (
 ) => {
   if (!(oldItemId in IdToRef)) return;
   const refId = IdToRef[oldItemId];
+
+  // update id so that the page receive new itemId
+  const component = AllComponents.value.get(refId);
+  if (!!component) component.id = state.id;
+
+  // set the window title to new title
   const container = MapComponents.value.get(refId)?.container;
   if (!!container) {
     container.setTitle(state.label);

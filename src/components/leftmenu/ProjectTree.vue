@@ -142,7 +142,7 @@ import { dirname, join } from "@tauri-apps/api/path";
 import { exists, renameFile } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import { pathToId } from "src/backend/project/utils";
+import { IdToPath, oldToNewId, pathToId } from "src/backend/project/utils";
 //components
 import NoteMenu from "./NoteMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
@@ -289,7 +289,6 @@ async function addNode(
 }
 
 function setRenameNode(node: FolderOrNote) {
-  console.log("nodeId", node._id);
   // set renaming note and show input
   renamingNodeId.value = node._id;
   renamingNodeType.value = node.dataType;
@@ -314,23 +313,24 @@ async function renameNode() {
 
   if (pathDuplicate.value) {
     node.label = oldNoteName.value;
-  } else if (renamingNodeType.value === "note") {
-    let newNote = await projectStore.updateNote(node._id, node as Note);
-
-    // update window tab name
-    updateComponent(renamingNodeId.value, {
-      id: newNote._id,
-      label: newNote.label,
-    });
-  } else if (renamingNodeType.value === "folder") {
-    const oldFolderId = node._id;
-    const splits = oldFolderId.split("/");
-    splits[splits.length - 1] = node.label;
-    const newFolderId = splits.join("/");
-    await projectStore.renameFolder(oldFolderId, newFolderId);
+  } else {
+    const oldNodeId = renamingNodeId.value;
+    const newLabel = node.label;
+    const newNodeId = await oldToNewId(oldNodeId, newLabel);
+    if (renamingNodeType.value === "note") {
+      // update window tab name
+      updateComponent(oldNodeId, {
+        id: newNodeId,
+        label: newLabel,
+      });
+      await nextTick(); // wait until itemId changes in the page
+      await projectStore.renameNote(oldNodeId, newNodeId);
+    } else if (renamingNodeType.value === "folder") {
+      await projectStore.renameFolder(oldNodeId, newNodeId);
+    }
   }
 
-  if (addingNode.value) selectItem(node); // open the note
+  if (addingNode.value) selectItem(node); // select after adding it
   addingNode.value = false;
   renamingNodeId.value = "";
   oldNoteName.value = "";
@@ -425,32 +425,29 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
 
   // move the dragging file / folder
   const dragId = draggingNode.value._id;
-  const oldPath = draggingNode.value.path;
+  const dragNodeMeta = await metadata(IdToPath(dragId));
+  const isDragNodeDir = dragNodeMeta.isDir;
+  const dropNodeMeta = await metadata(IdToPath(node._id));
+  const isDropNodeDir = dropNodeMeta.isDir;
+  if (!isDropNodeDir) return;
   const label = draggingNode.value.label;
-  let newPath = "";
-  if (node.dataType === "project") {
-    newPath = await join(db.storagePath, node._id, label);
+  const newId = `${node._id}/${label}`;
+
+  if (isDragNodeDir) {
+    const notes = await getNotes(dragId);
+    for (const note of notes) {
+      const oldNoteId = note._id;
+      const newNoteId = oldNoteId.replace(dragId, newId);
+      updateComponent(oldNoteId, { id: newNoteId, label: note.label });
+    }
+    await nextTick(); // wait until the itemId is updated
+    await projectStore.renameFolder(dragId, newId);
   } else {
-    const meta = await metadata((node as FolderOrNote).path);
-    if (!meta.isDir) return;
-    newPath = await join((node as FolderOrNote).path, label);
+    updateComponent(dragId, { id: newId, label: label });
+    await nextTick(); // wait until the itemId is updated
+    await projectStore.renameNote(dragId, newId);
   }
-  await renameFile(oldPath, newPath);
 
-  // update ui
-  if (!tree.value) return;
-  const dirId = await dirname(dragId);
-  let dragParentNode = tree.value.getNodeByKey(dirId) as FolderOrNote;
-  dragParentNode.children = dragParentNode.children!.filter(
-    (child) => (child as FolderOrNote)._id != dragId
-  );
-  if (!node.children) node.children = [];
-
-  draggingNode.value.path = newPath;
-  draggingNode.value._id = pathToId(newPath);
-  node.children.push(draggingNode.value);
-
-  projectStore.renamedNote = draggingNode;
   draggingNode.value = null;
   dragoverNode.value = null;
 }

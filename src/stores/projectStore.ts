@@ -10,7 +10,7 @@ import {
   getNote,
   addNote,
   deleteNote,
-  updateNote,
+  renameNote,
   createNote,
 } from "src/backend/project/note";
 import {
@@ -34,7 +34,6 @@ export const useProjectStore = defineStore("projectStore", {
 
     updatedProject: {} as Project, // for updating window tab name
     renamingNoteId: "",
-    renamedNote: {} as Note, // for notifying note editor the note has been renamed
   }),
 
   actions: {
@@ -184,10 +183,9 @@ export const useProjectStore = defineStore("projectStore", {
       this._updateProjectUI(project);
     },
 
-    async updateNote(noteId: string, props: Note): Promise<Note> {
+    async renameNote(oldNoteId: string, newNoteId: string): Promise<Note> {
       // update db
-      let note = (await updateNote(noteId, props)) as Note;
-      this.renamedNote = note;
+      let note = (await renameNote(oldNoteId, newNoteId)) as Note;
       // update ui
       let project = await this.getProjectFromDB(note.projectId);
       sortTree(project);

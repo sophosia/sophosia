@@ -1,4 +1,4 @@
-import { sep } from "@tauri-apps/api/path";
+import { sep, extname } from "@tauri-apps/api/path";
 import { Author, db } from "../database";
 interface TreeNode {
   label: string;
@@ -59,4 +59,24 @@ export function pathToId(path: string) {
  */
 export function IdToPath(id: string) {
   return db.storagePath + sep + id.replace("/", sep);
+}
+
+export async function oldToNewId(oldId: string, newLabel: string) {
+  let ext = "";
+  try {
+    ext = await extname(oldId);
+  } catch (error) {
+    // has no extension, oldId is a folderId do nothing
+  }
+
+  try {
+    await extname(newLabel);
+  } catch (error) {
+    // newLabel has no extension
+    // we add the extension to it (ext can be empty)
+    if (ext) newLabel += `.${ext}`;
+  }
+  const splits = oldId.split("/");
+  splits[splits.length - 1] = newLabel;
+  return splits.join("/");
 }

@@ -90,31 +90,34 @@ export async function deleteNote(note: Note) {
  * @param noteId
  * @param props - update properties
  */
-export async function updateNote(noteId: string, props: Note) {
+export async function renameNote(oldNoteId: string, newNoteId: string) {
   try {
-    const oldPath = props.path;
+    const oldPath = IdToPath(oldNoteId);
     const ext = await extname(oldPath);
     try {
-      await extname(props.label); // if the label has extension, do nothing
+      await extname(newNoteId); // if the label has extension, do nothing
     } catch (error) {
-      props.label += `.${ext}`; // if not, add extension to the end
+      newNoteId += `.${ext}`; // if not, add extension to the end
     }
-    const splits = props._id.split("/");
-    splits[splits.length - 1] = props.label;
-    props._id = splits.join("/");
-    props.path = IdToPath(props._id);
-    props.projectId = splits[0];
+    const newPath = IdToPath(newNoteId);
 
-    await renameFile(oldPath, props.path);
+    await renameFile(oldPath, newPath);
 
     // update db
     // update note in notes store
-    await idb.delete("notes", noteId);
-    await idb.put("notes", { noteId: props._id });
+    await idb.delete("notes", oldNoteId);
+    await idb.put("notes", { noteId: newNoteId });
     // replace all related links in other markdown files and update indexeddb
-    await batchReplaceLink(noteId, props._id);
+    await batchReplaceLink(oldNoteId, newNoteId);
 
-    return props;
+    return {
+      _id: newNoteId,
+      dataType: "note",
+      type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
+      projectId: newNoteId.split("/")[0],
+      path: newPath,
+      label: await basename(newNoteId),
+    } as Note;
   } catch (error) {
     console.log(error);
   }

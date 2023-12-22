@@ -148,7 +148,7 @@
 </template>
 <script setup lang="ts">
 // types
-import { PropType, Ref, inject, ref, watchEffect } from "vue";
+import { PropType, Ref, inject, ref, watchEffect, nextTick } from "vue";
 import { Project, Note, NoteType, db } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
@@ -157,10 +157,7 @@ import { copyToClipboard } from "quasar";
 import { basename, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
-// utils
-import { useI18n } from "vue-i18n";
-import { getPDF } from "src/backend/project/project";
-const { t } = useI18n({ useScope: "global" });
+import { oldToNewId } from "src/backend/project/utils";
 
 const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
@@ -231,16 +228,19 @@ function setRenaming() {
 
 async function renameNote() {
   let note = props.item as Note;
-  let oldNoteId = props.item._id;
   if (pathDuplicate.value) {
     note.label = oldNoteName.value;
   } else {
-    note.label = label.value;
-    let newNote = await projectStore.updateNote(note._id, note);
+    const oldNoteId = note._id;
+    const newLabel = label.value;
+    const newNoteId = await oldToNewId(oldNoteId, newLabel);
+    // update window tab name
     updateComponent(oldNoteId, {
-      id: newNote._id,
-      label: newNote.label,
+      id: newNoteId,
+      label: newLabel,
     });
+    await nextTick(); // wait until itemId changes in the page
+    await projectStore.renameNote(oldNoteId, newNoteId);
   }
   renaming.value = false;
   renamingNoteId.value = "";

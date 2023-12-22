@@ -161,15 +161,22 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
     );
     await writeTextFile(file.path, newContent);
 
-    const currentNoteId = file.path
-      .replace(storagePath + sep, "")
-      .replace(sep, "/");
-    const key = await idb.getKeyFromIndex("links", "sourceAndTarget", [
+    const currentNoteId = pathToId(file.path);
+    // replace to links in indexeddb pointing to the old note
+    const key1 = await idb.getKeyFromIndex("links", "sourceAndTarget", [
       currentNoteId,
       oldNoteId,
     ]);
-    if (key)
-      idb.put("links", { source: currentNoteId, target: newNoteId }, key);
+    if (key1)
+      idb.put("links", { source: currentNoteId, target: newNoteId }, key1);
+
+    // replace to links in indexeddb from the old note
+    const key2 = await idb.getKeyFromIndex("links", "sourceAndTarget", [
+      oldNoteId,
+      currentNoteId,
+    ]);
+    if (key2)
+      idb.put("links", { source: newNoteId, target: currentNoteId }, key2);
   };
 
   const entries = await readDir(storagePath, { recursive: true });
