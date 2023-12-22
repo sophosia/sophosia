@@ -75,7 +75,7 @@
   </q-card>
 </template>
 <script setup lang="ts">
-import { ref, inject, PropType, computed, onMounted, watchEffect } from "vue";
+import { ref, inject, PropType, computed, watchEffect } from "vue";
 import { Annotation } from "src/backend/pdfannotation/annotations";
 
 import AnnotMenu from "./AnnotMenu.vue";
@@ -130,7 +130,13 @@ watchEffect(() => {
         lineNumber: true,
         style: "native",
       },
-      after: changeLinks,
+      after: () => {
+        // remove <br> tags so that line space is correct
+        (mdContentDiv.value as HTMLElement)
+          .querySelectorAll("p > br")
+          .forEach((el) => el.remove());
+        changeLinks();
+      },
       cdn: "vditor", // use local cdn
     });
 });

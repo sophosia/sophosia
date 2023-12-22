@@ -899,7 +899,7 @@
 }
 .vditor-reset p {
   margin-top: 0;
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 .vditor-reset blockquote {
   padding: 0 1em;
