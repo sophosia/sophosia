@@ -294,34 +294,7 @@ async function clickLink(e: MouseEvent, link: string) {
     await open(link);
   } catch (error) {
     link = link.replaceAll("%20", " "); // convert all %20 to spaces
-    try {
-      const item = link.includes("/")
-        ? ((await getNote(link)) as Note)
-        : ((await db.get(link)) as Project | AnnotationData);
-      let id = "";
-      let label = "";
-      let type = "";
-      let data = undefined;
-      if (item.dataType === "project") {
-        id = item._id;
-        label = item.label;
-        type = "ReaderPage";
-      } else if (item.dataType === "note") {
-        id = item._id;
-        label = item.label;
-        if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-        else type = "NotePage";
-      } else if (item.dataType === "pdfAnnotation") {
-        const project = (await getProject(item.projectId)) as Project;
-        id = project._id;
-        label = project?.label;
-        type = "ReaderPage";
-        data = { focusAnnotId: item._id };
-      }
-      stateStore.openPage({ id, type, label, data });
-    } catch (error) {
-      console.log(error);
-    }
+    stateStore.openItem(link);
   }
 }
 async function hoverLink(linkNode: HTMLElement) {

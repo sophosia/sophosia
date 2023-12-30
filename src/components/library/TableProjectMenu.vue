@@ -175,10 +175,7 @@ async function addNote(noteType: NoteType) {
 
 async function openProject() {
   for (let project of projectStore.selected) {
-    let id = project._id;
-    let label = project.label;
-    let type = "ReaderPage";
-    stateStore.openPage({ id, type, label });
+    stateStore.openItem(project._id);
     await nextTick();
   }
 }

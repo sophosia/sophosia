@@ -252,13 +252,7 @@
           class="chip"
           :ripple="false"
           clickable
-          @click="
-            stateStore.openPage({
-              id: meta?._id,
-              label: meta?.title,
-              type: 'ReaderPage',
-            })
-          "
+          @click="stateStore.openItem(meta?._id)"
         >
           <q-icon name="img:icons/pdf.png"></q-icon>
           <span class="q-ml-xs">{{ file }}</span>
@@ -381,9 +375,9 @@
 
 <script setup lang="ts">
 // types
-import { ref, watch, computed, onMounted, inject, watchEffect } from "vue";
+import { ref, watch, computed, inject, watchEffect } from "vue";
 import type { PropType } from "vue";
-import { Author, Folder, Meta, Project, db } from "src/backend/database";
+import { Author, Folder, Meta, Project } from "src/backend/database";
 // backend stuff
 import { generateCiteKey, getMeta } from "src/backend/project/meta";
 import { getFolder } from "src/backend/project/folder";
@@ -392,8 +386,7 @@ import { useStateStore } from "src/stores/appState";
 import { open } from "@tauri-apps/api/shell";
 import { copyToClipboard } from "quasar";
 import { invoke } from "@tauri-apps/api";
-import { basename, join } from "@tauri-apps/api/path";
-import { getPDF } from "src/backend/project/project";
+import { basename } from "@tauri-apps/api/path";
 const projectStore = useProjectStore();
 const stateStore = useStateStore();
 

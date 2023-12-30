@@ -154,13 +154,7 @@
 <script setup lang="ts">
 import { inject, nextTick, onMounted, ref, watchEffect } from "vue";
 import { QTree, copyToClipboard } from "quasar";
-import {
-  FolderOrNote,
-  Note,
-  NoteType,
-  Page,
-  Project,
-} from "src/backend/database";
+import { FolderOrNote, Note, NoteType, Project } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
@@ -211,15 +205,7 @@ function selectItem(node: Project | FolderOrNote) {
   if ((node.children?.length as number) > 0) expanded.value.push(node._id);
   if (node.dataType === "folder") return;
 
-  // open item
-  let id = node._id;
-  let label = node.label;
-  let type = "";
-  if (node.dataType === "project") type = "ReaderPage";
-  else if (node.dataType === "note")
-    type = node.type === NoteType.EXCALIDRAW ? "ExcalidrawPage" : "NotePage";
-
-  stateStore.openPage({ id, type, label });
+  stateStore.openItem(node._id);
 }
 
 async function showInExplorer(node: Project | Note) {

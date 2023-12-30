@@ -165,16 +165,7 @@ function clickItem() {
 }
 
 function openItem() {
-  let id = props.item._id;
-  let label = props.item.label;
-  let type = "";
-  if (props.item.dataType === "project") {
-    if (props.item.path) type = "ReaderPage";
-  } else if (props.item.dataType === "note") {
-    if (props.item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-    else type = "NotePage";
-  }
-  stateStore.openPage({ id, type, label });
+  stateStore.openItem(props.item._id);
 }
 
 function setRenaming() {

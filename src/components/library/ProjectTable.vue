@@ -247,10 +247,7 @@ function clickProject(
  * @param row
  */
 function dblclickProject(row: Project) {
-  let id = row._id;
-  let label = row.label;
-  let type = "ReaderPage";
-  stateStore.openPage({ id, type, label });
+  stateStore.openItem(row._id);
 }
 
 function toggleContextMenu(

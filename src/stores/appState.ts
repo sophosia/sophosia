@@ -1,7 +1,13 @@
 import { defineStore } from "pinia";
 import { Dark } from "quasar";
 import { updateAppState, getAppState } from "src/backend/appState";
-import { AppState, Page, Settings, SpecialFolder } from "src/backend/database";
+import {
+  AppState,
+  NoteType,
+  Page,
+  Settings,
+  SpecialFolder,
+} from "src/backend/database";
 import { useProjectStore } from "./projectStore";
 import darkContent from "src/css/vditor/dark.css?raw";
 import lightContent from "src/css/vditor/light.css?raw";
@@ -102,7 +108,6 @@ export const useStateStore = defineStore("stateStore", {
           console.log(error);
           return;
         }
-        console.log("item", item);
         await projectStore.openProject(item.projectId || itemId);
 
         // open associated page
@@ -115,7 +120,8 @@ export const useStateStore = defineStore("stateStore", {
           if (!(await getPDF(itemId))) return;
         } else if (item.dataType === "note") {
           page.id = itemId;
-          page.type = "NotePage";
+          page.type =
+            item.type === NoteType.MARKDOWN ? "NotePage" : "ExcalidrawPage";
           page.label = item.label;
         } else if (item.dataType === "pdfAnnotation") {
           const project = (await db.get(item.projectId)) as Project;
@@ -124,23 +130,17 @@ export const useStateStore = defineStore("stateStore", {
           page.label = project.label;
           page.data = { focusAnnotId: itemId };
         }
-        this.openedPage = page;
+        this.openPage(page);
       } catch (error) {
         console.log(error);
       }
     },
 
+    /**
+     * Opens a page
+     * @param page
+     */
     async openPage(page: Page) {
-      const projectStore = useProjectStore();
-      if (page.type === "ReaderPage") {
-        await projectStore.openProject(page.id);
-        // do not open page if there is no pdf
-        if (!(await getPDF(page.id))) return;
-      } else {
-        let note = await projectStore.getNoteFromDB(page.id);
-        if (note && note.projectId)
-          await projectStore.openProject(note.projectId);
-      }
       this.openedPage = page;
     },
 
