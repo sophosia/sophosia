@@ -152,7 +152,7 @@
   </q-tree>
 </template>
 <script setup lang="ts">
-import { inject, nextTick, onMounted, ref, watch } from "vue";
+import { inject, nextTick, onMounted, ref, watchEffect } from "vue";
 import { QTree, copyToClipboard } from "quasar";
 import {
   FolderOrNote,
@@ -164,7 +164,6 @@ import {
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
-import { getProject } from "src/backend/project/project";
 import { dirname, join } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
@@ -200,35 +199,11 @@ const updateComponent = inject("updateComponent") as (
 onMounted(async () => {
   // expand all projects
   expanded.value = Array.from(projectStore.openedProjects.map((p) => p._id));
-
-  // select the item associated with current window
-  let selected = stateStore.currentItemId;
-  if (!tree.value) return;
-  let selectedNode = tree.value.getNodeByKey(selected);
-  if (!!selectedNode && selectedNode?.children?.length > 0)
-    expanded.value.push(selected);
 });
 
-watch(
-  () => stateStore.openedPage,
-  async (page: Page) => {
-    if (page.type.indexOf("Plugin") > -1) return;
-    if (!!!page.id || !tree.value) return;
-    let node = tree.value.getNodeByKey(page.id);
-    if (!!node) return; // if project is active already, return
-
-    let item = (await getProject(page.id)) as Project | Note;
-    if (item?.dataType == "project") {
-      await projectStore.openProject(page.id);
-      expanded.value.push(page.id);
-    } else if (item?.dataType == "note") {
-      // some notes are independent of project, like memo
-      if (!item.projectId) return;
-      await projectStore.openProject(item.projectId);
-    }
-  },
-  { deep: true }
-);
+watchEffect(() => {
+  showInTree(stateStore.currentItemId);
+});
 
 function selectItem(node: Project | FolderOrNote) {
   console.log("node", node);
@@ -254,14 +229,26 @@ async function showInExplorer(node: Project | Note) {
   });
 }
 
+function showInTree(nodeId: string) {
+  const splits = nodeId.split("/");
+  let folderId = splits[0];
+  if (!expanded.value.includes(folderId)) expanded.value.push(folderId);
+  for (let i = 1; i < splits.length - 1; i++) {
+    folderId += `/${splits[i]}`;
+    console.log("folderId", folderId);
+    if (!expanded.value.includes(folderId)) expanded.value.push(folderId);
+  }
+}
+
 async function closeProject(projectId: string) {
   // close all pages
   let project = projectStore.openedProjects.find((p) => p._id === projectId);
   if (project) {
     stateStore.closePage(project._id);
-    for (let note of project.children as Note[]) {
+    const notes = await getNotes(project._id);
+    for (let node of notes) {
       await nextTick(); // do it slowly one by one
-      stateStore.closePage(note._id);
+      stateStore.closePage(node._id);
     }
   }
 

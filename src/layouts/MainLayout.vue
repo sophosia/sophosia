@@ -116,17 +116,10 @@ watch(
 watch(
   () => stateStore.closedItemId,
   async (id: string) => {
-    if (!!!id) return;
-    let note = await getNote(id);
-    if (note && note.type == NoteType.EXCALIDRAW) {
-      // have to wait until the excalidraw component disappear
-      setTimeout(() => {
-        removeComponent(id);
-      }, 100);
-    } else removeComponent(id);
+    if (!id) return;
+    removeComponent(id);
     // clear this so we can reclose a reopened item
     stateStore.closedItemId = "";
-
     stateStore.saveAppState();
   }
 );
