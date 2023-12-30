@@ -27,7 +27,7 @@
           class="q-ml-xs"
           style="font-size: 1rem"
         >
-          {{ $t("missing") }}
+          {{ $t("annotation") }}
         </div>
       </div>
     </div>
@@ -96,7 +96,7 @@ function setStyle(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
     let type = node.data.type;
     if (type === "project") node.data.shape = "rectangle";
     else if (type === "note") node.data.shape = "ellipse";
-    else if (type === undefined) node.data.shape = "triangle";
+    else if (type === "annotation") node.data.shape = "triangle";
     node.data.bg = props.itemId === node.data.id ? "#1976d2" : color;
   }
 }

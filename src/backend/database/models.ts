@@ -136,7 +136,7 @@ export interface Edge {
 export interface Node {
   id: string; // id of the node
   label: string; // label of the node
-  type: "project" | "note" | undefined;
+  type: "project" | "note" | "annotation";
 }
 
 export interface NodeUI {
