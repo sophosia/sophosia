@@ -33,14 +33,22 @@
         v-close-popup
         @click="$emit('rename')"
       >
-        <q-item-section> {{ $t("rename") }} </q-item-section>
+        <q-item-section>
+          <i18n-t keypath="rename">
+            <template #type>{{ $t("note") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
         clickable
         v-close-popup
         @click="$emit('delete')"
       >
-        <q-item-section> {{ $t("delete") }} </q-item-section>
+        <q-item-section>
+          <i18n-t keypath="rename">
+            <template #type>{{ $t("note") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
 
       <q-separator />

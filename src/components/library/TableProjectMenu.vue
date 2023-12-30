@@ -62,7 +62,11 @@
         v-close-popup
         @click="addNote(NoteType.MARKDOWN)"
       >
-        <q-item-section> {{ $t("add-markdown-note") }} </q-item-section>
+        <q-item-section>
+          <i18n-t keypath="add">
+            <template #type>Markdown</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
         v-if="projectStore.selected.length == 1"
@@ -70,7 +74,11 @@
         v-close-popup
         @click="addNote(NoteType.EXCALIDRAW)"
       >
-        <q-item-section> {{ $t("add-excalidraw") }} </q-item-section>
+        <q-item-section>
+          <i18n-t keypath="add">
+            <template #type>Excalidraw</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
         v-if="projectStore.selected.length == 1"
@@ -93,7 +101,11 @@
         v-close-popup
         @click="openProject"
       >
-        <q-item-section>{{ $t("open-project") }}</q-item-section>
+        <q-item-section>
+          <i18n-t keypath="open">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
 
       <q-item
@@ -102,7 +114,11 @@
         v-close-popup
         @click="searchMeta"
       >
-        <q-item-section>{{ $t("search-meta-info") }}</q-item-section>
+        <q-item-section>
+          <i18n-t keypath="search">
+            <template #type>{{ $t("info") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
 
       <q-item

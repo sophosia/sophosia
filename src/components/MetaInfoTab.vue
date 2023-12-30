@@ -211,7 +211,11 @@
             :disable="!!!meta.URL"
             @click="openURL(meta?.URL)"
           >
-            <q-tooltip> {{ $t("open-link") }}</q-tooltip>
+            <q-tooltip>
+              <i18n-t keypath="open">
+                <template #type>{{ $t("link") }}</template>
+              </i18n-t>
+            </q-tooltip>
           </q-btn>
         </div>
         <input

@@ -11,7 +11,9 @@
         @click="$emit('addNote', NoteType.MARKDOWN)"
       >
         <q-item-section>
-          {{ $t("add-markdown-note") }}
+          <i18n-t keypath="add">
+            <template #type>{{ "Markdown" }}</template>
+          </i18n-t>
         </q-item-section>
       </q-item>
       <q-item
@@ -20,7 +22,9 @@
         @click="$emit('addNote', NoteType.EXCALIDRAW)"
       >
         <q-item-section>
-          {{ $t("add-excalidraw") }}
+          <i18n-t keypath="add">
+            <template #type>{{ "Excalidraw" }}</template>
+          </i18n-t>
         </q-item-section>
       </q-item>
 
@@ -30,21 +34,33 @@
         v-close-popup
         @click="$emit('addFolder')"
       >
-        <q-item-section> {{ $t("add-folder") }} </q-item-section>
+        <q-item-section>
+          <i18n-t keypath="add">
+            <template #type>{{ $t("folder") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
         clickable
         v-close-popup
         @click="$emit('renameFolder')"
       >
-        <q-item-section> {{ $t("rename") }} </q-item-section>
+        <q-item-section>
+          <i18n-t keypath="rename">
+            <template #type>{{ $t("folder") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
         clickable
         v-close-popup
         @click="$emit('deleteFolder')"
       >
-        <q-item-section> {{ $t("delete") }} </q-item-section>
+        <q-item-section>
+          <i18n-t keypath="delete">
+            <template #type>{{ $t("folder") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
 
       <q-separator />

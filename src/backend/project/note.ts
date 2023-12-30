@@ -29,11 +29,11 @@ export async function createNote(folderId: string, type: NoteType) {
   const splits = folderId.split("/");
   const projectId = splits[0];
   let ext = type === NoteType.MARKDOWN ? ".md" : ".excalidraw";
-  let name = t("new-note");
+  let name = t("new", { type: t("note") });
   let path = await join(db.storagePath, ...splits, name + ext);
   let i = 1;
   while (await exists(path)) {
-    name = `${t("new-note")} ${i}`;
+    name = `${t("new", { type: t("note") })} ${i}`;
     path = await join(db.storagePath, ...splits, name + ext);
     i++;
   }
@@ -297,11 +297,11 @@ export async function uploadImage(
 }
 
 export async function createFolder(parentFolderId: string) {
-  let name = t("new-folder");
+  let name = t("new", { type: t("folder") });
   let path = await join(IdToPath(parentFolderId), name);
   let i = 1;
   while (await exists(path)) {
-    name = `${t("new-folder")} ${i}`;
+    name = `${t("new", { type: t("folder") })} ${i}`;
     path = await join(IdToPath(parentFolderId), name);
     i++;
   }

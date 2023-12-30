@@ -4,7 +4,7 @@
     dense
     no-transition
     no-selection-unset
-    :no-nodes-label="$t('no-working-projects')"
+    :no-nodes-label="$t('empty')"
     :nodes="projectStore.openedProjects"
     node-key="_id"
     selected-color="primary"
@@ -146,7 +146,11 @@
         name="mdi-close"
         @click="closeProject(prop.key)"
       >
-        <q-tooltip> {{ $t("close-project") }} </q-tooltip>
+        <q-tooltip>
+          <i18n-t keypath="close">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-tooltip>
       </q-icon>
     </template>
   </q-tree>

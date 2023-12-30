@@ -47,19 +47,31 @@
         @click="$emit('openItem')"
         data-cy="btn-open-item"
       >
-        <q-item-section>{{ $t("open-note") }}</q-item-section>
+        <q-item-section>
+          <i18n-t keypath="open">
+            <template #type>{{ $t("note") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
         clickable
         @click="$emit('setRenaming')"
       >
-        <q-item-section>{{ $t("rename-note") }}</q-item-section>
+        <q-item-section>
+          <i18n-t keypath="rename">
+            <template #type>{{ $t("note") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
         clickable
         @click="$emit('deleteItem')"
       >
-        <q-item-section>{{ $t("delete-note") }}</q-item-section>
+        <q-item-section>
+          <i18n-t keypath="delete">
+            <template #type>{{ $t("note") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
     </q-list>
 
@@ -83,7 +95,11 @@
         clickable
         @click="$emit('openItem')"
       >
-        <q-item-section>{{ $t("open-pdf") }}</q-item-section>
+        <q-item-section>
+          <i18n-t keypath="open">
+            <template #type>PDF</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
         clickable

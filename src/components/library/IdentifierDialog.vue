@@ -8,7 +8,11 @@
       style="min-width: 500px"
     >
       <q-card-section>
-        <div class="text-h6">{{ $t("search-identifier") }}</div>
+        <div class="text-h6">
+          <i18n-t keypath="search">
+            <template #type>{{ $t("identifier") }}</template>
+          </i18n-t>
+        </div>
       </q-card-section>
       <q-card-section class="q-pt-none">
         <q-input

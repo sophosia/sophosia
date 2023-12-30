@@ -42,7 +42,9 @@
         >
           <div style="font-size: 1rem">
             <q-icon name="mdi-delete-outline"></q-icon>
-            {{ $t("delete-annot") }}
+            <i18n-t keypath="delete">
+              <template #type>{{ $t("annotation") }}</template>
+            </i18n-t>
           </div>
         </div>
       </q-item>
