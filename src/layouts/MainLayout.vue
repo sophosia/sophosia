@@ -54,7 +54,6 @@ import "src/css/goldenlayout/base.scss";
 import "src/css/goldenlayout/theme.scss";
 // db
 import { useStateStore } from "src/stores/appState";
-import { getNote } from "src/backend/project/note";
 import { getLayout, updateLayout } from "src/backend/appState";
 // utils
 import { nextTick, onMounted, onUnmounted, provide, ref, watch } from "vue";

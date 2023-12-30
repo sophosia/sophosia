@@ -235,7 +235,6 @@ function showInTree(nodeId: string) {
   if (!expanded.value.includes(folderId)) expanded.value.push(folderId);
   for (let i = 1; i < splits.length - 1; i++) {
     folderId += `/${splits[i]}`;
-    console.log("folderId", folderId);
     if (!expanded.value.includes(folderId)) expanded.value.push(folderId);
   }
 }
@@ -247,7 +246,7 @@ async function closeProject(projectId: string) {
     stateStore.closePage(project._id);
     const notes = await getNotes(project._id);
     for (let node of notes) {
-      await nextTick(); // do it slowly one by one
+      await nextTick(); // do it slowly one by o:238
       stateStore.closePage(node._id);
     }
   }
