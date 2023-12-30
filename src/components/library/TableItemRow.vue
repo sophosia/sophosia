@@ -88,87 +88,32 @@
       </div>
     </q-td>
 
-    <q-menu
-      touch-position
-      context-menu
-      square
-      auto-close
-      transition-duration="0"
-      data-cy="menu"
-    >
-      <q-list
-        v-if="item.dataType === 'note'"
-        dense
-      >
-        <q-item
-          clickable
-          @click="copyID"
-        >
-          <q-item-section>{{ $t("copy-note-id") }}</q-item-section>
-        </q-item>
-        <q-item
-          clickable
-          @click="showInExplorer"
-        >
-          <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
-        </q-item>
-
-        <q-separator />
-
-        <q-item
-          clickable
-          @click="openItem"
-          data-cy="btn-open-item"
-        >
-          <q-item-section>{{ $t("open-note") }}</q-item-section>
-        </q-item>
-        <q-item
-          clickable
-          @click="setRenaming"
-          :disable="item.label === item.projectId + '.md'"
-        >
-          <q-item-section>{{ $t("rename-note") }}</q-item-section>
-        </q-item>
-        <q-item
-          clickable
-          @click="deleteItem"
-          :disable="item.label === item.projectId + '.md'"
-        >
-          <q-item-section>{{ $t("delete-note") }}</q-item-section>
-        </q-item>
-      </q-list>
-
-      <q-list
-        v-else-if="item.dataType === 'project'"
-        dense
-      >
-        <q-item
-          clickable
-          @click="openItem"
-        >
-          <q-item-section>{{ $t("open-pdf") }}</q-item-section>
-        </q-item>
-        <q-item
-          clickable
-          @click="showInExplorer"
-        >
-          <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
-        </q-item>
-
-        <q-item
-          clickable
-          @click="renameFile"
-        >
-          <q-item-section>{{ $t("rename-pdf-from-metadata") }}</q-item-section>
-        </q-item>
-      </q-list>
-    </q-menu>
+    <TableItemMenu
+      :menuType="item.dataType"
+      @showInExplorer="showInExplorer"
+      @openItem="openItem"
+      @setRenaming="setRenaming"
+      @deleteItem="deleteItem"
+      @renamePDF="renamePDF"
+      @copyId="
+        () => {
+          $q.notify($t('text-copied'));
+          copyToClipboard(item._id);
+        }
+      "
+      @copyAsLink="
+        () => {
+          $q.notify($t('text-copied'));
+          copyToClipboard(`[${item._id}](${item._id})`);
+        }
+      "
+    />
   </q-tr>
 </template>
 <script setup lang="ts">
 // types
 import { PropType, Ref, inject, ref, watchEffect, nextTick } from "vue";
-import { Project, Note, NoteType, db } from "src/backend/database";
+import { Project, Note, NoteType } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
@@ -177,6 +122,7 @@ import { basename, dirname, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
 import { IdToPath, oldToNewId } from "src/backend/project/utils";
+import TableItemMenu from "./TableItemMenu.vue";
 
 const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
@@ -204,10 +150,6 @@ watchEffect(async () => {
   // if the note is newly added, rename it immediately
   if (renamingNoteId.value === props.item._id) setRenaming();
 });
-
-function copyID() {
-  copyToClipboard(props.item._id);
-}
 
 async function showInExplorer() {
   const path =
@@ -273,7 +215,7 @@ async function deleteItem() {
   await projectStore.deleteNode(props.item._id, "note");
 }
 
-async function renameFile() {
+async function renamePDF() {
   await projectStore.renamePDF(props.item._id);
 }
 

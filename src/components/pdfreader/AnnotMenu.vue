@@ -10,11 +10,13 @@
         <div
           class="button full-width"
           v-close-popup
-          @click="$emit('copyID')"
+          @click="$emit('copyId')"
         >
           <div style="font-size: 1rem">
             <q-icon name="mdi-content-copy"></q-icon>
-            {{ $t("copy-annot-id") }}
+            <i18n-t keypath="copy-id">
+              <template #type>{{ $t("annotation") }}</template>
+            </i18n-t>
           </div>
         </div>
       </q-item>
@@ -26,7 +28,9 @@
         >
           <div style="font-size: 1rem">
             <q-icon name="mdi-content-copy"></q-icon>
-            {{ $t("copy-annot-as-link") }}
+            <i18n-t keypath="copy-as-link">
+              <template #type>{{ $t("annotation") }}</template>
+            </i18n-t>
           </div>
         </div>
       </q-item>
@@ -64,8 +68,8 @@ import ColorPicker from "./ColorPicker.vue";
 const emit = defineEmits([
   "changeColor",
   "deleteAnnot",
-  "copyID",
   "scrollIntoView",
+  "copyId",
   "copyAsLink",
 ]);
 </script>

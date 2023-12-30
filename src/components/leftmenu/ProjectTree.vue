@@ -37,12 +37,40 @@
           @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
           @addFolder="addNode(prop.node._id, 'folder')"
           @closeProject="closeProject(prop.node._id)"
+          @copyId="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(prop.node._id);
+            }
+          "
+          @copyAsLink="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(
+                `[${generateCiteKey(prop.node)}](sophosia://open-item/${
+                  prop.node._id
+                })`
+              );
+            }
+          "
         />
         <NoteMenu
           v-else-if="prop.node.dataType === 'note'"
           @showInExplorer="showInExplorer(prop.node)"
           @rename="setRenameNode(prop.node)"
           @delete="deleteNode(prop.node)"
+          @copyId="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(prop.node._id);
+            }
+          "
+          @copyAsLink="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(`[${prop.node._id}](${prop.node._id})`);
+            }
+          "
         />
         <FolderMenu
           v-else
@@ -125,29 +153,29 @@
 </template>
 <script setup lang="ts">
 import { inject, nextTick, onMounted, ref, watch } from "vue";
-import { QTree } from "quasar";
+import { QTree, copyToClipboard } from "quasar";
 import {
   FolderOrNote,
   Note,
   NoteType,
   Page,
   Project,
-  db,
 } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { getProject } from "src/backend/project/project";
 import { dirname, join } from "@tauri-apps/api/path";
-import { exists, renameFile } from "@tauri-apps/api/fs";
+import { exists } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import { IdToPath, oldToNewId, pathToId } from "src/backend/project/utils";
+import { IdToPath, oldToNewId } from "src/backend/project/utils";
 //components
 import NoteMenu from "./NoteMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
 import FolderMenu from "./FolderMenu.vue";
 import { getNotes } from "src/backend/project/note";
+import { generateCiteKey } from "src/backend/project/meta";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -160,7 +188,6 @@ const oldNoteName = ref("");
 const pathDuplicate = ref(false);
 const addingNode = ref(false);
 const expanded = ref<string[]>([]);
-const showProjectMenu = ref(true);
 const draggingNode = ref<FolderOrNote | null>(null);
 const dragoverNode = ref<FolderOrNote | null>(null);
 const enterTime = ref(0);

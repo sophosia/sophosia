@@ -8,6 +8,29 @@
       <q-item
         clickable
         v-close-popup
+        @click="$emit('copyId')"
+      >
+        <q-item-section>
+          <i18n-t keypath="copy-id">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
+      </q-item>
+      <q-item
+        clickable
+        v-close-popup
+        @click="$emit('copyAsLink')"
+      >
+        <q-item-section>
+          <i18n-t keypath="copy-as-link">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
+      </q-item>
+      <q-separator />
+      <q-item
+        clickable
+        v-close-popup
         @click="$emit('addNote', NoteType.MARKDOWN)"
       >
         <q-item-section>
@@ -56,6 +79,8 @@
 <script setup lang="ts">
 import { NoteType } from "src/backend/database";
 const emit = defineEmits([
+  "copyId",
+  "copyAsLink",
   "showInExplorer",
   "addNote",
   "addFolder",

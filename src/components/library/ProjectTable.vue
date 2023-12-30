@@ -110,7 +110,7 @@
 <script setup lang="ts">
 // types
 import { nextTick, onMounted, PropType, provide, ref, toRaw } from "vue";
-import { Project, Note, Author } from "src/backend/database";
+import { Project, Note } from "src/backend/database";
 import { QTable, QTableColumn, QTr } from "quasar";
 // components
 import TableItemRow from "./TableItemRow.vue";

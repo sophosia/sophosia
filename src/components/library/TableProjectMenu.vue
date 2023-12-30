@@ -10,11 +10,43 @@
         v-if="projectStore.selected.length <= 1"
         clickable
         v-close-popup
-        @click="copyProjectId"
+        @click="
+          () => {
+            $q.notify($t('text-copied'));
+            copyToClipboard(projectId);
+          }
+        "
       >
-        <q-item-section>{{ $t("copy-project-id") }}</q-item-section>
+        <q-item-section>
+          <i18n-t keypath="copy-id">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
+        v-if="projectStore.selected.length <= 1"
+        clickable
+        v-close-popup
+        @click="
+          () => {
+            $q.notify($t('text-copied'));
+            copyToClipboard(
+              `[${generateCiteKey(
+                projectStore.selected[0] as Meta
+              )}](sophosia://open-item/${projectId})`
+            );
+          }
+        "
+      >
+        <q-item-section>
+          <i18n-t keypath="copy-as-link">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
+      </q-item>
+      <q-separator />
+      <q-item
+        v-if="projectStore.selected.length <= 1"
         clickable
         v-close-popup
         @click="showInExplorer"
@@ -94,7 +126,13 @@
 <script setup lang="ts">
 // types
 import { Ref, inject, nextTick } from "vue";
-import { NoteType, Project, SpecialFolder, db } from "src/backend/database";
+import {
+  Meta,
+  NoteType,
+  Project,
+  SpecialFolder,
+  db,
+} from "src/backend/database";
 import { QMenu } from "quasar";
 import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
 // db
@@ -103,6 +141,7 @@ import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
+import { generateCiteKey } from "src/backend/project/meta";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -142,10 +181,6 @@ async function openProject() {
     stateStore.openPage({ id, type, label });
     await nextTick();
   }
-}
-
-function copyProjectId() {
-  copyToClipboard(projectStore.selected[0]._id);
 }
 
 async function showInExplorer() {

@@ -8,6 +8,29 @@
       <q-item
         clickable
         v-close-popup
+        @click="$emit('copyId')"
+      >
+        <q-item-section>
+          <i18n-t keypath="copy-id">
+            <template #type>{{ $t("note") }}</template>
+          </i18n-t>
+        </q-item-section>
+      </q-item>
+      <q-item
+        clickable
+        v-close-popup
+        @click="$emit('copyAsLink')"
+      >
+        <q-item-section>
+          <i18n-t keypath="copy-as-link">
+            <template #type>{{ $t("note") }}</template>
+          </i18n-t>
+        </q-item-section>
+      </q-item>
+      <q-separator />
+      <q-item
+        clickable
+        v-close-popup
         @click="$emit('rename')"
       >
         <q-item-section> {{ $t("rename") }} </q-item-section>
@@ -32,5 +55,11 @@
   </q-menu>
 </template>
 <script setup lang="ts">
-const emit = defineEmits(["showInExplorer", "rename", "delete"]);
+const emit = defineEmits([
+  "copyId",
+  "copyAsLink",
+  "showInExplorer",
+  "rename",
+  "delete",
+]);
 </script>

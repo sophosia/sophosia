@@ -44,7 +44,6 @@
   "files-were-successfully-transfer-to-new-path": "Files were successfully transfer to new path.",
   "moving-files": "Moving Files",
   "delete-annot": "Delete annot",
-  "copy-annot-id": "Copy annot ID",
   "phrase-not-found": "phrase not found",
   "matchescount-current-of-matchescount-total-matches": "{0} of {1} matches",
   "toggle-right-menu": "Toggle right menu",
@@ -83,12 +82,11 @@
   "delete-note": "Delete Note",
   "rename-note": "Rename Note",
   "open-note": "Open Note",
-  "copy-note-id": "Copy Note ID",
   "delete-from-database": "Delete From DataBase",
   "delete-from-folder": "Delete From Folder",
   "search-meta-info": "Search Meta Info",
   "open-project": "Open Project",
-  "copy-project-id": "Copy Project ID",
+  "copy-id": "Copy {type} ID",
   "author": "Author(s)",
   "export-references": "Export References",
   "add-folder": "Add Folder",
@@ -166,5 +164,6 @@
   "change-path": "Change Path",
   "new-folder": "New Folder",
   "relaunch-app": "Please relaunch Sophosia",
-  "copy-annot-as-link": "Copy annot as link"
+  "copy-as-link": "Copy {type} as link",
+  "annotation": "Annotation"
 }

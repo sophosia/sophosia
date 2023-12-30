@@ -37,7 +37,7 @@
           <AnnotMenu
             @changeColor="(color: string) => changeColor(color)"
             @deleteAnnot="deleteAnnot()"
-            @copyID="
+            @copyId="
               () => {
                 $q.notify($t('text-copied'));
                 copyToClipboard(annot.data._id);
@@ -49,7 +49,7 @@
                 copyToClipboard(
                   `[${annot.data.type.toLocaleUpperCase()} - page${
                     annot.data.pageNumber
-                  }](${annot.data._id})`
+                  }](sophosia://open-item/${annot.data._id})`
                 );
               }
             "

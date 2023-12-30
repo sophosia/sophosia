@@ -42,7 +42,6 @@
   "storage-path": "存储路径：",
   "dark": "深色",
   "light": "亮色",
-  "copy-annot-id": "复制注释 ID",
   "delete-annot": "删除注释",
   "cursor": "指针",
   "highlight": "高亮",
@@ -77,13 +76,12 @@
   "search-identifier": "搜索标识符",
   "create-a-new-folder-for-this-collection": "为此文献集创建一个新文件夹",
   "import-collection": "导入文献集",
-  "copy-note-id": "复制笔记 ID",
   "open-note": "打开笔记",
   "rename-note": "重命名笔记",
   "delete-note": "删除笔记",
   "open-pdf": "打开PDF",
   "rename-pdf-from-metadata": "根据文献信息重命名 PDF",
-  "copy-project-id": "复制项目 ID",
+  "copy-id": "复制{type}ID",
   "open-project": "打开项目",
   "search-meta-info": "搜索文献信息",
   "delete-from-folder": "从文件夹中删除",
@@ -166,5 +164,6 @@
   "change-path": "改变路径",
   "new-folder": "新建文件夹",
   "relaunch-app": "请重新启动 Sophosia",
-  "copy-annot-as-link": "复制注释为连接"
+  "copy-as-link": "复制{type}为连接",
+  "annotation": "注释"
 }
