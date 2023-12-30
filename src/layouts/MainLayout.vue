@@ -57,11 +57,12 @@ import { useStateStore } from "src/stores/appState";
 import { getNote } from "src/backend/project/note";
 import { getLayout, updateLayout } from "src/backend/appState";
 // utils
-import { nextTick, onMounted, provide, ref, watch } from "vue";
+import { nextTick, onMounted, onUnmounted, provide, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { colors } from "quasar";
 const { getPaletteColor } = colors;
 import pluginManager from "src/backend/plugin";
+import { listen } from "@tauri-apps/api/event";
 
 interface PageItem {
   _id: string;
@@ -231,9 +232,23 @@ async function saveLayout() {
   await updateLayout(config);
 }
 
+/**
+ * Given a request url, return the requested itemId
+ * @params url
+ * @returns itemId
+ */
+function parseDeepLink(url: string | undefined): string {
+  const request = "sophosia://open-item/";
+  let itemId = "";
+  if (url && url.startsWith(request))
+    // use decodeURI in case the url contains non-english character
+    itemId = decodeURI(url.replace(request, ""));
+  return itemId;
+}
 /*************************************************
  * onMounted
  *************************************************/
+let unlisten: () => void;
 onMounted(async () => {
   pluginManager.init(); // initialize pluginManager after storagePath is set
 
@@ -245,5 +260,22 @@ onMounted(async () => {
   // the openItemIds are ready
   // we can load the projectTree
   ready.value = true;
+
+  // get deep link from window object if the app is invoked by deep link
+  const itemId = parseDeepLink(
+    (window as Window & typeof globalThis & { urlSchemeRequest: string })
+      .urlSchemeRequest
+  );
+  await stateStore.openItem(itemId);
+
+  // listen to the deep link event
+  unlisten = await listen("deep-link", async (e) => {
+    const itemId = parseDeepLink(e.payload as string);
+    await stateStore.openItem(itemId);
+  });
+});
+
+onUnmounted(() => {
+  unlisten();
 });
 </script>

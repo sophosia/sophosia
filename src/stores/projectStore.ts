@@ -46,10 +46,10 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     async getProjectFromDB(projectId: string) {
-      return (await getProject(projectId, {
+      return await getProject(projectId, {
         includePDF: true,
         includeNotes: true,
-      })) as Project;
+      });
     },
 
     async loadOpenedProjects(openedProjectIds: string[] | Set<string>) {
@@ -178,7 +178,7 @@ export const useProjectStore = defineStore("projectStore", {
       else await addNote(node as Note);
       // update ui
       const projectId = node._id.split("/")[0];
-      const project = await this.getProjectFromDB(projectId);
+      const project = (await this.getProjectFromDB(projectId)) as Project;
       sortTree(project);
       this._updateProjectUI(project);
     },
@@ -195,7 +195,7 @@ export const useProjectStore = defineStore("projectStore", {
       const oldProjectId = oldNodeId.split("/")[0];
       const newProjectId = newNodeId.split("/")[0];
       for (const projectId of new Set([oldProjectId, newProjectId])) {
-        let project = await this.getProjectFromDB(projectId);
+        let project = (await this.getProjectFromDB(projectId)) as Project;
         sortTree(project);
         this._updateProjectUI(project);
       }
@@ -206,7 +206,7 @@ export const useProjectStore = defineStore("projectStore", {
       else await deleteNote(nodeId);
       // update ui
       const projectId = nodeId.split("/")[0];
-      let project = await this.getProjectFromDB(projectId);
+      let project = (await this.getProjectFromDB(projectId)) as Project;
       sortTree(project);
       this._updateProjectUI(project);
     },

@@ -1,0 +1,21 @@
+<!-- Add this file next to your tauri.conf.json file -->
+<!-- On macOS, deep link must be registered in this way -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleURLName</key>
+                <!-- Obviously needs to be replaced with your app's bundle identifier -->
+                <string>sophosia</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <!-- register the myapp:// -->
+                    <string>sophosia</string>
+                </array>
+            </dict>
+        </array>
+    </dict>
+</plist>
