@@ -64,6 +64,18 @@
     </q-list>
 
     <q-list
+      v-else-if="menuType === 'folder'"
+      dense
+    >
+      <q-item
+        clickable
+        @click="$emit('showInExplorer')"
+      >
+        <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
+      </q-item>
+    </q-list>
+
+    <q-list
       v-else-if="menuType === 'project'"
       dense
     >
