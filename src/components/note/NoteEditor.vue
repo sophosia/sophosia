@@ -287,6 +287,7 @@ async function clickLink(e: MouseEvent, link: string) {
   e.stopImmediatePropagation(); // stop propagating the click event
   vditor.value.blur(); // save the content before jumping
 
+  link = link.replace("sophosia://open-item/", ""); // ignore the deep link action
   try {
     // valid external url, open it externally
     new URL(link);
@@ -330,6 +331,7 @@ async function hoverLink(linkNode: HTMLElement) {
   let link = (
     linkNode.querySelector("span.vditor-ir__marker--link") as HTMLElement
   ).innerHTML;
+  link = link.replace("sophosia://open-item/", ""); // ignore the deep link action
   try {
     // valid external url, open it externally
     new URL(link);
@@ -341,9 +343,8 @@ async function hoverLink(linkNode: HTMLElement) {
       else item = (await db.get(link)) as Project | AnnotationData;
       if (item.dataType === "project") {
         let lines = [
-          `# ${item.title}`,
+          `## ${item.title}`,
           `Author(s): ${authorToString(item.author)}`,
-          "\n",
           `Abstract: ${item.abstract}`,
         ];
         hoverContent.value = lines.join("\n");
@@ -351,7 +352,7 @@ async function hoverLink(linkNode: HTMLElement) {
       } else if (item.dataType === "note") {
         if (item.type === "excalidraw") {
           let lines = [
-            "# Excalidraw note",
+            `## ${item.label}`,
             `Belongs to: ${generateCiteKey(
               (await getProject(item.projectId)) as Project,
               "author_year_title",
@@ -362,7 +363,8 @@ async function hoverLink(linkNode: HTMLElement) {
           hoverData.value.content = lines.join("\n");
         } else {
           let content = await loadNote(item._id);
-          hoverContent.value = content;
+          content = `## ${item.label}\n${content}`;
+          content = hoverContent.value = content;
           hoverData.value.content = content;
         }
       } else if (item.dataType === "pdfAnnotation") {
@@ -487,9 +489,10 @@ async function filterHints(key: string) {
   for (let project of projects) {
     if (project.title.toLowerCase().indexOf(key) > -1) {
       hints.push({
-        value: `[${generateCiteKey(project, "author_year_title")}](${
-          project._id
-        })`,
+        value: `[${generateCiteKey(
+          project,
+          "author_year_title"
+        )}](sophosia://open-item/${project._id})`,
         html: `
           <p style="font-size: 1rem" class="ellipsis q-my-none">
             <strong>Title</strong>: ${project.title}
