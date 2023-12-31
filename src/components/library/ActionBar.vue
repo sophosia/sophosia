@@ -9,7 +9,11 @@
       padding="none"
       :ripple="false"
     >
-      <q-tooltip>{{ $t("add-project") }}</q-tooltip>
+      <q-tooltip>
+        <i18n-t keypath="add">
+          <template #type>{{ $t("project") }}</template>
+        </i18n-t>
+      </q-tooltip>
       <q-menu square>
         <q-list dense>
           <q-item
@@ -17,23 +21,33 @@
             v-close-popup
             @click="addEmpty"
           >
-            <q-item-section>{{ $t("create-empty-entry") }}</q-item-section>
+            <q-item-section>
+              <i18n-t keypath="add">
+                <template #type>{{ $t("project") }}</template>
+              </i18n-t>
+            </q-item-section>
           </q-item>
           <q-item
             clickable
             v-close-popup
             @click="addByID"
           >
-            <q-item-section>{{
-              $t("create-entry-by-identifier")
-            }}</q-item-section>
+            <q-item-section>
+              <i18n-t keypath="create-entry-by">
+                <template #type>{{ $t("identifier") }}</template>
+              </i18n-t>
+            </q-item-section>
           </q-item>
           <q-item
             clickable
             v-close-popup
             @click="addByFiles('file')"
           >
-            <q-item-section>{{ $t("create-entry-by-file") }}</q-item-section>
+            <q-item-section>
+              <i18n-t keypath="create-entry-by">
+                <template #type>{{ $t("file") }}</template>
+              </i18n-t>
+            </q-item-section>
           </q-item>
           <q-separator />
           <q-item
@@ -56,7 +70,7 @@
       dense
       square
       class="actionbar-input"
-      :placeholder="$t('local-search')"
+      :placeholder="$t('search', { type: $t('local') })"
       v-model="searchText"
     >
       <template v-slot:append>

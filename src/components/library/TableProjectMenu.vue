@@ -10,11 +10,43 @@
         v-if="projectStore.selected.length <= 1"
         clickable
         v-close-popup
-        @click="copyProjectId"
+        @click="
+          () => {
+            $q.notify($t('text-copied'));
+            copyToClipboard(projectId);
+          }
+        "
       >
-        <q-item-section>{{ $t("copy-project-id") }}</q-item-section>
+        <q-item-section>
+          <i18n-t keypath="copy-id">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
+        v-if="projectStore.selected.length <= 1"
+        clickable
+        v-close-popup
+        @click="
+          () => {
+            $q.notify($t('text-copied'));
+            copyToClipboard(
+              `[${generateCiteKey(
+                projectStore.selected[0] as Meta
+              )}](sophosia://open-item/${projectId})`
+            );
+          }
+        "
+      >
+        <q-item-section>
+          <i18n-t keypath="copy-as-link">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
+      </q-item>
+      <q-separator />
+      <q-item
+        v-if="projectStore.selected.length <= 1"
         clickable
         v-close-popup
         @click="showInExplorer"
@@ -30,7 +62,11 @@
         v-close-popup
         @click="addNote(NoteType.MARKDOWN)"
       >
-        <q-item-section> {{ $t("add-markdown-note") }} </q-item-section>
+        <q-item-section>
+          <i18n-t keypath="add">
+            <template #type>Markdown</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
         v-if="projectStore.selected.length == 1"
@@ -38,7 +74,11 @@
         v-close-popup
         @click="addNote(NoteType.EXCALIDRAW)"
       >
-        <q-item-section> {{ $t("add-excalidraw") }} </q-item-section>
+        <q-item-section>
+          <i18n-t keypath="add">
+            <template #type>Excalidraw</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
       <q-item
         v-if="projectStore.selected.length == 1"
@@ -61,7 +101,11 @@
         v-close-popup
         @click="openProject"
       >
-        <q-item-section>{{ $t("open-project") }}</q-item-section>
+        <q-item-section>
+          <i18n-t keypath="open">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
 
       <q-item
@@ -70,7 +114,11 @@
         v-close-popup
         @click="searchMeta"
       >
-        <q-item-section>{{ $t("search-meta-info") }}</q-item-section>
+        <q-item-section>
+          <i18n-t keypath="search">
+            <template #type>{{ $t("info") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
 
       <q-item
@@ -94,7 +142,13 @@
 <script setup lang="ts">
 // types
 import { Ref, inject, nextTick } from "vue";
-import { NoteType, Project, SpecialFolder, db } from "src/backend/database";
+import {
+  Meta,
+  NoteType,
+  Project,
+  SpecialFolder,
+  db,
+} from "src/backend/database";
 import { QMenu } from "quasar";
 import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
 // db
@@ -103,6 +157,7 @@ import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
 import { join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
+import { generateCiteKey } from "src/backend/project/meta";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -136,16 +191,9 @@ async function addNote(noteType: NoteType) {
 
 async function openProject() {
   for (let project of projectStore.selected) {
-    let id = project._id;
-    let label = project.label;
-    let type = "ReaderPage";
-    stateStore.openPage({ id, type, label });
+    stateStore.openItem(project._id);
     await nextTick();
   }
-}
-
-function copyProjectId() {
-  copyToClipboard(projectStore.selected[0]._id);
 }
 
 async function showInExplorer() {

@@ -8,10 +8,35 @@
       <q-item
         clickable
         v-close-popup
+        @click="$emit('copyId')"
+      >
+        <q-item-section>
+          <i18n-t keypath="copy-id">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
+      </q-item>
+      <q-item
+        clickable
+        v-close-popup
+        @click="$emit('copyAsLink')"
+      >
+        <q-item-section>
+          <i18n-t keypath="copy-as-link">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
+      </q-item>
+      <q-separator />
+      <q-item
+        clickable
+        v-close-popup
         @click="$emit('addNote', NoteType.MARKDOWN)"
       >
         <q-item-section>
-          {{ $t("add-markdown-note") }}
+          <i18n-t keypath="add">
+            <template #type>Markdown</template>
+          </i18n-t>
         </q-item-section>
       </q-item>
       <q-item
@@ -20,7 +45,9 @@
         @click="$emit('addNote', NoteType.EXCALIDRAW)"
       >
         <q-item-section>
-          {{ $t("add-excalidraw") }}
+          <i18n-t keypath="add">
+            <template #type>Excalidraw</template>
+          </i18n-t>
         </q-item-section>
       </q-item>
 
@@ -30,7 +57,11 @@
         v-close-popup
         @click="$emit('addFolder')"
       >
-        <q-item-section> {{ $t("add-folder") }} </q-item-section>
+        <q-item-section>
+          <i18n-t keypath="add">
+            <template #type>{{ $t("folder") }}</template>
+          </i18n-t>
+        </q-item-section>
       </q-item>
 
       <q-separator />
@@ -47,7 +78,9 @@
         @click="$emit('closeProject')"
       >
         <q-item-section>
-          {{ $t("close-project") }}
+          <i18n-t keypath="close">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
         </q-item-section>
       </q-item>
     </q-list>
@@ -56,6 +89,8 @@
 <script setup lang="ts">
 import { NoteType } from "src/backend/database";
 const emit = defineEmits([
+  "copyId",
+  "copyAsLink",
   "showInExplorer",
   "addNote",
   "addFolder",

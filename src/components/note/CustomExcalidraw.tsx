@@ -8,7 +8,6 @@ import {
 import "src/css/excalidraw/theme.scss";
 import { debounce } from "quasar";
 import { useStateStore } from "src/stores/appState";
-import { getNote } from "src/backend/project/note";
 import { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
 import {
   AppState as ExcalidrawState,
@@ -16,7 +15,7 @@ import {
   ExcalidrawImperativeAPI,
   LibraryItems,
 } from "@excalidraw/excalidraw/types/types";
-import { Note, db } from "src/backend/database";
+import { db } from "src/backend/database";
 import { join } from "@tauri-apps/api/path";
 import {
   readTextFile,
@@ -36,7 +35,6 @@ interface InitialData {
 const stateStore = useStateStore();
 
 export default function CustomExcalidraw(props: {
-  visible: boolean;
   noteId: string;
 }) {
   const [excalidrawAPI, setExcalidrawAPI] =
@@ -102,11 +100,15 @@ export default function CustomExcalidraw(props: {
   }
 
   useEffect(() => {
+    console.log("visible", props.visible)
+    console.log("set note path", props.noteId)
     setNotePath(IdToPath(props.noteId))
   }, [props.noteId]);
 
   useEffect(() => {
+    console.log("loading excalidraw", notePath)
     loadExcalidraw().then((data: InitialData | undefined) => {
+      console.log("set initial data", data)
       if (data) setInitialData(data);
     });
   }, [notePath]);
@@ -118,7 +120,7 @@ export default function CustomExcalidraw(props: {
     });
   }, [initialData]);
 
-  return ready && notePath && props.visible ? (
+  return ready && notePath ? (
     <Excalidraw
       ref={(api: ExcalidrawImperativeAPI) => {
         setExcalidrawAPI(api);

@@ -37,7 +37,7 @@
           <AnnotMenu
             @changeColor="(color: string) => changeColor(color)"
             @deleteAnnot="deleteAnnot()"
-            @copyID="
+            @copyId="
               () => {
                 $q.notify($t('text-copied'));
                 copyToClipboard(annot.data._id);
@@ -49,7 +49,7 @@
                 copyToClipboard(
                   `[${annot.data.type.toLocaleUpperCase()} - page${
                     annot.data.pageNumber
-                  }](${annot.data._id})`
+                  }](sophosia://open-item/${annot.data._id})`
                 );
               }
             "
@@ -186,23 +186,7 @@ function changeLinks() {
             new URL(link);
             open(link);
           } catch (error) {
-            // we just want the document, both getProject or getNote are good
-            try {
-              const item = link.includes("/")
-                ? ((await getNote(link)) as Note)
-                : ((await getProject(link)) as Project);
-              let id = item._id;
-              let label = item.label;
-              let type = "";
-              if (item.dataType === "project") type = "ReaderPage";
-              else if ((item as Project | Note).dataType === "note") {
-                if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-                else type = "NotePage";
-              }
-              stateStore.openPage({ id, type, label });
-            } catch (error) {
-              console.log(error);
-            }
+            stateStore.openItem(link);
           }
         };
       }

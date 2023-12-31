@@ -287,40 +287,14 @@ async function clickLink(e: MouseEvent, link: string) {
   e.stopImmediatePropagation(); // stop propagating the click event
   vditor.value.blur(); // save the content before jumping
 
+  link = link.replace("sophosia://open-item/", ""); // ignore the deep link action
   try {
     // valid external url, open it externally
     new URL(link);
     await open(link);
   } catch (error) {
     link = link.replaceAll("%20", " "); // convert all %20 to spaces
-    try {
-      const item = link.includes("/")
-        ? ((await getNote(link)) as Note)
-        : ((await db.get(link)) as Project | AnnotationData);
-      let id = "";
-      let label = "";
-      let type = "";
-      let data = undefined;
-      if (item.dataType === "project") {
-        id = item._id;
-        label = item.label;
-        type = "ReaderPage";
-      } else if (item.dataType === "note") {
-        id = item._id;
-        label = item.label;
-        if (item.type === NoteType.EXCALIDRAW) type = "ExcalidrawPage";
-        else type = "NotePage";
-      } else if (item.dataType === "pdfAnnotation") {
-        const project = (await getProject(item.projectId)) as Project;
-        id = project._id;
-        label = project?.label;
-        type = "ReaderPage";
-        data = { focusAnnotId: item._id };
-      }
-      stateStore.openPage({ id, type, label, data });
-    } catch (error) {
-      console.log(error);
-    }
+    stateStore.openItem(link);
   }
 }
 async function hoverLink(linkNode: HTMLElement) {
@@ -330,6 +304,7 @@ async function hoverLink(linkNode: HTMLElement) {
   let link = (
     linkNode.querySelector("span.vditor-ir__marker--link") as HTMLElement
   ).innerHTML;
+  link = link.replace("sophosia://open-item/", ""); // ignore the deep link action
   try {
     // valid external url, open it externally
     new URL(link);
@@ -341,9 +316,8 @@ async function hoverLink(linkNode: HTMLElement) {
       else item = (await db.get(link)) as Project | AnnotationData;
       if (item.dataType === "project") {
         let lines = [
-          `# ${item.title}`,
+          `## ${item.title}`,
           `Author(s): ${authorToString(item.author)}`,
-          "\n",
           `Abstract: ${item.abstract}`,
         ];
         hoverContent.value = lines.join("\n");
@@ -351,7 +325,7 @@ async function hoverLink(linkNode: HTMLElement) {
       } else if (item.dataType === "note") {
         if (item.type === "excalidraw") {
           let lines = [
-            "# Excalidraw note",
+            `## ${item.label}`,
             `Belongs to: ${generateCiteKey(
               (await getProject(item.projectId)) as Project,
               "author_year_title",
@@ -362,7 +336,8 @@ async function hoverLink(linkNode: HTMLElement) {
           hoverData.value.content = lines.join("\n");
         } else {
           let content = await loadNote(item._id);
-          hoverContent.value = content;
+          content = `## ${item.label}\n${content}`;
+          content = hoverContent.value = content;
           hoverData.value.content = content;
         }
       } else if (item.dataType === "pdfAnnotation") {
@@ -487,9 +462,10 @@ async function filterHints(key: string) {
   for (let project of projects) {
     if (project.title.toLowerCase().indexOf(key) > -1) {
       hints.push({
-        value: `[${generateCiteKey(project, "author_year_title")}](${
-          project._id
-        })`,
+        value: `[${generateCiteKey(
+          project,
+          "author_year_title"
+        )}](sophosia://open-item/${project._id})`,
         html: `
           <p style="font-size: 1rem" class="ellipsis q-my-none">
             <strong>Title</strong>: ${project.title}

@@ -94,16 +94,15 @@ async function getLinksFromFile(
   filePath: string,
   storagePath: string
 ): Promise<Edge[]> {
-  const regex =
-    /\[[\w\-\/\s\.\#\^]+\]\((?!www\.)(?!http:)(?!https:)[\w\-\/\.\#\^]+\)/gm;
+  const regex = /\[.*\]\((?!www\.)(?!http:)(?!https:).*\)/gm;
   const content = await readTextFile(filePath);
   const matches = content.match(regex) || [];
   const links = [] as Edge[];
   for (const match of matches) {
     const submatch = match.match(/\(.*\)/)![0];
-    const [mdPath, blockRef] = submatch.slice(1, -1).split("#"); // remove bracket and split
+    const [idOrDeepLink, blockRef] = submatch.slice(1, -1).split("#"); // remove bracket and split
     let source = pathToId(filePath);
-    let target = pathToId(mdPath);
+    let target = idOrDeepLink.replace("sophosia://open-item/", "");
     links.push({ source, target });
   }
   return links;

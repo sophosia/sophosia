@@ -1,7 +1,16 @@
 /**
  * For drawing the graphs in cytoscape.
  */
-import { Edge, EdgeUI, NodeUI, Note, Project, idb } from "../database";
+import {
+  AnnotationData,
+  Edge,
+  EdgeUI,
+  NodeUI,
+  Note,
+  Project,
+  db,
+  idb,
+} from "../database";
 import { getNote, getNotes } from "./note";
 import { getProject } from "./project";
 
@@ -66,14 +75,25 @@ async function getCurrentAndOrParentNodes(
 ): Promise<NodeUI[]> {
   const nodes = [] as NodeUI[];
   if (!itemId) return nodes;
-  const isNote = itemId.includes("/");
-  const splits = itemId.split("/");
-  const parent = isNote ? splits[0] : undefined;
-  const item = isNote
-    ? ((await getNote(itemId)) as Note)
-    : ((await getProject(itemId)) as Project);
-  const label = item.label;
-  const type = isNote ? "note" : "project";
+  let parent: string | undefined;
+  let label: string;
+  let type: "project" | "note" | "annotation";
+  if (itemId.includes("/")) {
+    const splits = itemId.split("/");
+    parent = splits[0];
+    label = splits[splits.length - 1].replace("%20", " ");
+    type = "note";
+  } else if (itemId.includes("SA")) {
+    let item = (await db.get(itemId)) as AnnotationData;
+    parent = item.projectId;
+    label = item.type;
+    type = "annotation";
+  } else {
+    let item = (await getProject(itemId)) as Project;
+    parent = undefined;
+    label = item.label;
+    type = "project";
+  }
   nodes.push({
     data: {
       id: itemId,
@@ -92,6 +112,7 @@ async function getCurrentAndOrParentNodes(
  * @returns returns {nodes, edges}
  */
 export async function getGraph(itemId: string) {
+  console.log("draw graph");
   const nodes = [] as NodeUI[];
   const edges = [] as EdgeUI[];
 
@@ -99,11 +120,13 @@ export async function getGraph(itemId: string) {
   links.push(...(await getForwardLinks(itemId)));
   // backward links
   links.push(...(await idb.getAllFromIndex("links", "target", itemId)));
+  console.log("links", links);
 
   // create graph
   const uniqueIds = [] as string[];
   // add current node and / or its parent
-  let currentAndOrParentNodes = await getCurrentAndOrParentNodes(itemId);
+  const currentAndOrParentNodes = await getCurrentAndOrParentNodes(itemId);
+  console.log("current", currentAndOrParentNodes);
   for (const node of currentAndOrParentNodes) {
     if (!uniqueIds.includes(node.data.id)) {
       nodes.push(node);
@@ -128,6 +151,6 @@ export async function getGraph(itemId: string) {
       }
     }
   }
-
+  console.log("prepare notes");
   return { nodes, edges };
 }

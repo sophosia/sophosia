@@ -60,7 +60,6 @@ onMounted(async () => {
 
 function close() {
   supposeToClose.value = true;
-  console.log("supposeToClose?", supposeToClose.value);
   setTimeout(() => {
     if (supposeToClose.value) card.value.$el.hidden = true;
   }, 200);

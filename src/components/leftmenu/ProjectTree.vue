@@ -4,7 +4,7 @@
     dense
     no-transition
     no-selection-unset
-    :no-nodes-label="$t('no-working-projects')"
+    :no-nodes-label="$t('empty')"
     :nodes="projectStore.openedProjects"
     node-key="_id"
     selected-color="primary"
@@ -37,12 +37,40 @@
           @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
           @addFolder="addNode(prop.node._id, 'folder')"
           @closeProject="closeProject(prop.node._id)"
+          @copyId="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(prop.node._id);
+            }
+          "
+          @copyAsLink="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(
+                `[${generateCiteKey(prop.node)}](sophosia://open-item/${
+                  prop.node._id
+                })`
+              );
+            }
+          "
         />
         <NoteMenu
           v-else-if="prop.node.dataType === 'note'"
           @showInExplorer="showInExplorer(prop.node)"
           @rename="setRenameNode(prop.node)"
           @delete="deleteNode(prop.node)"
+          @copyId="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(prop.node._id);
+            }
+          "
+          @copyAsLink="
+            () => {
+              $q.notify($t('text-copied'));
+              copyToClipboard(`[${prop.node._id}](${prop.node._id})`);
+            }
+          "
         />
         <FolderMenu
           v-else
@@ -118,36 +146,33 @@
         name="mdi-close"
         @click="closeProject(prop.key)"
       >
-        <q-tooltip> {{ $t("close-project") }} </q-tooltip>
+        <q-tooltip>
+          <i18n-t keypath="close">
+            <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-tooltip>
       </q-icon>
     </template>
   </q-tree>
 </template>
 <script setup lang="ts">
-import { inject, nextTick, onMounted, ref, watch } from "vue";
-import { QTree } from "quasar";
-import {
-  FolderOrNote,
-  Note,
-  NoteType,
-  Page,
-  Project,
-  db,
-} from "src/backend/database";
+import { inject, nextTick, onMounted, ref, watchEffect } from "vue";
+import { QTree, copyToClipboard } from "quasar";
+import { FolderOrNote, Note, NoteType, Project } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
-import { getProject } from "src/backend/project/project";
 import { dirname, join } from "@tauri-apps/api/path";
-import { exists, renameFile } from "@tauri-apps/api/fs";
+import { exists } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import { IdToPath, oldToNewId, pathToId } from "src/backend/project/utils";
+import { IdToPath, oldToNewId } from "src/backend/project/utils";
 //components
 import NoteMenu from "./NoteMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
 import FolderMenu from "./FolderMenu.vue";
 import { getNotes } from "src/backend/project/note";
+import { generateCiteKey } from "src/backend/project/meta";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -160,7 +185,6 @@ const oldNoteName = ref("");
 const pathDuplicate = ref(false);
 const addingNode = ref(false);
 const expanded = ref<string[]>([]);
-const showProjectMenu = ref(true);
 const draggingNode = ref<FolderOrNote | null>(null);
 const dragoverNode = ref<FolderOrNote | null>(null);
 const enterTime = ref(0);
@@ -173,35 +197,11 @@ const updateComponent = inject("updateComponent") as (
 onMounted(async () => {
   // expand all projects
   expanded.value = Array.from(projectStore.openedProjects.map((p) => p._id));
-
-  // select the item associated with current window
-  let selected = stateStore.currentItemId;
-  if (!tree.value) return;
-  let selectedNode = tree.value.getNodeByKey(selected);
-  if (!!selectedNode && selectedNode?.children?.length > 0)
-    expanded.value.push(selected);
 });
 
-watch(
-  () => stateStore.openedPage,
-  async (page: Page) => {
-    if (page.type.indexOf("Plugin") > -1) return;
-    if (!!!page.id || !tree.value) return;
-    let node = tree.value.getNodeByKey(page.id);
-    if (!!node) return; // if project is active already, return
-
-    let item = (await getProject(page.id)) as Project | Note;
-    if (item?.dataType == "project") {
-      await projectStore.openProject(page.id);
-      expanded.value.push(page.id);
-    } else if (item?.dataType == "note") {
-      // some notes are independent of project, like memo
-      if (!item.projectId) return;
-      await projectStore.openProject(item.projectId);
-    }
-  },
-  { deep: true }
-);
+watchEffect(() => {
+  showInTree(stateStore.currentItemId);
+});
 
 function selectItem(node: Project | FolderOrNote) {
   console.log("node", node);
@@ -209,15 +209,7 @@ function selectItem(node: Project | FolderOrNote) {
   if ((node.children?.length as number) > 0) expanded.value.push(node._id);
   if (node.dataType === "folder") return;
 
-  // open item
-  let id = node._id;
-  let label = node.label;
-  let type = "";
-  if (node.dataType === "project") type = "ReaderPage";
-  else if (node.dataType === "note")
-    type = node.type === NoteType.EXCALIDRAW ? "ExcalidrawPage" : "NotePage";
-
-  stateStore.openPage({ id, type, label });
+  stateStore.openItem(node._id);
 }
 
 async function showInExplorer(node: Project | Note) {
@@ -227,14 +219,25 @@ async function showInExplorer(node: Project | Note) {
   });
 }
 
+function showInTree(nodeId: string) {
+  const splits = nodeId.split("/");
+  let folderId = splits[0];
+  if (!expanded.value.includes(folderId)) expanded.value.push(folderId);
+  for (let i = 1; i < splits.length - 1; i++) {
+    folderId += `/${splits[i]}`;
+    if (!expanded.value.includes(folderId)) expanded.value.push(folderId);
+  }
+}
+
 async function closeProject(projectId: string) {
   // close all pages
   let project = projectStore.openedProjects.find((p) => p._id === projectId);
   if (project) {
     stateStore.closePage(project._id);
-    for (let note of project.children as Note[]) {
-      await nextTick(); // do it slowly one by one
-      stateStore.closePage(note._id);
+    const notes = await getNotes(project._id);
+    for (let node of notes) {
+      await nextTick(); // do it slowly one by o:238
+      stateStore.closePage(node._id);
     }
   }
 
