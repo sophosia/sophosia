@@ -4,6 +4,7 @@
     bordered
     flat
     @dblclick="editing = true"
+    class="annot-card"
   >
     <q-card-section
       :style="`background: ${annot.data.color}; ${
@@ -211,3 +212,8 @@ function changeLinks() {
   }
 }
 </script>
+<style scoped lang="scss">
+.annot-card {
+  min-width: 400px;
+}
+</style>
