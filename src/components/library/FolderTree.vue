@@ -43,7 +43,11 @@
                 v-close-popup
                 @click="addFolder(prop.node)"
               >
-                <q-item-section>{{ $t("add-folder") }}</q-item-section>
+                <q-item-section>
+                  <i18n-t keypath="add">
+                    <template #type>{{ $t("folder") }}</template>
+                  </i18n-t>
+                </q-item-section>
               </q-item>
               <q-item
                 v-if="!Object.values(SpecialFolder).includes(prop.node._id)"

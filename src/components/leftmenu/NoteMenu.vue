@@ -45,7 +45,7 @@
         @click="$emit('delete')"
       >
         <q-item-section>
-          <i18n-t keypath="rename">
+          <i18n-t keypath="delete">
             <template #type>{{ $t("note") }}</template>
           </i18n-t>
         </q-item-section>
