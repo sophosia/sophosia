@@ -127,7 +127,6 @@ import {
   moveFolderInto,
   getParentFolder,
 } from "src/backend/project/folder";
-import { updateAppState } from "src/backend/appState";
 import { sortTree } from "src/backend/project/utils";
 import { useI18n } from "vue-i18n";
 
