@@ -123,6 +123,8 @@ export class JsonDB {
       this.config.storagePaths = config.storagePaths || [
         this.config.storagePath,
       ];
+
+      console.log("config", config);
     } catch (error) {
       console.log(error);
     }
@@ -132,18 +134,18 @@ export class JsonDB {
     try {
       if (!(await exists(await appConfigDir())))
         await createDir(await appConfigDir());
-      this.config.language = config.language || this.config.language;
-      this.config.storagePath = config.storagePath || this.config.storagePath;
-      this.config.lastScanTime =
-        config.lastScanTime || this.config.lastScanTime;
-      if (!config.storagePaths) config.storagePaths = [];
-      config.storagePaths = config.storagePaths.concat([
-        this.config.storagePath,
-      ]);
-      for (const path of config.storagePaths) {
-        if (!this.config.storagePaths.includes(path))
-          this.config.storagePaths.push(path);
+      // we need to assign variable even if it is "", unless it's undefined
+      if (config.language !== undefined) this.config.language = config.language;
+      if (config.storagePath !== undefined) {
+        this.config.storagePath = config.storagePath;
+        if (!this.config.storagePaths.includes(config.storagePath))
+          this.config.storagePaths.push(config.storagePath);
       }
+      if (config.lastScanTime !== undefined)
+        this.config.lastScanTime = config.lastScanTime;
+      if (config.storagePaths) this.config.storagePaths = config.storagePaths;
+
+      console.log("new config", this.config);
 
       await writeTextFile("workspace.json", JSON.stringify(this.config), {
         dir: BaseDirectory.AppConfig,

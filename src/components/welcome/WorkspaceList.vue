@@ -53,7 +53,7 @@ import ProgressDialog from "./ProgressDialog.vue";
 import { PropType, computed, ref } from "vue";
 import { Config, db } from "src/backend/database";
 import { invoke } from "@tauri-apps/api/tauri";
-import { basename, homeDir } from "@tauri-apps/api/path";
+import { basename, homeDir, sep } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
 import { renameFile } from "@tauri-apps/api/fs";
 
@@ -66,11 +66,13 @@ const props = defineProps({
 });
 const emit = defineEmits(["update:modelValue"]);
 
-const workspaces = computed(async () => {
+const workspaces = computed(() => {
   const array = [];
   for (const path of db.config.storagePaths) {
-    array.push({ label: await basename(path), path: path });
+    const splits = path.split(sep);
+    array.push({ label: splits[splits.length - 1], path: path });
   }
+  console.log("array", array);
   return array;
 });
 // progressDialog
