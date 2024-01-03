@@ -123,8 +123,6 @@ export class JsonDB {
       this.config.storagePaths = config.storagePaths || [
         this.config.storagePath,
       ];
-
-      console.log("config", config);
     } catch (error) {
       console.log(error);
     }
@@ -144,8 +142,6 @@ export class JsonDB {
       if (config.lastScanTime !== undefined)
         this.config.lastScanTime = config.lastScanTime;
       if (config.storagePaths) this.config.storagePaths = config.storagePaths;
-
-      console.log("new config", this.config);
 
       await writeTextFile("workspace.json", JSON.stringify(this.config), {
         dir: BaseDirectory.AppConfig,

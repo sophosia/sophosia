@@ -72,7 +72,6 @@ const workspaces = computed(() => {
     const splits = path.split(sep);
     array.push({ label: splits[splits.length - 1], path: path });
   }
-  console.log("array", array);
   return array;
 });
 // progressDialog
