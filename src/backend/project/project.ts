@@ -234,7 +234,7 @@ export async function renamePDF(project: Project) {
   if (project.path === undefined) return;
   const oldPath = project.path;
   const fileName = generateCiteKey(project, undefined, true) + ".pdf";
-  const newPath = await join(db.storagePath, project._id, fileName);
+  const newPath = await join(db.config.storagePath, project._id, fileName);
   await renameFile(oldPath, newPath);
   return newPath;
 }
@@ -263,7 +263,7 @@ export async function attachPDF(
  */
 export async function getPDF(projectId: string) {
   try {
-    const projectFolder = await join(db.storagePath, projectId);
+    const projectFolder = await join(db.config.storagePath, projectId);
     const entries = await readDir(projectFolder);
     for (const entry of entries) {
       try {

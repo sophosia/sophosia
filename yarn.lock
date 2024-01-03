@@ -646,7 +646,7 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.48.0.tgz#642633964e217905436033a2bd08bf322849b7fb"
   integrity sha512-ZSjtmelB7IJfWD2Fvb7+Z+ChTIKWq6kjda95fLcQKNS5aheVHn4IkfgRQE3sIIzTcSLwLcLZUD9UBt+V7+h+Pw==
 
-"@excalidraw/excalidraw@^0.15.3":
+"@excalidraw/excalidraw@^0.15.2":
   version "0.15.3"
   resolved "https://registry.yarnpkg.com/@excalidraw/excalidraw/-/excalidraw-0.15.3.tgz#5dea570f76451adf68bc24d4bfdd67a375cfeab1"
   integrity sha512-/gpY7fgMO/AEaFLWnPqzbY8H7ly+/zocFf7D0Is5sWNMD2mhult5tana12lXKLSJ6EAz7ubo1A7LajXzvJXJDA==

@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@citation-js/plugin-isbn": "^0.4.0",
-    "@excalidraw/excalidraw": "^0.15.3",
+    "@excalidraw/excalidraw": "^0.15.2",
     "@quasar/extras": "^1.16.4",
     "@tauri-apps/api": "^1.5.1",
     "citation-js": "^0.6.8",

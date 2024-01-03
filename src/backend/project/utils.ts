@@ -47,7 +47,7 @@ export function authorToString(authors: Author[] | undefined) {
  * @returns id
  */
 export function pathToId(path: string) {
-  return path.replace(db.storagePath + sep, "").replace(sep, "/");
+  return path.replace(db.config.storagePath + sep, "").replace(sep, "/");
 }
 
 /**
@@ -58,7 +58,7 @@ export function pathToId(path: string) {
  * @returns path absolute path
  */
 export function IdToPath(id: string) {
-  return db.storagePath + sep + id.replace("/", sep);
+  return db.config.storagePath + sep + id.replace("/", sep);
 }
 
 export async function oldToNewId(oldId: string, newLabel: string) {

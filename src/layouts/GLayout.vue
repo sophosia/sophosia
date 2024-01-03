@@ -9,18 +9,18 @@
 
     <div style="position: absolute; width: 100%; height: 100%">
       <GLComponent
-        v-for="pair in AllComponents"
-        :key="pair[0]"
-        :ref="GlcKeyPrefix + pair[0]"
-        :id="GlcKeyPrefix + pair[0]"
-        @click="onClick(pair[0])"
+        v-for="[refId, component] in AllComponents"
+        :key="refId"
+        :ref="`glc_${refId}`"
+        :id="`glc_${refId}`"
+        @click="onClick(refId)"
       >
         <component
-          v-if="initialized"
-          :is="pair[1].component"
-          :itemId="pair[1].id"
-          :visible="MapComponents.get(pair[0])?.container?.visible"
-          :data="pair[1].data"
+          v-if="initialized && !!component.visible"
+          :is="component.asyncComponent"
+          :itemId="component.id"
+          :visible="!!component.visible"
+          :data="component.data"
         ></component>
       </GLComponent>
     </div>
@@ -31,13 +31,8 @@
 import {
   onMounted,
   ref,
-  toRaw,
   markRaw,
-  readonly,
-  defineExpose,
   defineAsyncComponent,
-  defineProps,
-  defineEmits,
   nextTick,
   getCurrentInstance,
   watch,
@@ -65,38 +60,32 @@ import GLComponent from "src/pages/GLComponent.vue";
 const props = defineProps({
   currentItemId: String,
 });
-const emit = defineEmits([
-  "update:currentItemId",
-  "layoutchanged",
-  "itemdestroyed",
-]);
+const emit = defineEmits(["update:currentItemId", "layoutchanged"]);
 
 /*******************
  * Data
  *******************/
 const GLRoot = ref<null | HTMLElement>(null);
 let GLayout: VirtualLayout;
-const GlcKeyPrefix = readonly(ref("glc_"));
 
 const AllComponents = ref(
   new Map<
     number,
     {
-      component: any;
+      asyncComponent: any;
       id: string;
+      visible?: boolean;
       data?: { path?: string; focusAnnotId?: string };
+      container?: any;
+      glc?: any;
     }
   >()
-);
-const MapComponents = ref(
-  new Map<number, { container: ComponentContainer; glc: any }>()
 );
 const IdToRef = {} as { [id: string]: number };
 const UnusedIndexes: number[] = [];
 let CurIndex = 0;
 let GlBoundingClientRect: DOMRect;
-
-const components = ref(new Map<string, any>());
+const asyncComponents = ref(new Map<string, any>()); // <itemId, asyncComponent> pair
 const instance = getCurrentInstance();
 const initialized = ref(false);
 
@@ -135,16 +124,16 @@ const addComponent = (
   // when building the app, vite will automatically take care the imports for us
 
   // unknown async component error occurs if we create multiple async component with the same type at start up
-  if (!components.value.has(componentType)) {
-    components.value.set(
+  if (!asyncComponents.value.has(componentType)) {
+    asyncComponents.value.set(
       componentType,
       markRaw(
         defineAsyncComponent(() => import(`../pages/${componentType}.vue`))
       )
     );
   }
-  const component = components.value.get(componentType);
-  AllComponents.value.set(index, { component, id, data });
+  const asyncComponent = asyncComponents.value.get(componentType);
+  AllComponents.value.set(index, { asyncComponent, id, data });
 
   return index;
 };
@@ -186,7 +175,6 @@ const loadGLLayout = async (
 ) => {
   GLayout.clear();
   AllComponents.value.clear();
-  MapComponents.value.clear();
   // When reloading a saved Layout, first convert the saved "Resolved Config" to a "Config" by calling LayoutConfig.fromResolved().
   const config = (
     (layoutConfig as ResolvedLayoutConfig).resolved
@@ -214,11 +202,6 @@ const loadGLLayout = async (
           (itemConfig.componentState as Json).id as string,
           (itemConfig.componentState as Json).data
         );
-        await nextTick();
-        await nextTick();
-        await nextTick();
-        await nextTick();
-        await nextTick();
         await nextTick();
         if (typeof itemConfig.componentState == "object")
           (itemConfig.componentState as Json)["refId"] = index;
@@ -254,7 +237,7 @@ const resize = () => {
 };
 
 const onClick = (refId: number) => {
-  MapComponents.value.get(refId)?.container.focus();
+  AllComponents.value.get(refId)?.container.focus();
 };
 
 /**
@@ -262,12 +245,23 @@ const onClick = (refId: number) => {
  * @param itemId
  */
 const focusById = (id: string) => {
-  let refId = IdToRef[id];
-  MapComponents.value.get(refId)?.container.focus();
+  AllComponents.value.get(IdToRef[id])?.container.focus();
 };
 
 const removeGLComponent = (removeId: string) => {
-  MapComponents.value.get(IdToRef[removeId])?.container.close();
+  const glComponent = AllComponents.value.get(IdToRef[removeId]);
+  if (glComponent) {
+    glComponent.visible = false;
+    if (removeId.endsWith(".excalidraw"))
+      setTimeout(() => {
+        // slowly close the excalidraw page, otherwise the page sticks there and crashes the app
+        glComponent.container.close();
+      }, 50);
+    else
+      nextTick(() => {
+        glComponent.container.close();
+      });
+  }
 };
 
 const updateGLComponent = (
@@ -278,11 +272,11 @@ const updateGLComponent = (
   const refId = IdToRef[oldItemId];
 
   // update id so that the page receive new itemId
-  const component = AllComponents.value.get(refId);
-  if (!!component) component.id = state.id;
+  const glComponent = AllComponents.value.get(refId);
+  if (!!glComponent) glComponent.id = state.id;
 
   // set the window title to new title
-  const container = MapComponents.value.get(refId)?.container;
+  const container = AllComponents.value.get(refId)?.container;
   if (!!container) {
     container.setTitle(state.label);
     container.setState(Object.assign(container.state as {}, state));
@@ -314,7 +308,7 @@ onMounted(() => {
     height: number
   ) => {
     let refId = (container.state as Json).refId as number;
-    const component = MapComponents.value.get(refId);
+    const component = AllComponents.value.get(refId);
     if (!component || !component?.glc) {
       throw new Error(
         "handleContainerVirtualRectingRequiredEvent: Component not found"
@@ -333,13 +327,13 @@ onMounted(() => {
     visible: boolean
   ) => {
     let refId = (container.state as Json).refId as number;
-    const component = MapComponents.value.get(refId);
+    const component = AllComponents.value.get(refId);
     if (!component || !component?.glc) {
       throw new Error(
         "handleContainerVirtualVisibilityChangeRequiredEvent: Component not found"
       );
     }
-    component.glc.setVisibility(visible);
+    component.visible = visible;
   };
 
   const handleContainerVirtualZIndexChangeRequiredEvent = (
@@ -348,7 +342,7 @@ onMounted(() => {
     defaultZIndex: string
   ) => {
     let refId = (container.state as Json).refId as number;
-    const component = MapComponents.value.get(refId);
+    const component = AllComponents.value.get(refId);
     if (!component || !component?.glc) {
       throw new Error(
         "handleContainerVirtualZIndexChangeRequiredEvent: Component not found"
@@ -371,13 +365,14 @@ onMounted(() => {
       );
     }
 
-    let ref = GlcKeyPrefix.value + refId;
-    const component = instance?.refs[ref];
+    const component = instance?.refs[`glc_${refId}`];
 
-    MapComponents.value.set(refId, {
+    const glComponent = AllComponents.value.get(refId) as any;
+    Object.assign(glComponent, {
       container: container,
       glc: (component as any)[0],
     });
+    AllComponents.value.set(refId, glComponent);
 
     container.virtualRectingRequiredEvent = (container, width, height) =>
       handleContainerVirtualRectingRequiredEvent(container, width, height);
@@ -406,12 +401,11 @@ onMounted(() => {
     let state = container.state as Json;
     let refId = state.refId as number;
     let removeId = state.id as string;
-    const component = MapComponents.value.get(refId);
+    const component = AllComponents.value.get(refId);
     if (!component || !component?.glc) {
       throw new Error("handleUnbindComponentEvent: Component not found");
     }
 
-    MapComponents.value.delete(refId);
     AllComponents.value.delete(refId);
     delete IdToRef[removeId];
     UnusedIndexes.push(refId);
@@ -458,17 +452,6 @@ onMounted(() => {
       // this is needed for closing component
       emit("layoutchanged");
     });
-  });
-
-  GLayout.on("itemDestroyed", (e) => {
-    let target = e.target as ComponentItem | RowOrColumn | Stack;
-    if (!target.isComponent) return;
-    let state = (target as ComponentItem).container.state as {
-      refId: string;
-      id: string;
-      data?: { path: string };
-    };
-    emit("itemdestroyed", state.id);
   });
 });
 

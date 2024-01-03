@@ -50,11 +50,12 @@
 <script setup lang="ts">
 import WorkspaceMenu from "./WorkspaceMenu.vue";
 import ProgressDialog from "./ProgressDialog.vue";
-import { PropType, onMounted, ref } from "vue";
-import { db } from "src/backend/database";
+import { PropType, computed, ref } from "vue";
+import { Config, db } from "src/backend/database";
 import { invoke } from "@tauri-apps/api/tauri";
-import { basename, homeDir } from "@tauri-apps/api/path";
+import { basename, homeDir, sep } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
+import { renameFile } from "@tauri-apps/api/fs";
 
 const props = defineProps({
   modelValue: { type: String, default: "" },
@@ -65,7 +66,14 @@ const props = defineProps({
 });
 const emit = defineEmits(["update:modelValue"]);
 
-const workspaces = ref<{ label: string; path: string }[]>([]);
+const workspaces = computed(() => {
+  const array = [];
+  for (const path of db.config.storagePaths) {
+    const splits = path.split(sep);
+    array.push({ label: splits[splits.length - 1], path: path });
+  }
+  return array;
+});
 // progressDialog
 const showProgressDialog = ref(false);
 const errors = ref<Error[]>([]);
@@ -79,10 +87,11 @@ async function showInExplorer() {
 }
 
 async function removeStoragePath() {
-  await db.removeStoragePath(props.modelValue);
-  workspaces.value = workspaces.value.filter(
-    (w) => w.path !== props.modelValue
-  );
+  let storagePath = db.config.storagePath;
+  let storagePaths = db.config.storagePaths;
+  storagePaths = storagePaths.filter((path) => path !== props.modelValue);
+  if (storagePath === props.modelValue) storagePath = "";
+  await db.setConfig({ storagePath, storagePaths } as Config);
   emit("update:modelValue", "");
 }
 
@@ -100,27 +109,12 @@ async function showFolderPicker() {
 }
 
 async function changeStoragePath(newPath: string) {
-  await db.moveWorkspace(props.modelValue, newPath);
-  for (const workspace of workspaces.value) {
-    if (workspace.path === props.modelValue) {
-      workspace.path = newPath;
-      workspace.label = await basename(newPath);
-      emit("update:modelValue", newPath);
-    }
-  }
+  const oldPath = props.modelValue;
+  await renameFile(oldPath, newPath);
+  const paths = db.config.storagePaths;
+  const index = paths.indexOf(oldPath);
+  if (index > -1) paths[index] = newPath;
+  await db.setConfig({ storagePath: newPath, storagePaths: paths } as Config);
+  emit("update:modelValue", newPath);
 }
-
-async function getWorkspaces() {
-  const storagePaths = await db.getStoragePaths();
-  workspaces.value = [];
-  for (const storagePath of storagePaths)
-    workspaces.value.push({
-      label: await basename(storagePath),
-      path: storagePath,
-    });
-}
-
-onMounted(async () => {
-  await getWorkspaces();
-});
 </script>

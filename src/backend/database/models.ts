@@ -251,10 +251,21 @@ export interface RenderEvt {
 /**************************************************
  * App global settings
  **************************************************/
+/**
+ * Config is settings that are independent of workspace
+ */
+export interface Config {
+  language: string;
+  storagePath: string;
+  lastScanTime: number;
+  storagePaths: string[];
+}
+
+/**
+ * Settings are different in each workspace
+ */
 export interface Settings {
   theme: string; // dark by default
-  language: string; // en_US by default
-  storagePath: string; // select by user
   fontSize: string; // 16px by default
   citeKeyRule: string; // "author_title_year" by default
 }

@@ -217,7 +217,6 @@ function setPosition(rects: DOMRect[] | DOMRectList) {
   position: absolute;
   left: ${mid - bgRect.left - 75}px;
   top: ${top - bgRect.top + 20}px;
-  min-width: 400px;
   z-index: 100;
   `;
 }

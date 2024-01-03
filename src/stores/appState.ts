@@ -36,8 +36,6 @@ export const useStateStore = defineStore("stateStore", {
     // settings
     settings: {
       theme: "dark",
-      language: "en_US",
-      storagePath: "",
       fontSize: "16px",
       citeKeyRule: "author_title_year",
     } as Settings,
@@ -65,7 +63,7 @@ export const useStateStore = defineStore("stateStore", {
       this.openedProjectIds = new Set(state.openedProjectIds); // convert to Set after loading
       this.settings = Object.assign(this.settings, state.settings); // if state.settings is missing anything, this won't hurt!
 
-      this.ready = true;
+      // this.ready = true;
     },
 
     getState(): AppState {
@@ -226,14 +224,6 @@ export const useStateStore = defineStore("stateStore", {
 
       // db
       this.settings.fontSize = `${size}px`;
-      this.saveAppState();
-    },
-
-    changeLanguage(language: string) {
-      // the vue-i18n can only be used in vue, not pinia
-
-      // db
-      this.settings.language = language;
       this.saveAppState();
     },
 

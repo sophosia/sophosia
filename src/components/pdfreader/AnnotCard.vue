@@ -4,6 +4,7 @@
     bordered
     flat
     @dblclick="editing = true"
+    class="annot-card"
   >
     <q-card-section
       :style="`background: ${annot.data.color}; ${
@@ -206,8 +207,13 @@ function changeLinks() {
       .replace("http://localhost:9000/", "") // in dev mode
       .replace("tauri://localhost/", ""); // in production mode
     img.src = convertFileSrc(
-      [db.storagePath, ".sophosia", "image", imgFile].join(sep)
+      [db.config.storagePath, ".sophosia", "image", imgFile].join(sep)
     );
   }
 }
 </script>
+<style scoped lang="scss">
+.annot-card {
+  min-width: 400px;
+}
+</style>

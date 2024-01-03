@@ -84,7 +84,7 @@
               type: 'HelpPage',
               data: {
                 path: await resolveResource(
-                  `help/help_${stateStore.settings.language}.md`
+                  `help/help_${db.config.language}.md`
                 ),
               },
             });
@@ -121,9 +121,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import pluginManager from "src/backend/plugin";
-import { Button, ComponentName, ToggleButton } from "src/backend/database";
+import { Button, ComponentName, ToggleButton, db } from "src/backend/database";
 import { useI18n } from "vue-i18n";
 import { useStateStore } from "src/stores/appState";
 import { resolveResource } from "@tauri-apps/api/path";

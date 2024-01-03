@@ -67,20 +67,17 @@
   </q-splitter>
 </template>
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useStateStore } from "src/stores/appState";
+import { ref, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { open } from "@tauri-apps/api/dialog";
-import { basename, homeDir } from "@tauri-apps/api/path";
-import { db } from "src/backend/database";
+import { homeDir } from "@tauri-apps/api/path";
+import { db, Config } from "src/backend/database";
 import WorkspaceList from "./WorkspaceList.vue";
 
 const { locale } = useI18n({ useScope: "global" });
 
 const props = defineProps({ modelValue: { type: Boolean, required: true } });
-const emit = defineEmits(["update:modelValue", "updateAppState"]);
-
-const stateStore = useStateStore();
+const emit = defineEmits(["update:modelValue"]);
 
 const listWidth = ref(20);
 
@@ -94,21 +91,20 @@ const language = computed({
   get() {
     let result = null;
     for (let option of languageOptions.value) {
-      if (option.value === stateStore.settings.language) {
+      if (option.value === db.config.language) {
         result = option;
       }
     }
     return result as { value: "en_US" | "zh_CN"; label: string };
   },
-  set(option: { value: "en_US" | "zh_CN"; label: string }) {
-    stateStore.settings.language = option.value;
-    changeLanguage(option.value);
+  async set(option: { value: "en_US" | "zh_CN"; label: string }) {
+    await changeLanguage(option.value);
   },
 });
 
-function changeLanguage(language: "en_US" | "zh_CN") {
+async function changeLanguage(language: "en_US" | "zh_CN") {
   locale.value = language;
-  emit("updateAppState");
+  await db.setConfig({ language: language } as Config);
 }
 
 async function selectStoragePath() {
@@ -122,7 +118,7 @@ async function selectStoragePath() {
 }
 
 async function changeStoragePath() {
-  await db.setStoragePath(path.value);
+  await db.setConfig({ storagePath: path.value } as Config);
   await db.createHiddenFolders();
 }
 

@@ -43,7 +43,11 @@
                 v-close-popup
                 @click="addFolder(prop.node)"
               >
-                <q-item-section>{{ $t("add-folder") }}</q-item-section>
+                <q-item-section>
+                  <i18n-t keypath="add">
+                    <template #type>{{ $t("folder") }}</template>
+                  </i18n-t>
+                </q-item-section>
               </q-item>
               <q-item
                 v-if="!Object.values(SpecialFolder).includes(prop.node._id)"
@@ -110,7 +114,7 @@
 <script setup lang="ts">
 // types
 import { computed, onMounted, ref, watch } from "vue";
-import { Folder, SpecialFolder } from "src/backend/database";
+import { Folder, SpecialFolder, db } from "src/backend/database";
 import { QTree, QTreeNode } from "quasar";
 //db
 import { useStateStore } from "src/stores/appState";
@@ -123,7 +127,6 @@ import {
   moveFolderInto,
   getParentFolder,
 } from "src/backend/project/folder";
-import { updateAppState } from "src/backend/appState";
 import { sortTree } from "src/backend/project/utils";
 import { useI18n } from "vue-i18n";
 
@@ -145,7 +148,7 @@ const enterTime = ref(0);
 
 // change folder lable if locale changed
 watch(
-  () => stateStore.settings.language,
+  () => db.config.language,
   () => {
     for (let id of Object.values(SpecialFolder)) {
       let node = tree.value?.getNodeByKey(id) as QTreeNode;

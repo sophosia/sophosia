@@ -135,7 +135,7 @@ function initEditor() {
     // we put the css in the public folder
     cdn: "vditor",
     toolbar: toolbar,
-    lang: stateStore.settings.language as keyof II18n,
+    lang: db.config.language as keyof II18n,
     tab: "    ", // use 4 spaces as tab
     theme: stateStore.settings.theme === "dark" ? "dark" : "classic",
     preview: {
@@ -393,7 +393,7 @@ async function _hangleImage() {
       .replace("tauri://localhost/", "") // in production mode, mac, linux
       .replace("https://tauri.localhost/", ""); // in production mode, windows
     img.src = convertFileSrc(
-      [db.storagePath, ".sophosia", "image", imgFile].join(sep)
+      [db.config.storagePath, ".sophosia", "image", imgFile].join(sep)
     );
 
     let p = img.parentElement?.parentElement;
