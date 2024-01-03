@@ -236,7 +236,7 @@ async function closeProject(projectId: string) {
     stateStore.closePage(project._id);
     const notes = await getNotes(project._id);
     for (let node of notes) {
-      await nextTick(); // do it slowly one by o:238
+      await nextTick(); // do it slowly one by one
       stateStore.closePage(node._id);
     }
   }

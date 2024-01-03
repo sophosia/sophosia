@@ -35,6 +35,7 @@ interface InitialData {
 const stateStore = useStateStore();
 
 export default function CustomExcalidraw(props: {
+  visible: boolean;
   noteId: string;
 }) {
   const [excalidrawAPI, setExcalidrawAPI] =
@@ -100,15 +101,11 @@ export default function CustomExcalidraw(props: {
   }
 
   useEffect(() => {
-    console.log("visible", props.visible)
-    console.log("set note path", props.noteId)
     setNotePath(IdToPath(props.noteId))
   }, [props.noteId]);
 
   useEffect(() => {
-    console.log("loading excalidraw", notePath)
     loadExcalidraw().then((data: InitialData | undefined) => {
-      console.log("set initial data", data)
       if (data) setInitialData(data);
     });
   }, [notePath]);
@@ -120,7 +117,7 @@ export default function CustomExcalidraw(props: {
     });
   }, [initialData]);
 
-  return ready && notePath ? (
+  return ready && notePath && props.visible ? (
     <Excalidraw
       ref={(api: ExcalidrawImperativeAPI) => {
         setExcalidrawAPI(api);
@@ -138,5 +135,5 @@ export default function CustomExcalidraw(props: {
         <MainMenu.DefaultItems.Help />
       </MainMenu>
     </Excalidraw>
-  ) : null;
+  ) : undefined;
 }

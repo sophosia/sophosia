@@ -28,31 +28,18 @@ watch(
   }
 );
 
-watch(
-  () => props.itemId,
-  (id: string) => {
-    invisibleWhenClose();
-  }
-);
-
-function invisibleWhenClose() {
-  const activeTitle = document.querySelector(
-    'span[class="lm_title lm_focused"]'
-  );
-  if (!activeTitle) return;
-  const closeControl = activeTitle.nextElementSibling as HTMLDivElement;
-  if (!closeControl) return;
-  closeControl.setAttribute("itemId", props.itemId);
-  closeControl.onmousedown = (e) => {
-    if ((e.target as HTMLDivElement).getAttribute("itemId") === props.itemId) {
-      show.value = false;
-    }
-  };
-}
-
 onMounted(() => {
   // MUST STOP render the react component before this vue component is unmounted
   // this can avoid maximum call stack size exceeds error from veaury
-  invisibleWhenClose();
+  let activeTitle = document.querySelector('span[class="lm_title lm_focused"]');
+  if (!activeTitle) return;
+  let closeControl = activeTitle.nextElementSibling as HTMLDivElement;
+  if (!closeControl.getAttribute("itemId"))
+    closeControl.setAttribute("itemId", props.itemId);
+  if (!closeControl) return;
+  closeControl.onmousedown = (e) => {
+    if ((e.target as HTMLDivElement).getAttribute("itemId") === props.itemId)
+      show.value = false;
+  };
 });
 </script>
