@@ -8,14 +8,7 @@
 <script setup lang="ts">
 import { applyPureReactInVue } from "veaury";
 import CustomExcalidraw from "src/components/note/CustomExcalidraw";
-import {
-  PropType,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch,
-} from "vue";
+import { PropType, onMounted, ref, watch } from "vue";
 const props = defineProps({
   itemId: { type: String, required: true },
   visible: { type: Boolean, reqruied: true },

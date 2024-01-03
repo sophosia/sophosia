@@ -16,7 +16,7 @@
         @click="onClick(refId)"
       >
         <component
-          v-if="initialized"
+          v-if="initialized && !!component.visible"
           :is="component.asyncComponent"
           :itemId="component.id"
           :visible="!!component.visible"
@@ -254,7 +254,7 @@ const removeGLComponent = (removeId: string) => {
     glComponent.visible = false;
     if (removeId.endsWith(".excalidraw"))
       setTimeout(() => {
-        // slowly close the page, otherwise the page sticks there and crashes the app
+        // slowly close the excalidraw page, otherwise the page sticks there and crashes the app
         glComponent.container.close();
       }, 50);
     else

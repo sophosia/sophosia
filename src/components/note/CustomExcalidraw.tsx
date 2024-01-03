@@ -91,13 +91,16 @@ export default function CustomExcalidraw(props: {
 
   useEffect(() => {
     const onMounted = async () => {
+      console.log("onmounted", props.noteId)
       const data = await loadExcalidraw()
       if (data) setInitialData(data);
+      console.log("initial data", data)
   
       const items = await loadExcalidrawLibrary()
       if (initialData) initialData.libraryItems = items;
 
       setReady(true);
+      console.log("ready", ready, "visible", props.visible)
     }
 
     onMounted()
