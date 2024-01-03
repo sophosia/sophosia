@@ -43,12 +43,9 @@ export default function CustomExcalidraw(props: {
   const [initialData, setInitialData] = useState<InitialData>();
   const [ready, setReady] = useState<boolean>(false);
 
-  async function loadExcalidraw(): Promise<InitialData | undefined> {
+  async function loadExcalidraw(): Promise<InitialData> {
     const jsonString = await loadNote(props.noteId)
-    if (!jsonString) return;
-    const scene = JSON.parse(jsonString)
-    if (!scene.appState.theme)
-      scene.appState.theme = stateStore.settings.theme;
+    const scene = jsonString ? JSON.parse(jsonString) : {appState: {theme: stateStore.settings.theme}}
     return scene as InitialData;
   }
 
