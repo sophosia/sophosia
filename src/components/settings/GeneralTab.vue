@@ -160,7 +160,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 // db
-import { db } from "src/backend/database";
+import { Config, db } from "src/backend/database";
 import { useStateStore } from "src/stores/appState";
 import { getAllProjects } from "src/backend/project/project";
 import { generateCiteKey } from "src/backend/project/meta";
@@ -212,7 +212,7 @@ const language = computed({
   get() {
     let result = languageOptions[0];
     for (let option of languageOptions) {
-      if (option.value === stateStore.settings.language) {
+      if (option.value === db.config.language) {
         result = option;
       }
     }
@@ -220,7 +220,7 @@ const language = computed({
   },
   set(option: { value: string; label: string }) {
     locale.value = option.value;
-    stateStore.changeLanguage(option.value);
+    db.setConfig({ language: option.value } as Config);
   },
 });
 

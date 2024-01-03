@@ -135,7 +135,7 @@ function initEditor() {
     // we put the css in the public folder
     cdn: "vditor",
     toolbar: toolbar,
-    lang: stateStore.settings.language as keyof II18n,
+    lang: db.config.language as keyof II18n,
     tab: "    ", // use 4 spaces as tab
     theme: stateStore.settings.theme === "dark" ? "dark" : "classic",
     preview: {

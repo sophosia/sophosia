@@ -227,13 +227,6 @@ export const useStateStore = defineStore("stateStore", {
       this.saveAppState();
     },
 
-    changeLanguage(language: string) {
-      // the vue-i18n can only be used in vue, not pinia
-
-      // db
-      this.saveAppState();
-    },
-
     async saveAppState() {
       if (!this.ready) return;
       const projectStore = useProjectStore();

@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 // types
-import { Project, Note, Page, NoteType } from "src/backend/database";
+import { Project, Note, Page, NoteType, db } from "src/backend/database";
 // components
 import LeftRibbon from "./LeftRibbon.vue";
 import LeftMenu from "src/components/leftmenu/LeftMenu.vue";
@@ -125,7 +125,7 @@ watch(
 
 // change special page title when locale updated
 watch(
-  () => stateStore.settings.language,
+  () => db.config.language,
   () => {
     for (let id of ["library", "settings", "help"])
       updateComponent(id, { id: id, label: t(id) });

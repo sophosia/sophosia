@@ -114,7 +114,7 @@
 <script setup lang="ts">
 // types
 import { computed, onMounted, ref, watch } from "vue";
-import { Folder, SpecialFolder } from "src/backend/database";
+import { Folder, SpecialFolder, db } from "src/backend/database";
 import { QTree, QTreeNode } from "quasar";
 //db
 import { useStateStore } from "src/stores/appState";
@@ -149,7 +149,7 @@ const enterTime = ref(0);
 
 // change folder lable if locale changed
 watch(
-  () => stateStore.settings.language,
+  () => db.config.language,
   () => {
     for (let id of Object.values(SpecialFolder)) {
       let node = tree.value?.getNodeByKey(id) as QTreeNode;
