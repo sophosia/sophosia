@@ -20,9 +20,9 @@ const { t } = i18n.global;
  */
 async function createProjectFolder(project: Project) {
   try {
-    const projectPath = await join(db.storagePath, project._id);
+    const projectPath = await join(db.config.storagePath, project._id);
     const projectNotePath = await join(
-      db.storagePath,
+      db.config.storagePath,
       project._id,
       project._id + ".md"
     );
@@ -48,7 +48,7 @@ ${t("note-is-auto-manged")}
  */
 async function deleteProjectFolder(projectId: string) {
   try {
-    const dirPath = await join(await db.getStoragePath(), projectId);
+    const dirPath = await join(db.config.storagePath, projectId);
     await removeDir(dirPath, { recursive: true });
   } catch (error) {
     console.log(error);
@@ -67,7 +67,11 @@ async function copyFileToProjectFolder(
 ): Promise<string | undefined> {
   try {
     const fileName = await basename(srcPath);
-    const dstPath = await join(await db.getStoragePath(), projectId, fileName);
+    const dstPath = await join(
+      await db.config.storagePath,
+      projectId,
+      fileName
+    );
     await copyFile(srcPath, dstPath);
 
     return fileName;

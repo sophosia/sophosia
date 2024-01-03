@@ -68,7 +68,7 @@ export default function CustomExcalidraw(props: {
   ) => void;
 
   async function loadExcalidrawLibrary(): Promise<LibraryItems> {
-    let hiddenFolder = await join(db.storagePath, ".sophosia", "excalidraw");
+    let hiddenFolder = await join(db.config.storagePath, ".sophosia", "excalidraw");
     let filePath = await join(hiddenFolder, "library.excalidrawlib");
     if (!(await exists(filePath))) return [] as LibraryItems;
     return JSON.parse(await readTextFile(filePath))
@@ -79,7 +79,7 @@ export default function CustomExcalidraw(props: {
     // do not save anything when loading library
     if (!ready) return;
     try {
-      let hiddenFolder = await join(db.storagePath, ".sophosia", "excalidraw");
+      let hiddenFolder = await join(db.config.storagePath, ".sophosia", "excalidraw");
       if (!(await exists(hiddenFolder))) await createDir(hiddenFolder, {recursive: true});
       let filePath = await join(hiddenFolder, "library.excalidrawlib");
       let jsonString = serializeLibraryAsJSON(items);

@@ -198,7 +198,7 @@ async function openProject() {
 
 async function showInExplorer() {
   for (let project of projectStore.selected) {
-    let path = await join(db.storagePath, project._id);
+    let path = await join(db.config.storagePath, project._id);
     await invoke("show_in_folder", {
       path: path,
     });

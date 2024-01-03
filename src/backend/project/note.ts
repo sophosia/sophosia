@@ -30,11 +30,11 @@ export async function createNote(folderId: string, type: NoteType) {
   const projectId = splits[0];
   let ext = type === NoteType.MARKDOWN ? ".md" : ".excalidraw";
   let name = t("new", { type: t("note") });
-  let path = await join(db.storagePath, ...splits, name + ext);
+  let path = await join(db.config.storagePath, ...splits, name + ext);
   let i = 1;
   while (await exists(path)) {
     name = `${t("new", { type: t("note") })} ${i}`;
-    path = await join(db.storagePath, ...splits, name + ext);
+    path = await join(db.config.storagePath, ...splits, name + ext);
     i++;
   }
   const noteId = pathToId(path);
@@ -219,7 +219,7 @@ export async function getNoteTree(projectId: string) {
     }
   }
 
-  const entries = await readDir(await join(db.storagePath, projectId), {
+  const entries = await readDir(await join(db.config.storagePath, projectId), {
     recursive: true,
   });
   const notes = [] as FolderOrNote[];
@@ -284,7 +284,11 @@ export async function uploadImage(
   try {
     const imgType: string = await extname(file.name); // png
     const imgName: string = `SI${db.nanoid}.${imgType}`; // use nanoid as img name
-    const imgFolder: string = await join(db.storagePath, ".sophosia", "image");
+    const imgFolder: string = await join(
+      db.config.storagePath,
+      ".sophosia",
+      "image"
+    );
     const imgPath: string = await join(imgFolder, imgName);
     if (!(await exists(imgFolder))) await createDir(imgFolder);
 

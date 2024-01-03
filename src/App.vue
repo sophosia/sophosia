@@ -54,7 +54,7 @@ onMounted(async () => {
   }
 
   // try to load the storage path see if it exists
-  await db.getStoragePath();
+  await db.getConfig();
 
   // regardless of the existence of storagePath
   // we need to apply settings
@@ -65,11 +65,11 @@ onMounted(async () => {
   // apply settings
   stateStore.changeTheme(stateStore.settings.theme);
   stateStore.changeFontSize(parseFloat(stateStore.settings.fontSize));
-  stateStore.changeLanguage(stateStore.settings.language);
-  locale.value = stateStore.settings.language;
+  stateStore.changeLanguage(db.config.language);
+  locale.value = db.config.language;
 
   // if there is no path, show welcome carousel
-  if (!db.storagePath) {
+  if (!db.config.storagePath) {
     // showWelcomeCarousel.value = true;
     stateStore.toggleWelcome(true);
   } else {

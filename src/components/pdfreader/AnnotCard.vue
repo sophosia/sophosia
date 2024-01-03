@@ -207,7 +207,7 @@ function changeLinks() {
       .replace("http://localhost:9000/", "") // in dev mode
       .replace("tauri://localhost/", ""); // in production mode
     img.src = convertFileSrc(
-      [db.storagePath, ".sophosia", "image", imgFile].join(sep)
+      [db.config.storagePath, ".sophosia", "image", imgFile].join(sep)
     );
   }
 }

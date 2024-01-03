@@ -36,8 +36,6 @@ export const useStateStore = defineStore("stateStore", {
     // settings
     settings: {
       theme: "dark",
-      language: "en_US",
-      storagePath: "",
       fontSize: "16px",
       citeKeyRule: "author_title_year",
     } as Settings,
@@ -233,7 +231,6 @@ export const useStateStore = defineStore("stateStore", {
       // the vue-i18n can only be used in vue, not pinia
 
       // db
-      this.settings.language = language;
       this.saveAppState();
     },
 

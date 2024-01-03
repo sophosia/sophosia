@@ -98,7 +98,7 @@ function changeLinks() {
       .replace("tauri://localhost/", "") // in production mode, mac, linux
       .replace("https://tauri.localhost/", ""); // in production mode, windows
     img.src = convertFileSrc(
-      [db.storagePath, ".sophosia", "image", imgFile].join(sep)
+      [db.config.storagePath, ".sophosia", "image", imgFile].join(sep)
     );
   }
 }
