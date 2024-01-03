@@ -304,7 +304,7 @@ async function renameNode() {
   } else {
     if (renamingNodeType.value === "note") {
       // update window tab name
-      updateComponent(oldNodeId, {
+      await updateComponent(oldNodeId, {
         id: newNodeId,
         label: newLabel,
       });

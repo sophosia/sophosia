@@ -105,15 +105,10 @@ export const useProjectStore = defineStore("projectStore", {
         (p) => p._id === newProject._id
       );
 
-      if (projectInList) {
-        // project exists in list
-        Object.assign(projectInList, newProject);
-        // project exists in both lists
-        if (projectInOpened) Object.assign(projectInOpened, newProject);
-      } else if (projectInOpened) {
-        // project exists in openedProjects only
-        Object.assign(projectInOpened, newProject);
-      }
+      // project exists in list
+      if (projectInList) Object.assign(projectInList, newProject);
+      // project exists in opened project lists
+      if (projectInOpened) Object.assign(projectInOpened, newProject);
 
       this.updatedProject = newProject;
     },

@@ -23,7 +23,7 @@ import {
   exists,
   createDir,
 } from "@tauri-apps/api/fs";
-import { loadNote, saveNote } from "src/backend/project/note";
+import { IdToPath } from "src/backend/project/utils";
 
 interface InitialData {
   elements: ExcalidrawElement[];
@@ -40,16 +40,20 @@ export default function CustomExcalidraw(props: {
 }) {
   const [excalidrawAPI, setExcalidrawAPI] =
     useState<ExcalidrawImperativeAPI | null>(null);
+  const [notePath, setNotePath] = useState<string>("");
   const [initialData, setInitialData] = useState<InitialData>();
   const [ready, setReady] = useState<boolean>(false);
 
   async function loadExcalidraw(): Promise<InitialData | undefined> {
-    const jsonString = await loadNote(props.noteId)
-    if (!jsonString) return;
-    const scene = JSON.parse(jsonString)
-    if (!scene.appState.theme)
-      scene.appState.theme = stateStore.settings.theme;
-    return scene as InitialData;
+    if (!notePath) return;
+    try {
+      let scene = JSON.parse(await readTextFile(notePath));
+      if (!scene.appState.theme)
+        scene.appState.theme = stateStore.settings.theme;
+      return scene as InitialData;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async function _saveExcalidraw(
@@ -57,11 +61,16 @@ export default function CustomExcalidraw(props: {
     state: ExcalidrawState,
     files: BinaryFiles
   ) {
-    if (!ready) return;
-    const jsonString = serializeAsJSON(elements, state, files, "local");
-    const json = JSON.parse(jsonString);
-    json.appState.theme = state.theme;
-    await saveNote(props.noteId, JSON.stringify(json, null, 2))
+    if (!notePath && !ready) return;
+    try {
+      let jsonString = serializeAsJSON(elements, state, files, "local");
+      let json = JSON.parse(jsonString);
+      json.appState.theme = state.theme;
+      console.log("saving", notePath)
+      await writeTextFile(notePath, JSON.stringify(json, null, 2));
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   const saveExcalidraw = debounce(_saveExcalidraw, 100) as (
@@ -83,7 +92,7 @@ export default function CustomExcalidraw(props: {
     if (!ready) return;
     try {
       let hiddenFolder = await join(db.storagePath, ".sophosia", "excalidraw");
-      if (!(await exists(hiddenFolder))) await createDir(hiddenFolder, {recursive: true});
+      if (!(await exists(hiddenFolder))) createDir(hiddenFolder, {recursive: true});
       let filePath = await join(hiddenFolder, "library.excalidrawlib");
       let jsonString = serializeLibraryAsJSON(items);
       await writeTextFile(filePath, jsonString);
@@ -93,20 +102,25 @@ export default function CustomExcalidraw(props: {
   }
 
   useEffect(() => {
-    const onMounted = async () => {
-      const data = await loadExcalidraw()
+    console.log("noteId", props.noteId)
+    setReady(false)
+    setNotePath(IdToPath(props.noteId))
+  }, [props.noteId]);
+
+  useEffect(() => {
+    loadExcalidraw().then((data: InitialData | undefined) => {
       if (data) setInitialData(data);
-  
-      const items = await loadExcalidrawLibrary()
+    });
+  }, [notePath]);
+
+  useEffect(() => {
+    loadExcalidrawLibrary().then((items: LibraryItems) => {
       if (initialData) initialData.libraryItems = items;
-
       setReady(true);
-    }
+    });
+  }, [initialData]);
 
-    onMounted()
-  }, []);
-
-  return ready && props.visible ? (
+  return ready && notePath && props.visible ? (
     <Excalidraw
       ref={(api: ExcalidrawImperativeAPI) => {
         setExcalidrawAPI(api);

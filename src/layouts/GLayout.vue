@@ -251,7 +251,6 @@ const focusById = (id: string) => {
 const removeGLComponent = (removeId: string) => {
   const glComponent = AllComponents.value.get(IdToRef[removeId]);
   if (glComponent) {
-    console.log("set", removeId, "visibility to false");
     glComponent.visible = false;
     if (removeId.endsWith(".excalidraw"))
       setTimeout(() => {
