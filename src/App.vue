@@ -43,6 +43,12 @@ watchEffect(async () => {
     await stateStore.loadState();
     await projectStore.loadOpenedProjects(stateStore.openedProjectIds);
     scanAndUpdateDB();
+    // we can know save app states now since everything is ready
+    stateStore.ready = true;
+  } else {
+    // when welcome page is shown, don't save appstate
+    // otherwise it screws up the openProjects
+    stateStore.ready = false;
   }
 });
 
@@ -65,7 +71,6 @@ onMounted(async () => {
   // apply settings
   stateStore.changeTheme(stateStore.settings.theme);
   stateStore.changeFontSize(parseFloat(stateStore.settings.fontSize));
-  stateStore.changeLanguage(db.config.language);
   locale.value = db.config.language;
 
   // if there is no path, show welcome carousel

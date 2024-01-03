@@ -63,7 +63,7 @@ export const useStateStore = defineStore("stateStore", {
       this.openedProjectIds = new Set(state.openedProjectIds); // convert to Set after loading
       this.settings = Object.assign(this.settings, state.settings); // if state.settings is missing anything, this won't hurt!
 
-      this.ready = true;
+      // this.ready = true;
     },
 
     getState(): AppState {
