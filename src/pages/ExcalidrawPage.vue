@@ -9,7 +9,6 @@
 import { applyPureReactInVue } from "veaury";
 import CustomExcalidraw from "src/components/note/CustomExcalidraw";
 import { PropType, onMounted, ref, watch } from "vue";
-import { useStateStore } from "src/stores/appState";
 const props = defineProps({
   itemId: { type: String, required: true },
   visible: { type: Boolean, reqruied: true },
@@ -17,14 +16,14 @@ const props = defineProps({
 });
 
 const ExcalidrawReact = applyPureReactInVue(CustomExcalidraw);
-const stateStore = useStateStore();
 const show = ref(props.visible);
 
-// if closing project from project tree
+// when closing by removeGLComponent
+// set visibility to false before closing to prevent max call stack error
 watch(
-  () => stateStore.closedItemId,
-  (id: string) => {
-    if (id === props.itemId) show.value = false;
+  () => props.visible,
+  (visible: boolean) => {
+    show.value = visible;
   }
 );
 

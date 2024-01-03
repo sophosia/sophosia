@@ -16,7 +16,7 @@
         @click="onClick(refId)"
       >
         <component
-          v-if="initialized && !!component.visible"
+          v-if="initialized"
           :is="component.asyncComponent"
           :itemId="component.id"
           :visible="!!component.visible"
@@ -32,10 +32,7 @@ import {
   onMounted,
   ref,
   markRaw,
-  defineExpose,
   defineAsyncComponent,
-  defineProps,
-  defineEmits,
   nextTick,
   getCurrentInstance,
   watch,
@@ -63,11 +60,7 @@ import GLComponent from "src/pages/GLComponent.vue";
 const props = defineProps({
   currentItemId: String,
 });
-const emit = defineEmits([
-  "update:currentItemId",
-  "layoutchanged",
-  "itemdestroyed",
-]);
+const emit = defineEmits(["update:currentItemId", "layoutchanged"]);
 
 /*******************
  * Data
@@ -257,7 +250,12 @@ const focusById = (id: string) => {
 
 const removeGLComponent = (removeId: string) => {
   const glComponent = AllComponents.value.get(IdToRef[removeId]);
-  if (glComponent) glComponent.container.close();
+  if (glComponent) {
+    glComponent.visible = false;
+    nextTick(() => {
+      glComponent.container.close();
+    });
+  }
 };
 
 const updateGLComponent = (
@@ -458,7 +456,6 @@ onMounted(() => {
       id: string;
       data?: { path: string };
     };
-    emit("itemdestroyed", state.id);
   });
 });
 
