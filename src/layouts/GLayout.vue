@@ -251,10 +251,17 @@ const focusById = (id: string) => {
 const removeGLComponent = (removeId: string) => {
   const glComponent = AllComponents.value.get(IdToRef[removeId]);
   if (glComponent) {
+    console.log("set", removeId, "visibility to false");
     glComponent.visible = false;
-    nextTick(() => {
-      glComponent.container.close();
-    });
+    if (removeId.endsWith(".excalidraw"))
+      setTimeout(() => {
+        // slowly close the page, otherwise the page sticks there and crashes the app
+        glComponent.container.close();
+      }, 50);
+    else
+      nextTick(() => {
+        glComponent.container.close();
+      });
   }
 };
 
@@ -446,16 +453,6 @@ onMounted(() => {
       // this is needed for closing component
       emit("layoutchanged");
     });
-  });
-
-  GLayout.on("itemDestroyed", (e) => {
-    let target = e.target as ComponentItem | RowOrColumn | Stack;
-    if (!target.isComponent) return;
-    let state = (target as ComponentItem).container.state as {
-      refId: string;
-      id: string;
-      data?: { path: string };
-    };
   });
 });
 
