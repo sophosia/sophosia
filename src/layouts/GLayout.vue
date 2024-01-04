@@ -16,10 +16,9 @@
         @click="onClick(refId)"
       >
         <component
-          v-if="initialized && !!component.visible"
+          v-if="initialized"
           :is="component.asyncComponent"
           :itemId="component.id"
-          :visible="!!component.visible"
           :data="component.data"
         ></component>
       </GLComponent>
@@ -74,7 +73,6 @@ const AllComponents = ref(
     {
       asyncComponent: any;
       id: string;
-      visible?: boolean;
       data?: { path?: string; focusAnnotId?: string };
       container?: any;
       glc?: any;
@@ -256,7 +254,6 @@ const focusById = (id: string) => {
 const removeGLComponent = (removeId: string) => {
   const glComponent = AllComponents.value.get(IdToRef[removeId]);
   if (glComponent) {
-    glComponent.visible = false;
     if (removeId.endsWith(".excalidraw"))
       setTimeout(() => {
         // slowly close the excalidraw page, otherwise the page sticks there and crashes the app
@@ -338,7 +335,6 @@ onMounted(() => {
         "handleContainerVirtualVisibilityChangeRequiredEvent: Component not found"
       );
     }
-    component.visible = visible;
     component.glc.setVisibility(visible);
   };
 
