@@ -1,18 +1,18 @@
 import { defineStore } from "pinia";
-import { nanoid } from "nanoid";
+import type { Page } from "src/backend/database";
+import { customAlphabet } from "nanoid";
+const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
 export const useLayoutStore = defineStore("layoutStore", {
   state: () => ({
-    pages: new Map<
-      string,
-      {
-        id: string;
-        data?: { path?: string; focusAnnotId?: string };
-      }
-    >(),
+    pages: new Map<string, Page>(), // {refId: Page}
   }),
 
   actions: {
-    addGLComponent() {},
+    openPage() {},
+
+    closePage() {},
+
+    renamePage() {},
   },
 });

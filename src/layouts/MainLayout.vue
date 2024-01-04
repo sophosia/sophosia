@@ -148,13 +148,7 @@ function translateTitles() {
  * @param id - itemId
  */
 async function setComponent(page: Page) {
-  if (layout.value)
-    await layout.value.addGLComponent(
-      page.type,
-      page.label,
-      page.id,
-      page.data
-    );
+  if (layout.value) await layout.value.addGLComponent(page);
   await saveLayout();
   stateStore.saveAppState();
 }
