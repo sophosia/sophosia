@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineExpose, nextTick } from "vue";
+import { ref } from "vue";
 const GLComponent = ref<null | HTMLElement>(null);
 const numberToPixels = (value: number): string => {
   return value.toString(10) + "px";

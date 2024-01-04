@@ -217,6 +217,11 @@ const loadGLLayout = async (
     }
   }
 
+  // no need to show ghost image of the content
+  if (config.dimensions) {
+    config.dimensions.dragProxyHeight = 0;
+    config.dimensions.dragProxyWidth = 0;
+  }
   await nextTick(); // wait 1 tick for vue to add the dom
   await GLayout.loadLayout(config);
 
@@ -334,6 +339,7 @@ onMounted(() => {
       );
     }
     component.visible = visible;
+    component.glc.setVisibility(visible);
   };
 
   const handleContainerVirtualZIndexChangeRequiredEvent = (
