@@ -252,6 +252,7 @@
         </div>
         <q-chip
           dense
+          style="max-width: 65%"
           size="1rem"
           class="chip"
           :ripple="false"
@@ -259,7 +260,7 @@
           @click="stateStore.openItem(meta?._id)"
         >
           <q-icon name="img:icons/pdf.png"></q-icon>
-          <span class="q-ml-xs">{{ file }}</span>
+          <span class="q-ml-xs ellipsis">{{ file }}</span>
         </q-chip>
       </div>
 
@@ -400,7 +401,6 @@ const name = ref(""); // author name
 const tag = ref(""); // project tag
 const categories = ref<string[]>([]);
 const references = ref<{ text: string; link: string }[]>([]);
-const file = ref(""); // pdf file
 
 const meta = computed(() => props.project);
 const title = computed({
@@ -440,6 +440,15 @@ const authors = computed(() => {
   }
   return names;
 });
+// pdf file
+const file = ref(""); // pdf file name
+watchEffect(async () => {
+  try {
+    file.value = await basename(props.project?.path as string);
+  } catch (error) {
+    file.value = "";
+  }
+});
 
 const updateComponent = inject("updateComponent") as (
   oldItemId: string,
@@ -459,11 +468,6 @@ watchEffect(async () => {
     let folder = (await getFolder(id)) as Folder | undefined;
     if (folder) categories.value.push(folder.label);
   }
-});
-
-watchEffect(async () => {
-  if (!props.project?.path) return;
-  file.value = await basename(props.project.path);
 });
 
 /**********************************************
