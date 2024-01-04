@@ -35,7 +35,6 @@ interface InitialData {
 const stateStore = useStateStore();
 
 export default function CustomExcalidraw(props: {
-  visible: boolean;
   noteId: string;
 }) {
   const [excalidrawAPI, setExcalidrawAPI] =
@@ -103,7 +102,7 @@ export default function CustomExcalidraw(props: {
     onMounted()
   }, []);
 
-  return ready && props.visible ? (
+  return ready ? (
     <Excalidraw
       ref={(api: ExcalidrawImperativeAPI) => {
         setExcalidrawAPI(api);
