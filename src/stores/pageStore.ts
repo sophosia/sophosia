@@ -1,13 +1,12 @@
 import { defineStore } from "pinia";
+import { nanoid } from "nanoid";
 
 export const useLayoutStore = defineStore("layoutStore", {
   state: () => ({
-    AllComponents: new Map<
-      number,
+    pages: new Map<
+      string,
       {
-        asyncComponent: any;
         id: string;
-        visible?: boolean;
         data?: { path?: string; focusAnnotId?: string };
       }
     >(),

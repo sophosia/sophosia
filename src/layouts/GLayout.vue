@@ -27,6 +27,8 @@
 </template>
 
 <script setup lang="ts">
+import { customAlphabet } from "nanoid";
+const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 import {
   onMounted,
   ref,
@@ -69,7 +71,7 @@ let GLayout: VirtualLayout;
 
 const AllComponents = ref(
   new Map<
-    number,
+    string,
     {
       asyncComponent: any;
       id: string;
@@ -79,9 +81,7 @@ const AllComponents = ref(
     }
   >()
 );
-const IdToRef = {} as { [id: string]: number };
-const UnusedIndexes: number[] = [];
-let CurIndex = 0;
+const IdToRef = {} as { [id: string]: string };
 let GlBoundingClientRect: DOMRect;
 const asyncComponents = ref(new Map<string, any>()); // <itemId, asyncComponent> pair
 const instance = getCurrentInstance();
@@ -113,14 +113,11 @@ const addComponent = (
   id: string,
   data: any
 ) => {
-  let index = CurIndex;
-  if (UnusedIndexes.length > 0) index = UnusedIndexes.pop() as number;
-  else CurIndex++;
+  const refId = nanoid();
 
   // for vite's dynamic import, see the following page
   // https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations
   // when building the app, vite will automatically take care the imports for us
-
   // unknown async component error occurs if we create multiple async component with the same type at start up
   if (!asyncComponents.value.has(componentType)) {
     asyncComponents.value.set(
@@ -131,9 +128,9 @@ const addComponent = (
     );
   }
   const asyncComponent = asyncComponents.value.get(componentType);
-  AllComponents.value.set(index, { asyncComponent, id, data });
+  AllComponents.value.set(refId, { asyncComponent, id, data });
 
-  return index;
+  return refId;
 };
 
 /**
@@ -194,7 +191,7 @@ const loadGLLayout = async (
       | ComponentItemConfig[];
     for (let itemConfig of content) {
       if (itemConfig.type == "component") {
-        index = addComponent(
+        const refId = addComponent(
           itemConfig.componentType as string,
           itemConfig.title as string,
           (itemConfig.componentState as Json).id as string,
@@ -202,8 +199,8 @@ const loadGLLayout = async (
         );
         await nextTick();
         if (typeof itemConfig.componentState == "object")
-          (itemConfig.componentState as Json)["refId"] = index;
-        else itemConfig.componentState = { refId: index };
+          (itemConfig.componentState as Json)["refId"] = refId;
+        else itemConfig.componentState = { refId: refId };
       } else if (itemConfig.content.length > 0) {
         contents.push(
           itemConfig.content as
@@ -239,7 +236,7 @@ const resize = () => {
   emit("layoutchanged");
 };
 
-const onClick = (refId: number) => {
+const onClick = (refId: string) => {
   AllComponents.value.get(refId)?.container.focus();
 };
 
@@ -309,7 +306,7 @@ onMounted(() => {
     width: number,
     height: number
   ) => {
-    let refId = (container.state as Json).refId as number;
+    let refId = (container.state as Json).refId as string;
     const component = AllComponents.value.get(refId);
     if (!component || !component?.glc) {
       throw new Error(
@@ -328,7 +325,7 @@ onMounted(() => {
     container: ComponentContainer,
     visible: boolean
   ) => {
-    let refId = (container.state as Json).refId as number;
+    let refId = (container.state as Json).refId as string;
     const component = AllComponents.value.get(refId);
     if (!component || !component?.glc) {
       throw new Error(
@@ -343,7 +340,7 @@ onMounted(() => {
     logicalZIndex: LogicalZIndex,
     defaultZIndex: string
   ) => {
-    let refId = (container.state as Json).refId as number;
+    let refId = (container.state as Json).refId as string;
     const component = AllComponents.value.get(refId);
     if (!component || !component?.glc) {
       throw new Error(
@@ -358,9 +355,9 @@ onMounted(() => {
     container: ComponentContainer,
     itemConfig: ResolvedComponentItemConfig
   ) => {
-    let refId = -1;
+    let refId = "";
     if (itemConfig && itemConfig.componentState) {
-      refId = (itemConfig.componentState as Json).refId as number;
+      refId = (itemConfig.componentState as Json).refId as string;
     } else {
       throw new Error(
         "bindComponentEventListener: component's ref id is required"
@@ -401,7 +398,7 @@ onMounted(() => {
 
   const unbindComponentEventListener = (container: ComponentContainer) => {
     let state = container.state as Json;
-    let refId = state.refId as number;
+    let refId = state.refId as string;
     let removeId = state.id as string;
     const component = AllComponents.value.get(refId);
     if (!component || !component?.glc) {
@@ -410,7 +407,6 @@ onMounted(() => {
 
     AllComponents.value.delete(refId);
     delete IdToRef[removeId];
-    UnusedIndexes.push(refId);
 
     emit("layoutchanged");
   };
@@ -439,7 +435,7 @@ onMounted(() => {
     let target = e.target as ComponentItem | RowOrColumn | Stack;
     if (!target.isComponent) return;
     let state = (target as ComponentItem).container.state as Json;
-    IdToRef[state.id as string] = state.refId as number;
+    IdToRef[state.id as string] = state.refId as string;
   });
 
   GLayout.on("activeContentItemChanged", (e) => {
