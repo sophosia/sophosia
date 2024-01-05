@@ -70,15 +70,6 @@ const layoutStore = useLayoutStore();
  * Watcher
  *******************/
 watch(
-  () => layoutStore.initialized,
-  (initialized) => {
-    // after initialized, focus the currentPage
-    if (initialized) focusById(layoutStore.currentItemId);
-  }
-);
-
-// must use a getter to get props.currentItemId
-watch(
   () => layoutStore.currentItemId,
   (id) => {
     focusById(id);
@@ -90,7 +81,6 @@ watch(
   async (page) => {
     if (!page.id) return;
     await addGLComponent(layoutStore.addedPage);
-    layoutStore.addedPage = {} as Page;
   }
 );
 
@@ -108,7 +98,6 @@ watch(
   async (itemId) => {
     if (!itemId) return;
     await removeGLComponent(itemId);
-    await nextTick();
   }
 );
 
@@ -171,10 +160,6 @@ const updateGLComponent = (newPage: Page) => {
 };
 
 const loadGLLayout = async () => {
-  // when loading layout, the components are added by GLayout.loadLayout
-  // if initialized is not false, GLayout.addComponent will take control and is not we want
-  layoutStore.initialized = false;
-
   GLayout.clear();
   layoutStore.pages.clear();
   layoutStore.IdToRef.clear();
@@ -182,19 +167,14 @@ const loadGLLayout = async () => {
   asyncComponents.value.clear();
 
   const config = await layoutStore.loadLayout();
-  console.log("loaded config", config);
   if (!config) return;
   await nextTick(); // wait 1 tick for vue to add the dom
   await GLayout.loadLayout(config);
-
-  // initialization complete, emit initialized
-  layoutStore.initialized = true;
 };
 
 const saveGLLayout = async () => {
   await nextTick();
   const config = GLayout.saveLayout();
-  console.log("config.root", config.root);
   await layoutStore.saveLayout(config);
 };
 
@@ -343,7 +323,6 @@ onMounted(async () => {
     layoutStore.IdToRef.delete(removeId);
     glItems.value.delete(refId);
     layoutStore.IdToRef.delete(removeId);
-    console.log("unbined");
 
     saveGLLayout();
   };
@@ -375,8 +354,13 @@ onMounted(async () => {
     });
   });
 
+  // when loading layout, the components are added by GLayout.loadLayout
+  // if initialized is not false, GLayout.addComponent will take control and is not we want
+  layoutStore.initialized = false;
   await loadGLLayout();
   translateSpecialPageTitles();
+  focusById(stateStore.currentItemId);
+  layoutStore.initialized = true;
 });
 
 /*************

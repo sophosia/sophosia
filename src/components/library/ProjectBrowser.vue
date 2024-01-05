@@ -311,7 +311,7 @@ async function deleteProject() {
       // if no page left, open library page
       setTimeout(() => {
         if (projectStore.openedProjects.length === 0)
-          stateStore.currentItemId = "library";
+          layoutStore.currentItemId = "library";
       }, 50);
     }
     // delete from db

@@ -9,6 +9,7 @@ import {
   RowOrColumnItemConfig,
   StackItemConfig,
 } from "golden-layout";
+import { nextTick } from "vue";
 const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
 export const useLayoutStore = defineStore("layoutStore", {
@@ -94,6 +95,7 @@ export const useLayoutStore = defineStore("layoutStore", {
               data: state.data,
             } as Page;
             this.openPage(page);
+            await nextTick();
             state.refId = this.IdToRef.get(page.id) as string;
             itemConfig.componentState = state;
           } else if (itemConfig.content.length > 0) {

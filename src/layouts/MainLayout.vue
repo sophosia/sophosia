@@ -95,20 +95,12 @@ watch(
 );
 
 // onLayouChanged, appstate and layout will be saved
-watch(
-  [
-    () => stateStore.showLibraryRightMenu,
-    () => stateStore.libraryRightMenuSize,
-  ],
-  () => stateStore.saveAppState()
-);
-
-watch(
-  () => layoutStore.currentItemId,
-  () => {
-    stateStore.currentItemId = layoutStore.currentItemId;
-  }
-);
+layoutStore.$subscribe((_, state) => {
+  if (state.initialized) stateStore.currentItemId = state.currentItemId;
+});
+stateStore.$subscribe((mutation, state) => {
+  stateStore.saveAppState();
+});
 
 /*******************************************************
  * Methods
