@@ -165,7 +165,8 @@ const updateGLComponent = (newPage: Page) => {
   const container = glItems.value.get(refId)?.container as ComponentContainer;
   if (!container) return;
   container.setTitle(newPage.label);
-  const state = Object.assign({ refId }, newPage);
+  const state = container.state as GLState;
+  Object.assign(state, newPage);
   container.setState(state);
 };
 

@@ -113,9 +113,10 @@
 <script setup lang="ts">
 // types
 import { PropType, Ref, inject, ref, watchEffect, nextTick } from "vue";
-import { Project, Note, NoteType } from "src/backend/database";
+import { Project, Note, NoteType, Page } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { copyToClipboard } from "quasar";
 import { basename, dirname, join } from "@tauri-apps/api/path";
@@ -128,6 +129,7 @@ const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
 });
 const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 
 const renaming = ref(false);
@@ -136,11 +138,6 @@ const label = ref("");
 const renamingNoteId = inject("renamingNoteId") as Ref<string>;
 const oldNoteName = ref("");
 const pathDuplicate = ref(false);
-
-const updateComponent = inject("updateComponent") as (
-  oldItemId: string,
-  state: { id: string; label: string }
-) => Promise<void>;
 
 watchEffect(async () => {
   // label changes whenever pdf is renamed
@@ -187,13 +184,13 @@ async function renameNote() {
     note.label = oldNoteName.value;
   } else {
     const oldNoteId = note._id;
-    const newLabel = label.value;
-    const newNoteId = await oldToNewId(oldNoteId, newLabel);
+    const newNoteId = await oldToNewId(oldNoteId, label.value);
+    const newLabel = await basename(newNoteId);
     // update window tab name
-    updateComponent(oldNoteId, {
+    layoutStore.renamePage(oldNoteId, {
       id: newNoteId,
       label: newLabel,
-    });
+    } as Page);
     await nextTick(); // wait until itemId changes in the page
     await projectStore.renameNode(oldNoteId, newNoteId, "note");
   }

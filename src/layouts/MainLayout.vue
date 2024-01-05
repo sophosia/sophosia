@@ -74,8 +74,6 @@ const leftMenu = ref<InstanceType<typeof LeftMenu> | null>(null);
 const leftMenuSize = ref(0);
 const ready = ref(false);
 
-provide("updateComponent", () => {});
-
 /*******************
  * Watchers
  *******************/

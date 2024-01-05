@@ -382,18 +382,20 @@
 // types
 import { ref, watch, computed, inject, watchEffect } from "vue";
 import type { PropType } from "vue";
-import { Author, Folder, Meta, Project } from "src/backend/database";
+import { Author, Folder, Meta, Page, Project } from "src/backend/database";
 // backend stuff
 import { generateCiteKey, getMeta } from "src/backend/project/meta";
 import { getFolder } from "src/backend/project/folder";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/appState";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { open } from "@tauri-apps/api/shell";
 import { copyToClipboard } from "quasar";
 import { invoke } from "@tauri-apps/api";
 import { basename } from "@tauri-apps/api/path";
 const projectStore = useProjectStore();
 const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 
 const props = defineProps({ project: Object as PropType<Project> });
 const tab = ref("meta");
@@ -450,11 +452,6 @@ watchEffect(async () => {
   }
 });
 
-const updateComponent = inject("updateComponent") as (
-  oldItemId: string,
-  state: { id: string; label: string }
-) => Promise<void>;
-
 watch(tab, () => {
   if (tab.value === "reference") getReferences();
 });
@@ -484,10 +481,10 @@ async function modifyInfo() {
     stateStore.settings.citeKeyRule
   );
   projectStore.updateProject(meta.value._id, meta.value);
-  updateComponent(meta.value._id, {
+  layoutStore.renamePage(meta.value._id, {
     id: meta.value._id,
     label: meta.value.label,
-  });
+  } as Page);
 }
 
 async function addAuthor() {

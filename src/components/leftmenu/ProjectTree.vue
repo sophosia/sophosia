@@ -158,7 +158,13 @@
 <script setup lang="ts">
 import { inject, nextTick, onMounted, ref, watchEffect } from "vue";
 import { QTree, copyToClipboard } from "quasar";
-import { FolderOrNote, Note, NoteType, Project } from "src/backend/database";
+import {
+  FolderOrNote,
+  Note,
+  NoteType,
+  Page,
+  Project,
+} from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
 import { useLayoutStore } from "src/stores/layoutStore";
@@ -190,11 +196,6 @@ const expanded = ref<string[]>([]);
 const draggingNode = ref<FolderOrNote | null>(null);
 const dragoverNode = ref<FolderOrNote | null>(null);
 const enterTime = ref(0);
-
-const updateComponent = inject("updateComponent") as (
-  oldItemId: string,
-  state: { id: string; label: string }
-) => Promise<void>;
 
 onMounted(async () => {
   // expand all projects
@@ -302,10 +303,10 @@ async function renameNode() {
   } else {
     if (renamingNodeType.value === "note") {
       // update window tab name
-      await updateComponent(oldNodeId, {
+      layoutStore.renamePage(oldNodeId, {
         id: newNodeId,
         label: newLabel,
-      });
+      } as Page);
       await nextTick(); // wait until itemId changes in the page
     }
     await projectStore.renameNode(oldNodeId, newNodeId, renamingNodeType.value);
@@ -425,10 +426,16 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
     for (const note of notes) {
       const oldNoteId = note._id;
       const newNoteId = oldNoteId.replace(dragId, newId);
-      updateComponent(oldNoteId, { id: newNoteId, label: note.label });
+      layoutStore.renamePage(oldNoteId, {
+        id: newNoteId,
+        label: note.label,
+      } as Page);
     }
   } else {
-    updateComponent(dragId, { id: newId, label: label });
+    layoutStore.renamePage(dragId, {
+      id: newId,
+      label: label,
+    } as Page);
   }
   await nextTick(); // wait until the itemId is updated
   await projectStore.renameNode(
