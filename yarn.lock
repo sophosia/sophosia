@@ -6348,9 +6348,9 @@ vary@~1.1.2:
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
 
 vditor@^3.9.4:
-  version "3.9.5"
-  resolved "https://registry.yarnpkg.com/vditor/-/vditor-3.9.5.tgz#2be02f8242194f24f7c639ad09a51debed9b170f"
-  integrity sha512-yRFyEOoJ0GQGAjfzDBV9ZKemCleqspSf3Jg3XtKVj8RwnjnF6oScLQCAwSgRzCamYl+F+rIX9at0c3tEsatY/A==
+  version "3.9.8"
+  resolved "https://registry.yarnpkg.com/vditor/-/vditor-3.9.8.tgz#3999b9151b640fd5470a0d92691f308e7b2e46ba"
+  integrity sha512-Ls17n8GR9t6JOQqH6c0+UegOkuKT/qtMEUOi/a92OzocbsqNiit0YwtgTiqCE26u3go7ExHRJ2e83YJT2AHfxw==
   dependencies:
     diff-match-patch "^1.0.5"
 

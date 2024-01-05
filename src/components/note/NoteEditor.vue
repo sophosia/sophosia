@@ -11,20 +11,15 @@
     @clickLink="(e:MouseEvent, link:string) => clickLink(e,link)"
     ref="hoverPane"
   />
+  <iframe id="vditorExportIframe"></iframe>
 </template>
 <script setup lang="ts">
 // types
 import { inject, nextTick, onMounted, ref, watch } from "vue";
-import {
-  Note,
-  NoteType,
-  Project,
-  Edge,
-  db,
-  AnnotationData,
-} from "src/backend/database";
+import { Note, Project, Edge, db, AnnotationData } from "src/backend/database";
 // vditor
 import Vditor from "vditor";
+import { exportPDF } from "vditor/src/ts/export";
 import "src/css/vditor/index.css";
 // db related
 import { useStateStore } from "src/stores/appState";
@@ -43,7 +38,7 @@ import { useI18n } from "vue-i18n";
 import _ from "lodash";
 import { authorToString } from "src/backend/project/utils";
 import { generateCiteKey } from "src/backend/project/meta";
-import { dirname, join, sep } from "@tauri-apps/api/path";
+import { sep } from "@tauri-apps/api/path";
 
 import HoverPane from "./HoverPane.vue";
 import { open } from "@tauri-apps/api/shell";
@@ -107,6 +102,8 @@ function initEditor() {
         name: string;
         tipPosition?: string;
         tip?: string;
+        icon?: string;
+        click?: () => void;
       }
     | "|"
   )[];
@@ -123,7 +120,28 @@ function initEditor() {
       "|",
       { name: "table", tipPosition: "s" },
       "|",
-      { name: "upload", tipPosition: "s", tip: t("upload-image") },
+      {
+        name: "upload",
+        tipPosition: "s",
+        tip: t("upload-image"),
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-image" viewBox="0 0 16 16">
+                <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+                <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54L1 12.5v-9a.5.5 0 0 1 .5-.5z"/>
+              </svg>`,
+      },
+      "|",
+      {
+        name: "exportPDF",
+        tipPosition: "s",
+        tip: t("export", { type: "PDF" }),
+        icon: `<svg id="vditor-icon-export" viewBox="0 0 32 32">
+                <path d="M31.399 26.042h-2.202c-0.172 0-0.315 0.143-0.315 0.315v2.529h-25.769v-25.773h25.773v2.529c0 0.172 0.143 0.315 0.315 0.315h2.202c0.172 0 0.315-0.139 0.315-0.315v-4.1c0-0.696-0.561-1.256-1.256-1.256h-28.92c-0.696 0-1.256 0.561-1.256 1.256v28.916c0 0.696 0.561 1.256 1.256 1.256h28.916c0.696 0 1.256-0.561 1.256-1.256v-4.1c0-0.176-0.143-0.315-0.315-0.315zM32.16 15.742l-5.807-4.583c-0.217-0.172-0.532-0.016-0.532 0.258v3.11h-12.85c-0.18 0-0.327 0.147-0.327 0.327v2.292c0 0.18 0.147 0.327 0.327 0.327h12.85v3.11c0 0.274 0.319 0.43 0.532 0.258l5.807-4.583c0.077-0.060 0.126-0.153 0.126-0.258s-0.049-0.197-0.125-0.257l-0.001-0.001z"></path>
+              </svg>`,
+        click: () => {
+          const Ivditor = vditor.value?.vditor;
+          if (Ivditor) exportPDF(Ivditor);
+        },
+      },
     ];
   vditor.value = new Vditor("vditor-" + props.noteId, {
     height: "100%",
@@ -175,10 +193,10 @@ function initEditor() {
     blur: () => {
       saveContent();
     },
-    input: () => {
-      saveContent();
+    input: async () => {
       changeLinks();
       handleImage();
+      await saveContent();
     },
     upload: {
       accept: "image/*",

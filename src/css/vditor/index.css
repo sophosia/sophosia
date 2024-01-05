@@ -1,5 +1,5 @@
 /*!
- * Vditor v3.9.0 - A markdown editor written in TypeScript.
+ * Vditor v3.9.8 - A markdown editor written in TypeScript.
  *
  * MIT License
  *
@@ -86,6 +86,14 @@
  * @author <a href="http://vanessa.b3log.org">Liyuan Li</a>
  * @version 0.1.0.0, Jan 25, 2019
  */
+@-webkit-keyframes tooltip-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 @keyframes tooltip-appear {
   from {
     opacity: 0;
@@ -143,10 +151,14 @@
 .vditor-tooltipped:focus::after {
   display: inline-block;
   text-decoration: none;
-  animation-name: tooltip-appear;
-  animation-duration: 0.15s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease-in;
+  -webkit-animation-name: tooltip-appear;
+          animation-name: tooltip-appear;
+  -webkit-animation-duration: 0.15s;
+          animation-duration: 0.15s;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+  -webkit-animation-timing-function: ease-in;
+          animation-timing-function: ease-in;
 }
 .vditor-tooltipped__s::after,
 .vditor-tooltipped__se::after,
@@ -238,6 +250,16 @@
  * @author <a href="http://vanessa.b3log.org">Liyuan Li</a>
  * @version 1.0.0.0, Jan 22, 2020
  */
+@-webkit-keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 @keyframes scale-in {
   0% {
     opacity: 0;
@@ -258,18 +280,23 @@
   font-size: 14px;
   display: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   max-width: 320px;
   min-width: 80px;
-  animation-duration: 0.15s;
-  animation-name: scale-in;
-  animation-timing-function: cubic-bezier(0.2, 0, 0.13, 1.5);
+  -webkit-animation-duration: 0.15s;
+          animation-duration: 0.15s;
+  -webkit-animation-name: scale-in;
+          animation-name: scale-in;
+  -webkit-animation-timing-function: cubic-bezier(0.2, 0, 0.13, 1.5);
+          animation-timing-function: cubic-bezier(0.2, 0, 0.13, 1.5);
   color: var(--toolbar-icon-color);
 }
 .vditor-panel--none {
   padding: 0;
-  animation: none;
+  -webkit-animation: none;
+          animation: none;
   min-width: auto;
   max-width: none;
   white-space: nowrap;
@@ -333,15 +360,16 @@
 .vditor-toolbar {
   background-color: var(--toolbar-background-color);
   border-bottom: 1px solid var(--border-color);
-  padding: 0 5px !important;
+  padding: 0 35px !important;
   line-height: 1;
 }
 .vditor-toolbar--pin {
+  position: -webkit-sticky;
   position: sticky;
   top: 0;
-
-  /* do this so that the toolbar does not block the golden dropdown tab lists*/
-  z-index: 0;
+  z-index: 1;
+  /* do this so that it does not block the golden layout's dropdown menu */
+  /* z-index: 0; */
 }
 .vditor-toolbar--hide {
   transition: all 0.15s ease-in-out;
@@ -483,6 +511,15 @@
     color: var(--toolbar-icon-hover-color);
   }
 }
+@-webkit-keyframes slideInDown {
+  from {
+    transform: translate3d(0, -100%, 0);
+    visibility: visible;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
 @keyframes slideInDown {
   from {
     transform: translate3d(0, -100%, 0);
@@ -498,9 +535,7 @@
   border: 1px solid var(--border-color);
   border-radius: 3px;
   box-sizing: border-box;
-  font-family: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", "Hiragino Sans GB",
-    "Microsoft Yahei", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+  font-family: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", "Hiragino Sans GB", "Microsoft Yahei", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
 }
 .vditor .vditor-copy {
   z-index: auto;
@@ -588,8 +623,9 @@
   border-radius: 3px;
   font-size: 12px;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   float: right;
   margin: 8px 3px 0 0;
 }
@@ -601,8 +637,9 @@
   padding: 3px 0;
   cursor: row-resize;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   position: absolute;
   width: 100%;
 }
@@ -647,14 +684,17 @@
   position: absolute;
   font-size: 12px;
   top: 10px;
-  animation-duration: 0.15s;
-  animation-fill-mode: both;
+  -webkit-animation-duration: 0.15s;
+          animation-duration: 0.15s;
+  -webkit-animation-fill-mode: both;
+          animation-fill-mode: both;
   left: 50%;
   z-index: 5;
 }
 .vditor-tip--show {
   display: block;
-  animation-name: slideInDown;
+  -webkit-animation-name: slideInDown;
+          animation-name: slideInDown;
 }
 .vditor-tip__content {
   text-align: left;
@@ -695,7 +735,7 @@
   bottom: 0;
   display: flex;
   flex-direction: column;
-  z-index: 3;
+  z-index: 100;
 }
 .vditor-img__bar {
   border-bottom: 1px solid var(--border-color);
@@ -713,8 +753,9 @@
   cursor: pointer;
   margin-left: 24px;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   color: var(--toolbar-icon-color);
 }
 .vditor-img__btn:hover {
@@ -739,14 +780,16 @@
   background-color: var(--panel-background-color);
   position: absolute;
   box-shadow: var(--panel-shadow);
-  border-radius: 3px;
+  /* border around hint */
   border: 2px solid var(--hint-border-color);
+  border-radius: 3px;
   padding: 5px 0;
   z-index: 4;
   line-height: 20px;
   list-style: none;
   font-size: 12px;
   margin: 0;
+  /* max-width: 250px; */
   max-width: 50%;
   min-width: 80px;
   display: none;
@@ -800,9 +843,7 @@
 .vditor-reset {
   color: #24292e;
   font-variant-ligatures: no-common-ligatures;
-  font-family: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", "Hiragino Sans GB",
-    "Microsoft Yahei", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+  font-family: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", "Hiragino Sans GB", "Microsoft Yahei", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
   word-wrap: break-word;
   overflow: auto;
   line-height: 1.5;
@@ -901,6 +942,7 @@
 }
 .vditor-reset p {
   margin-top: 0;
+  /* margin-bottom: 16px; */
   margin-bottom: 0;
 }
 .vditor-reset blockquote {
@@ -966,9 +1008,7 @@
   margin: 0;
   font-size: 85%;
   border-radius: 3px;
-  font-family: mononoki, Consolas, "Liberation Mono", Menlo, Courier, monospace,
-    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol",
-    "Android Emoji", "EmojiSymbols";
+  font-family: mononoki, Consolas, "Liberation Mono", Menlo, Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
   word-break: break-word;
   background-size: 20px 20px;
   white-space: pre-wrap;
@@ -984,9 +1024,7 @@
   display: block;
   overflow: auto;
   white-space: pre;
-  font-family: mononoki, Consolas, "Liberation Mono", Menlo, Courier, monospace,
-    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol",
-    "Android Emoji", "EmojiSymbols";
+  font-family: mononoki, Consolas, "Liberation Mono", Menlo, Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
   background-size: 20px 20px;
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8AgMAAABHkjHhAAAACVBMVEWAgIBaWlo+Pj7rTFvWAAAAA3RSTlMHCAw+VhR4AAAA+klEQVQoz4WSMW7EQAhFPxKWNh2FCx+HkaZI6RRb5DYbyVfIJXLKDCFoMbaTKSw/8ZnPAPjaH2xgZcUNUDADD7D9LtDBCLZ45fbkvo/30K8yeI64pPwl6znd/3n/Oe93P3ho9qeh72btTFzqkz0rsJle8Zr81OLEwZ1dv/713uWqvu2pl+k0fy7MWtj9r/tN5q/02z89qa/L4Dc2LvM93kezPfXlME/O86EbY/V9GB9ePX8G1/6W+/9h1dq/HGfTfzT3j/xNo7522Bfnqe5jO/fvhVthlfk434v3iO9zG/UOphyPeinPl1J8Gtaa7xPTa/Dk+RIs4deMvwGvcGsmsCvJ0AAAAABJRU5ErkJggg==);
   word-break: initial;
@@ -1111,8 +1149,9 @@
   width: 3em;
   /* works for line-numbers below 1000 lines */
   -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   counter-reset: linenumber;
 }
 .vditor-linenumber__rows > span {
@@ -1242,8 +1281,9 @@
 .vditor-toc {
   margin-bottom: 16px;
   -webkit-user-select: text;
-  -moz-user-select: text;
-  user-select: text;
+     -moz-user-select: text;
+      -ms-user-select: text;
+          user-select: text;
   color: #4285f4;
 }
 .vditor-toc .vditor-outline__action {
@@ -1359,7 +1399,7 @@
 .vditor-wysiwyg h4:empty::after,
 .vditor-wysiwyg h5:empty::after,
 .vditor-wysiwyg h6:empty::after {
-  content: " ";
+  content: ' ';
 }
 .vditor-wysiwyg code[data-marker="`"] {
   padding-left: 0 !important;
@@ -1394,37 +1434,36 @@
   float: left;
   padding-right: 4px;
   margin-left: -29px;
-  content: "H1";
+  content: 'H1';
   font-size: 0.85rem;
   font-weight: normal;
   color: var(--second-color);
 }
 .vditor-wysiwyg > .vditor-reset > h2:before {
-  content: "H2";
+  content: 'H2';
 }
 .vditor-wysiwyg > .vditor-reset > h3:before {
-  content: "H3";
+  content: 'H3';
 }
 .vditor-wysiwyg > .vditor-reset > h4:before {
-  content: "H4";
+  content: 'H4';
 }
 .vditor-wysiwyg > .vditor-reset > h5:before {
-  content: "H5";
+  content: 'H5';
 }
 .vditor-wysiwyg > .vditor-reset > h6:before {
-  content: "H6";
+  content: 'H6';
 }
 .vditor-wysiwyg div[data-type="link-ref-defs-block"]:before {
   content: '"A"';
 }
 .vditor-wysiwyg div[data-type="footnotes-block"]:before {
-  content: "^F";
+  content: '^F';
 }
 .vditor-wysiwyg div.vditor-wysiwyg__block:before {
   content: "</>";
 }
-.vditor-wysiwyg
-  div.vditor-wysiwyg__block[data-type="yaml-front-matter"]:before {
+.vditor-wysiwyg div.vditor-wysiwyg__block[data-type="yaml-front-matter"]:before {
   content: "F";
 }
 .vditor-wysiwyg div.vditor-wysiwyg__block[data-type="math-block"]:before {
@@ -1491,7 +1530,7 @@
 .vditor-ir__node[data-type="yaml-front-matter"]:after,
 .vditor-ir__node[data-type="math-block"]:before,
 .vditor-ir__node[data-type="math-block"]:after {
-  content: " ";
+  content: ' ';
   color: var(--second-color);
 }
 .vditor-ir__node:not(.vditor-ir__node--expand) .vditor-ir__marker {
@@ -1555,15 +1594,15 @@
 }
 .vditor-ir__node--expand[data-type="code-block"]:before,
 .vditor-ir__node--expand[data-type="code-block"]:after {
-  content: "```";
+  content: '```';
 }
 .vditor-ir__node--expand[data-type="yaml-front-matter"]:before,
 .vditor-ir__node--expand[data-type="yaml-front-matter"]:after {
-  content: "---";
+  content: '---';
 }
 .vditor-ir__node--expand[data-type="math-block"]:before,
 .vditor-ir__node--expand[data-type="math-block"]:after {
-  content: "$$";
+  content: '$$';
 }
 .vditor-ir__node span[data-type="code-block-open-marker"],
 .vditor-ir__node span[data-type="code-block-close-marker"],
@@ -1588,7 +1627,6 @@
   white-space: pre-wrap;
   height: 100%;
   box-sizing: border-box;
-
   /* do not change padding after resizing */
   padding: 10px 35px !important;
 }
@@ -1626,7 +1664,7 @@
 .vditor-ir h4:empty::after,
 .vditor-ir h5:empty::after,
 .vditor-ir h6:empty::after {
-  content: " ";
+  content: ' ';
 }
 .vditor-ir .vditor-reset > h1:before,
 .vditor-ir .vditor-reset > h2:before,
@@ -1640,25 +1678,25 @@
   float: left;
   padding-right: 4px;
   margin-left: -29px;
-  content: "H1";
+  content: 'H1';
   font-size: 0.85rem;
   font-weight: normal;
   color: var(--second-color);
 }
 .vditor-ir .vditor-reset > h2:before {
-  content: "H2";
+  content: 'H2';
 }
 .vditor-ir .vditor-reset > h3:before {
-  content: "H3";
+  content: 'H3';
 }
 .vditor-ir .vditor-reset > h4:before {
-  content: "H4";
+  content: 'H4';
 }
 .vditor-ir .vditor-reset > h5:before {
-  content: "H5";
+  content: 'H5';
 }
 .vditor-ir .vditor-reset > h6:before {
-  content: "H6";
+  content: 'H6';
 }
 .vditor-ir div[data-type="link-ref-defs-block"] {
   color: var(--blockquote-color);
@@ -1672,36 +1710,15 @@
   margin-top: 24px;
 }
 .vditor-ir div[data-type="footnotes-block"]:before {
-  content: "^F";
+  content: '^F';
 }
-.vditor-ir
-  div[data-type="footnotes-block"]
-  > div[data-type="footnotes-def"]
-  > ul,
-.vditor-ir
-  div[data-type="footnotes-block"]
-  > div[data-type="footnotes-def"]
-  > ol,
-.vditor-ir
-  div[data-type="footnotes-block"]
-  > div[data-type="footnotes-def"]
-  > p,
-.vditor-ir
-  div[data-type="footnotes-block"]
-  > div[data-type="footnotes-def"]
-  > blockquote,
-.vditor-ir
-  div[data-type="footnotes-block"]
-  > div[data-type="footnotes-def"]
-  > pre,
-.vditor-ir
-  div[data-type="footnotes-block"]
-  > div[data-type="footnotes-def"]
-  > table,
-.vditor-ir
-  div[data-type="footnotes-block"]
-  > div[data-type="footnotes-def"]
-  > hr {
+.vditor-ir div[data-type="footnotes-block"] > div[data-type="footnotes-def"] > ul,
+.vditor-ir div[data-type="footnotes-block"] > div[data-type="footnotes-def"] > ol,
+.vditor-ir div[data-type="footnotes-block"] > div[data-type="footnotes-def"] > p,
+.vditor-ir div[data-type="footnotes-block"] > div[data-type="footnotes-def"] > blockquote,
+.vditor-ir div[data-type="footnotes-block"] > div[data-type="footnotes-def"] > pre,
+.vditor-ir div[data-type="footnotes-block"] > div[data-type="footnotes-def"] > table,
+.vditor-ir div[data-type="footnotes-block"] > div[data-type="footnotes-def"] > hr {
   margin-left: 8px;
 }
 .vditor-ir .vditor-toc:before {
@@ -1725,9 +1742,7 @@
   }
 }
 .vditor-sv {
-  font-family: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", "Hiragino Sans GB",
-    "Microsoft Yahei", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+  font-family: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", "Hiragino Sans GB", "Microsoft Yahei", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
   margin: 0 1px 0 0;
   overflow: auto;
   width: 100%;
@@ -1833,3 +1848,4 @@
 .vditor-sv__marker--strong {
   font-weight: bold;
 }
+
