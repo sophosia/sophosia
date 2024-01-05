@@ -252,6 +252,7 @@
         </div>
         <q-chip
           dense
+          style="max-width: 65%"
           size="1rem"
           class="chip"
           :ripple="false"
@@ -259,7 +260,7 @@
           @click="stateStore.openItem(meta?._id)"
         >
           <q-icon name="img:icons/pdf.png"></q-icon>
-          <span class="q-ml-xs">{{ file }}</span>
+          <span class="q-ml-xs ellipsis">{{ file }}</span>
         </q-chip>
       </div>
 
@@ -381,18 +382,20 @@
 // types
 import { ref, watch, computed, inject, watchEffect } from "vue";
 import type { PropType } from "vue";
-import { Author, Folder, Meta, Project } from "src/backend/database";
+import { Author, Folder, Meta, Page, Project } from "src/backend/database";
 // backend stuff
 import { generateCiteKey, getMeta } from "src/backend/project/meta";
 import { getFolder } from "src/backend/project/folder";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/appState";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { open } from "@tauri-apps/api/shell";
 import { copyToClipboard } from "quasar";
 import { invoke } from "@tauri-apps/api";
 import { basename } from "@tauri-apps/api/path";
 const projectStore = useProjectStore();
 const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 
 const props = defineProps({ project: Object as PropType<Project> });
 const tab = ref("meta");
@@ -400,7 +403,6 @@ const name = ref(""); // author name
 const tag = ref(""); // project tag
 const categories = ref<string[]>([]);
 const references = ref<{ text: string; link: string }[]>([]);
-const file = ref(""); // pdf file
 
 const meta = computed(() => props.project);
 const title = computed({
@@ -440,11 +442,15 @@ const authors = computed(() => {
   }
   return names;
 });
-
-const updateComponent = inject("updateComponent") as (
-  oldItemId: string,
-  state: { id: string; label: string }
-) => Promise<void>;
+// pdf file
+const file = ref(""); // pdf file name
+watchEffect(async () => {
+  try {
+    file.value = await basename(props.project?.path as string);
+  } catch (error) {
+    file.value = "";
+  }
+});
 
 watch(tab, () => {
   if (tab.value === "reference") getReferences();
@@ -461,11 +467,6 @@ watchEffect(async () => {
   }
 });
 
-watchEffect(async () => {
-  if (!props.project?.path) return;
-  file.value = await basename(props.project.path);
-});
-
 /**********************************************
  * Methods
  **********************************************/
@@ -480,10 +481,10 @@ async function modifyInfo() {
     stateStore.settings.citeKeyRule
   );
   projectStore.updateProject(meta.value._id, meta.value);
-  updateComponent(meta.value._id, {
+  layoutStore.renamePage(meta.value._id, {
     id: meta.value._id,
     label: meta.value.label,
-  });
+  } as Page);
 }
 
 async function addAuthor() {

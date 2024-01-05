@@ -8,7 +8,7 @@
     :nodes="projectStore.openedProjects"
     node-key="_id"
     selected-color="primary"
-    v-model:selected="stateStore.currentItemId"
+    v-model:selected="layoutStore.currentItemId"
     v-model:expanded="expanded"
   >
     <template v-slot:default-header="prop">
@@ -24,7 +24,7 @@
             dragoverNode == prop.node &&
             draggingNode != prop.node,
         }"
-        @click="selectItem(prop.node)"
+        @click="selectItem(prop.node._id)"
         :draggable="prop.node.dataType !== 'project'"
         @dragstart="(e) => onDragStart(e, prop.node)"
         @dragover="(e) => onDragOver(e, prop.node)"
@@ -158,9 +158,16 @@
 <script setup lang="ts">
 import { inject, nextTick, onMounted, ref, watchEffect } from "vue";
 import { QTree, copyToClipboard } from "quasar";
-import { FolderOrNote, Note, NoteType, Project } from "src/backend/database";
+import {
+  FolderOrNote,
+  Note,
+  NoteType,
+  Page,
+  Project,
+} from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { dirname, join } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/api/fs";
@@ -175,6 +182,7 @@ import { getNotes } from "src/backend/project/note";
 import { generateCiteKey } from "src/backend/project/meta";
 
 const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 
 const tree = ref<QTree | null>(null);
@@ -189,23 +197,20 @@ const draggingNode = ref<FolderOrNote | null>(null);
 const dragoverNode = ref<FolderOrNote | null>(null);
 const enterTime = ref(0);
 
-const updateComponent = inject("updateComponent") as (
-  oldItemId: string,
-  state: { id: string; label: string }
-) => Promise<void>;
-
 onMounted(async () => {
   // expand all projects
   expanded.value = Array.from(projectStore.openedProjects.map((p) => p._id));
 });
 
 watchEffect(() => {
-  showInTree(stateStore.currentItemId);
+  showInTree(layoutStore.currentItemId);
 });
 
-function selectItem(node: Project | FolderOrNote) {
+function selectItem(nodeId: string) {
+  if (!tree.value) return;
+  const node = tree.value.getNodeByKey(nodeId);
   console.log("node", node);
-  stateStore.currentItemId = node._id;
+  layoutStore.currentItemId = node._id;
   if ((node.children?.length as number) > 0) expanded.value.push(node._id);
   if (node.dataType === "folder") return;
 
@@ -233,11 +238,11 @@ async function closeProject(projectId: string) {
   // close all pages
   let project = projectStore.openedProjects.find((p) => p._id === projectId);
   if (project) {
-    stateStore.closePage(project._id);
+    layoutStore.closePage(project._id);
     const notes = await getNotes(project._id);
     for (let node of notes) {
       await nextTick(); // do it slowly one by one
-      stateStore.closePage(node._id);
+      layoutStore.closePage(node._id);
     }
   }
 
@@ -246,11 +251,7 @@ async function closeProject(projectId: string) {
     (p) => p._id !== projectId
   );
 
-  // if no page left, open library page
-  setTimeout(() => {
-    if (projectStore.openedProjects.length === 0)
-      stateStore.currentItemId = "library";
-  }, 50);
+  await stateStore.saveAppState();
 }
 
 /**
@@ -304,10 +305,10 @@ async function renameNode() {
   } else {
     if (renamingNodeType.value === "note") {
       // update window tab name
-      await updateComponent(oldNodeId, {
+      layoutStore.renamePage(oldNodeId, {
         id: newNodeId,
         label: newLabel,
-      });
+      } as Page);
       await nextTick(); // wait until itemId changes in the page
     }
     await projectStore.renameNode(oldNodeId, newNodeId, renamingNodeType.value);
@@ -316,7 +317,9 @@ async function renameNode() {
     node.label = newLabel;
   }
 
-  if (addingNode.value) selectItem(node); // select after adding it
+  if (addingNode.value) selectItem(node._id); // select after adding it
+  else if (layoutStore.currentItemId === oldNodeId) selectItem(newNodeId); // select the currectly selected renaming node
+  // if renaming other nodes that are not selected, no need to select them
   addingNode.value = false;
   renamingNodeId.value = "";
   oldNoteName.value = "";
@@ -337,10 +340,10 @@ async function checkDuplicate(note: Note) {
 
 async function deleteNode(node: FolderOrNote) {
   if (node.dataType === "note") {
-    stateStore.closePage(node._id);
+    layoutStore.closePage(node._id);
   } else if (node.dataType === "folder") {
     const notes = await getNotes(node._id);
-    for (const note of notes) stateStore.closePage(note._id);
+    for (const note of notes) layoutStore.closePage(note._id);
   }
   await projectStore.deleteNode(node._id, node.dataType);
   // select something else if the selectedItem is deleted
@@ -350,9 +353,9 @@ async function deleteNode(node: FolderOrNote) {
 
     if (project && project.children) {
       if (project.children.length == 0) {
-        selectItem(project);
+        selectItem(project._id);
       } else {
-        selectItem(project.children[0]);
+        selectItem(project.children[0]._id);
       }
     }
   }
@@ -427,10 +430,16 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
     for (const note of notes) {
       const oldNoteId = note._id;
       const newNoteId = oldNoteId.replace(dragId, newId);
-      updateComponent(oldNoteId, { id: newNoteId, label: note.label });
+      layoutStore.renamePage(oldNoteId, {
+        id: newNoteId,
+        label: note.label,
+      } as Page);
     }
   } else {
-    updateComponent(dragId, { id: newId, label: label });
+    layoutStore.renamePage(dragId, {
+      id: newId,
+      label: label,
+    } as Page);
   }
   await nextTick(); // wait until the itemId is updated
   await projectStore.renameNode(
@@ -439,6 +448,8 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
     isDragNodeDir ? "folder" : "note"
   );
 
+  // ui
+  selectItem(newId);
   draggingNode.value = null;
   dragoverNode.value = null;
 }

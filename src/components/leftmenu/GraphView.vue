@@ -1,6 +1,4 @@
 <template>
-  <!-- <div v-if="nodes.length == 0">{{ $t("no-related-projects-or-notes") }}</div> -->
-  <!-- <div v-else> -->
   <div>
     <div class="q-mx-xl q-my-sm row justify-between">
       <div class="row items-center">

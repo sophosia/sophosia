@@ -151,5 +151,6 @@
   "folder": "文件夹",
   "empty": "空",
   "identifier": "标识符",
-  "local": "本地"
+  "local": "本地",
+  "export": "导出{type}"
 }

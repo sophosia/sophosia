@@ -26,12 +26,18 @@
         class="viewerContainer"
       >
         <div class="pdfViewer"></div>
-        <h5
-          v-if="!project?.path"
+        <div
+          v-if="!initialized"
+          style="position: relative; top: 50%"
           class="text-center"
         >
-          {{ $t("no-pdf") }}
-        </h5>
+          <q-circular-progress
+            indeterminate
+            rounded
+            color="primary"
+            size="xl"
+          />
+        </div>
         <AnnotCard
           v-if="showAnnotCard && pdfApp.annotStore.selected"
           :style="style"
@@ -90,6 +96,8 @@ const props = defineProps({
   projectId: { type: String, required: true },
   focusAnnotId: { type: String, required: false },
 });
+
+const initialized = ref(false);
 
 // viewer containers
 const viewerContainer = ref<HTMLDivElement>();
@@ -309,6 +317,7 @@ watch(
  * Implement eventhandlers and init PDFApplication
  **************************************************/
 onMounted(async () => {
+  initialized.value = false;
   if (!viewerContainer.value) return;
   pdfApp.init(viewerContainer.value as HTMLDivElement);
 
@@ -525,7 +534,8 @@ onMounted(async () => {
     }
   );
 
-  loadPDF(props.projectId);
+  await loadPDF(props.projectId);
+  initialized.value = true;
 });
 </script>
 <style lang="scss">

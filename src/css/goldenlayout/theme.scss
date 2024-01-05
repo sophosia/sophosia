@@ -122,7 +122,8 @@ $headerBkgdColor: var(--color-layout-header-bkgd, #2a2a2a);
     font-size: 1rem;
     color: $singleTabContainerForeColor;
     background: $singleTablContainerBkgdColor;
-    margin-right: 2px;
+    border-right: 1px solid var(--q-edge);
+    width: 7rem;
     // padding-bottom: 2px;
     // padding-top: 2px;
 
@@ -133,15 +134,16 @@ $headerBkgdColor: var(--color-layout-header-bkgd, #2a2a2a);
 
     // Close Tab Icon
     .lm_close_tab {
-      width: 11px;
-      height: 11px;
+      width: 1.2rem;
+      height: 1.2rem;
       // background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAYAAADEUlfTAAAATElEQVR4nG3OwQ0DMQwDwZGRBtR/j1YJzMc5+IDoR+yCVO29g+pu981MFgqZmRdAfU7+CYWcbF11LwALjpBL0N0qybNx/RPU+gOeiS/+XCRwDlTgkQAAAABJRU5ErkJggg==);
       background-image: url("img/close.svg");
+      background-size: 1.5rem;
       background-position: center center;
       background-repeat: no-repeat;
       top: 4px;
       right: 6px;
-      opacity: 0.4;
+      opacity: 0.7;
 
       // invert color automatically
       mix-blend-mode: difference;

@@ -83,32 +83,25 @@
         "
         class="q-ma-xs"
         data-cy="annot-content"
-      ></div>
+      >
+        {{ annotContent }}
+      </div>
     </div>
   </q-card>
 </template>
 <script setup lang="ts">
-import { ref, inject, PropType, computed, watchEffect, onMounted } from "vue";
+import { ref, inject, PropType, computed, nextTick } from "vue";
 import { Annotation } from "src/backend/pdfannotation/annotations";
 
 import AnnotMenu from "./AnnotMenu.vue";
 
 import { copyToClipboard, colors } from "quasar";
-import {
-  AnnotationData,
-  Note,
-  NoteType,
-  Project,
-  db,
-} from "src/backend/database";
+import { AnnotationData } from "src/backend/database";
 import PDFApplication from "src/backend/pdfreader";
 import { KEY_pdfApp } from "./injectKeys";
-import Vditor from "vditor/dist/method.min";
 import { useStateStore } from "src/stores/appState";
-import { getNote } from "src/backend/project/note";
-import { getProject } from "src/backend/project/project";
-import { convertFileSrc } from "@tauri-apps/api/tauri";
-import { sep } from "@tauri-apps/api/path";
+import renderMathInElement from "katex/contrib/auto-render";
+import "katex/dist/katex.min.css";
 const { luminosity } = colors;
 const stateStore = useStateStore();
 
@@ -122,6 +115,7 @@ const editing = ref(false);
 const mdContentDiv = ref();
 const annotContent = computed({
   get() {
+    liveRender();
     return props.annot.data.content;
   },
   set(text: string) {
@@ -133,28 +127,22 @@ const annotContent = computed({
 const isMovable = ref(false);
 defineExpose({ isMovable });
 
-watchEffect(() => {
+async function liveRender() {
+  await nextTick();
   if (mdContentDiv.value)
-    Vditor.preview(mdContentDiv.value, annotContent.value, {
-      theme: {
-        current: stateStore.settings.theme,
-        path: "vditor/dist/css/content-theme",
-      },
-      mode: stateStore.settings.theme,
-      hljs: {
-        lineNumber: true,
-        style: "native",
-      },
-      after: () => {
-        // remove <br> tags so that line space is correct
-        (mdContentDiv.value as HTMLElement)
-          .querySelectorAll("p > br")
-          .forEach((el) => el.remove());
-        changeLinks();
-      },
-      cdn: "vditor", // use local cdn
+    renderMathInElement(mdContentDiv.value, {
+      // customised options
+      // • auto-render specific keys, e.g.:
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+        { left: "\\(", right: "\\)", display: false },
+        { left: "\\[", right: "\\]", display: true },
+      ],
+      // • rendering keys, e.g.:
+      throwOnError: false,
     });
-});
+}
 
 const changeColor = (color: string) => {
   pdfApp.annotStore?.update(props.annot.data._id, {
@@ -165,52 +153,6 @@ const changeColor = (color: string) => {
 const deleteAnnot = () => {
   pdfApp.annotStore?.delete(props.annot.data._id);
 };
-
-function changeLinks() {
-  if (!mdContentDiv.value) return;
-
-  let linkNodes = mdContentDiv.value.querySelectorAll(
-    "a"
-  ) as NodeListOf<HTMLAnchorElement>;
-  for (let linkNode of linkNodes) {
-    linkNode.onclick = (e: MouseEvent) => {
-      // do not open link winthin app
-      e.preventDefault();
-      let link = linkNode.href
-        .replace("http://localhost:9000/", "") // in dev mode
-        .replace("tauri://localhost/", ""); // in production mode
-      for (let linkNode of linkNodes) {
-        linkNode.onclick = async (e) => {
-          e.preventDefault();
-          try {
-            // valid external url, open it externally
-            new URL(link);
-            open(link);
-          } catch (error) {
-            stateStore.openItem(link);
-          }
-        };
-      }
-    };
-  }
-
-  let imageNodes = mdContentDiv.value.querySelectorAll(
-    "img"
-  ) as NodeListOf<HTMLImageElement>;
-  for (let img of imageNodes) {
-    if (
-      !img.src.includes("http://localhost:9000/") &&
-      !img.src.includes("tauri://localhost/")
-    )
-      continue;
-    const imgFile = img.src
-      .replace("http://localhost:9000/", "") // in dev mode
-      .replace("tauri://localhost/", ""); // in production mode
-    img.src = convertFileSrc(
-      [db.config.storagePath, ".sophosia", "image", imgFile].join(sep)
-    );
-  }
-}
 </script>
 <style scoped lang="scss">
 .annot-card {

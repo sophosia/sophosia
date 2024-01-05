@@ -109,7 +109,15 @@
 
 <script setup lang="ts">
 // types
-import { nextTick, onMounted, PropType, provide, ref, toRaw } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  PropType,
+  provide,
+  ref,
+  toRaw,
+} from "vue";
 import { Project, Note } from "src/backend/database";
 import { QTable, QTableColumn, QTr } from "quasar";
 // components
@@ -142,22 +150,24 @@ const expansionText = ref<string[]>([]);
 const loading = ref(false); // is table filtering data
 const table = ref();
 const searchRowWidth = ref(0);
-const headers = [
-  {
-    name: "title",
-    field: "title",
-    label: t("title"),
-    align: "left",
-    sortable: true,
-  },
-  {
-    name: "author",
-    field: "author",
-    label: t("author"),
-    align: "left",
-    sortable: true,
-  },
-] as QTableColumn[];
+const headers = computed(() => {
+  return [
+    {
+      name: "title",
+      field: "title",
+      label: t("title"),
+      align: "left",
+      sortable: true,
+    },
+    {
+      name: "author",
+      field: "author",
+      label: t("author"),
+      align: "left",
+      sortable: true,
+    },
+  ] as QTableColumn[];
+});
 
 onMounted(() => {
   searchRowWidth.value = table.value.$el.getBoundingClientRect().width * 0.8;

@@ -8,9 +8,8 @@ import {
   Settings,
   SpecialFolder,
 } from "src/backend/database";
+import { useLayoutStore } from "./layoutStore";
 import { useProjectStore } from "./projectStore";
-import darkContent from "src/css/vditor/dark.css?raw";
-import lightContent from "src/css/vditor/light.css?raw";
 import { getPDF } from "src/backend/project/project";
 import { db, Project, Note, AnnotationData } from "src/backend/database";
 
@@ -128,23 +127,11 @@ export const useStateStore = defineStore("stateStore", {
           page.label = project.label;
           page.data = { focusAnnotId: itemId };
         }
-        this.openPage(page);
+        const layoutStore = useLayoutStore();
+        layoutStore.openPage(page);
       } catch (error) {
         console.log(error);
       }
-    },
-
-    /**
-     * Opens a page
-     * @param page
-     */
-    async openPage(page: Page) {
-      this.openedPage = page;
-    },
-
-    closePage(pageId: string) {
-      if (!pageId) return;
-      this.closedItemId = pageId;
     },
 
     toggleWelcome(visible?: boolean) {
@@ -189,27 +176,6 @@ export const useStateStore = defineStore("stateStore", {
           break;
         case "light":
           Dark.set(false);
-          break;
-      }
-
-      // set the vditor style so all vditors in the app can share this
-      // must append editorStyle before contentStyle
-      // otherwise the texts are dark
-      let contentStyle = document.getElementById(
-        "vditor-content-style"
-      ) as HTMLStyleElement;
-      if (contentStyle === null) {
-        contentStyle = document.createElement("style") as HTMLStyleElement;
-        contentStyle.id = "vditor-content-style";
-        contentStyle.type = "text/css";
-        document.head.append(contentStyle);
-      }
-      switch (theme) {
-        case "dark":
-          contentStyle.innerHTML = darkContent;
-          break;
-        case "light":
-          contentStyle.innerHTML = lightContent;
           break;
       }
 

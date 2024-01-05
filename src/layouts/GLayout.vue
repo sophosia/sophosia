@@ -9,18 +9,17 @@
 
     <div style="position: absolute; width: 100%; height: 100%">
       <GLComponent
-        v-for="[refId, component] in AllComponents"
+        v-for="[refId, page] in layoutStore.pages"
         :key="refId"
         :ref="`glc_${refId}`"
         :id="`glc_${refId}`"
-        @click="onClick(refId)"
+        @click="focusById(page.id)"
       >
         <component
-          v-if="initialized && !!component.visible"
-          :is="component.asyncComponent"
-          :itemId="component.id"
-          :visible="!!component.visible"
-          :data="component.data"
+          v-if="layoutStore.initialized"
+          :is="asyncComponents.get(refId)"
+          :itemId="page.id"
+          :data="page.data"
         ></component>
       </GLComponent>
     </div>
@@ -39,28 +38,19 @@ import {
 } from "vue";
 import {
   ComponentContainer,
-  Json,
-  LayoutConfig,
-  RowOrColumnItemConfig,
-  StackItemConfig,
-  ComponentItemConfig,
   ResolvedComponentItemConfig,
   LogicalZIndex,
   VirtualLayout,
-  ResolvedLayoutConfig,
   ComponentItem,
   RowOrColumn,
   Stack,
 } from "golden-layout";
 import GLComponent from "src/pages/GLComponent.vue";
-
-/*******************
- * Props and Emits
- *******************/
-const props = defineProps({
-  currentItemId: String,
-});
-const emit = defineEmits(["update:currentItemId", "layoutchanged"]);
+import { type Page, type GLState } from "src/backend/database";
+import { useStateStore } from "src/stores/appState";
+import { useLayoutStore } from "src/stores/layoutStore";
+import { useI18n } from "vue-i18n";
+const { t, locale } = useI18n({ useScope: "global" });
 
 /*******************
  * Data
@@ -68,164 +58,124 @@ const emit = defineEmits(["update:currentItemId", "layoutchanged"]);
 const GLRoot = ref<null | HTMLElement>(null);
 let GLayout: VirtualLayout;
 
-const AllComponents = ref(
-  new Map<
-    number,
-    {
-      asyncComponent: any;
-      id: string;
-      visible?: boolean;
-      data?: { path?: string; focusAnnotId?: string };
-      container?: any;
-      glc?: any;
-    }
-  >()
-);
-const IdToRef = {} as { [id: string]: number };
-const UnusedIndexes: number[] = [];
-let CurIndex = 0;
-let GlBoundingClientRect: DOMRect;
+const glItems = ref(new Map<string, { container: any; glc: any }>());
 const asyncComponents = ref(new Map<string, any>()); // <itemId, asyncComponent> pair
+let GlBoundingClientRect: DOMRect;
 const instance = getCurrentInstance();
-const initialized = ref(false);
+
+const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 
 /*******************
  * Watcher
  *******************/
-watch(initialized, (initialized) => {
-  // after initialized, focus the currentPage
-  if (initialized) focusById(props.currentItemId as string);
-});
-
-// must use a getter to get props.currentItemId
 watch(
-  () => props.currentItemId,
+  () => layoutStore.currentItemId,
   (id) => {
-    focusById(id as string);
+    focusById(id);
   }
 );
+
+watch(
+  () => layoutStore.addedPage,
+  async (page) => {
+    if (!page.id) return;
+    await addGLComponent(layoutStore.addedPage);
+  }
+);
+
+watch(
+  () => layoutStore.renamedPage,
+  async (page) => {
+    if (!page.id) return;
+    await updateGLComponent(page);
+    layoutStore.renamedPage = {} as Page;
+  }
+);
+
+watch(
+  () => layoutStore.closedItemId,
+  async (itemId) => {
+    if (!itemId) return;
+    await removeGLComponent(itemId);
+  }
+);
+
+watch(
+  () => [stateStore.showLeftMenu, stateStore.leftMenuSize],
+  () => {
+    resize();
+  }
+);
+
+watch(locale, () => {
+  translateSpecialPageTitles();
+});
 
 /*******************
  * Method
  *******************/
-/** @internal */
-const addComponent = (
-  componentType: string,
-  title: string,
-  id: string,
-  data: any
-) => {
-  let index = CurIndex;
-  if (UnusedIndexes.length > 0) index = UnusedIndexes.pop() as number;
-  else CurIndex++;
-
+/**
+ * Add a GL component by page
+ * @param
+ * @param page
+ */
+const addGLComponent = (page: Page) => {
+  const refId = layoutStore.IdToRef.get(page.id) as string;
   // for vite's dynamic import, see the following page
   // https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations
   // when building the app, vite will automatically take care the imports for us
-
-  // unknown async component error occurs if we create multiple async component with the same type at start up
-  if (!asyncComponents.value.has(componentType)) {
-    asyncComponents.value.set(
-      componentType,
-      markRaw(
-        defineAsyncComponent(() => import(`../pages/${componentType}.vue`))
-      )
-    );
-  }
-  const asyncComponent = asyncComponents.value.get(componentType);
-  AllComponents.value.set(index, { asyncComponent, id, data });
-
-  return index;
-};
-
-/**
- *
- * @param componentType - Vue document name
- * @param title - Tab title
- * @param id - projectId or noteId
- */
-const addGLComponent = async (
-  componentType: string,
-  title: string,
-  id: string,
-  data: any
-) => {
-  if (componentType.length == 0)
-    throw new Error("addGLComponent: Component's type is empty");
-
-  // don't repeatly add components
-  if (id in IdToRef) {
-    focusById(id);
-    const component = AllComponents.value.get(IdToRef[id]);
-    if (component && data) component.data = data;
-    return;
-  }
-
-  const index = addComponent(componentType, title, id, data);
-  await nextTick(); // wait 1 tick for vue to add the dom
-  GLayout.addComponent(
-    componentType,
-    { refId: index, id: id, data: data },
-    title
+  asyncComponents.value.set(
+    refId,
+    markRaw(defineAsyncComponent(() => import(`../pages/${page.type}.vue`)))
   );
+  // before initialized, components are added by loading config
+  // we just need to prepare the async components
+  if (!layoutStore.initialized) return;
+  nextTick(() => {
+    const state = Object.assign({ refId }, page);
+    GLayout.addComponent(page.type, state, page.label);
+  }); // wait 1 tick for vue to add the dom
 };
 
-const loadGLLayout = async (
-  layoutConfig: LayoutConfig | ResolvedLayoutConfig
-) => {
+const removeGLComponent = (removeId: string) => {
+  layoutStore.closedItemId = "";
+  const refId = layoutStore.IdToRef.get(removeId);
+  if (!refId) return;
+  const glItem = glItems.value.get(refId);
+  if (glItem) glItem.container.close();
+  console.log("removeGLComponent");
+};
+
+const updateGLComponent = (newPage: Page) => {
+  const refId = layoutStore.IdToRef.get(newPage.id);
+  if (!refId) return;
+  // set the window title to new title
+  const container = glItems.value.get(refId)?.container as ComponentContainer;
+  if (!container) return;
+  container.setTitle(newPage.label);
+  const state = container.state as GLState;
+  Object.assign(state, newPage);
+  container.setState(state);
+};
+
+const loadGLLayout = async () => {
   GLayout.clear();
-  AllComponents.value.clear();
-  // When reloading a saved Layout, first convert the saved "Resolved Config" to a "Config" by calling LayoutConfig.fromResolved().
-  const config = (
-    (layoutConfig as ResolvedLayoutConfig).resolved
-      ? LayoutConfig.fromResolved(layoutConfig as ResolvedLayoutConfig)
-      : layoutConfig
-  ) as LayoutConfig;
-  if (config.root === undefined) return;
-  let contents = [config.root.content] as (
-    | RowOrColumnItemConfig[]
-    | StackItemConfig[]
-    | ComponentItemConfig[]
-  )[];
+  layoutStore.pages.clear();
+  layoutStore.IdToRef.clear();
+  glItems.value.clear();
+  asyncComponents.value.clear();
 
-  let index = 0;
-  while (contents.length > 0) {
-    const content = contents.shift() as
-      | RowOrColumnItemConfig[]
-      | StackItemConfig[]
-      | ComponentItemConfig[];
-    for (let itemConfig of content) {
-      if (itemConfig.type == "component") {
-        index = addComponent(
-          itemConfig.componentType as string,
-          itemConfig.title as string,
-          (itemConfig.componentState as Json).id as string,
-          (itemConfig.componentState as Json).data
-        );
-        await nextTick();
-        if (typeof itemConfig.componentState == "object")
-          (itemConfig.componentState as Json)["refId"] = index;
-        else itemConfig.componentState = { refId: index };
-      } else if (itemConfig.content.length > 0) {
-        contents.push(
-          itemConfig.content as
-            | RowOrColumnItemConfig[]
-            | StackItemConfig[]
-            | ComponentItemConfig[]
-        );
-      }
-    }
-  }
-
+  const config = await layoutStore.loadLayout();
+  if (!config) return;
   await nextTick(); // wait 1 tick for vue to add the dom
   await GLayout.loadLayout(config);
-
-  // initialization complete, emit initialized
-  initialized.value = true;
 };
 
-const getLayoutConfig = () => {
-  return GLayout.saveLayout();
+const saveGLLayout = async () => {
+  await nextTick();
+  const config = GLayout.saveLayout();
+  await layoutStore.saveLayout(config);
 };
 
 const resize = () => {
@@ -233,11 +183,7 @@ const resize = () => {
   let width = dom ? dom.offsetWidth : 0;
   let height = dom ? dom.offsetHeight : 0;
   GLayout.setSize(width, height);
-  emit("layoutchanged");
-};
-
-const onClick = (refId: number) => {
-  AllComponents.value.get(refId)?.container.focus();
+  saveGLLayout();
 };
 
 /**
@@ -245,55 +191,26 @@ const onClick = (refId: number) => {
  * @param itemId
  */
 const focusById = (id: string) => {
-  AllComponents.value.get(IdToRef[id])?.container.focus();
+  const refId = layoutStore.IdToRef.get(id);
+  if (!refId) return;
+  const container = glItems.value.get(refId)?.container;
+  if (container) container.focus();
 };
 
-const removeGLComponent = (removeId: string) => {
-  const glComponent = AllComponents.value.get(IdToRef[removeId]);
-  if (glComponent) {
-    glComponent.visible = false;
-    if (removeId.endsWith(".excalidraw"))
-      setTimeout(() => {
-        // slowly close the excalidraw page, otherwise the page sticks there and crashes the app
-        glComponent.container.close();
-      }, 50);
-    else
-      nextTick(() => {
-        glComponent.container.close();
-      });
+const translateSpecialPageTitles = async () => {
+  for (const page of layoutStore.pages.values()) {
+    if (["library", "help", "settings"].includes(page.id)) {
+      page.label = t(page.id);
+      layoutStore.renamePage(page.id, page);
+      await nextTick();
+    }
   }
-};
-
-const updateGLComponent = (
-  oldItemId: string,
-  state: { id: string; label: string }
-) => {
-  if (!(oldItemId in IdToRef)) return;
-  const refId = IdToRef[oldItemId];
-
-  // update id so that the page receive new itemId
-  const glComponent = AllComponents.value.get(refId);
-  if (!!glComponent) glComponent.id = state.id;
-
-  // set the window title to new title
-  const container = AllComponents.value.get(refId)?.container;
-  if (!!container) {
-    container.setTitle(state.label);
-    container.setState(Object.assign(container.state as {}, state));
-  }
-  // update the IdToRef list
-  // do not switch the order of these two statements since oldItemId might be the same as state.id
-  delete IdToRef[oldItemId];
-  IdToRef[state.id] = refId;
 };
 
 /*******************
  * Mount
  *******************/
-onMounted(() => {
-  if (GLRoot.value == null)
-    throw new Error("Golden Layout can't find the root DOM!");
-
+onMounted(async () => {
   window.addEventListener("resize", resize, { passive: true });
 
   const handleBeforeVirtualRectingEvent = (count: number) => {
@@ -307,9 +224,9 @@ onMounted(() => {
     width: number,
     height: number
   ) => {
-    let refId = (container.state as Json).refId as number;
-    const component = AllComponents.value.get(refId);
-    if (!component || !component?.glc) {
+    const refId = (container.state as GLState).refId as string;
+    const glItem = glItems.value.get(refId);
+    if (!glItem || !glItem?.glc) {
       throw new Error(
         "handleContainerVirtualRectingRequiredEvent: Component not found"
       );
@@ -319,21 +236,21 @@ onMounted(() => {
       container.element.getBoundingClientRect();
     const left = containerBoundingClientRect.left - GlBoundingClientRect.left;
     const top = containerBoundingClientRect.top - GlBoundingClientRect.top;
-    component.glc.setPosAndSize(left, top, width, height);
+    glItem.glc.setPosAndSize(left, top, width, height);
   };
 
   const handleContainerVirtualVisibilityChangeRequiredEvent = (
     container: ComponentContainer,
     visible: boolean
   ) => {
-    let refId = (container.state as Json).refId as number;
-    const component = AllComponents.value.get(refId);
-    if (!component || !component?.glc) {
+    const refId = (container.state as GLState).refId as string;
+    const glItem = glItems.value.get(refId);
+    if (!glItem || !glItem?.glc) {
       throw new Error(
         "handleContainerVirtualVisibilityChangeRequiredEvent: Component not found"
       );
     }
-    component.visible = visible;
+    glItem.glc.setVisibility(visible);
   };
 
   const handleContainerVirtualZIndexChangeRequiredEvent = (
@@ -341,24 +258,24 @@ onMounted(() => {
     logicalZIndex: LogicalZIndex,
     defaultZIndex: string
   ) => {
-    let refId = (container.state as Json).refId as number;
-    const component = AllComponents.value.get(refId);
-    if (!component || !component?.glc) {
+    const refId = (container.state as GLState).refId as string;
+    const glItem = glItems.value.get(refId);
+    if (!glItem || !glItem?.glc) {
       throw new Error(
         "handleContainerVirtualZIndexChangeRequiredEvent: Component not found"
       );
     }
 
-    component.glc.setZIndex(defaultZIndex);
+    glItem.glc.setZIndex(defaultZIndex);
   };
 
   const bindComponentEventListener = (
     container: ComponentContainer,
     itemConfig: ResolvedComponentItemConfig
   ) => {
-    let refId = -1;
+    let refId = "";
     if (itemConfig && itemConfig.componentState) {
-      refId = (itemConfig.componentState as Json).refId as number;
+      refId = (itemConfig.componentState as GLState).refId as string;
     } else {
       throw new Error(
         "bindComponentEventListener: component's ref id is required"
@@ -367,12 +284,10 @@ onMounted(() => {
 
     const component = instance?.refs[`glc_${refId}`];
 
-    const glComponent = AllComponents.value.get(refId) as any;
-    Object.assign(glComponent, {
+    glItems.value.set(refId, {
       container: container,
       glc: (component as any)[0],
     });
-    AllComponents.value.set(refId, glComponent);
 
     container.virtualRectingRequiredEvent = (container, width, height) =>
       handleContainerVirtualRectingRequiredEvent(container, width, height);
@@ -398,21 +313,22 @@ onMounted(() => {
   };
 
   const unbindComponentEventListener = (container: ComponentContainer) => {
-    let state = container.state as Json;
-    let refId = state.refId as number;
-    let removeId = state.id as string;
-    const component = AllComponents.value.get(refId);
-    if (!component || !component?.glc) {
+    const refId = (container.state as GLState).refId as string;
+    const removeId = layoutStore.pages.get(refId)!.id;
+    const glItem = glItems.value.get(refId);
+    if (!glItem || !glItem?.glc) {
       throw new Error("handleUnbindComponentEvent: Component not found");
     }
 
-    AllComponents.value.delete(refId);
-    delete IdToRef[removeId];
-    UnusedIndexes.push(refId);
+    layoutStore.pages.delete(refId);
+    layoutStore.IdToRef.delete(removeId);
+    glItems.value.delete(refId);
+    layoutStore.IdToRef.delete(removeId);
 
-    emit("layoutchanged");
+    saveGLLayout();
   };
 
+  if (!GLRoot.value) return;
   GLayout = new VirtualLayout(
     GLRoot.value,
     bindComponentEventListener,
@@ -424,48 +340,32 @@ onMounted(() => {
   GLayout.on("focus", (e) => {
     let target = e.target as ComponentItem | RowOrColumn | Stack;
     if (!target.isComponent) return;
-    let state = (target as ComponentItem).container.state as {
-      refId: string;
-      id: string;
-      data?: { path: string };
-    };
-    emit("update:currentItemId", state.id);
-    emit("layoutchanged");
-  });
-
-  GLayout.on("itemCreated", (e) => {
-    let target = e.target as ComponentItem | RowOrColumn | Stack;
-    if (!target.isComponent) return;
-    let state = (target as ComponentItem).container.state as Json;
-    IdToRef[state.id as string] = state.refId as number;
+    const state = (target as ComponentItem).container.state as GLState;
+    layoutStore.currentItemId = state.id;
+    saveGLLayout();
   });
 
   GLayout.on("activeContentItemChanged", (e) => {
-    let state = e.container.state as {
-      refId: string;
-      id: string;
-      data?: { path: string };
-    };
-    emit("update:currentItemId", state.id);
+    const state = e.container.state as GLState;
+    layoutStore.currentItemId = state.id;
     nextTick(() => {
       // wait until layout is updated
       // this is needed for closing component
-      emit("layoutchanged");
+      saveGLLayout();
     });
   });
+
+  // when loading layout, the components are added by GLayout.loadLayout
+  // if initialized is not false, GLayout.addComponent will take control and is not we want
+  layoutStore.initialized = false;
+  await loadGLLayout();
+  translateSpecialPageTitles();
+  focusById(stateStore.currentItemId);
+  layoutStore.initialized = true;
 });
 
-/*******************
+/*************
  * Expose
- *******************/
-defineExpose({
-  addGLComponent,
-  removeGLComponent,
-  updateGLComponent,
-  loadGLLayout,
-  getLayoutConfig,
-  resize,
-  initialized,
-  AllComponents,
-});
+ *************/
+defineExpose({ resize });
 </script>

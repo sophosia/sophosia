@@ -27,8 +27,6 @@ async function getAppState(): Promise<AppState> {
       openedProjectIds: [],
       settings: {
         theme: "dark",
-        language: "en_US",
-        storagePath: "",
         fontSize: "16px",
         citeKeyRule: "author_title_year",
       },
@@ -52,40 +50,43 @@ const updateAppState = debounce(_updateAppState, 200);
  *****************************/
 
 async function getLayout(): Promise<Layout> {
-  try {
-    return (await db.get("layout")) as Layout;
-  } catch (error) {
-    // cannot get layout
-    let layout = {
-      _id: "layout",
-      dataType: "layout",
-      config: {
-        settings: {
-          showPopoutIcon: false,
-          showMaximiseIcon: false,
-          // must have close icon otherwise the last tab can't close
-          showCloseIcon: true,
-        },
-        dimensions: {
-          borderWidth: 3,
-          headerHeight: 36,
-        },
-        root: {
-          type: "stack",
-          content: [
-            {
-              type: "component",
-              title: "Library",
-              componentType: "LibraryPage",
-              componentState: { id: "library" },
-            },
-          ],
-        },
+  const defaultLayout = {
+    _id: "layout",
+    dataType: "layout",
+    config: {
+      settings: {
+        showPopoutIcon: false,
+        showMaximiseIcon: false,
+        // must have close icon otherwise the last tab can't close
+        showCloseIcon: true,
       },
-    };
-
-    await db.put(layout);
-    return layout as Layout;
+      dimensions: {
+        borderWidth: 3,
+        headerHeight: 36,
+        // no need to show ghost image of the content
+        dragProxyWidth: 0,
+        dragProxyHeight: 0,
+      },
+      root: {
+        type: "stack",
+        content: [
+          {
+            type: "component",
+            title: "Library",
+            componentType: "LibraryPage",
+            componentState: { id: "library" },
+          },
+        ],
+      },
+    },
+  } as Layout;
+  try {
+    const layout = (await db.get("layout")) as Layout;
+    if (!layout.config.root) return defaultLayout;
+    else return layout;
+  } catch (error) {
+    await db.put(defaultLayout);
+    return defaultLayout;
   }
 }
 

@@ -152,7 +152,7 @@ watch(
   () => {
     for (let id of Object.values(SpecialFolder)) {
       let node = tree.value?.getNodeByKey(id) as QTreeNode;
-      node.label = t(id);
+      node.label = t(id.replace("SF", ""));
     }
   }
 );

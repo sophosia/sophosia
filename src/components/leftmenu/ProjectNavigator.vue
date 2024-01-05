@@ -96,8 +96,11 @@
           </q-item-section>
         </template>
         <GraphView
-          v-if="isGraphViewOpened"
-          :itemId="stateStore.currentItemId"
+          v-if="
+            isGraphViewOpened &&
+            !['library', 'settings', 'help'].includes(layoutStore.currentItemId)
+          "
+          :itemId="layoutStore.currentItemId"
           :height="treeSize"
           ref="graphview"
         />
@@ -114,12 +117,10 @@ import { QSplitter } from "quasar";
 import GraphView from "./GraphView.vue";
 import ProjectTree from "./ProjectTree.vue";
 
-import { useStateStore } from "src/stores/appState";
 import { useQuasar } from "quasar";
-import { colors } from "quasar";
-const { getPaletteColor } = colors;
+import { useLayoutStore } from "src/stores/layoutStore";
 
-const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 const $q = useQuasar();
 
 const root = ref<QSplitter | null>(null);

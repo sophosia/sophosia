@@ -114,6 +114,8 @@ async function getLinksFromFile(
  * @param newNoteId
  */
 export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
+  // need to update links from the oldNote
+
   // no need to scan anything if user is using it the first time
   if (!(await exists("workspace.json", { dir: BaseDirectory.AppConfig })))
     return;
@@ -146,19 +148,20 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
       "m"
     ); // remove g modifier to make match return after first found
     const matches = content.match(localRegex);
-    if (!matches) return;
-    const oldIdAndHashtag = matches[0].match(/\[.*\]/)![0].slice(1, -1); // remove bracket using slice
-    const oldLinkAndHashtag = matches[0].match(/\(.*\)/)![0].slice(1, -1);
-    const newIdAndHashtag = oldIdAndHashtag.replace(oldNoteId, newNoteId);
-    const newLinkAndHashtag = oldLinkAndHashtag.replace(
-      oldNoteId.replaceAll(" ", "%20"),
-      newNoteId.replaceAll(" ", "%20")
-    );
-    const newContent = content.replaceAll(
-      regex,
-      `[${newIdAndHashtag}](${newLinkAndHashtag})`
-    );
-    await writeTextFile(file.path, newContent);
+    if (matches) {
+      const oldIdAndHashtag = matches[0].match(/\[.*\]/)![0].slice(1, -1); // remove bracket using slice
+      const oldLinkAndHashtag = matches[0].match(/\(.*\)/)![0].slice(1, -1);
+      const newIdAndHashtag = oldIdAndHashtag.replace(oldNoteId, newNoteId);
+      const newLinkAndHashtag = oldLinkAndHashtag.replace(
+        oldNoteId.replaceAll(" ", "%20"),
+        newNoteId.replaceAll(" ", "%20")
+      );
+      const newContent = content.replaceAll(
+        regex,
+        `[${newIdAndHashtag}](${newLinkAndHashtag})`
+      );
+      await writeTextFile(file.path, newContent);
+    }
 
     const currentNoteId = pathToId(file.path);
     // replace to links in indexeddb pointing to the old note
