@@ -197,11 +197,12 @@ const focusById = (id: string) => {
   if (container) container.focus();
 };
 
-const translateSpecialPageTitles = () => {
+const translateSpecialPageTitles = async () => {
   for (const page of layoutStore.pages.values()) {
     if (["library", "help", "settings"].includes(page.id)) {
       page.label = t(page.id);
       layoutStore.renamePage(page.id, page);
+      await nextTick();
     }
   }
 };
