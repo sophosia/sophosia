@@ -95,6 +95,7 @@ $highlightStripHeight: 3px;
   position: relative;
   z-index: 1;
   user-select: none;
+  outline: 1px solid var(--q-edge);
 
   [class^="lm_"] {
     box-sizing: content-box !important;
