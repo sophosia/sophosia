@@ -96,7 +96,10 @@
           </q-item-section>
         </template>
         <GraphView
-          v-if="isGraphViewOpened"
+          v-if="
+            isGraphViewOpened &&
+            !['library', 'settings', 'help'].includes(layoutStore.currentItemId)
+          "
           :itemId="layoutStore.currentItemId"
           :height="treeSize"
           ref="graphview"
