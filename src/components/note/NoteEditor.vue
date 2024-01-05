@@ -11,7 +11,10 @@
     @clickLink="(e:MouseEvent, link:string) => clickLink(e,link)"
     ref="hoverPane"
   />
-  <iframe id="vditorExportIframe"></iframe>
+  <iframe
+    style="display: none"
+    id="vditorExportIframe"
+  ></iframe>
 </template>
 <script setup lang="ts">
 // types
