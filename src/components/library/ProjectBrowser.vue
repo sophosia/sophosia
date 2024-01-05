@@ -143,16 +143,6 @@ watch(
   }
 );
 
-// onLayouChanged, appstate and layout will be saved
-const onLayoutChanged = inject("onLayoutChanged") as () => void;
-watch(
-  [
-    () => stateStore.showLibraryRightMenu,
-    () => stateStore.libraryRightMenuSize,
-  ],
-  onLayoutChanged
-);
-
 // for projectRow
 provide(KEY_deleteDialog, showDeleteDialog);
 provide(KEY_metaDialog, showSearchMetaDialog);

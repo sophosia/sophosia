@@ -27,8 +27,6 @@ async function getAppState(): Promise<AppState> {
       openedProjectIds: [],
       settings: {
         theme: "dark",
-        language: "en_US",
-        storagePath: "",
         fontSize: "16px",
         citeKeyRule: "author_title_year",
       },
@@ -69,6 +67,9 @@ async function getLayout(): Promise<Layout> {
         dimensions: {
           borderWidth: 3,
           headerHeight: 36,
+          // no need to show ghost image of the content
+          dragProxyWidth: 0,
+          dragProxyHeight: 0,
         },
         root: {
           type: "stack",

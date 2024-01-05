@@ -301,6 +301,10 @@ export interface Page {
   data?: { path?: string; focusAnnotId?: string };
 }
 
+export interface GLState extends Page {
+  refId: string;
+}
+
 /*******************
  * EventBus
  *******************/

@@ -8,7 +8,7 @@
     :nodes="projectStore.openedProjects"
     node-key="_id"
     selected-color="primary"
-    v-model:selected="stateStore.currentItemId"
+    v-model:selected="layoutStore.currentItemId"
     v-model:expanded="expanded"
   >
     <template v-slot:default-header="prop">
@@ -161,6 +161,7 @@ import { QTree, copyToClipboard } from "quasar";
 import { FolderOrNote, Note, NoteType, Project } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { dirname, join } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/api/fs";
@@ -175,6 +176,7 @@ import { getNotes } from "src/backend/project/note";
 import { generateCiteKey } from "src/backend/project/meta";
 
 const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 
 const tree = ref<QTree | null>(null);
@@ -200,12 +202,12 @@ onMounted(async () => {
 });
 
 watchEffect(() => {
-  showInTree(stateStore.currentItemId);
+  showInTree(layoutStore.currentItemId);
 });
 
 function selectItem(node: Project | FolderOrNote) {
   console.log("node", node);
-  stateStore.currentItemId = node._id;
+  layoutStore.currentItemId = node._id;
   if ((node.children?.length as number) > 0) expanded.value.push(node._id);
   if (node.dataType === "folder") return;
 
@@ -249,7 +251,7 @@ async function closeProject(projectId: string) {
   // if no page left, open library page
   setTimeout(() => {
     if (projectStore.openedProjects.length === 0)
-      stateStore.currentItemId = "library";
+      layoutStore.currentItemId = "library";
   }, 50);
 }
 

@@ -32,6 +32,8 @@
         <template v-slot:after>
           <GLayout
             style="width: 100%; height: 100vh"
+            v-model:currentItemId="stateStore.currentItemId"
+            @layoutchanged="onLayoutChanged"
             ref="layout"
           ></GLayout>
         </template>
@@ -42,7 +44,14 @@
 
 <script setup lang="ts">
 // types
-import { Page } from "src/backend/database";
+import {
+  Project,
+  Note,
+  Page,
+  NoteType,
+  db,
+  GLState,
+} from "src/backend/database";
 // components
 import LeftRibbon from "./LeftRibbon.vue";
 import LeftMenu from "src/components/leftmenu/LeftMenu.vue";
@@ -52,6 +61,7 @@ import "src/css/goldenlayout/base.scss";
 import "src/css/goldenlayout/theme.scss";
 // db
 import { useStateStore } from "src/stores/appState";
+import { getLayout, updateLayout } from "src/backend/appState";
 // utils
 import { nextTick, onMounted, onUnmounted, provide, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -60,9 +70,14 @@ const { getPaletteColor } = colors;
 import pluginManager from "src/backend/plugin";
 import { listen } from "@tauri-apps/api/event";
 import { useLayoutStore } from "src/stores/layoutStore";
+const layoutStore = useLayoutStore();
+
+interface PageItem {
+  _id: string;
+  label: string;
+}
 
 const stateStore = useStateStore();
-const layoutStore = useLayoutStore();
 const { t } = useI18n({ useScope: "global" });
 
 /*************************************************
@@ -74,7 +89,8 @@ const leftMenu = ref<InstanceType<typeof LeftMenu> | null>(null);
 const leftMenuSize = ref(0);
 const ready = ref(false);
 
-provide("updateComponent", () => {});
+// provide("onLayoutChanged", onLayoutChanged);
+// provide("updateComponent", updateComponent);
 
 /*******************
  * Watchers
@@ -91,43 +107,124 @@ watch(
       leftMenuSize.value = 0;
     }
     nextTick(() => {
+      if (layout.value) layout.value.resize();
+      saveLayout();
       stateStore.saveAppState();
     });
   }
 );
 
-// onLayouChanged, appstate and layout will be saved
-watch(
-  [
-    () => stateStore.showLibraryRightMenu,
-    () => stateStore.libraryRightMenuSize,
-  ],
-  () => stateStore.saveAppState()
-);
+// watch(
+//   () => stateStore.openedPage,
+//   (page: Page) => {
+//     setComponent(page);
+//   }
+// );
 
-watch(
-  () => layoutStore.currentItemId,
-  () => {
-    stateStore.currentItemId = layoutStore.currentItemId;
-  }
-);
+// watch(
+//   () => stateStore.closedItemId,
+//   async (id: string) => {
+//     if (!id) return;
+//     removeComponent(id);
+//     // clear this so we can reclose a reopened item
+//     stateStore.closedItemId = "";
+//     stateStore.saveAppState();
+//   }
+// );
+
+// change special page title when locale updated
+// watch(
+//   () => db.config.language,
+//   () => {
+//     translateTitles();
+//   }
+// );
 
 /*******************************************************
  * Methods
  *******************************************************/
+// function translateTitles() {
+//   for (let id of ["library", "settings", "help"])
+//     updateComponent(id, { id: id, label: t(id) } as GLState);
+// }
+/*************************************************
+ * GoldenLayout (set, rename, remove component)
+ *************************************************/
+
+/**
+ * Set focus to component with specified id
+ * create it if it doesn't exist
+ * @param id - itemId
+ */
+// async function setComponent(page: Page) {
+//   if (layout.value) await layout.value.addGLComponent(page);
+//   await saveLayout();
+//   stateStore.saveAppState();
+// }
+
+/**
+ * Closing the project need to close the related windows
+ * @param id - itemId
+ */
+// function removeComponent(id: string) {
+//   if (layout.value) layout.value.removeGLComponent(id);
+// }
+
+/**
+ * After renaming a row in projectTree, we need to rename the window title.
+ * @param item
+ */
+// async function updateComponent(oldItemId: string, state: GLState) {
+//   if (!layout.value) return;
+//   layout.value.updateGLComponent(oldItemId, state);
+//   let config = layout.value.getLayoutConfig();
+//   await updateLayout(config);
+// }
 
 /***************************************************
  * Layout and AppState
  ***************************************************/
 
 async function resizeLeftMenu(size: number) {
+  if (layout.value) layout.value.resize();
   if (size < 8) {
     leftMenuSize.value = 0;
     stateStore.ribbonToggledBtnUid = "";
     // this will trigger stateStore.showLeftMenu = false;
   }
   stateStore.leftMenuSize = size > 10 ? size : 20;
+  saveLayout();
   stateStore.saveAppState();
+}
+
+/**
+ * When layout is changed, save layout and appstate
+ */
+async function onLayoutChanged() {
+  await nextTick();
+
+  // if the last window is closed, open library page
+  // this is to prevent the undefined root problem
+  if (!layout.value || !ready.value) return;
+  let config = layout.value.getLayoutConfig();
+  if (config.root === undefined) {
+    setComponent({
+      id: "library",
+      label: t("library"),
+      type: "LibraryPage",
+    });
+    await nextTick();
+  }
+
+  // save layouts and appstate
+  await saveLayout();
+  stateStore.saveAppState();
+}
+
+async function saveLayout() {
+  if (!layout.value || !layout.value.initialized) return;
+  let config = layout.value.getLayoutConfig();
+  await updateLayout(config);
 }
 
 /**
@@ -152,6 +249,9 @@ onMounted(async () => {
 
   // apply layout related settings
   if (stateStore.showLeftMenu) leftMenuSize.value = stateStore.leftMenuSize;
+  // let _layout = await getLayout();
+  // if (layout.value) await layout.value.loadGLLayout(_layout.config);
+  // translateTitles();
 
   // the openItemIds are ready
   // we can load the projectTree
