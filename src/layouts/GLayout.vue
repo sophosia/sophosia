@@ -38,24 +38,19 @@ import {
 } from "vue";
 import {
   ComponentContainer,
-  LayoutConfig,
-  RowOrColumnItemConfig,
-  StackItemConfig,
-  ComponentItemConfig,
   ResolvedComponentItemConfig,
   LogicalZIndex,
   VirtualLayout,
-  ResolvedLayoutConfig,
   ComponentItem,
   RowOrColumn,
   Stack,
 } from "golden-layout";
 import GLComponent from "src/pages/GLComponent.vue";
-import type { Page, GLState } from "src/backend/database";
+import { type Page, type GLState, db } from "src/backend/database";
 import { useStateStore } from "src/stores/appState";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n({ useScope: "global" });
+const { t, locale } = useI18n({ useScope: "global" });
 
 /*******************
  * Data
@@ -113,7 +108,7 @@ watch(
   async (itemId) => {
     if (!itemId) return;
     await removeGLComponent(itemId);
-    layoutStore.closedItemId = "";
+    await nextTick();
   }
 );
 
@@ -123,6 +118,10 @@ watch(
     resize();
   }
 );
+
+watch(locale, () => {
+  translateSpecialPageTitles();
+});
 
 /*******************
  * Method
@@ -151,11 +150,12 @@ const addGLComponent = (page: Page) => {
 };
 
 const removeGLComponent = (removeId: string) => {
+  layoutStore.closedItemId = "";
   const refId = layoutStore.IdToRef.get(removeId);
   if (!refId) return;
-  layoutStore.IdToRef.delete(removeId);
   const glItem = glItems.value.get(refId);
   if (glItem) glItem.container.close();
+  console.log("removeGLComponent");
 };
 
 const updateGLComponent = (newPage: Page) => {
@@ -181,6 +181,7 @@ const loadGLLayout = async () => {
   asyncComponents.value.clear();
 
   const config = await layoutStore.loadLayout();
+  console.log("loaded config", config);
   if (!config) return;
   await nextTick(); // wait 1 tick for vue to add the dom
   await GLayout.loadLayout(config);
@@ -190,7 +191,9 @@ const loadGLLayout = async () => {
 };
 
 const saveGLLayout = async () => {
+  await nextTick();
   const config = GLayout.saveLayout();
+  console.log("config.root", config.root);
   await layoutStore.saveLayout(config);
 };
 
@@ -213,10 +216,19 @@ const focusById = (id: string) => {
   if (container) container.focus();
 };
 
+const translateSpecialPageTitles = () => {
+  for (const page of layoutStore.pages.values()) {
+    if (["library", "help", "settings"].includes(page.id)) {
+      page.label = t(page.id);
+      layoutStore.renamePage(page.id, page);
+    }
+  }
+};
+
 /*******************
  * Mount
  *******************/
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener("resize", resize, { passive: true });
 
   const handleBeforeVirtualRectingEvent = (count: number) => {
@@ -330,6 +342,7 @@ onMounted(() => {
     layoutStore.IdToRef.delete(removeId);
     glItems.value.delete(refId);
     layoutStore.IdToRef.delete(removeId);
+    console.log("unbined");
 
     saveGLLayout();
   };
@@ -361,7 +374,8 @@ onMounted(() => {
     });
   });
 
-  loadGLLayout();
+  await loadGLLayout();
+  translateSpecialPageTitles();
 });
 
 /*************

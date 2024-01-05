@@ -42,13 +42,11 @@ export const useLayoutStore = defineStore("layoutStore", {
 
     /**
      * Remove a page by itemId
+     * Removal of the Ids will be handled in unbindComponentEventListener
      * @param itemId
      */
     closePage(itemId: string) {
       if (!this.IdToRef.has(itemId)) return;
-      const refId = this.IdToRef.get(itemId) as string;
-      // this.IdToRef.delete(itemId);
-      this.pages.delete(refId);
       this.closedItemId = itemId;
     },
 

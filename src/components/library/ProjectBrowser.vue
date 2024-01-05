@@ -97,6 +97,7 @@ import DeleteDialog from "src/components/library/DeleteDialog.vue";
 import ImportDialog from "src/components/library/ImportDialog.vue";
 // db
 import { useStateStore } from "src/stores/appState";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import {
   getMeta,
@@ -108,6 +109,7 @@ import { copyFileToProjectFolder } from "src/backend/project/file";
 import { basename, extname } from "@tauri-apps/api/path";
 
 const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 
 /*********************************
@@ -296,9 +298,9 @@ async function deleteProject() {
     let project = projectStore.openedProjects.find((p) => p._id === projectId);
     if (project) {
       for (let note of project.children as Note[]) {
-        stateStore.closePage(projectId);
+        layoutStore.closePage(projectId);
         await nextTick(); // do it slowly one by one
-        stateStore.closePage(note._id);
+        layoutStore.closePage(note._id);
       }
 
       // remove project from openedProjects

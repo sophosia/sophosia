@@ -235,11 +235,11 @@ async function closeProject(projectId: string) {
   // close all pages
   let project = projectStore.openedProjects.find((p) => p._id === projectId);
   if (project) {
-    stateStore.closePage(project._id);
+    layoutStore.closePage(project._id);
     const notes = await getNotes(project._id);
     for (let node of notes) {
       await nextTick(); // do it slowly one by one
-      stateStore.closePage(node._id);
+      layoutStore.closePage(node._id);
     }
   }
 
@@ -248,11 +248,7 @@ async function closeProject(projectId: string) {
     (p) => p._id !== projectId
   );
 
-  // if no page left, open library page
-  setTimeout(() => {
-    if (projectStore.openedProjects.length === 0)
-      layoutStore.currentItemId = "library";
-  }, 50);
+  await stateStore.saveAppState();
 }
 
 /**
@@ -339,10 +335,10 @@ async function checkDuplicate(note: Note) {
 
 async function deleteNode(node: FolderOrNote) {
   if (node.dataType === "note") {
-    stateStore.closePage(node._id);
+    layoutStore.closePage(node._id);
   } else if (node.dataType === "folder") {
     const notes = await getNotes(node._id);
-    for (const note of notes) stateStore.closePage(note._id);
+    for (const note of notes) layoutStore.closePage(note._id);
   }
   await projectStore.deleteNode(node._id, node.dataType);
   // select something else if the selectedItem is deleted

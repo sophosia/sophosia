@@ -8,6 +8,7 @@ import {
   Settings,
   SpecialFolder,
 } from "src/backend/database";
+import { useLayoutStore } from "./layoutStore";
 import { useProjectStore } from "./projectStore";
 import darkContent from "src/css/vditor/dark.css?raw";
 import lightContent from "src/css/vditor/light.css?raw";
@@ -128,23 +129,11 @@ export const useStateStore = defineStore("stateStore", {
           page.label = project.label;
           page.data = { focusAnnotId: itemId };
         }
-        this.openPage(page);
+        const layoutStore = useLayoutStore();
+        layoutStore.openPage(page);
       } catch (error) {
         console.log(error);
       }
-    },
-
-    /**
-     * Opens a page
-     * @param page
-     */
-    async openPage(page: Page) {
-      this.openedPage = page;
-    },
-
-    closePage(pageId: string) {
-      if (!pageId) return;
-      this.closedItemId = pageId;
     },
 
     toggleWelcome(visible?: boolean) {
