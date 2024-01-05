@@ -1,6 +1,8 @@
 import { db, Folder, Project, SpecialFolder } from "../database";
 import { updateProject } from "./project";
 import { sortTree } from "./utils";
+import { i18n } from "src/boot/i18n";
+const { t } = i18n.global;
 
 async function getFolder(folderId: string): Promise<Folder | undefined> {
   try {
@@ -70,7 +72,7 @@ async function addFolder(parentId: string) {
       _id: `SF${db.nanoid}`,
       timestampAdded: Date.now(),
       timestampModified: Date.now(),
-      label: "New Folder",
+      label: t("new", { type: t("folder") }),
       icon: "mdi-folder",
       children: [],
       dataType: "folder",
