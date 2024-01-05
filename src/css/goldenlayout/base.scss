@@ -324,6 +324,11 @@ $highlightStripHeight: 3px;
 
 // Dropdown arrow for additional tabs when too many to be displayed
 .lm_header {
+  /* need to set this higher than the vditor's toolbar 
+  * so that vditor's toolbar won't block the dropdown menu
+  */
+  z-index: 1000;
+
   .lm_controls .lm_tabdropdown:before {
     content: "";
     width: 0;
@@ -339,9 +344,10 @@ $highlightStripHeight: 3px;
   .lm_tabdropdown_list {
     position: absolute;
     top: 36px;
-    right: 0;
+    right: 36px;
     z-index: 5;
     overflow: hidden;
+    outline: 2px solid var(--q-primary);
 
     .lm_tab {
       clear: both;
@@ -350,8 +356,10 @@ $highlightStripHeight: 3px;
       max-width: unset;
 
       .lm_title {
-        width: 200px;
+        text-align: center;
+        width: fit-content;
         height: 36px;
+        margin-top: 12px;
       }
     }
 

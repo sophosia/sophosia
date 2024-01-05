@@ -46,7 +46,7 @@ import {
   Stack,
 } from "golden-layout";
 import GLComponent from "src/pages/GLComponent.vue";
-import { type Page, type GLState, db } from "src/backend/database";
+import { type Page, type GLState } from "src/backend/database";
 import { useStateStore } from "src/stores/appState";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useI18n } from "vue-i18n";
