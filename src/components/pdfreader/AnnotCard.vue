@@ -94,19 +94,11 @@ import { Annotation } from "src/backend/pdfannotation/annotations";
 import AnnotMenu from "./AnnotMenu.vue";
 
 import { copyToClipboard, colors } from "quasar";
-import {
-  AnnotationData,
-  Note,
-  NoteType,
-  Project,
-  db,
-} from "src/backend/database";
+import { AnnotationData, db } from "src/backend/database";
 import PDFApplication from "src/backend/pdfreader";
 import { KEY_pdfApp } from "./injectKeys";
 import Vditor from "vditor/dist/method.min";
 import { useStateStore } from "src/stores/appState";
-import { getNote } from "src/backend/project/note";
-import { getProject } from "src/backend/project/project";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { sep } from "@tauri-apps/api/path";
 const { luminosity } = colors;
