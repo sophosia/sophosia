@@ -24,7 +24,7 @@
             dragoverNode == prop.node &&
             draggingNode != prop.node,
         }"
-        @click="selectItem(prop.node)"
+        @click="selectItem(prop.node._id)"
         :draggable="prop.node.dataType !== 'project'"
         @dragstart="(e) => onDragStart(e, prop.node)"
         @dragover="(e) => onDragOver(e, prop.node)"
@@ -206,7 +206,9 @@ watchEffect(() => {
   showInTree(layoutStore.currentItemId);
 });
 
-function selectItem(node: Project | FolderOrNote) {
+function selectItem(nodeId: string) {
+  if (!tree.value) return;
+  const node = tree.value.getNodeByKey(nodeId);
   console.log("node", node);
   layoutStore.currentItemId = node._id;
   if ((node.children?.length as number) > 0) expanded.value.push(node._id);
@@ -315,7 +317,9 @@ async function renameNode() {
     node.label = newLabel;
   }
 
-  if (addingNode.value) selectItem(node); // select after adding it
+  if (addingNode.value) selectItem(node._id); // select after adding it
+  else if (layoutStore.currentItemId === oldNodeId) selectItem(newNodeId); // select the currectly selected renaming node
+  // if renaming other nodes that are not selected, no need to select them
   addingNode.value = false;
   renamingNodeId.value = "";
   oldNoteName.value = "";
@@ -349,9 +353,9 @@ async function deleteNode(node: FolderOrNote) {
 
     if (project && project.children) {
       if (project.children.length == 0) {
-        selectItem(project);
+        selectItem(project._id);
       } else {
-        selectItem(project.children[0]);
+        selectItem(project.children[0]._id);
       }
     }
   }
@@ -444,6 +448,8 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
     isDragNodeDir ? "folder" : "note"
   );
 
+  // ui
+  selectItem(newId);
   draggingNode.value = null;
   dragoverNode.value = null;
 }
