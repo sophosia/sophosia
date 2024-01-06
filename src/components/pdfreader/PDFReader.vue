@@ -554,7 +554,7 @@ onMounted(async () => {
   user-select: auto;
   -moz-user-select: auto;
   -ms-user-select: auto;
-  -webkit-user-select: auto;
+  -webkit-user-select: text;
 }
 
 .page {
