@@ -156,6 +156,6 @@ const deleteAnnot = () => {
 </script>
 <style scoped lang="scss">
 .annot-card {
-  min-width: 400px;
+  min-width: 250px;
 }
 </style>
