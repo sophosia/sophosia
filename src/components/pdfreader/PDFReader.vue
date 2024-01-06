@@ -141,11 +141,11 @@ const renderEvt = ref<{
  * RightMenu
  ******************************/
 function resizeRightMenu(size: number) {
-  if (size < 8) {
+  if (size < 15) {
     rightMenuSize.value = 0;
     showRightMenu.value = false;
   }
-  prvRightMenuSize.value = size > 10 ? size : 30;
+  prvRightMenuSize.value = size > 15 ? size : 20;
 }
 
 /*******************************
@@ -554,7 +554,7 @@ onMounted(async () => {
   user-select: auto;
   -moz-user-select: auto;
   -ms-user-select: auto;
-  -webkit-user-select: auto;
+  -webkit-user-select: text;
 }
 
 .page {
