@@ -23,6 +23,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the pu
 
 import { readBinaryFile } from "@tauri-apps/api/fs";
 import { open } from "@tauri-apps/api/shell";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
 
 export default class PDFApplication {
   container: HTMLDivElement | undefined;
@@ -236,9 +237,12 @@ export default class PDFApplication {
   async loadPDF(filePath: string) {
     const cMapUrl =
       (process.env.DEV ? "http://localhost:9000/" : "") + "pdfjs/cmaps/";
-    let buffer = await readBinaryFile(filePath);
+    // TODO: wait until tauri-v2 to have a better performance on this
+    // let buffer = await readBinaryFile(filePath);
+    const url = await convertFileSrc(filePath);
     this.pdfDocument = await pdfjsLib.getDocument({
-      data: buffer,
+      // data: buffer,
+      url: url,
       cMapUrl: cMapUrl,
       cMapPacked: true,
     }).promise;

@@ -18,6 +18,7 @@
         <component
           v-if="layoutStore.initialized"
           :is="asyncComponents.get(refId)"
+          :visible="!!glItems.get(refId)?.visible"
           :itemId="page.id"
           :data="page.data"
         ></component>
@@ -35,6 +36,7 @@ import {
   nextTick,
   getCurrentInstance,
   watch,
+  computed,
 } from "vue";
 import {
   ComponentContainer,
@@ -58,9 +60,10 @@ const { t, locale } = useI18n({ useScope: "global" });
 const GLRoot = ref<null | HTMLElement>(null);
 let GLayout: VirtualLayout;
 
-const glItems = ref(new Map<string, { container: any; glc: any }>());
+const glItems = ref(
+  new Map<string, { container: any; glc: any; visible?: boolean }>()
+); // <refId, ...> pair
 const asyncComponents = ref(new Map<string, any>()); // <itemId, asyncComponent> pair
-let GlBoundingClientRect: DOMRect;
 const instance = getCurrentInstance();
 
 const stateStore = useStateStore();
@@ -213,6 +216,7 @@ const translateSpecialPageTitles = async () => {
 onMounted(async () => {
   window.addEventListener("resize", resize, { passive: true });
 
+  let GlBoundingClientRect: DOMRect;
   const handleBeforeVirtualRectingEvent = (count: number) => {
     GlBoundingClientRect = (
       GLRoot.value as HTMLElement
@@ -251,6 +255,7 @@ onMounted(async () => {
       );
     }
     glItem.glc.setVisibility(visible);
+    glItem.visible = visible;
   };
 
   const handleContainerVirtualZIndexChangeRequiredEvent = (
