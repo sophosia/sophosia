@@ -5,7 +5,7 @@
     :separator-class="{ 'q-splitter-separator': showRightMenu }"
     :disable="!showRightMenu"
     reverse
-    :limits="[0, 60]"
+    :limits="splitterLimits"
     emit-immediately
     @update:model-value="(size) => resizeRightMenu(size)"
   >
@@ -71,7 +71,7 @@ import {
   AnnotationData,
   AnnotationType,
   Project,
-  Rect,
+  Rect
 } from "src/backend/database";
 import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
 import { KEY_pdfApp, KEY_project } from "./injectKeys";
@@ -94,7 +94,7 @@ import { db } from "src/backend/database";
  **********************************/
 const props = defineProps({
   projectId: { type: String, required: true },
-  focusAnnotId: { type: String, required: false },
+  focusAnnotId: { type: String, required: false }
 });
 
 const initialized = ref(false);
@@ -108,6 +108,7 @@ const project = ref<Project>();
 // right menu (don't use stateStore since there will be many readerPages)
 const rightMenuSize = ref(0);
 const prvRightMenuSize = ref(0);
+const splitterLimits = ref([40, 60]);
 const showRightMenu = computed({
   get() {
     return rightMenuSize.value > 0;
@@ -115,11 +116,14 @@ const showRightMenu = computed({
   set(visible: boolean) {
     if (visible) {
       rightMenuSize.value = Math.max(prvRightMenuSize.value, 25);
+      splitterLimits.value = [40, 60];
     } else {
       prvRightMenuSize.value = rightMenuSize.value;
+      splitterLimits.value = [0, 60];
+
       rightMenuSize.value = 0;
     }
-  },
+  }
 });
 
 // annot card & colorpicker
@@ -281,7 +285,7 @@ function highlightText(color: string) {
  ***************************/
 async function loadPDF(projectId: string) {
   project.value = (await getProject(projectId, {
-    includePDF: true,
+    includePDF: true
   })) as Project;
   if (!project.value.path) return;
   // load state before loading pdf
@@ -372,7 +376,7 @@ onMounted(async () => {
               content: "",
               color: "",
               rects: [] as Rect[],
-              type: AnnotationType.INK,
+              type: AnnotationType.INK
             } as AnnotationData;
             let annot = pdfApp.annotFactory.build(annotData);
             if (annot) {
@@ -460,8 +464,8 @@ onMounted(async () => {
                   left: Math.min(x1, ev.clientX),
                   top: Math.min(y1, ev.clientY),
                   width: Math.abs(x1 - ev.clientX),
-                  height: Math.abs(y1 - ev.clientY),
-                },
+                  height: Math.abs(y1 - ev.clientY)
+                }
               ];
               if (rects[0].width < 1 || rects[0].height < 1) return;
               rects[0] = pdfApp.annotFactory.offsetTransform(
@@ -479,7 +483,7 @@ onMounted(async () => {
                 pageNumber: e.pageNumber,
                 projectId: pdfApp.state.projectId,
                 dataType: "pdfAnnotation",
-                content: "",
+                content: ""
               } as AnnotationData;
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {
@@ -502,8 +506,8 @@ onMounted(async () => {
                   left: ev.clientX,
                   top: ev.clientY,
                   width: 0,
-                  height: 0,
-                },
+                  height: 0
+                }
               ];
               rects[0] = pdfApp.annotFactory.offsetTransform(
                 rects[0],
@@ -519,7 +523,7 @@ onMounted(async () => {
                 pageNumber: e.pageNumber,
                 projectId: pdfApp.state.projectId,
                 dataType: "pdfAnnotation",
-                content: "",
+                content: ""
               } as AnnotationData;
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {
