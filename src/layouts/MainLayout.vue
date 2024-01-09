@@ -12,11 +12,11 @@
     </template>
     <template v-slot:after>
       <q-splitter
-        :limits="[0, 60]"
+        :limits="splitterLimits"
         emit-immediately
         separator-style="background: var(--q-edge)"
         :separator-class="{
-          'q-splitter-separator': stateStore.showLeftMenu,
+          'q-splitter-separator': stateStore.showLeftMenu
         }"
         :disable="!stateStore.showLeftMenu"
         v-model="leftMenuSize"
@@ -73,6 +73,7 @@ const leftMenu = ref<InstanceType<typeof LeftMenu> | null>(null);
 
 const leftMenuSize = ref(0);
 const ready = ref(false);
+const splitterLimits = ref([15, 60]);
 
 /*******************
  * Watchers
@@ -83,9 +84,12 @@ watch(
     if (visible) {
       // if visible, the left menu has at least 10 unit width
       leftMenuSize.value = Math.max(stateStore.leftMenuSize, 15);
+      splitterLimits.value = [15, 60];
     } else {
       // if not visible, record the size and close the menu
       stateStore.leftMenuSize = leftMenuSize.value;
+      splitterLimits.value = [0, 60];
+
       leftMenuSize.value = 0;
     }
     nextTick(() => {
