@@ -3,6 +3,7 @@
   "description": "A research paper / textbook / note management tool",
   "productName": "Sophosia",
   "author": "Hunt Feng",
+  "contributors": ["Gedeon Isezerano"],
   "private": false,
   "license": "GPL-3.0",
   "scripts": {
