@@ -26,7 +26,7 @@ Sophosia is a paper/book/note management tool. It is a reference management tool
 
 ## Manage References and Notes
 
-Manage your references and corresponding notes in one place. Seting favorites, modifying meta infomation of a reference, managing tags, searching for references... All esential functionalities are here.
+Manage your references and corresponding notes in one place. Setting favorites, modifying meta information of a reference, managing tags, searching for references... All essential functionalities are here.
 ![library-page.png](./galleries/library-page.png)
 
 ## Read and Annotate PDFs
