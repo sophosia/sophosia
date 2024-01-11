@@ -72,6 +72,8 @@
       />
       <div
         ref="mdContentDiv"
+        draggable="true"
+        @dragstart="handleDragStart"
         style="
           font-size: 1rem;
           min-height: 5em;
@@ -107,7 +109,7 @@ const stateStore = useStateStore();
 
 const props = defineProps({
   annot: { type: Object as PropType<Annotation>, required: true },
-  style: { type: String, required: true },
+  style: { type: String, required: true }
 });
 const pdfApp = inject(KEY_pdfApp) as PDFApplication;
 
@@ -120,9 +122,9 @@ const annotContent = computed({
   },
   set(text: string) {
     pdfApp.annotStore?.update(props.annot.data._id, {
-      content: text,
+      content: text
     } as AnnotationData);
-  },
+  }
 });
 const isMovable = ref(false);
 defineExpose({ isMovable });
@@ -137,21 +139,31 @@ async function liveRender() {
         { left: "$$", right: "$$", display: true },
         { left: "$", right: "$", display: false },
         { left: "\\(", right: "\\)", display: false },
-        { left: "\\[", right: "\\]", display: true },
+        { left: "\\[", right: "\\]", display: true }
       ],
       // • rendering keys, e.g.:
-      throwOnError: false,
+      throwOnError: false
     });
 }
 
 const changeColor = (color: string) => {
   pdfApp.annotStore?.update(props.annot.data._id, {
-    color: color,
+    color: color
   } as AnnotationData);
 };
 
 const deleteAnnot = () => {
   pdfApp.annotStore?.delete(props.annot.data._id);
+};
+
+const handleDragStart = (event: DragEvent) => {
+  if (event.dataTransfer) {
+    const link = `[${props.annot.data.type.toLocaleUpperCase()} - page${
+      props.annot.data.pageNumber
+    }](sophosia://open-item/${props.annot.data._id})`;
+
+    event.dataTransfer.setData("text/plain", link);
+  }
 };
 </script>
 <style scoped lang="scss">
