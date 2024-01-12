@@ -22,41 +22,40 @@
 
 # Sophosia
 
-Sophosia is a paper/book/note management tool. It is a reference management tool with various useful functionalities such as: built-in PDF reader, live markdown note and excalidraw note.
+Sophosia is a paper/book/note management tool. It is a reference management tool with various useful functionalities such as a built-in PDF reader, live markdown note and excalidraw note.
 
 ## Manage References and Notes
 
-Manage your references and corresponding notes in one place. Setting favorites, modifying meta information of a reference, managing tags, searching for references... All essential functionalities are here.
+You can manage your references and corresponding notes in one place. Setting favourites, modifying meta information of a reference, managing tags, searching for references... All essential functionalities are here.
 ![library-page.png](./galleries/library-page.png)
 
 ## Read and Annotate PDFs
 
-PDF reader comes with an internal link peeker, no need to flip back and forward to read figures, tables and formulas now. Of course, PDF reader supports annotations, and LaTeX is supported in the annotaiton. Perfect for STEM researchers.
+PDF reader comes with an internal link peeker, no need to flip back and forward to read figures, tables and formulas now. Of course, PDF reader supports annotations, and LaTeX is supported in the annotation. Perfect for STEM researchers.
 ![reader-page.png](./galleries/reader-page.png)
 
 ## Take Notes with Markdown
 
-WYSIWYG Markdown is the most elegant way to take notes. Together with the power of internal link, you could build your own knowledge network.
+WYSIWYG Markdown is the most elegant way to take notes. Together with the power of internal links, you can build your knowledge network.
 ![note-page.png](./galleries/note-page.png)
 
 ## Draft with Excalidraw
 
-Free your mind using the canvas without border. Perfect for people who like to write and / or draw things with pen.
+Free your mind using the canvas without borders. Perfect for people who like to write or draw things with a pen.
 ![excalidraw-page.png](./galleries/excalidraw-page.png)
 
 # Contribute to Sophosia
 
-Research Helper uses [QUASAR](https://quasar.dev) as framework. In this project, the combination of [Vue.js3](https://vuejs.org) and [Tauri](https://tauri.app) is used.
+Research Helper uses [QUASAR](https://quasar.dev) as a framework. In this project, the combination of [Vue.js3](https://vuejs.org) and [Tauri](https://tauri.app) is used.
 
 ## Install the dependencies
 
-1. Tauri is needed. The instructions of installing Tauri is on [Tauri's official site](https://tauri.app/v1/guides/getting-started/setup).
-2. The frontend will be built using Vue3. The frontend packages are listed in `package.json` already. Using `yarn` (recommanded) or `npm` to install them.
+1. Tauri is needed. The instructions for installing Tauri are on [Tauri's official site](https://tauri.app/v1/guides/getting-started/setup).
+2. The front end will be built using Vue3. The frontend packages are listed in `package.json` already. Using `yarn` (recommended) or `npm` to install them.
 
 ```bash
-yarn # strongly recommanded
-# or
-npm install
+yarn # strongly recommended
+
 ```
 
 ## Start the Tauri app in development mode (hot-code reloading, error reporting, etc.)
@@ -80,13 +79,13 @@ yarn test:component:ci # vue component test
 
 # Acknowledgement
 
-This project is made possible by the following open source projects.
+This project is made possible by the following open-source projects.
 
 - Quasar
 - Tauri
 - Vue.js
 - citation-js
-- cytoscape
+- Cytoscape
 - golden-layout
 - pdf.js
 - konva
