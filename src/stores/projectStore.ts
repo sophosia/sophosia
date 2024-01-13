@@ -151,7 +151,7 @@ export const useProjectStore = defineStore("projectStore", {
       const filename = await attachPDF(projectId);
       // update ui
       if (filename)
-        this.updateProject(projectId, { path: filename } as Project);
+        await this.updateProject(projectId, { path: filename } as Project);
     },
 
     async getNoteFromDB(noteId: string) {

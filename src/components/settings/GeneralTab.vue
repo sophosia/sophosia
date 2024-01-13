@@ -177,6 +177,7 @@ const { locale, t } = useI18n({ useScope: "global" });
 const languageOptions = [
   { value: "en_US", label: "English (en_US)" },
   { value: "zh_CN", label: "中文 (zh_CN)" },
+  { value: "fr_CA", label: "Français (fr_CA)" },
 ];
 const themeOptions = ["dark", "light"];
 const citeKeyPartKeyOptions = ["author", "title", "year"];

@@ -85,6 +85,7 @@ const path = ref("");
 const languageOptions = ref([
   { value: "en_US", label: "English (en_US)" },
   { value: "zh_CN", label: "中文 (zh_CN)" },
+  { value: "fr_CA", label: "Français (fr_CA)" },
 ]);
 
 const language = computed({
@@ -95,14 +96,14 @@ const language = computed({
         result = option;
       }
     }
-    return result as { value: "en_US" | "zh_CN"; label: string };
+    return result as { value: string; label: string };
   },
-  async set(option: { value: "en_US" | "zh_CN"; label: string }) {
+  async set(option: { value: string; label: string }) {
     await changeLanguage(option.value);
   },
 });
 
-async function changeLanguage(language: "en_US" | "zh_CN") {
+async function changeLanguage(language: string) {
   locale.value = language;
   await db.setConfig({ language: language } as Config);
 }

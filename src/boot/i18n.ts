@@ -2,10 +2,12 @@ import { boot } from "quasar/wrappers";
 import { createI18n } from "vue-i18n";
 import en_US from "src/i18n/en_US.json";
 import zh_CN from "src/i18n/zh_CN.json";
+import fr_CA from "src/i18n/fr_CA.json";
 
 const messages = {
   en_US,
   zh_CN,
+  fr_CA,
 };
 
 export type MessageLanguages = keyof typeof messages;
