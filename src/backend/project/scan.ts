@@ -12,7 +12,7 @@ import { updateLinks } from "./graph";
 import { extname, sep } from "@tauri-apps/api/path";
 import { ref } from "vue";
 import { Notify } from "quasar";
-import { pathToId } from "./utils";
+import { idToLink, pathToId } from "./utils";
 import { i18n } from "src/boot/i18n";
 const { t } = i18n.global;
 
@@ -134,17 +134,11 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
 
     let content = await readTextFile(file.path);
     const regex = new RegExp(
-      `\\[${oldNoteId}\\#?\\w*\\]\\(${oldNoteId.replaceAll(
-        " ",
-        "%20"
-      )}\\#?\\w*\\)`,
+      `\\[${oldNoteId}\\#?\\w*\\]\\(${idToLink(oldNoteId)}\\#?\\w*\\)`,
       "gm"
     );
     const localRegex = new RegExp(
-      `\\[${oldNoteId}\\#?\\w*\\]\\(${oldNoteId.replaceAll(
-        " ",
-        "%20"
-      )}\\#?\\w*\\)`,
+      `\\[${oldNoteId}\\#?\\w*\\]\\(${idToLink(oldNoteId)}\\#?\\w*\\)`,
       "m"
     ); // remove g modifier to make match return after first found
     const matches = content.match(localRegex);
@@ -153,8 +147,8 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
       const oldLinkAndHashtag = matches[0].match(/\(.*\)/)![0].slice(1, -1);
       const newIdAndHashtag = oldIdAndHashtag.replace(oldNoteId, newNoteId);
       const newLinkAndHashtag = oldLinkAndHashtag.replace(
-        oldNoteId.replaceAll(" ", "%20"),
-        newNoteId.replaceAll(" ", "%20")
+        idToLink(oldNoteId),
+        idToLink(newNoteId)
       );
       const newContent = content.replaceAll(
         regex,

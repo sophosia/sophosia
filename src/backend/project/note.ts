@@ -16,7 +16,7 @@ import type { FileEntry } from "@tauri-apps/api/fs";
 import { batchReplaceLink } from "./scan";
 import { updateLinks } from "./graph";
 import { metadata, Metadata } from "tauri-plugin-fs-extra-api";
-import { IdToPath, pathToId, sortTree } from "./utils";
+import { idToPath, pathToId, sortTree } from "./utils";
 import { i18n } from "src/boot/i18n";
 const { t } = i18n.global;
 
@@ -59,7 +59,7 @@ export async function createNote(folderId: string, type: NoteType) {
 export async function addNote(note: Note): Promise<Note | undefined> {
   try {
     // create actual file
-    await writeTextFile(IdToPath(note._id), "");
+    await writeTextFile(idToPath(note._id), "");
 
     // add to db
     await idb.put("notes", { noteId: note._id });
@@ -75,7 +75,7 @@ export async function addNote(note: Note): Promise<Note | undefined> {
  */
 export async function deleteNote(noteId: string) {
   try {
-    await removeFile(IdToPath(noteId));
+    await removeFile(idToPath(noteId));
 
     // update db
     await idb.delete("notes", noteId);
@@ -92,14 +92,14 @@ export async function deleteNote(noteId: string) {
  */
 export async function renameNote(oldNoteId: string, newNoteId: string) {
   try {
-    const oldPath = IdToPath(oldNoteId);
+    const oldPath = idToPath(oldNoteId);
     const ext = await extname(oldPath);
     try {
       await extname(newNoteId); // if the label has extension, do nothing
     } catch (error) {
       newNoteId += `.${ext}`; // if not, add extension to the end
     }
-    const newPath = IdToPath(newNoteId);
+    const newPath = idToPath(newNoteId);
 
     await renameFile(oldPath, newPath);
 
@@ -135,7 +135,7 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
     const splits = noteId.split("/");
     const projectId = splits[0];
     const label = splits[splits.length - 1];
-    const path = IdToPath(noteId);
+    const path = idToPath(noteId);
     const note = {
       _id: noteId,
       dataType: "note",
@@ -184,7 +184,7 @@ export async function getNotes(folderId: string): Promise<Note[]> {
         }
       }
     }
-    const entries = await readDir(IdToPath(folderId), { recursive: true });
+    const entries = await readDir(idToPath(folderId), { recursive: true });
     await processEntries(entries);
     // sort by label
     return notes.sort((n1, n2) => (n1.label < n2.label ? -1 : 1));
@@ -246,7 +246,7 @@ export async function loadNote(
 ): Promise<string> {
   try {
     const note = (await getNote(noteId)) as Note;
-    return await readTextFile(notePath || IdToPath(note._id));
+    return await readTextFile(notePath || idToPath(note._id));
   } catch (error) {
     return "";
   }
@@ -264,7 +264,7 @@ export async function saveNote(
 ) {
   try {
     const note = (await getNote(noteId)) as Note;
-    await writeTextFile(notePath || IdToPath(note._id), content);
+    await writeTextFile(notePath || idToPath(note._id), content);
   } catch (error) {
     console.log(error);
   }
@@ -302,11 +302,11 @@ export async function uploadImage(
 
 export async function createFolder(parentFolderId: string) {
   let name = t("new", { type: t("folder") });
-  let path = await join(IdToPath(parentFolderId), name);
+  let path = await join(idToPath(parentFolderId), name);
   let i = 1;
   while (await exists(path)) {
     name = `${t("new", { type: t("folder") })} ${i}`;
-    path = await join(IdToPath(parentFolderId), name);
+    path = await join(idToPath(parentFolderId), name);
     i++;
   }
 
@@ -323,7 +323,7 @@ export async function createFolder(parentFolderId: string) {
 
 export async function addFolder(folder: FolderOrNote) {
   try {
-    await createDir(IdToPath(folder._id));
+    await createDir(idToPath(folder._id));
   } catch (error) {
     console.log(error);
   }
@@ -344,7 +344,7 @@ export async function deleteFolder(folderId: string) {
     }
 
     // remove the actual folder
-    await removeDir(IdToPath(folderId), { recursive: true });
+    await removeDir(idToPath(folderId), { recursive: true });
   } catch (error) {
     console.log(error);
   }
@@ -367,8 +367,8 @@ export async function renameFolder(oldFolderId: string, newFolderId: string) {
     }
 
     // rename actual folder
-    const oldPath = IdToPath(oldFolderId);
-    const newPath = IdToPath(newFolderId);
+    const oldPath = idToPath(oldFolderId);
+    const newPath = idToPath(newFolderId);
     await renameFile(oldPath, newPath);
   } catch (error) {
     console.log(error);

@@ -173,7 +173,7 @@ import { dirname, join } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import { IdToPath, oldToNewId } from "src/backend/project/utils";
+import { idToPath, oldToNewId } from "src/backend/project/utils";
 //components
 import NoteMenu from "./NoteMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
@@ -218,7 +218,7 @@ function selectItem(nodeId: string) {
 }
 
 async function showInExplorer(node: Project | Note) {
-  const path = IdToPath(node._id);
+  const path = idToPath(node._id);
   await invoke("show_in_folder", {
     path: path,
   });
@@ -329,11 +329,11 @@ async function checkDuplicate(note: Note) {
   if (!note) return;
   const extension = note.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
   const path = await join(
-    await dirname(IdToPath(note._id)),
+    await dirname(idToPath(note._id)),
     note.label + extension
   );
 
-  if ((await exists(path)) && path !== IdToPath(note._id))
+  if ((await exists(path)) && path !== idToPath(note._id))
     pathDuplicate.value = true;
   else pathDuplicate.value = false;
 }
@@ -417,9 +417,9 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
 
   // move the dragging file / folder
   const dragId = draggingNode.value._id;
-  const dragNodeMeta = await metadata(IdToPath(dragId));
+  const dragNodeMeta = await metadata(idToPath(dragId));
   const isDragNodeDir = dragNodeMeta.isDir;
-  const dropNodeMeta = await metadata(IdToPath(node._id));
+  const dropNodeMeta = await metadata(idToPath(node._id));
   const isDropNodeDir = dropNodeMeta.isDir;
   if (!isDropNodeDir) return;
   const label = draggingNode.value.label;

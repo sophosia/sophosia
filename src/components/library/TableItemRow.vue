@@ -122,7 +122,7 @@ import { copyToClipboard } from "quasar";
 import { basename, dirname, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
-import { IdToPath, oldToNewId } from "src/backend/project/utils";
+import { idToPath, oldToNewId } from "src/backend/project/utils";
 import TableItemMenu from "./TableItemMenu.vue";
 
 const props = defineProps({
@@ -141,7 +141,7 @@ const pathDuplicate = ref(false);
 
 watchEffect(async () => {
   // label changes whenever pdf is renamed
-  const path = props.item.path || IdToPath(props.item._id);
+  const path = props.item.path || idToPath(props.item._id);
   label.value = await basename(path);
 
   // if the note is newly added, rename it immediately
@@ -152,7 +152,7 @@ async function showInExplorer() {
   const path =
     props.item.dataType === "project"
       ? props.item.path
-      : IdToPath(props.item._id);
+      : idToPath(props.item._id);
   if (!path) return;
   await invoke("show_in_folder", { path: path });
 }
@@ -211,11 +211,11 @@ async function checkDuplicate() {
   const extension =
     props.item.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
   const path = await join(
-    await dirname(IdToPath(props.item._id)),
+    await dirname(idToPath(props.item._id)),
     label.value + extension
   );
 
-  if ((await exists(path)) && path !== IdToPath(props.item._id))
+  if ((await exists(path)) && path !== idToPath(props.item._id))
     pathDuplicate.value = true;
   else pathDuplicate.value = false;
 }
