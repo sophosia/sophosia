@@ -30,9 +30,12 @@ jobs:
         with:
           tagName: "v__VERSION__"
           releaseName: "Sophosia v__VERSION__"
+      - name: rename .exe file
+        if: matrix.platform == 'windows-latest'
+        run: |
+          env.version=${GITHUB_REF#refs/tags/v}
+          mv "src-tauri/target/release/Sophosia.exe" "Sophosia_${env.version}_x64_en-US.exe"
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.platform }}
-          path: |
-            src-tauri/target/release/sophosia*
-            !src-tauri/target/release/sophosia.d
+          name: Sophosia_${{env.version}}_x64_en-US.exe
+          path: Sophosia_${{env.version}}_x64_en-US.exe
