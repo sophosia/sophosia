@@ -57,7 +57,7 @@ export function pathToId(path: string) {
  * @param id
  * @returns path absolute path
  */
-export function IdToPath(id: string) {
+export function idToPath(id: string) {
   return db.config.storagePath + sep + id.replace("/", sep);
 }
 
@@ -79,4 +79,22 @@ export async function oldToNewId(oldId: string, newLabel: string) {
   const splits = oldId.split("/");
   splits[splits.length - 1] = newLabel;
   return splits.join("/");
+}
+
+/**
+ * Convert all %20 to spaces
+ * @param link
+ * @returns
+ */
+export function linkToId(link: string): string {
+  return link.replaceAll("%20", " ");
+}
+
+/**
+ * Convert all spaces to %20
+ * @param link
+ * @returns
+ */
+export function idToLink(id: string): string {
+  return id.replaceAll(" ", "%20");
 }
