@@ -39,12 +39,15 @@ jobs:
           tagName: "v__VERSION__"
           releaseName: "Sophosia v__VERSION__"
       - name: rename .exe file
+        id: rename
         if: matrix.platform == 'windows-latest'
         run: |
-          env.version=${GITHUB_REF#refs/tags/v}
-          mv "src-tauri/target/release/Sophosia.exe" "Sophosia_${env.version}_x64_en-US.exe"
+          echo "tag=${{ github.ref }}"
+          echo "version=${tag#refs/tags/v}"
+          echo "name=Sophosia_$version_portable.exe" >> $GITHUB_OUTPUT
+          mv "src-tauri/target/release/Sophosia.exe" $name
       - name: upload .exe as windows portable build
         if: matrix.platform == 'windows-latest'
         uses: softprops/action-gh-release@v1
         with:
-          files: Sophosia_${env.version}_x64_en-US.exe
+          files: ${{ steps.rename.outputs.name }}
