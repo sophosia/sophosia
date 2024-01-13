@@ -34,9 +34,13 @@ jobs:
         id: rename
         if: matrix.platform == 'windows-latest'
         run: |
-          echo "version=${${{github.ref}}#refs/tags/}" >> $GITHUB_ENV
-          echo "name=Sophosia_${version}_portable.exe" >> $GITHUB_ENV
-          echo "name=$name" >> $GITHUB_OUTPUT
+          echo "tag=${{github.ref}}" >> "$GITHUB_ENV"
+          echo "tas is $tag"
+          echo "version=${${{github.ref}}#refs/tags/}" >> "$GITHUB_ENV"
+          echo "version is $version"
+          echo "name=Sophosia_${version}_portable.exe" >> "$GITHUB_ENV"
+          echo "name is $name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
           mv "src-tauri/target/release/Sophosia.exe" $name
       - uses: actions/upload-artifact@v4
         if: matrix.platform == 'windows-latest'
