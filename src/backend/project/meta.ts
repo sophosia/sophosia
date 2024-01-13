@@ -20,23 +20,24 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the pu
  * @returns citation data
  */
 export async function getMeta(
-  identifier: string | string[] | Project[],
+  identifiers: string | string[] | Project[],
   format?: string,
   options?: { format?: string; template?: string }
 ): Promise<Meta[] | string> {
   try {
-    // only use the doi section of the url
-    // Tauri is not able to allow http call except using http module ...
-    if (typeof identifier === "string") {
-      if (identifier.match(/http:\/\/.*doi.*/))
-        identifier = identifier.split("/").slice(-2).join("/");
-    } else if (typeof identifier[0] === "string") {
-      for (const [index, str] of identifier.entries()) {
-        if (str.match(/http:\/\/.*doi.*/))
-          identifier[index] = str.split("/").slice(-2).join("/");
+    // if identifiers is string, then it must be a collection file like bib, ris
+    if (Array.isArray(identifiers) && typeof identifiers[0] === "string") {
+      for (let [index, str] of identifiers.entries()) {
+        // Tauri is not able to allow http call except using http module ...
+        // instead of doing http://some-special-doi-server/, we do https://doi.org/
+        str = str.replace(/.*doi\.\w\//, "https://doi.org/");
+        if (!str.startsWith("https://doi.org/") && str.includes("/"))
+          str = `https://doi.org/${str}`;
+        identifiers[index] = str.replace("⁃", "-"); // replace some weird characters
       }
     }
-    const data = await Cite.async(identifier);
+    console.log("identifiders", identifiers);
+    const data = await Cite.async(identifiers);
     if (!format || format === "json") {
       let metas = data.data;
       const appState = (await db.get("appState")) as AppState;
@@ -238,7 +239,7 @@ export async function getMetaFromFile(
         // update project meta
         if (!!identifier) {
           console.log(identifier);
-          let metas = await getMeta(identifier, "json");
+          let metas = await getMeta([identifier], "json");
           return metas[0] as Meta;
         }
       }

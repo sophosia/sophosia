@@ -558,7 +558,7 @@ async function getReferences() {
 
   for (let [i, ref] of meta.value.reference.entries()) {
     try {
-      getMeta(ref.DOI || ref.key, "bibliography", {
+      getMeta([ref.DOI || ref.key], "bibliography", {
         format: "html",
       }).then((text: string | Meta[]) => {
         if (text === null) return;
@@ -591,7 +591,7 @@ async function updateMeta() {
   } else {
     identifier = meta.value?.URL as string;
   }
-  metas = (await getMeta(identifier)) as Meta[];
+  metas = (await getMeta([identifier])) as Meta[];
   Object.assign(meta.value as Project, metas[0]);
   modifyInfo();
 }

@@ -269,7 +269,7 @@ async function addProjectsByCollection(isCreateFolder: boolean) {
 async function processIdentifier(identifier: string) {
   if (!identifier) return;
 
-  let metas = await getMeta(identifier, "json");
+  let metas = await getMeta([identifier], "json");
   let meta = metas[0];
 
   if (createProject.value) {
