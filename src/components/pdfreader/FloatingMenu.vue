@@ -1,5 +1,5 @@
 <template>
-  <div style="z-index: 100">
+  <div style="z-index: 100; max-width: 20vw">
     <div class="row items-center q-px-sm q-py-xs">
       <ColorPicker
         @selected="(color: string) => $emit('highlightText', color)"
@@ -9,7 +9,7 @@
         dense
         flat
         :ripple="false"
-        size="md"
+        size="sm"
         padding="none"
         icon="content_copy"
         @click="copyText"
@@ -18,27 +18,24 @@
         <q-tooltip>{{ $t("copy") }}</q-tooltip>
       </q-btn>
       <q-btn
-        v-for="(btn, index) in pluginBtns"
-        :key="index"
         class="q-ml-sm"
         dense
         flat
         :ripple="false"
-        size="md"
+        size="sm"
         padding="none"
-        :icon="btn.icon"
-        @click="onPluginBtnClick(btn)"
+        icon="translate"
+        @click="translateText"
+        @close="handleClose"
+        data-cy="btn-translate"
       >
-        <q-tooltip>{{ btn.tooltip }}</q-tooltip>
+        <q-tooltip>{{ $t("translate") }}</q-tooltip>
       </q-btn>
     </div>
-    <div
-      v-for="(view, index) in pluginViews"
-      :key="index"
-    >
+    <div>
       <FloatingMenuView
-        v-if="stateStore.showPDFMenuView && view.uid == clickedBtnUid"
-        :view="view"
+        v-if="clickedTranslate"
+        :text="floatingText"
       ></FloatingMenuView>
     </div>
   </div>
@@ -53,22 +50,72 @@ import FloatingMenuView from "./FloatingMenuView.vue";
 import pluginManager from "src/backend/plugin";
 import { Button, View } from "src/backend/database";
 import { useStateStore } from "src/stores/appState";
+import translate from "translate";
+import { stat } from "fs";
+import { tryParseNumber } from "@excalidraw/excalidraw/types/charts";
+
 defineEmits(["highlightText"]);
 
 const stateStore = useStateStore();
 const pluginBtns = ref<Button[]>([]);
 const pluginToggleBtns = ref<ToggleButton[]>([]);
 const pluginViews = ref<View[]>([]);
-const clickedBtnUid = ref("");
+const clickedTranslate = ref(false);
+const floatingText = ref("");
+
+const translateOptions = [
+  { value: "en", label: "English (en)" },
+  { value: "zh", label: "中文 (zh)" },
+  { value: "hi", label: "हिन्दी (hi)" },
+  { value: "es", label: "Español (es)" },
+  { value: "fr", label: "Français (fr)" },
+  { value: "ar", label: "العربية (ar)" },
+  { value: "bn", label: "বাংলা (bn)" },
+  { value: "ru", label: "Русский (ru)" },
+  { value: "pt", label: "Português (pt)" },
+  { value: "id", label: "Bahasa Indonesia (id)" },
+  { value: "ur", label: "اردو (ur)" },
+  { value: "de", label: "Deutsch (de)" },
+  { value: "ja", label: "日本語 (ja)" },
+  { value: "sw", label: "Kiswahili (sw)" },
+  { value: "te", label: "తెలుగు (te)" },
+  { value: "mr", label: "मराठी (mr)" },
+  { value: "tr", label: "Türkçe (tr)" },
+  { value: "ta", label: "தமிழ் (ta)" },
+  { value: "vi", label: "Tiếng Việt (vi)" },
+  { value: "ko", label: "한국어 (ko)" },
+  { value: "fa", label: "فارسی (fa)" }
+];
 
 function copyText() {
   let selection = window.getSelection();
   if (selection) copyToClipboard(selection.toString());
 }
 
-function onPluginBtnClick(button: Button) {
-  clickedBtnUid.value = button.uid;
-  button.click();
+async function translateText() {
+  let textToTranslate = window.getSelection()?.toString();
+  const language = stateStore.settings.translateLanguage;
+  let ln;
+  for (let option of translateOptions) {
+    if (option.label === language) {
+      ln = option.value;
+    }
+  }
+  if (textToTranslate && ln) {
+    translate.engine = "google";
+    const translatedText = await translate(
+      textToTranslate.replace(/-\n/g, ""),
+      ln
+    );
+
+    console.log(translatedText);
+    floatingText.value = translatedText;
+    clickedTranslate.value = true;
+  }
+}
+
+function handleClose() {
+  clickedTranslate.value = false;
 }
 
 watch(pluginManager.statusMap.value, (_) => {

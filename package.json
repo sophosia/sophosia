@@ -3,7 +3,9 @@
   "description": "A research paper / textbook / note management tool",
   "productName": "Sophosia",
   "author": "Hunt Feng",
-  "contributors": ["Gedeon Isezerano"],
+  "contributors": [
+    "Gedeon Isezerano"
+  ],
   "private": false,
   "license": "GPL-3.0",
   "scripts": {
@@ -40,6 +42,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tauri-plugin-fs-extra-api": "https://github.com/tauri-apps/tauri-plugin-fs-extra#v1",
+    "translate": "^2.0.2",
     "vditor": "^3.9.8",
     "veaury": "^2.3.12",
     "vue": "^3.0.0",

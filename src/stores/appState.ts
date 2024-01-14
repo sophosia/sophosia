@@ -6,7 +6,7 @@ import {
   NoteType,
   Page,
   Settings,
-  SpecialFolder,
+  SpecialFolder
 } from "src/backend/database";
 import { useLayoutStore } from "./layoutStore";
 import { useProjectStore } from "./projectStore";
@@ -36,13 +36,14 @@ export const useStateStore = defineStore("stateStore", {
     settings: {
       theme: "dark",
       fontSize: "16px",
-      citeKeyRule: "author_title_year",
+      translateLanguage: "fr",
+      citeKeyRule: "author_title_year"
     } as Settings,
 
     // page
     openedPage: { id: "", type: "", label: "" },
     closedItemId: "",
-    currentItemId: "library",
+    currentItemId: "library"
   }),
 
   actions: {
@@ -78,7 +79,7 @@ export const useStateStore = defineStore("stateStore", {
         selectedFolderId: this.selectedFolderId,
         currentItemId: this.currentItemId,
         openedProjectIds: [...this.openedProjectIds] as string[], // convert to Array for saving
-        settings: this.settings as Settings,
+        settings: this.settings as Settings
       } as AppState;
     },
 
@@ -193,6 +194,12 @@ export const useStateStore = defineStore("stateStore", {
       this.saveAppState();
     },
 
+    changeTranslate(language: string) {
+      //db
+      this.settings.translateLanguage = language;
+      this.saveAppState();
+    },
+
     async saveAppState() {
       if (!this.ready) return;
       const projectStore = useProjectStore();
@@ -201,6 +208,6 @@ export const useStateStore = defineStore("stateStore", {
         (project) => project._id
       );
       await updateAppState(state);
-    },
-  },
+    }
+  }
 });
