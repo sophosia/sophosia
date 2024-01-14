@@ -1,36 +1,43 @@
 <template>
-  <div ref="root"></div>
+  <div
+    ref="root"
+    style="padding: 2%"
+  >
+    {{ text }}
+  </div>
 </template>
+
 <script setup lang="ts">
-import {
-  PropType,
-  onBeforeMount,
-  onBeforeUnmount,
-  onMounted,
-  onUnmounted,
-  ref,
-} from "vue";
-import { View } from "src/backend/database";
+import { textChangeRangeIsUnchanged } from "typescript";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 
 const props = defineProps({
-  view: { type: Object as PropType<View>, required: true },
+  text: { type: String, required: true }
 });
 
 const root = ref<HTMLElement>();
 
-onBeforeMount(() => {
-  if (props.view.onBeforeMount) props.view.onBeforeMount();
-});
+const emits = defineEmits(["close"]);
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (root.value && !root.value.contains(event.target as Node)) {
+    emits("close");
+  }
+};
 
 onMounted(() => {
-  if (root.value && props.view.onMounted) props.view.onMounted(root.value);
+  window.addEventListener("click", handleClickOutside);
 });
 
 onBeforeUnmount(() => {
-  if (props.view.onBeforeUnmount) props.view.onBeforeUnmount();
+  window.removeEventListener("click", handleClickOutside);
 });
 
-onUnmounted(() => {
-  if (props.view.onUnmounted) props.view.onUnmounted();
-});
+// Watch for changes in the text prop
+watch(
+  () => props.text,
+  (newValue) => {
+    console.log("Text changed to:", newValue);
+  }
+);
 </script>

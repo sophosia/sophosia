@@ -28,8 +28,9 @@ async function getAppState(): Promise<AppState> {
       settings: {
         theme: "dark",
         fontSize: "16px",
-        citeKeyRule: "author_title_year",
-      },
+        translateLanguage: "Français (fr)",
+        citeKeyRule: "author_title_year"
+      }
     };
     return state;
   }
@@ -58,14 +59,14 @@ async function getLayout(): Promise<Layout> {
         showPopoutIcon: false,
         showMaximiseIcon: false,
         // must have close icon otherwise the last tab can't close
-        showCloseIcon: true,
+        showCloseIcon: true
       },
       dimensions: {
         borderWidth: 3,
         headerHeight: 36,
         // no need to show ghost image of the content
         dragProxyWidth: 0,
-        dragProxyHeight: 0,
+        dragProxyHeight: 0
       },
       root: {
         type: "stack",
@@ -74,11 +75,11 @@ async function getLayout(): Promise<Layout> {
             type: "component",
             title: "Library",
             componentType: "LibraryPage",
-            componentState: { id: "library" },
-          },
-        ],
-      },
-    },
+            componentState: { id: "library" }
+          }
+        ]
+      }
+    }
   } as Layout;
   try {
     const layout = (await db.get("layout")) as Layout;

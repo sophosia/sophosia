@@ -82,6 +82,26 @@
       class="q-my-md card"
     >
       <q-card-section>
+        <div class="text-h6">{{ $t("pdftranslate") }}</div>
+      </q-card-section>
+      <q-card-section class="q-pt-none">
+        <q-select
+          dense
+          outlined
+          square
+          v-model="translate"
+          :options="translateLabels"
+        />
+      </q-card-section>
+    </q-card>
+
+    <q-card
+      square
+      bordered
+      flat
+      class="q-my-md card"
+    >
+      <q-card-section>
         <div class="row">
           <div class="text-h6">{{ $t("citation-key") }}</div>
           <q-btn
@@ -175,10 +195,35 @@ const { locale, t } = useI18n({ useScope: "global" });
 
 // options
 const languageOptions = [
-  { value: "en_US", label: "English (en_US)" },
-  { value: "zh_CN", label: "中文 (zh_CN)" },
-  { value: "fr_CA", label: "Français (fr_CA)" },
+  { value: "en_US", label: "English (en)" },
+  { value: "zh_CN", label: "中文 (zh)" },
+  { value: "fr_CA", label: "Français (fr)" }
 ];
+
+const translateLabels = [
+  "English (en)",
+  "中文 (zh)",
+  "हिन्दी (hi)",
+  "Español (es)",
+  "Français (fr)",
+  "العربية (ar)",
+  "বাংলা (bn)",
+  "Русский (ru)",
+  "Português (pt)",
+  "Bahasa Indonesia (id)",
+  "اردو (ur)",
+  "Deutsch (de)",
+  "日本語 (ja)",
+  "Kiswahili (sw)",
+  "తెలుగు (te)",
+  "मराठी (mr)",
+  "Türkçe (tr)",
+  "தமிழ் (ta)",
+  "Tiếng Việt (vi)",
+  "한국어 (ko)",
+  "فارسی (fa)"
+];
+
 const themeOptions = ["dark", "light"];
 const citeKeyPartKeyOptions = ["author", "title", "year"];
 const citeKeyConnectorOptions = [" ", "_"];
@@ -188,25 +233,25 @@ const exampleMetas = [
   {
     title: "A Long Title",
     author: [{ family: "Last", given: "First" }],
-    issued: { "date-parts": [[2023]] },
+    issued: { "date-parts": [[2023]] }
+  },
+  {
+    title: "A Long Title",
+    author: [
+      { family: "Last1", given: "First1" },
+      { family: "Last2", given: "First2" }
+    ],
+    issued: { "date-parts": [[2023]] }
   },
   {
     title: "A Long Title",
     author: [
       { family: "Last1", given: "First1" },
       { family: "Last2", given: "First2" },
+      { family: "Last3", given: "First3" }
     ],
-    issued: { "date-parts": [[2023]] },
-  },
-  {
-    title: "A Long Title",
-    author: [
-      { family: "Last1", given: "First1" },
-      { family: "Last2", given: "First2" },
-      { family: "Last3", given: "First3" },
-    ],
-    issued: { "date-parts": [[2023]] },
-  },
+    issued: { "date-parts": [[2023]] }
+  }
 ] as Meta[];
 
 const language = computed({
@@ -222,7 +267,7 @@ const language = computed({
   set(option: { value: string; label: string }) {
     locale.value = option.value;
     db.setConfig({ language: option.value } as Config);
-  },
+  }
 });
 
 const theme = computed({
@@ -231,7 +276,7 @@ const theme = computed({
   },
   set(option: string) {
     stateStore.changeTheme(option);
-  },
+  }
 });
 
 const fontSize = computed({
@@ -240,7 +285,16 @@ const fontSize = computed({
   },
   set(size: number) {
     stateStore.changeFontSize(size);
+  }
+});
+
+const translate = computed({
+  get() {
+    return stateStore.settings.translateLanguage;
   },
+  set(language: string) {
+    stateStore.changeTranslate(language);
+  }
 });
 
 // citeKeyRule = "author<connector>title<connector>year"

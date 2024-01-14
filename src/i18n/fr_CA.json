@@ -37,6 +37,7 @@
   "storage-path": "Dossier de sauvegarde:",
   "storage": "Sauvegarde",
   "language": "Langue",
+  "pdftranslate": "Traducteur de PDF",
   "font-size-fontsize-px": "Taille de la police: {0}px",
   "font": "Police",
   "theme": "Theme",
