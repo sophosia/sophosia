@@ -44,8 +44,8 @@ jobs:
         run: |
           ref=${{github.ref}}
           version=${ref#refs/heads/}
-          name=Sophosia_${version}_portable.exe"
-          echo "name=$name" >> "$GITHUB_OUTPUT"
+          name=Sophosia_${version}_portable.exe
+          echo "name=$name" >> $GITHUB_OUTPUT
           mv "src-tauri/target/release/Sophosia.exe" $name
         shell: bash
       - name: upload .exe as windows portable build
