@@ -43,7 +43,7 @@ jobs:
         if: matrix.platform == 'windows-latest'
         run: |
           ref=${{github.ref}}
-          version=${ref#refs/heads/}
+          version=${ref#refs/tags/v}
           name=Sophosia_${version}_portable.exe
           echo "name=$name" >> $GITHUB_OUTPUT
           mv "src-tauri/target/release/Sophosia.exe" $name

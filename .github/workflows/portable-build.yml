@@ -30,13 +30,12 @@ jobs:
         with:
           tagName: "v__VERSION__"
           releaseName: "Sophosia v__VERSION__"
-      - run: echo "version=${${{github.ref}}#refs/tags/}" >> "$GITHUB_ENV"
       - name: rename .exe file
         id: rename
         if: matrix.platform == 'windows-latest'
         run: |
           ref=${{github.ref}}
-          version=${ref#refs/heads/}
+          version=${ref#refs/heads/HuntFeng/}
           name=Sophosia_${version}_portable.exe
           echo "name=$name" >> $GITHUB_OUTPUT
           mv "src-tauri/target/release/Sophosia.exe" $name
