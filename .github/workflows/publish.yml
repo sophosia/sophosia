@@ -42,10 +42,12 @@ jobs:
         id: rename
         if: matrix.platform == 'windows-latest'
         run: |
-          echo "version=${${{github.ref}}#refs/tags/}" >> $GITHUB_ENV
-          echo "name=Sophosia_${version}_portable.exe" >> $GITHUB_ENV
-          echo "name=$name" >> $GITHUB_OUTPUT
+          ref=${{github.ref}}
+          version=${ref#refs/heads/}
+          name=Sophosia_${version}_portable.exe"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
           mv "src-tauri/target/release/Sophosia.exe" $name
+        shell: bash
       - name: upload .exe as windows portable build
         if: matrix.platform == 'windows-latest'
         uses: softprops/action-gh-release@v1
