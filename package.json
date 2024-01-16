@@ -23,11 +23,12 @@
     "test:ci": "yarn run test:component:ci"
   },
   "dependencies": {
+    "@citation-js/plugin-csl": "^0.7.2",
     "@citation-js/plugin-isbn": "^0.4.0",
     "@excalidraw/excalidraw": "^0.15.2",
     "@quasar/extras": "^1.16.4",
     "@tauri-apps/api": "^1.5.1",
-    "citation-js": "^0.6.8",
+    "citation-js": "^0.7.5",
     "cytoscape": "^3.26.0",
     "cytoscape-cola": "^2.5.1",
     "golden-layout": "^2.6.0",
