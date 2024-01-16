@@ -39,7 +39,7 @@
         separator-style="background: var(--q-edge)"
         :separator-class="{
           'q-splitter-separator': stateStore.showLibraryRightMenu,
-          hidden: !stateStore.showLibraryRightMenu,
+          hidden: !stateStore.showLibraryRightMenu
         }"
         :disable="!stateStore.showLibraryRightMenu"
         v-model="rightMenuSize"
@@ -103,7 +103,7 @@ import {
   getMeta,
   exportMeta,
   importMeta,
-  getMetaFromFile,
+  getMetaFromFile
 } from "src/backend/project/meta";
 import { copyFileToProjectFolder } from "src/backend/project/file";
 import { basename, extname } from "@tauri-apps/api/path";
@@ -220,7 +220,7 @@ async function addProjectsByFiles(filePaths: string[]) {
       await projectStore.updateProject(project._id, {
         path: filename,
         title: title,
-        label: title,
+        label: title
       } as Project);
       // do not use await since this task takes time
       getMetaFromFile(filePath).then((meta) => {
@@ -342,6 +342,7 @@ async function exportFolder(
   options: { format?: string; template?: string }
 ) {
   if (!!!folder.value) return;
+  console.log(folder.value);
 
   await exportMeta(folder.value, format, options);
 }

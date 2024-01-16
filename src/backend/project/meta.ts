@@ -37,7 +37,10 @@ export async function getMeta(
       }
     }
     console.log("identifiders", identifiers);
+    console.log("Format", format);
+    console.log("options",options);
     const data = await Cite.async(identifiers);
+    
     if (!format || format === "json") {
       let metas = data.data;
       const appState = (await db.get("appState")) as AppState;

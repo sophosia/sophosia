@@ -36,7 +36,7 @@ export const useStateStore = defineStore("stateStore", {
     settings: {
       theme: "dark",
       fontSize: "16px",
-      translateLanguage: "fr",
+      translateLanguage: "Français (fr)",
       citeKeyRule: "author_title_year"
     } as Settings,
 

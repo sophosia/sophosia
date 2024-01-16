@@ -61,15 +61,20 @@ const formats = ref([
   { label: "BibTeX", value: "bibtex" },
   { label: "BibLaTeX", value: "biblatex" },
   { label: "CLS-JSON", value: "json" },
-  { label: "RIS", value: "ris" },
+  { label: "RIS", value: "ris" }
 ]);
 const format = ref({ label: "BibTeX", value: "bibtex" });
 const templates = ref([
-  { label: "APA", value: "apa" },
+  // { label: "APA", value: "apa" },//this is the default APA citation-js template - not needed
+  { label: "APA 7th", value: "APA 7th" },
+  { label: "Chicago 17th", value: "Chicago 17th" },
+  { label: "IEEE", value: "IEEE" },
+  { label: "MLA 9th", value: "MLA 9th" },
   { label: "Vancouver", value: "vancouver" },
-  { label: "Havard1", value: "havard1" },
+  { label: "Havard1", value: "havard1" }
 ]);
-const template = ref({ label: "APA", value: "apa" });
+
+const template = ref({ label: "APA 7th", value: "APA 7th" });
 
 function confirm() {
   let options = null;

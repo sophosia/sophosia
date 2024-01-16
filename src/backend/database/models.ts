@@ -94,7 +94,7 @@ export interface Project extends Meta {
   timestampAdded: number; // timestamp when data is saved
   timestampModified: number; // timestamp when data is updated
   dataType: "project"; // for database search
-  label: string;
+  label: string; //title
   children: FolderOrNote[];
   path: undefined | string; // attached pdf file path
   tags: string[]; // user defined keywords for easier search
