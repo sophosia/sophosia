@@ -1,5 +1,4 @@
-import { describe, it, expect } from "vitest";
-import { db, Meta, Project } from "src/backend/database";
+import { describe, it, expect, afterEach } from "vitest";
 import {
   createProject,
   addProject,
@@ -8,52 +7,82 @@ import {
   getProject,
   getProjects,
 } from "src/backend/project/project";
-import { uid } from "quasar";
+import { Project } from "../database";
+import { mockFS } from "test/vitest/setup-file";
+import { db } from "../database";
+
+afterEach(() => {
+  mockFS.clear();
+});
 
 describe("project.ts", () => {
-  it("createProject", async () => {
-    const folderId = uid();
+  it("createProject", () => {
+    const folderId = "folderId";
     const project = createProject(folderId);
-    expect(project.dataType).toBe("project");
     expect(project.folderIds).toContain(folderId);
   });
 
-  it("deleteProject from table", async () => {
-    const folderId = uid();
-    let project = createProject(folderId);
-    project = (await addProject(project)) as Project;
-    await deleteProject(project._id, false, folderId);
-    project = (await getProject(project._id)) as Project;
-    expect(project.folderIds).not.toContain(folderId);
+  it("addProject", async () => {
+    const folderId = "folderId";
+    const project = createProject(folderId);
+    await addProject(project);
+
+    const projectPath = [db.config.storagePath, project._id].join("/");
+    const projectNotePath = [projectPath, `${project._id}.md`].join("/");
+    expect(mockFS.has(projectPath)).toBe(true);
+    expect(mockFS.has(projectNotePath)).toBe(true);
   });
 
-  it("deleteProject from db", async () => {
-    const folderId = uid();
-    let project = createProject(folderId);
-    project = (await addProject(project)) as Project;
+  it("deleteProject (deleteFromDB)", async () => {
+    const folderId = "folderId";
+    const project = createProject(folderId);
+    await addProject(project);
+
     await deleteProject(project._id, true);
 
-    const p = await getProject(project._id);
-    expect(p).toBe(undefined);
+    const projectPath = [db.config.storagePath, project._id].join("/");
+    expect(mockFS.has(projectPath)).toBe(false);
+  });
+
+  it("deleteProject (deleteFromFolder)", async () => {
+    const folderId = "folderId";
+    const project = createProject(folderId);
+    await addProject(project);
+
+    await deleteProject(project._id, false, folderId);
+    const newProject = (await getProject(project._id)) as Project;
+
+    const projectPath = [db.config.storagePath, project._id].join("/");
+    expect(newProject.folderIds).not.toContain(folderId);
+    expect(mockFS.has(projectPath)).toBe(true);
   });
 
   it("updateProject", async () => {
-    const folderId = uid();
-    let project = createProject(folderId);
-    project = (await addProject(project)) as Project;
-    project.title = "test title";
-    const p = (await updateProject(project._id, project)) as Project;
-    expect(p.title).toBe(project.title);
+    const folderId = "folderId";
+    const project = createProject(folderId);
+    await addProject(project);
+
+    const props = { title: "new_title" };
+    await updateProject(project._id, props as Project);
+
+    const newProject = (await getProject(project._id)) as Project;
+    expect(newProject.title).toBe("new_title");
   });
 
-  it("getProjectsByFolderId", async () => {
-    const folderId = uid();
-    const n = 10;
-    for (let i = 0; i < n; i++) {
-      const project = createProject(folderId);
-      await addProject(project);
-    }
-    const projects = (await getProjects(folderId)) as Project[];
-    expect(projects.length).toBe(n);
+  it("getProject", async () => {
+    const folderId = "folderId";
+    const project = createProject(folderId);
+    await addProject(project);
+
+    const newProject = await getProject(project._id);
+    expect(newProject?.folderIds).toContain(folderId);
+  });
+
+  it("getProjects", async () => {
+    const folderId = "folderId";
+    for (let i = 0; i < 10; i++) await addProject(createProject(folderId));
+
+    const projects = await getProjects(folderId);
+    expect(projects.length).toBe(10);
   });
 });

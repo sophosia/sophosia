@@ -263,8 +263,7 @@ export async function saveNote(
   notePath?: string
 ) {
   try {
-    const note = (await getNote(noteId)) as Note;
-    await writeTextFile(notePath || idToPath(note._id), content);
+    await writeTextFile(notePath || idToPath(noteId), content);
   } catch (error) {
     console.log(error);
   }
