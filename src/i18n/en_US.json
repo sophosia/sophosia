@@ -75,6 +75,7 @@
   "delete-from-database": "Delete From DataBase",
   "delete-from-folder": "Delete From Folder",
   "copy-id": "Copy {type} ID",
+  "copy-reference":"Generate Citation",
   "author": "Author(s)",
   "export-references": "Export References",
   "no-spreads": "No Spreads",

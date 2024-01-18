@@ -5,7 +5,7 @@ import { AppState, Author, Folder, Meta, Project, db } from "../database";
 import {
   readBinaryFile,
   readTextFile,
-  writeTextFile,
+  writeTextFile
 } from "@tauri-apps/api/fs";
 import { save } from "@tauri-apps/api/dialog";
 // util (to scan identifier in PDF)
@@ -38,9 +38,9 @@ export async function getMeta(
     }
     console.log("identifiders", identifiers);
     console.log("Format", format);
-    console.log("options",options);
+    console.log("options", options);
     const data = await Cite.async(identifiers);
-    
+
     if (!format || format === "json") {
       let metas = data.data;
       const appState = (await db.get("appState")) as AppState;
@@ -66,14 +66,21 @@ export async function getMeta(
  * @param folder
  * @param format
  * @param options
+ * @param project Optional project
  */
 export async function exportMeta(
-  folder: Folder,
   format: string,
-  options: { format?: string; template?: string }
+  options: { format?: string; template?: string },
+  folder?: Folder,
+  project?: Project //for single project citation
 ) {
   try {
-    let projects: Project[] = await getProjects(folder._id);
+    let projects: Project[] = [];
+    if (project) {
+      projects = [project];
+    } else if (folder) {
+      projects = await getProjects(folder._id);
+    }
     let metas = await getMeta(projects, format, options);
     if (format === "json") {
       let path = await save();
@@ -90,9 +97,9 @@ export async function exportMeta(
         filters: [
           {
             name: extension,
-            extensions: [extension],
-          },
-        ],
+            extensions: [extension]
+          }
+        ]
       });
       if (path) {
         if (path.slice(-4).indexOf(`.${extension}`) === -1)

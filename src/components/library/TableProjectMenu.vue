@@ -44,6 +44,15 @@
           </i18n-t>
         </q-item-section>
       </q-item>
+      <q-item
+        clickable
+        v-close-popup
+        @click="exportCitation"
+      >
+        <q-item-section>
+          {{ $t("copy-reference") }}
+        </q-item-section>
+      </q-item>
       <q-separator />
       <q-item
         v-if="projectStore.selected.length <= 1"
@@ -97,6 +106,7 @@
 
       <q-separator />
       <q-item
+        v-if="projectStore.selected.length == 1"
         clickable
         v-close-popup
         @click="openProject"
@@ -147,7 +157,7 @@ import {
   NoteType,
   Project,
   SpecialFolder,
-  db,
+  db
 } from "src/backend/database";
 import { QMenu } from "quasar";
 import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
@@ -158,14 +168,15 @@ import { useProjectStore } from "src/stores/projectStore";
 import { join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 import { generateCiteKey } from "src/backend/project/meta";
+import { emitKeypressEvents } from "readline";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 
 const props = defineProps({
-  projectId: { type: String, required: true },
+  projectId: { type: String, required: true }
 });
-const emit = defineEmits(["expandRow"]);
+const emit = defineEmits(["expandRow", "exportCitation"]);
 
 const renamingNoteId = inject("renamingNoteId") as Ref<string>;
 
@@ -175,6 +186,12 @@ const showDeleteDialog = inject(KEY_deleteDialog) as (
   deleteProjects: Project[],
   deleteFromDB: boolean
 ) => void;
+
+function exportCitation() {
+  let project = projectStore.selected[0];
+  console.log("PROJECT MENU", project);
+  emit("exportCitation", project);
+}
 
 function expandRow(isExpand: boolean) {
   emit("expandRow", isExpand);
@@ -200,7 +217,7 @@ async function showInExplorer() {
   for (let project of projectStore.selected) {
     let path = await join(db.config.storagePath, project._id);
     await invoke("show_in_folder", {
-      path: path,
+      path: path
     });
   }
 }
@@ -226,7 +243,7 @@ async function onAttachFile() {
 
 async function setFavorite(isFavorite: boolean) {
   await projectStore.updateProject(props.projectId, {
-    favorite: isFavorite,
+    favorite: isFavorite
   } as Project);
 }
 

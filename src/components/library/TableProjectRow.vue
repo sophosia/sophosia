@@ -53,6 +53,7 @@
     <TableProjectMenu
       :projectId="tableProps.key"
       @expandRow="expandRow"
+      @exportCitation="exportCitation"
       ref="menu"
     />
   </q-tr>
@@ -75,13 +76,18 @@ const props = defineProps({
       expand: boolean;
       selected: boolean;
     }>,
-    required: true,
-  },
+    required: true
+  }
 });
-const emit = defineEmits(["expandRow", "setFavorite"]);
+const emit = defineEmits(["expandRow", "setFavorite", "exportCitation"]);
 
 function expandRow(isExpand: boolean) {
   emit("expandRow", isExpand);
+}
+
+function exportCitation(project: Project) {
+  console.log("PROJECT ROW", project);
+  emit("exportCitation", project);
 }
 
 function shortAuthorString(authors: Author[]) {
