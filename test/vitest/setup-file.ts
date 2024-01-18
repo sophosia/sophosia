@@ -3,6 +3,7 @@
 import "fake-indexeddb/auto";
 import { mockIPC } from "@tauri-apps/api/mocks";
 import { db } from "../../src/backend/database";
+import { afterEach } from "vitest";
 
 export const mockFS = new Map<string, { content?: string }>();
 
@@ -21,6 +22,12 @@ mockIPC((cmd, args) => {
       return (msg.paths as string[]).join("/");
     case "exists":
       return mockFS.has(msg.path as string);
+    case "extname":
+      return (msg.path as string)
+        .split("/")
+        .slice(-1)[0]
+        .split(".")
+        .slice(-1)[0];
     case "createDir":
       mockFS.set(msg.path as string, {});
       break;
@@ -30,6 +37,9 @@ mockIPC((cmd, args) => {
       break;
     case "readTextFile":
       return mockFS.get(msg.path as string)?.content || "";
+    case "removeFile":
+      mockFS.delete(msg.path as string);
+      break;
     case "readDir":
       const files = [];
       for (const path of mockFS.keys()) {
@@ -42,12 +52,15 @@ mockIPC((cmd, args) => {
       }
       break;
     case "plugin:fs-extra|metadata":
-      console.log("path=", msg.path);
       const isFile = (msg.path as string).split("/").slice(-1)[0].includes(".");
       return { isFile };
     default:
       break;
   }
+});
+
+afterEach(() => {
+  mockFS.clear();
 });
 
 const storagePath = "test-path";
