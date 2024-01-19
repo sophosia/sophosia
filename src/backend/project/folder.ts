@@ -1,7 +1,7 @@
+import { i18n } from "src/boot/i18n";
 import { db, Folder, Project, SpecialFolder } from "../database";
 import { updateProject } from "./project";
 import { sortTree } from "./utils";
-import { i18n } from "src/boot/i18n";
 const { t } = i18n.global;
 
 async function getFolder(folderId: string): Promise<Folder | undefined> {
@@ -190,11 +190,11 @@ async function moveFolderInto(dragFolderId: string, dropFolderId: string) {
 }
 
 export {
+  addFolder,
+  deleteFolder,
   getFolder,
   getFolderTree,
-  addFolder,
-  updateFolder,
-  deleteFolder,
-  moveFolderInto,
   getParentFolder,
+  moveFolderInto,
+  updateFolder,
 };

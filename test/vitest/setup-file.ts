@@ -1,9 +1,9 @@
 // This file will be run before each test file
 // mock the indexeddb
-import "fake-indexeddb/auto";
 import { mockIPC } from "@tauri-apps/api/mocks";
-import { db } from "../../src/backend/database";
+import "fake-indexeddb/auto";
 import { afterEach } from "vitest";
+import { db } from "../../src/backend/database";
 
 export const mockFS = new Map<string, { content?: string }>();
 
@@ -40,6 +40,8 @@ mockIPC((cmd, args) => {
     case "removeFile":
       mockFS.delete(msg.path as string);
       break;
+    case "resolvePath":
+      return msg.path;
     case "readDir":
       const files = [];
       for (const path of mockFS.keys()) {
@@ -64,10 +66,9 @@ afterEach(() => {
 });
 
 const storagePath = "test-path";
-const storagePaths = [storagePath];
 db.setConfig({
   language: "en_US",
   storagePath: storagePath,
   lastScanTime: 0,
-  storagePaths: storagePaths,
+  storagePaths: [storagePath],
 });
