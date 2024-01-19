@@ -27,6 +27,15 @@
           </i18n-t>
         </q-item-section>
       </q-item>
+      <q-item
+        clickable
+        v-close-popup
+        @click="exportCitation"
+      >
+        <q-item-section>
+          {{ $t("copy-reference") }}
+        </q-item-section>
+      </q-item>
       <q-separator />
       <q-item
         clickable
@@ -88,6 +97,11 @@
 </template>
 <script setup lang="ts">
 import { NoteType } from "src/backend/database";
+
+const props = defineProps({
+  projectId: { type: String, required: true }
+});
+
 const emit = defineEmits([
   "copyId",
   "copyAsLink",
@@ -95,5 +109,11 @@ const emit = defineEmits([
   "addNote",
   "addFolder",
   "closeProject",
+  "exportCitation"
 ]);
+
+function exportCitation() {
+  let project = props.projectId; //grab the project's id that's clicked
+  emit("exportCitation", project);
+}
 </script>

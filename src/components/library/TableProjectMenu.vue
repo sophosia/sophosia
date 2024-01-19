@@ -45,6 +45,7 @@
         </q-item-section>
       </q-item>
       <q-item
+        v-if="projectStore.selected.length <= 1"
         clickable
         v-close-popup
         @click="exportCitation"
@@ -188,8 +189,7 @@ const showDeleteDialog = inject(KEY_deleteDialog) as (
 ) => void;
 
 function exportCitation() {
-  let project = projectStore.selected[0];
-  console.log("PROJECT MENU", project);
+  let project = projectStore.getProject(props.projectId); //grab the project that's clicked
   emit("exportCitation", project);
 }
 

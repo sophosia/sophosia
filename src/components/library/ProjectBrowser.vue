@@ -70,7 +70,6 @@
               width: 100%;
               background: var(--color-library-tableview-bkgd);
             "
-            @exportCitation="(project: Project)=>showExportReferenceDialog(undefined,project)"
             ref="table"
           />
         </template>
@@ -351,6 +350,7 @@ async function exportFolder(
 ) {
   if (!folder.value) {
     if (project.value) {
+      console.log("VALID:", project.value);
       await exportMeta(format, options, undefined, project.value);
     }
   } else {

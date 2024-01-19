@@ -60,7 +60,6 @@
         draggable="true"
         @dragstart="onDragStart"
         @dragend="onDragEnd"
-        @exportCitation="(project: Project)=> exportCitation(project)"
         @expandRow="(isExpand: boolean) => props.expand=isExpand"
         @mousedown="(e: PointerEvent) => clickProject(props, e)"
         @mouseup="(e: PointerEvent) => clickProject(props, e)"
@@ -140,7 +139,7 @@ const props = defineProps({
   projects: { type: Array as PropType<Project[]>, required: true }
 });
 
-const emit = defineEmits(["dragProject", "update:projects", "exportCitation"]);
+const emit = defineEmits(["dragProject", "update:projects"]);
 
 let storedSelectedRow = {};
 const renamingNoteId = ref("");
@@ -150,7 +149,6 @@ const showExpansion = ref(false);
 const expansionText = ref<string[]>([]);
 const loading = ref(false); // is table filtering data
 const table = ref();
-const citationProject = ref();
 const searchRowWidth = ref(0);
 const headers = computed(() => {
   return [
@@ -175,11 +173,6 @@ onMounted(() => {
   searchRowWidth.value = table.value.$el.getBoundingClientRect().width * 0.8;
 });
 
-function exportCitation(project: Project) {
-  citationProject.value = project;
-  console.log("PROJECT TABLE", project);
-  emit("exportCitation", citationProject);
-}
 
 function handleSelection(rows: Project[], added: boolean, evt: KeyboardEvent) {
   // ignore selection change from header of not from a direct click event
