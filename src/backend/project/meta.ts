@@ -1,19 +1,18 @@
-import Cite from "citation-js";
 import "@citation-js/plugin-isbn"; // must import this so we can use isbn as identifier
+import Cite from "citation-js";
 import { copyToClipboard } from "quasar";
 
-import { getProjects } from "./project";
-import { AppState, Author, Folder, Meta, Project, db } from "../database";
+import { save } from "@tauri-apps/api/dialog";
 import {
   readBinaryFile,
   readTextFile,
-  writeTextFile
+  writeTextFile,
 } from "@tauri-apps/api/fs";
-import { save } from "@tauri-apps/api/dialog";
+import { AppState, Author, Folder, Meta, Project, db } from "../database";
+import { getProjects } from "./project";
 // util (to scan identifier in PDF)
 import * as pdfjsLib from "pdfjs-dist";
 import { TextItem } from "pdfjs-dist/types/src/display/api";
-import { resizeSingleElement } from "@excalidraw/excalidraw/types/element/resizeElements";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 /**
  * Get artible/book info given an identifier using citation.js
@@ -109,9 +108,9 @@ export async function exportMeta(
         filters: [
           {
             name: extension,
-            extensions: [extension]
-          }
-        ]
+            extensions: [extension],
+          },
+        ],
       });
       if (path) {
         if (path.slice(-4).indexOf(`.${extension}`) === -1)
@@ -269,8 +268,4 @@ export async function getMetaFromFile(
   } catch (error) {
     console.log(error);
   }
-}
-
-function ref(arg0: boolean) {
-  throw new Error("Function not implemented.");
 }
