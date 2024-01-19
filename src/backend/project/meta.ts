@@ -1,16 +1,19 @@
 import Cite from "citation-js";
 import "@citation-js/plugin-isbn"; // must import this so we can use isbn as identifier
+import { copyToClipboard } from "quasar";
+
 import { getProjects } from "./project";
 import { AppState, Author, Folder, Meta, Project, db } from "../database";
 import {
   readBinaryFile,
   readTextFile,
-  writeTextFile,
+  writeTextFile
 } from "@tauri-apps/api/fs";
 import { save } from "@tauri-apps/api/dialog";
 // util (to scan identifier in PDF)
 import * as pdfjsLib from "pdfjs-dist";
 import { TextItem } from "pdfjs-dist/types/src/display/api";
+import { resizeSingleElement } from "@excalidraw/excalidraw/types/element/resizeElements";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 /**
  * Get artible/book info given an identifier using citation.js
@@ -38,9 +41,9 @@ export async function getMeta(
     }
     console.log("identifiders", identifiers);
     console.log("Format", format);
-    console.log("options",options);
+    console.log("options", options);
     const data = await Cite.async(identifiers);
-    
+
     if (!format || format === "json") {
       let metas = data.data;
       const appState = (await db.get("appState")) as AppState;
@@ -66,15 +69,31 @@ export async function getMeta(
  * @param folder
  * @param format
  * @param options
+ * @param project Optional project
  */
 export async function exportMeta(
-  folder: Folder,
   format: string,
-  options: { format?: string; template?: string }
+  options: { format?: string; template?: string },
+  folder?: Folder,
+  project?: Project //for single project citation
 ) {
+  let single = false;
   try {
-    let projects: Project[] = await getProjects(folder._id);
+    let projects: Project[] = [];
+    if (project) {
+      projects = [project];
+      single = true;
+    } else if (folder) {
+      projects = await getProjects(folder._id);
+    } else return;
+
     let metas = await getMeta(projects, format, options);
+
+    if (single) {
+      // if it's a single entry selected - copy to clipboard
+      copyToClipboard(metas as string);
+      return;
+    }
     if (format === "json") {
       let path = await save();
       if (path) {
@@ -90,9 +109,9 @@ export async function exportMeta(
         filters: [
           {
             name: extension,
-            extensions: [extension],
-          },
-        ],
+            extensions: [extension]
+          }
+        ]
       });
       if (path) {
         if (path.slice(-4).indexOf(`.${extension}`) === -1)
@@ -250,4 +269,8 @@ export async function getMetaFromFile(
   } catch (error) {
     console.log(error);
   }
+}
+
+function ref(arg0: boolean) {
+  throw new Error("Function not implemented.");
 }

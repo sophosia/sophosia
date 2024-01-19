@@ -24,7 +24,7 @@
             dragover:
               !!dragoverNode &&
               dragoverNode == prop.node &&
-              draggingNode != prop.node,
+              draggingNode != prop.node
           }"
           draggable="true"
           @dragstart="(e: DragEvent) => onDragStart(e, prop.node)"
@@ -125,7 +125,7 @@ import {
   updateFolder,
   deleteFolder as deleteFolderDB,
   moveFolderInto,
-  getParentFolder,
+  getParentFolder
 } from "src/backend/project/folder";
 import { sortTree } from "src/backend/project/utils";
 import { useI18n } from "vue-i18n";
@@ -166,12 +166,12 @@ onMounted(async () => {
   folders.value.push({
     _id: SpecialFolder.ADDED,
     label: t("added"),
-    icon: "mdi-history",
+    icon: "mdi-history"
   });
   folders.value.push({
     _id: SpecialFolder.FAVORITES,
     label: t("favorites"),
-    icon: "mdi-star",
+    icon: "mdi-star"
   });
 });
 
@@ -196,7 +196,7 @@ async function addFolder(parentNode: Folder, label?: string, focus?: boolean) {
   if (!!label) {
     node.label = label;
     node = (await updateFolder(node._id, {
-      label: node.label,
+      label: node.label
     } as Folder)) as Folder;
   }
 
@@ -227,7 +227,7 @@ function deleteFolder(node: Folder) {
           _id: (n as Folder)._id,
           icon: (n as Folder).icon,
           label: (n as Folder).label,
-          children: _dfs(n as Folder),
+          children: _dfs(n as Folder)
         } as Folder);
       }
     }
@@ -285,6 +285,7 @@ function renameFolder() {
  * @param folder
  */
 function exportFolder(folder: Folder) {
+  console.log(folder);
   emit("exportFolder", folder);
 }
 
@@ -392,7 +393,7 @@ function getLibraryNode() {
 defineExpose({
   getLibraryNode,
   addFolder,
-  onDragEnd,
+  onDragEnd
 });
 </script>
 <style lang="scss" scoped>

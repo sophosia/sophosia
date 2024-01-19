@@ -1,4 +1,8 @@
 <template>
+  <ExportDialog
+    v-model:show="exportCitationDialog"
+    @confirm="(format:any, options:any) => exportCitation(format, options)"
+  />
   <q-tree
     ref="tree"
     dense
@@ -22,7 +26,7 @@
           dragover:
             !!dragoverNode &&
             dragoverNode == prop.node &&
-            draggingNode != prop.node,
+            draggingNode != prop.node
         }"
         @click="selectItem(prop.node._id)"
         :draggable="prop.node.dataType !== 'project'"
@@ -33,9 +37,11 @@
       >
         <ProjectMenu
           v-if="prop.node.dataType === 'project'"
+          :projectId="prop.node._id"
           @showInExplorer="showInExplorer(prop.node)"
           @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
           @addFolder="addNode(prop.node._id, 'folder')"
+          @exportCitation="showExportCitationDialog"
           @closeProject="closeProject(prop.node._id)"
           @copyId="
             () => {
@@ -163,7 +169,7 @@ import {
   Note,
   NoteType,
   Page,
-  Project,
+  Project
 } from "src/backend/database";
 // db
 import { useStateStore } from "src/stores/appState";
@@ -174,12 +180,17 @@ import { exists } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
 import { metadata } from "tauri-plugin-fs-extra-api";
 import { idToPath, oldToNewId } from "src/backend/project/utils";
+import { exportMeta } from "src/backend/project/meta";
+
 //components
 import NoteMenu from "./NoteMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
 import FolderMenu from "./FolderMenu.vue";
 import { getNotes } from "src/backend/project/note";
 import { generateCiteKey } from "src/backend/project/meta";
+import ExportDialog from "src/components/library/ExportDialog.vue";
+import { getProject } from "src/backend/project/project";
+import { useQuasar } from "quasar";
 
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
@@ -196,6 +207,9 @@ const expanded = ref<string[]>([]);
 const draggingNode = ref<FolderOrNote | null>(null);
 const dragoverNode = ref<FolderOrNote | null>(null);
 const enterTime = ref(0);
+const exportCitationDialog = ref(false);
+const project = ref<Project | null>(null);
+const $q = useQuasar();
 
 onMounted(async () => {
   // expand all projects
@@ -205,6 +219,32 @@ onMounted(async () => {
 watchEffect(() => {
   showInTree(layoutStore.currentItemId);
 });
+
+async function showExportCitationDialog(_projectid: Project) {
+  exportCitationDialog.value = true;
+  project.value = (await getProject(_projectid.toString())) as Project;
+}
+
+/**
+ * Export project citation
+ * @param format - citation.js supported format see - citation_styles
+ * @param options - extra options
+ */
+async function exportCitation(
+  format: string,
+  options: { format?: string; template?: string }
+) {
+  if (project.value) {
+    await exportMeta(format, options, undefined, project.value);
+
+    $q.notify({
+      message: "Copied",
+      color: "blue",
+      position: "bottom",
+      timeout: 500
+    });
+  }
+}
 
 function selectItem(nodeId: string) {
   if (!tree.value) return;
@@ -220,7 +260,7 @@ function selectItem(nodeId: string) {
 async function showInExplorer(node: Project | Note) {
   const path = idToPath(node._id);
   await invoke("show_in_folder", {
-    path: path,
+    path: path
   });
 }
 
@@ -307,7 +347,7 @@ async function renameNode() {
       // update window tab name
       layoutStore.renamePage(oldNodeId, {
         id: newNodeId,
-        label: newLabel,
+        label: newLabel
       } as Page);
       await nextTick(); // wait until itemId changes in the page
     }
@@ -432,13 +472,13 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
       const newNoteId = oldNoteId.replace(dragId, newId);
       layoutStore.renamePage(oldNoteId, {
         id: newNoteId,
-        label: note.label,
+        label: note.label
       } as Page);
     }
   } else {
     layoutStore.renamePage(dragId, {
       id: newId,
-      label: label,
+      label: label
     } as Page);
   }
   await nextTick(); // wait until the itemId is updated

@@ -1,5 +1,9 @@
 <template>
   <q-tr>
+    <ExportDialog
+      v-model:show="exportCitationDialog"
+      @confirm="(format, options) => exportCitation(format, options)"
+    />
     <q-th auto-width>
       <input
         type="checkbox"
@@ -53,6 +57,7 @@
     <TableProjectMenu
       :projectId="tableProps.key"
       @expandRow="expandRow"
+      @exportCitation="showExportCitationDialog"
       ref="menu"
     />
   </q-tr>
@@ -62,8 +67,14 @@
 import { PropType, ref } from "vue";
 import { Project, Author } from "src/backend/database";
 import TableProjectMenu from "./TableProjectMenu.vue";
+import ExportDialog from "./ExportDialog.vue";
+import { exportMeta } from "src/backend/project/meta";
+import { useQuasar } from "quasar";
 
 const menu = ref<InstanceType<typeof TableProjectMenu>>();
+const exportCitationDialog = ref(false);
+const project = ref<Project | null>(null);
+const $q = useQuasar();
 
 const props = defineProps({
   tableProps: {
@@ -75,13 +86,39 @@ const props = defineProps({
       expand: boolean;
       selected: boolean;
     }>,
-    required: true,
-  },
+    required: true
+  }
 });
 const emit = defineEmits(["expandRow", "setFavorite"]);
 
 function expandRow(isExpand: boolean) {
   emit("expandRow", isExpand);
+}
+
+function showExportCitationDialog(_project: Project) {
+  exportCitationDialog.value = true;
+  project.value = _project;
+}
+
+/**
+ * Export project citation as
+ * @param format - citation.js supported format see - citation_styles
+ * @param options - extra options
+ */
+
+async function exportCitation(
+  format: string,
+  options: { format?: string; template?: string }
+) {
+  if (project.value) {
+    await exportMeta(format, options, undefined, project.value);
+    $q.notify({
+      message: "Copied",
+      color: "blue",
+      position: "bottom",
+      timeout: 500
+    });
+  }
 }
 
 function shortAuthorString(authors: Author[]) {

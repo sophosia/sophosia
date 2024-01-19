@@ -27,7 +27,7 @@
     <template v-slot:before>
       <FolderTree
         style="background: var(--color-library-treeview-bkgd)"
-        @exportFolder="(folder: Folder) => showExportFolderDialog(folder)"
+        @exportFolder="(folder: Folder) => showExportReferenceDialog(folder,undefined)"
         ref="treeview"
       />
     </template>
@@ -107,6 +107,7 @@ import {
 } from "src/backend/project/meta";
 import { copyFileToProjectFolder } from "src/backend/project/file";
 import { basename, extname } from "@tauri-apps/api/path";
+import { E } from "@tauri-apps/api/path-9b1e7ad5";
 
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
@@ -126,6 +127,7 @@ const rightMenuSize = ref(0);
 
 const exportFolderDialog = ref(false);
 const folder = ref<Folder | null>(null);
+const project = ref<Project | null>(null);
 
 const deleteDialog = ref(false);
 const deleteProjects = ref<Project[]>([]);
@@ -323,14 +325,19 @@ async function deleteProject() {
   }
 }
 
+//handles trigger for both folder tree, tableproject row, and active projects
+function showExportReferenceDialog(_folder?: Folder, _project?: Project) {
+  if (_folder) {
+    folder.value = _folder;
+    exportFolderDialog.value = true;
+  } else if (_project) {
+    project.value = _project;
+    exportFolderDialog.value = true;
+  }
+}
 /**********************************************************
  * FolderTree
  **********************************************************/
-
-function showExportFolderDialog(_folder: Folder) {
-  folder.value = _folder;
-  exportFolderDialog.value = true;
-}
 
 /**
  * Export a folder as a collection of references
@@ -341,10 +348,16 @@ async function exportFolder(
   format: string,
   options: { format?: string; template?: string }
 ) {
-  if (!!!folder.value) return;
-  console.log(folder.value);
-
-  await exportMeta(folder.value, format, options);
+  if (!folder.value) {
+    if (project.value) {
+      console.log("VALID:", project.value);
+      await exportMeta(format, options, undefined, project.value);
+    }
+  } else {
+    await exportMeta(format, options, folder.value);
+  }
+  console.log("FOLDER", folder.value);
+  console.log("PROJECT", project.value);
 }
 
 /**************************************************
