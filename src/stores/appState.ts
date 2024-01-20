@@ -1,17 +1,20 @@
 import { defineStore } from "pinia";
 import { Dark } from "quasar";
-import { updateAppState, getAppState } from "src/backend/appState";
+import { getAppState, updateAppState } from "src/backend/appState";
 import {
+  AnnotationData,
   AppState,
+  Note,
   NoteType,
   Page,
+  Project,
   Settings,
-  SpecialFolder
+  SpecialFolder,
+  db,
 } from "src/backend/database";
+import { getPDF } from "src/backend/project/project";
 import { useLayoutStore } from "./layoutStore";
 import { useProjectStore } from "./projectStore";
-import { getPDF } from "src/backend/project/project";
-import { db, Project, Note, AnnotationData } from "src/backend/database";
 
 export const useStateStore = defineStore("stateStore", {
   state: () => ({
@@ -37,13 +40,11 @@ export const useStateStore = defineStore("stateStore", {
       theme: "dark",
       fontSize: "16px",
       translateLanguage: "Français (fr)",
-      citeKeyRule: "author_title_year"
+      citeKeyRule: "author_title_year",
     } as Settings,
 
     // page
-    openedPage: { id: "", type: "", label: "" },
-    closedItemId: "",
-    currentItemId: "library"
+    currentItemId: "library",
   }),
 
   actions: {
@@ -79,7 +80,7 @@ export const useStateStore = defineStore("stateStore", {
         selectedFolderId: this.selectedFolderId,
         currentItemId: this.currentItemId,
         openedProjectIds: [...this.openedProjectIds] as string[], // convert to Array for saving
-        settings: this.settings as Settings
+        settings: this.settings as Settings,
       } as AppState;
     },
 
@@ -208,6 +209,6 @@ export const useStateStore = defineStore("stateStore", {
         (project) => project._id
       );
       await updateAppState(state);
-    }
-  }
+    },
+  },
 });

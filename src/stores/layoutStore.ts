@@ -1,7 +1,3 @@
-import { defineStore } from "pinia";
-import type { GLState, Page } from "src/backend/database";
-import { getLayout, updateLayout } from "src/backend/appState";
-import { customAlphabet } from "nanoid";
 import {
   ComponentItemConfig,
   LayoutConfig,
@@ -9,6 +5,10 @@ import {
   RowOrColumnItemConfig,
   StackItemConfig,
 } from "golden-layout";
+import { customAlphabet } from "nanoid";
+import { defineStore } from "pinia";
+import { getLayout, updateLayout } from "src/backend/appState";
+import type { GLState, Page } from "src/backend/database";
 import { nextTick } from "vue";
 const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
@@ -32,8 +32,12 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param page
      */
     openPage(page: Page) {
-      if (this.IdToRef.has(page.id)) this.currentItemId = page.id;
-      else {
+      if (this.IdToRef.has(page.id)) {
+        this.currentItemId = page.id;
+        const refId = this.IdToRef.get(page.id as string) as string;
+        // update any necessary data
+        this.pages.set(refId, page);
+      } else {
         const refId = nanoid();
         this.IdToRef.set(page.id, refId);
         this.pages.set(refId, page);

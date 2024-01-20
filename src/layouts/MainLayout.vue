@@ -16,7 +16,7 @@
         emit-immediately
         separator-style="background: var(--q-edge)"
         :separator-class="{
-          'q-splitter-separator': stateStore.showLeftMenu
+          'q-splitter-separator': stateStore.showLeftMenu,
         }"
         :disable="!stateStore.showLeftMenu"
         v-model="leftMenuSize"
@@ -44,26 +44,22 @@
 // types
 import { Page } from "src/backend/database";
 // components
-import LeftRibbon from "./LeftRibbon.vue";
 import LeftMenu from "src/components/leftmenu/LeftMenu.vue";
+import LeftRibbon from "./LeftRibbon.vue";
 // GoldenLayout
-import GLayout from "./GLayout.vue";
 import "src/css/goldenlayout/base.scss";
 import "src/css/goldenlayout/theme.scss";
+import GLayout from "./GLayout.vue";
 // db
 import { useStateStore } from "src/stores/appState";
 // utils
-import { nextTick, onMounted, onUnmounted, provide, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
-import { colors } from "quasar";
-const { getPaletteColor } = colors;
-import pluginManager from "src/backend/plugin";
 import { listen } from "@tauri-apps/api/event";
+import pluginManager from "src/backend/plugin";
 import { useLayoutStore } from "src/stores/layoutStore";
+import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
-const { t } = useI18n({ useScope: "global" });
 
 /*************************************************
  * Component refs, data, computed values

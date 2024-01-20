@@ -280,14 +280,11 @@ async function saveLinks() {
   let html = parser.parseFromString(vditor.value.getHTML(), "text/html");
   let linkNodes = html.querySelectorAll("a");
   for (let node of linkNodes) {
-    const link = (node as HTMLAnchorElement).getAttribute("href") as string;
-    console.log("link", link);
+    let link = (node as HTMLAnchorElement).getAttribute("href") as string;
+    link = link.replace("sophosia://", "");
     try {
       new URL(link);
       // this is a valid url, do nothing
-      // except the link starts with sophosia://
-      if (link.startsWith("sophosia://"))
-        newLinks.push({ source: props.noteId, target: linkToId(link) });
     } catch (error) {
       // this is an invalid url, might be an id
       newLinks.push({ source: props.noteId, target: linkToId(link) });
