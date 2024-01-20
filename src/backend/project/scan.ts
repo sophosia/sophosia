@@ -1,19 +1,19 @@
 import {
   BaseDirectory,
+  FileEntry,
   exists,
   readDir,
   readTextFile,
-  FileEntry,
   writeTextFile,
 } from "@tauri-apps/api/fs";
-import { Edge, idb } from "../database";
-import { metadata, Metadata } from "tauri-plugin-fs-extra-api";
-import { updateLinks } from "./graph";
-import { extname, sep } from "@tauri-apps/api/path";
-import { ref } from "vue";
+import { extname } from "@tauri-apps/api/path";
 import { Notify } from "quasar";
-import { idToLink, pathToId } from "./utils";
 import { i18n } from "src/boot/i18n";
+import { Metadata, metadata } from "tauri-plugin-fs-extra-api";
+import { ref } from "vue";
+import { Edge, idb } from "../database";
+import { updateLinks } from "./graph";
+import { idToLink, linkToId, pathToId } from "./utils";
 const { t } = i18n.global;
 
 export const isScanned = ref(false); // to notify loading screen initially
@@ -102,7 +102,7 @@ async function getLinksFromFile(
     const submatch = match.match(/\(.*\)/)![0];
     const [idOrDeepLink, blockRef] = submatch.slice(1, -1).split("#"); // remove bracket and split
     let source = pathToId(filePath);
-    let target = idOrDeepLink.replace("sophosia://open-item/", "");
+    let target = linkToId(idOrDeepLink);
     links.push({ source, target });
   }
   return links;

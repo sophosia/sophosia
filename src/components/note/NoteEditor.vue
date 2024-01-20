@@ -18,36 +18,36 @@
 </template>
 <script setup lang="ts">
 // types
+import { AnnotationData, Edge, Note, Project, db } from "src/backend/database";
 import { inject, nextTick, onMounted, ref, watch } from "vue";
-import { Note, Project, Edge, db, AnnotationData } from "src/backend/database";
 // vditor
+import "src/css/vditor/index.css";
 import Vditor from "vditor";
 import { exportPDF } from "vditor/src/ts/export";
-import "src/css/vditor/index.css";
 // db related
-import { useStateStore } from "src/stores/appState";
 import {
-  loadNote,
-  saveNote,
   getAllNotes,
   getNote,
+  loadNote,
+  saveNote,
   uploadImage,
 } from "src/backend/project/note";
+import { useStateStore } from "src/stores/appState";
 
 import { getAllProjects, getProject } from "src/backend/project/project";
 // util
-import { EventBus, debounce } from "quasar";
-import { useI18n } from "vue-i18n";
-import _ from "lodash";
-import { authorToString, idToLink, linkToId } from "src/backend/project/utils";
-import { generateCiteKey } from "src/backend/project/meta";
 import { sep } from "@tauri-apps/api/path";
+import _ from "lodash";
+import { EventBus, debounce } from "quasar";
+import { generateCiteKey } from "src/backend/project/meta";
+import { authorToString, idToLink, linkToId } from "src/backend/project/utils";
+import { useI18n } from "vue-i18n";
 
-import HoverPane from "./HoverPane.vue";
 import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { getForwardLinks, updateLinks } from "src/backend/project/graph";
 import { isLinkUpdated } from "src/backend/project/scan";
+import HoverPane from "./HoverPane.vue";
 
 const stateStore = useStateStore();
 const { t } = useI18n({ useScope: "global" });
@@ -280,7 +280,8 @@ async function saveLinks() {
   let html = parser.parseFromString(vditor.value.getHTML(), "text/html");
   let linkNodes = html.querySelectorAll("a");
   for (let node of linkNodes) {
-    const link = (node as HTMLAnchorElement).getAttribute("href") as string;
+    let link = (node as HTMLAnchorElement).getAttribute("href") as string;
+    link = link.replace("sophosia://", "");
     try {
       new URL(link);
       // this is a valid url, do nothing

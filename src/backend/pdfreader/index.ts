@@ -1,27 +1,26 @@
+import * as pdfjsLib from "pdfjs-dist";
+import * as pdfjsViewer from "pdfjs-dist/web/pdf_viewer";
+import {
+  PDFFindController,
+  PDFPageView,
+  PDFViewer,
+} from "pdfjs-dist/web/pdf_viewer";
+import { debounce } from "quasar";
+import { nextTick, reactive, ref } from "vue";
 import {
   AnnotationType,
-  db,
   EraserType,
   PDFSearch,
   PDFState,
   SpreadMode,
-  TOCNode
+  TOCNode,
+  db,
 } from "../database";
-import { debounce } from "quasar";
-import { nextTick, reactive, ref } from "vue";
-import { AnnotationStore, AnnotationFactory } from "../pdfannotation";
-import { PeekManager } from "./peekManager";
-import {
-  PDFFindController,
-  PDFPageView,
-  PDFViewer
-} from "pdfjs-dist/web/pdf_viewer";
-import * as pdfjsLib from "pdfjs-dist";
-import * as pdfjsViewer from "pdfjs-dist/web/pdf_viewer";
+import { AnnotationFactory, AnnotationStore } from "../pdfannotation";
 import { Annotation } from "../pdfannotation/annotations";
+import { PeekManager } from "./peekManager";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
-import { readBinaryFile } from "@tauri-apps/api/fs";
 import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 
@@ -72,18 +71,18 @@ export default class PDFApplication {
       inkThickness: 5,
       inkOpacity: 1,
       eraserType: EraserType.STROKE,
-      eraserThickness: 20
+      eraserThickness: 20,
     } as PDFState);
   }
 
   init(container: HTMLDivElement) {
     const eventBus = new pdfjsViewer.EventBus();
     const pdfLinkService = new pdfjsViewer.PDFLinkService({
-      eventBus
+      eventBus,
     });
     const pdfFindController = new pdfjsViewer.PDFFindController({
       eventBus,
-      linkService: pdfLinkService
+      linkService: pdfLinkService,
     });
 
     // l10n resource
@@ -100,7 +99,7 @@ export default class PDFApplication {
       linkService: pdfLinkService,
       findController: pdfFindController,
       annotationEditorMode: pdfjsLib.AnnotationEditorType.NONE,
-      l10n: l10n
+      l10n: l10n,
     });
     // must have this otherwise find controller does not work
     pdfLinkService.setViewer(pdfViewer);
@@ -245,7 +244,7 @@ export default class PDFApplication {
       // data: buffer,
       url: url,
       cMapUrl: cMapUrl,
-      cMapPacked: true
+      cMapPacked: true,
     }).promise;
     if (this.pdfLinkService)
       this.pdfLinkService.setDocument(this.pdfDocument, null);
@@ -277,7 +276,7 @@ export default class PDFApplication {
         inkThickness: 5,
         inkOpacity: 100,
         scrollLeft: 0,
-        scrollTop: 0
+        scrollTop: 0,
       } as PDFState;
       // doing this we can make sure if anything missing from db, the default values are there
       Object.assign(state, pdfState);
@@ -411,7 +410,7 @@ export default class PDFApplication {
       for (let k in oldNodes) {
         let node = {
           label: oldNodes[k].title,
-          children: _dfs(oldNodes[k].items)
+          children: _dfs(oldNodes[k].items),
         } as TOCNode;
         if (typeof oldNodes[k].dest === "string") node.dest = oldNodes[k].dest;
         else {
@@ -496,7 +495,7 @@ export default class PDFApplication {
     this.changePageNumber(pageIdx + 1);
     this.eventBus.dispatch("updatetextlayermatches", {
       source: this.pdfFindController,
-      pageIndex: pageIdx
+      pageIndex: pageIdx,
     });
   }
 
@@ -507,7 +506,7 @@ export default class PDFApplication {
     this.changePageNumber(annot.data.pageNumber);
     annot.doms[0].scrollIntoView({
       block: "center",
-      inline: "center"
+      inline: "center",
     });
     nextTick(() => {
       this.annotStore.setActive(annotId);

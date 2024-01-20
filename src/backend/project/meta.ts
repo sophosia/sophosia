@@ -1,6 +1,5 @@
 import "@citation-js/plugin-isbn"; // must import this so we can use isbn as identifier
 import Cite from "citation-js";
-import { copyToClipboard } from "quasar";
 
 import { save } from "@tauri-apps/api/dialog";
 import {
@@ -88,11 +87,6 @@ export async function exportMeta(
 
     let metas = await getMeta(projects, format, options);
 
-    if (single) {
-      // if it's a single entry selected - copy to clipboard
-      copyToClipboard(metas as string);
-      return;
-    }
     if (format === "json") {
       let path = await save();
       if (path) {

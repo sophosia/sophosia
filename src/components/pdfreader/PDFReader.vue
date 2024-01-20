@@ -66,35 +66,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, provide, onMounted, computed, nextTick } from "vue";
+import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
 import {
   AnnotationData,
   AnnotationType,
   Project,
-  Rect
+  Rect,
 } from "src/backend/database";
-import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
+import { computed, nextTick, onMounted, provide, ref, watch } from "vue";
 import { KEY_pdfApp, KEY_project } from "./injectKeys";
 
-import PDFToolBar from "./PDFToolBar.vue";
-import RightMenu from "./RightMenu.vue";
 import AnnotCard from "./AnnotCard.vue";
 import FloatingMenu from "./FloatingMenu.vue";
+import PDFToolBar from "./PDFToolBar.vue";
 import PeekCard from "./PeekCard.vue";
+import RightMenu from "./RightMenu.vue";
 
-import { getProject } from "src/backend/project/project";
-import PDFApplication from "src/backend/pdfreader";
-import { Ink } from "src/backend/pdfannotation/annotations";
 import { QSplitter, throttle } from "quasar";
-import { Annotation } from "src/backend/pdfannotation/annotations";
 import { db } from "src/backend/database";
+import { Annotation, Ink } from "src/backend/pdfannotation/annotations";
+import PDFApplication from "src/backend/pdfreader";
+import { getProject } from "src/backend/project/project";
+import { useLayoutStore } from "src/stores/layoutStore";
+const layoutStore = useLayoutStore();
 
 /**********************************
  * Props, Data, and component refs
  **********************************/
 const props = defineProps({
   projectId: { type: String, required: true },
-  focusAnnotId: { type: String, required: false }
+  focusAnnotId: { type: String, required: false },
 });
 
 const initialized = ref(false);
@@ -123,7 +124,7 @@ const showRightMenu = computed({
 
       rightMenuSize.value = 0;
     }
-  }
+  },
 });
 
 // annot card & colorpicker
@@ -285,7 +286,7 @@ function highlightText(color: string) {
  ***************************/
 async function loadPDF(projectId: string) {
   project.value = (await getProject(projectId, {
-    includePDF: true
+    includePDF: true,
   })) as Project;
   if (!project.value.path) return;
   // load state before loading pdf
@@ -376,7 +377,7 @@ onMounted(async () => {
               content: "",
               color: "",
               rects: [] as Rect[],
-              type: AnnotationType.INK
+              type: AnnotationType.INK,
             } as AnnotationData;
             let annot = pdfApp.annotFactory.build(annotData);
             if (annot) {
@@ -409,6 +410,17 @@ onMounted(async () => {
             toggleAnnotCard(true, pdfApp.annotStore.selected as Annotation);
           };
           return;
+        } else {
+          // set the props.focusAnnotId to ""
+          // so that user can reselect the annotation by clicking a link in note
+          // need to better way to do this
+          if (project.value) {
+            layoutStore.openPage({
+              id: project.value._id,
+              type: "ReaderPage",
+              label: project.value.label,
+            });
+          }
         }
 
         // otherwise continue to determine what user is doing
@@ -464,8 +476,8 @@ onMounted(async () => {
                   left: Math.min(x1, ev.clientX),
                   top: Math.min(y1, ev.clientY),
                   width: Math.abs(x1 - ev.clientX),
-                  height: Math.abs(y1 - ev.clientY)
-                }
+                  height: Math.abs(y1 - ev.clientY),
+                },
               ];
               if (rects[0].width < 1 || rects[0].height < 1) return;
               rects[0] = pdfApp.annotFactory.offsetTransform(
@@ -483,7 +495,7 @@ onMounted(async () => {
                 pageNumber: e.pageNumber,
                 projectId: pdfApp.state.projectId,
                 dataType: "pdfAnnotation",
-                content: ""
+                content: "",
               } as AnnotationData;
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {
@@ -506,8 +518,8 @@ onMounted(async () => {
                   left: ev.clientX,
                   top: ev.clientY,
                   width: 0,
-                  height: 0
-                }
+                  height: 0,
+                },
               ];
               rects[0] = pdfApp.annotFactory.offsetTransform(
                 rects[0],
@@ -523,7 +535,7 @@ onMounted(async () => {
                 pageNumber: e.pageNumber,
                 projectId: pdfApp.state.projectId,
                 dataType: "pdfAnnotation",
-                content: ""
+                content: "",
               } as AnnotationData;
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {
