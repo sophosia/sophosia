@@ -39,7 +39,7 @@
         separator-style="background: var(--q-edge)"
         :separator-class="{
           'q-splitter-separator': stateStore.showLibraryRightMenu,
-          hidden: !stateStore.showLibraryRightMenu
+          hidden: !stateStore.showLibraryRightMenu,
         }"
         :disable="!stateStore.showLibraryRightMenu"
         v-model="rightMenuSize"
@@ -82,32 +82,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, provide, onMounted, inject, nextTick } from "vue";
+import { nextTick, onMounted, provide, ref, watch } from "vue";
 // types
 import { Folder, Note, Project } from "src/backend/database";
-import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
+import { KEY_deleteDialog, KEY_metaDialog } from "./injectKeys";
 // components
 import ActionBar from "src/components/library/ActionBar.vue";
-import ProjectTable from "src/components/library/ProjectTable.vue";
-import FolderTree from "src/components/library/FolderTree.vue";
-import RightMenu from "src/components/library/RightMenu.vue";
-import ExportDialog from "src/components/library/ExportDialog.vue";
-import IdentifierDialog from "src/components/library/IdentifierDialog.vue";
 import DeleteDialog from "src/components/library/DeleteDialog.vue";
+import ExportDialog from "src/components/library/ExportDialog.vue";
+import FolderTree from "src/components/library/FolderTree.vue";
+import IdentifierDialog from "src/components/library/IdentifierDialog.vue";
 import ImportDialog from "src/components/library/ImportDialog.vue";
+import ProjectTable from "src/components/library/ProjectTable.vue";
+import RightMenu from "src/components/library/RightMenu.vue";
 // db
+import { basename, extname } from "@tauri-apps/api/path";
+import { copyFileToProjectFolder } from "src/backend/project/file";
+import {
+  exportMeta,
+  getMeta,
+  getMetaFromFile,
+  importMeta,
+} from "src/backend/project/meta";
 import { useStateStore } from "src/stores/appState";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
-import {
-  getMeta,
-  exportMeta,
-  importMeta,
-  getMetaFromFile
-} from "src/backend/project/meta";
-import { copyFileToProjectFolder } from "src/backend/project/file";
-import { basename, extname } from "@tauri-apps/api/path";
-import { E } from "@tauri-apps/api/path-9b1e7ad5";
 
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
@@ -126,8 +125,7 @@ const treeViewSize = ref(20);
 const rightMenuSize = ref(0);
 
 const exportFolderDialog = ref(false);
-const folder = ref<Folder | null>(null);
-const project = ref<Project | null>(null);
+const folder = ref<Folder | undefined>();
 
 const deleteDialog = ref(false);
 const deleteProjects = ref<Project[]>([]);
@@ -222,7 +220,7 @@ async function addProjectsByFiles(filePaths: string[]) {
       await projectStore.updateProject(project._id, {
         path: filename,
         title: title,
-        label: title
+        label: title,
       } as Project);
       // do not use await since this task takes time
       getMetaFromFile(filePath).then((meta) => {
@@ -325,15 +323,9 @@ async function deleteProject() {
   }
 }
 
-//handles trigger for both folder tree, tableproject row, and active projects
-function showExportReferenceDialog(_folder?: Folder, _project?: Project) {
-  if (_folder) {
-    folder.value = _folder;
-    exportFolderDialog.value = true;
-  } else if (_project) {
-    project.value = _project;
-    exportFolderDialog.value = true;
-  }
+function showExportReferenceDialog(_folder: Folder) {
+  folder.value = _folder;
+  exportFolderDialog.value = true;
 }
 /**********************************************************
  * FolderTree
@@ -348,16 +340,7 @@ async function exportFolder(
   format: string,
   options: { format?: string; template?: string }
 ) {
-  if (!folder.value) {
-    if (project.value) {
-      console.log("VALID:", project.value);
-      await exportMeta(format, options, undefined, project.value);
-    }
-  } else {
-    await exportMeta(format, options, folder.value);
-  }
-  console.log("FOLDER", folder.value);
-  console.log("PROJECT", project.value);
+  await exportMeta(format, options, folder.value);
 }
 
 /**************************************************

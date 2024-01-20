@@ -64,12 +64,14 @@
 </template>
 
 <script setup lang="ts">
+import { copyToClipboard, useQuasar } from "quasar";
+import { Author, Project } from "src/backend/database";
+import { getMeta } from "src/backend/project/meta";
 import { PropType, ref } from "vue";
-import { Project, Author } from "src/backend/database";
-import TableProjectMenu from "./TableProjectMenu.vue";
+import { useI18n } from "vue-i18n";
 import ExportDialog from "./ExportDialog.vue";
-import { exportMeta } from "src/backend/project/meta";
-import { useQuasar } from "quasar";
+import TableProjectMenu from "./TableProjectMenu.vue";
+const { t } = useI18n({ useScope: "global" });
 
 const menu = ref<InstanceType<typeof TableProjectMenu>>();
 const exportCitationDialog = ref(false);
@@ -86,8 +88,8 @@ const props = defineProps({
       expand: boolean;
       selected: boolean;
     }>,
-    required: true
-  }
+    required: true,
+  },
 });
 const emit = defineEmits(["expandRow", "setFavorite"]);
 
@@ -111,13 +113,10 @@ async function exportCitation(
   options: { format?: string; template?: string }
 ) {
   if (project.value) {
-    await exportMeta(format, options, undefined, project.value);
-    $q.notify({
-      message: "Copied",
-      color: "blue",
-      position: "bottom",
-      timeout: 500
-    });
+    // const metas = await exportMeta(format, options, undefined, project.value);
+    const meta = await getMeta([project.value], format, options);
+    await copyToClipboard(meta as string);
+    $q.notify(t("text-copied"));
   }
 }
 
