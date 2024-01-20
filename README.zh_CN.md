@@ -12,7 +12,7 @@ style="width: 100px; vertical-align:middle">
 <br>
 <a title="Twitter" target="_blank" href="https://twitter.com/sophosia_app"><img alt="Twitter Follow" src="https://img.shields.io/badge/@sophosia_app-1976d2?logo=twitter&style=social"></a>
 <a title="QQ" target="_blank" href=""><img alt="QQ Group" src="https://img.shields.io/badge/QQ:808198109-1976d2?logo=tencentqq&style=social"></a>
-<a title="Discord" target="_blank" href="https://discord.gg/m3QkadNJ"><img alt="Join Discord" src="https://img.shields.io/badge/Sophosia-1976d2?logo=discord&style=social"></a>
+<a title="Discord" target="_blank" href="https://discord.gg/8RDZE85tBj"><img alt="Join Discord" src="https://img.shields.io/badge/Sophosia-1976d2?logo=discord&style=social"></a>
 </p>
 
 <p align="center">
