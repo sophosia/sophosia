@@ -1,4 +1,4 @@
-import { sep, extname } from "@tauri-apps/api/path";
+import { extname, sep } from "@tauri-apps/api/path";
 import { Author, db } from "../database";
 interface TreeNode {
   label: string;
@@ -89,7 +89,7 @@ export async function oldToNewId(oldId: string, newLabel: string) {
  * @returns
  */
 export function linkToId(link: string): string {
-  return link.replaceAll("%20", " ");
+  return link.replace("sophosia://open-item/", "").replaceAll("%20", " ");
 }
 
 /**
