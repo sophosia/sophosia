@@ -6,7 +6,6 @@ import {
   Edge,
   EdgeUI,
   NodeUI,
-  Note,
   Project,
   db,
   idb,
@@ -112,7 +111,6 @@ async function getCurrentAndOrParentNodes(
  * @returns returns {nodes, edges}
  */
 export async function getGraph(itemId: string) {
-  console.log("draw graph");
   const nodes = [] as NodeUI[];
   const edges = [] as EdgeUI[];
 
@@ -120,13 +118,11 @@ export async function getGraph(itemId: string) {
   links.push(...(await getForwardLinks(itemId)));
   // backward links
   links.push(...(await idb.getAllFromIndex("links", "target", itemId)));
-  console.log("links", links);
 
   // create graph
   const uniqueIds = [] as string[];
   // add current node and / or its parent
   const currentAndOrParentNodes = await getCurrentAndOrParentNodes(itemId);
-  console.log("current", currentAndOrParentNodes);
   for (const node of currentAndOrParentNodes) {
     if (!uniqueIds.includes(node.data.id)) {
       nodes.push(node);
@@ -151,6 +147,5 @@ export async function getGraph(itemId: string) {
       }
     }
   }
-  console.log("prepare notes");
   return { nodes, edges };
 }
