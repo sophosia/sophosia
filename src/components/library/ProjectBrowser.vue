@@ -27,7 +27,7 @@
     <template v-slot:before>
       <FolderTree
         style="background: var(--color-library-treeview-bkgd)"
-        @exportFolder="(folder: Folder) => showExportReferenceDialog(folder,undefined)"
+        @exportFolder="(folder: Folder) => showExportReferenceDialog(folder)"
         ref="treeview"
       />
     </template>
