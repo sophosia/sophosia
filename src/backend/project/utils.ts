@@ -47,7 +47,8 @@ export function authorToString(authors: Author[] | undefined) {
  * @returns id
  */
 export function pathToId(path: string) {
-  return path.replace(db.config.storagePath + sep, "").replace(sep, "/");
+  const _sep = process.env.TEST ? "/" : sep;
+  return path.replace(db.config.storagePath + _sep, "").replace(_sep, "/");
 }
 
 /**
@@ -58,7 +59,8 @@ export function pathToId(path: string) {
  * @returns path absolute path
  */
 export function idToPath(id: string) {
-  return db.config.storagePath + sep + id.replace("/", sep);
+  const _sep = process.env.TEST ? "/" : sep;
+  return db.config.storagePath + _sep + id.replace("/", _sep);
 }
 
 export async function oldToNewId(oldId: string, newLabel: string) {

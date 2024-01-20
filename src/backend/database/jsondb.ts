@@ -1,4 +1,3 @@
-import { reactive } from "vue";
 import {
   BaseDirectory,
   createDir,
@@ -6,13 +5,13 @@ import {
   readDir,
   readTextFile,
   removeFile,
-  renameFile,
   writeTextFile,
 } from "@tauri-apps/api/fs";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { customAlphabet } from "nanoid";
-const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
+import { reactive } from "vue";
 import type { Config } from "./models";
+const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
 interface Doc extends Object {
   _id: string;

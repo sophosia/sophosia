@@ -20,5 +20,8 @@ jobs:
           cache: "yarn"
       - run: yarn install
 
-      - name: Run tests
-        run: yarn test:ci
+      - name: Run unit test
+        run: yarn test:unit:ci
+
+      - name: Run frontend test
+        run: yarn test:component:ci

@@ -1,62 +1,40 @@
-import { describe, it, expect, beforeAll } from "vitest";
-import { createNote, addNote, getNote } from "./note";
-import { createProject, addProject } from "./project";
+import { beforeAll, describe, expect, it } from "vitest";
 import { Note, NoteType, Project } from "../database";
-import { getLinks, getParents } from "./graph";
+import { getGraph, updateLinks } from "./graph";
+import { addNote, createNote } from "./note";
+import { addProject, createProject } from "./project";
 
+const notes = [] as Note[];
+const projects = [] as Project[];
 describe("graph.ts", () => {
   /**
    * The graph here is
    * note0 -> note1 -> note2
    */
   beforeAll(async () => {
-    const projects = [] as Project[];
     for (let i = 0; i < 3; i++) {
       const project = createProject("testFolder");
       project.title = `project${i}`;
       project.label = `project${i}`;
       projects.push((await addProject(project)) as Project);
     }
-    const note2 = createNote(projects[2]._id, NoteType.MARKDOWN);
-    note2._id = "note2";
-    note2.label = "note2";
-    await addNote(note2);
+    const note2 = await createNote(projects[2]._id, NoteType.MARKDOWN);
+    notes.push((await addNote(note2)) as Note);
 
-    const note1 = createNote(projects[1]._id, NoteType.MARKDOWN);
-    note1._id = "note1";
-    note1.label = "note1";
-    note1.links.push({
-      id: note2._id,
-      label: note2.label,
-      type: undefined,
-    });
-    await addNote(note1);
+    const note1 = await createNote(projects[1]._id, NoteType.MARKDOWN);
+    notes.push((await addNote(note1)) as Note);
+    await updateLinks(note1._id, [{ source: note1._id, target: note2._id }]);
 
-    const note0 = createNote(projects[0]._id, NoteType.MARKDOWN);
-    note0._id = "note0";
-    note0.label = "note0";
-    note0.links.push({
-      id: note1._id,
-      label: note1.label,
-      type: undefined,
-    });
-    await addNote(note0);
+    const note0 = await createNote(projects[0]._id, NoteType.MARKDOWN);
+    notes.push((await addNote(note0)) as Note);
+    await updateLinks(note0._id, [{ source: note0._id, target: note1._id }]);
   });
 
-  it("getLinks", async () => {
-    const note = (await getNote("note1")) as Note;
-    const elements = await getLinks(note);
-    console.log(elements.nodes);
-    console.log(elements.edges);
-    expect(elements.nodes).toHaveLength(3);
-    expect(elements.edges).toHaveLength(2);
-  });
-
-  it("getParents", async () => {
-    const note = (await getNote("note1")) as Note;
-    const elements = await getLinks(note);
-
-    const parentNodes = await getParents(elements.nodes);
-    expect(parentNodes).toHaveLength(3);
+  it("getGraph", async () => {
+    // get graph
+    const { nodes, edges } = await getGraph(notes[1]._id);
+    // should have num of nodes = num of notes and their parents
+    expect(nodes.length).toBe(projects.length + notes.length);
+    expect(edges.length).toBe(2);
   });
 });

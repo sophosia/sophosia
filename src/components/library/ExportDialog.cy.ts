@@ -32,7 +32,7 @@ describe("<ExportDialog />", () => {
   it("confirm format==bibliorgraphy", () => {
     const vue = cy.mount(ExportDialog, { props: { show: true } });
     const templates = [
-      { label: "APA", value: "apa" },
+      { label: "APA", value: "APA 7th" },
       { label: "Vancouver", value: "vancouver" },
       { label: "Havard1", value: "havard1" },
     ];
