@@ -19,8 +19,7 @@
     "test:unit:ci": "vitest run",
     "test:unit:ui": "vitest --ui",
     "test:component": "cross-env NODE_ENV=test cypress open --component",
-    "test:component:ci": "cross-env NODE_ENV=test cypress run --component",
-    "test:ci": "yarn run test:component:ci"
+    "test:component:ci": "cross-env NODE_ENV=test cypress run --component"
   },
   "dependencies": {
     "@citation-js/plugin-csl": "^0.7.2",
