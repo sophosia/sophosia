@@ -1,9 +1,9 @@
 <template>
   <q-tr>
-    <ExportDialog
+    <!-- <ExportDialog
       v-model:show="exportCitationDialog"
       @confirm="(format, options) => exportCitation(format, options)"
-    />
+    /> -->
     <q-th auto-width>
       <input
         type="checkbox"
@@ -69,7 +69,6 @@ import { Author, Project } from "src/backend/database";
 import { getMeta } from "src/backend/project/meta";
 import { PropType, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import ExportDialog from "./ExportDialog.vue";
 import TableProjectMenu from "./TableProjectMenu.vue";
 const { t } = useI18n({ useScope: "global" });
 

@@ -1,16 +1,16 @@
-import { db, FolderOrNote, Project, SpecialFolder } from "../database";
+import { open } from "@tauri-apps/api/dialog";
+import { readDir, removeFile, renameFile } from "@tauri-apps/api/fs";
+import { extname, join } from "@tauri-apps/api/path";
+import { i18n } from "src/boot/i18n";
+import { FolderOrNote, Project, SpecialFolder, db } from "../database";
 import {
   copyFileToProjectFolder,
   createProjectFolder,
   deleteProjectFolder,
 } from "./file";
-import { extname, join } from "@tauri-apps/api/path";
-import { open } from "@tauri-apps/api/dialog";
-import { exists, readDir, removeFile, renameFile } from "@tauri-apps/api/fs";
-import { authorToString } from "./utils";
-import { i18n } from "src/boot/i18n";
-import { getNotes, getNoteTree, saveNote } from "./note";
 import { generateCiteKey } from "./meta";
+import { getNoteTree, getNotes, saveNote } from "./note";
+import { authorToString } from "./utils";
 const { t } = i18n.global;
 
 /**

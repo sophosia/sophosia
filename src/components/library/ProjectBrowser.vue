@@ -1,23 +1,4 @@
 <template>
-  <ImportDialog
-    v-model:show="importDialog"
-    @confirm="(isCreateFolder) => addProjectsByCollection(isCreateFolder)"
-  />
-  <ExportDialog
-    v-model:show="exportFolderDialog"
-    @confirm="(format, options) => exportFolder(format, options)"
-  />
-  <IdentifierDialog
-    v-model:show="identifierDialog"
-    @confirm="(identifier) => processIdentifier(identifier)"
-  />
-  <DeleteDialog
-    v-model:show="deleteDialog"
-    :projects="deleteProjects"
-    :deleteFromDB="deleteFromDB"
-    @confirm="deleteProject"
-  />
-
   <q-splitter
     style="position: absolute; width: 100%; height: 100%"
     :limits="[10, 30]"
@@ -84,15 +65,11 @@
 <script setup lang="ts">
 import { nextTick, onMounted, provide, ref, watch } from "vue";
 // types
-import { Folder, Note, Project } from "src/backend/database";
-import { KEY_deleteDialog, KEY_metaDialog } from "./injectKeys";
+import { Folder, Project } from "src/backend/database";
+import { KEY_metaDialog } from "./injectKeys";
 // components
 import ActionBar from "src/components/library/ActionBar.vue";
-import DeleteDialog from "src/components/library/DeleteDialog.vue";
-import ExportDialog from "src/components/library/ExportDialog.vue";
 import FolderTree from "src/components/library/FolderTree.vue";
-import IdentifierDialog from "src/components/library/IdentifierDialog.vue";
-import ImportDialog from "src/components/library/ImportDialog.vue";
 import ProjectTable from "src/components/library/ProjectTable.vue";
 import RightMenu from "src/components/library/RightMenu.vue";
 // db
@@ -104,12 +81,11 @@ import {
   getMetaFromFile,
   importMeta,
 } from "src/backend/project/meta";
-import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/stateStore";
+import { importDialog } from "../dialogs/dialogController";
 
 const stateStore = useStateStore();
-const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 
 /*********************************
@@ -127,15 +103,8 @@ const rightMenuSize = ref(0);
 const exportFolderDialog = ref(false);
 const folder = ref<Folder | undefined>();
 
-const deleteDialog = ref(false);
-const deleteProjects = ref<Project[]>([]);
-const deleteFromDB = ref(false);
-
 const identifierDialog = ref(false);
 const createProject = ref(false);
-
-const importDialog = ref(false);
-const collectionPath = ref<string>("");
 
 watch(
   () => stateStore.selectedFolderId,
@@ -146,7 +115,6 @@ watch(
 );
 
 // for projectRow
-provide(KEY_deleteDialog, showDeleteDialog);
 provide(KEY_metaDialog, showSearchMetaDialog);
 
 onMounted(async () => {
@@ -159,16 +127,6 @@ onMounted(async () => {
 /************************************************
  * Projects (get, add, delete, update, attachFile, renameFromMeta)
  ************************************************/
-/**
- * Delete project
- * @param project
- * @param deleteFromDB
- */
-function showDeleteDialog(_deleteProjects: Project[], _deleteFromDB: boolean) {
-  deleteDialog.value = true;
-  deleteProjects.value = _deleteProjects; // project to be delted
-  deleteFromDB.value = _deleteFromDB;
-}
 
 /**
  * Update project by meta
@@ -189,9 +147,11 @@ function showIdentifierDialog(_createProject: boolean) {
   createProject.value = _createProject;
 }
 
-function showImportDialog(_collectionPath: string) {
-  importDialog.value = true;
-  collectionPath.value = _collectionPath;
+function showImportDialog(collectionPath: string) {
+  importDialog.show();
+  importDialog.onConfirm(() => {
+    addProjectsByCollection(collectionPath, importDialog.isCreateFolder);
+  });
 }
 
 /**
@@ -236,16 +196,19 @@ async function addProjectsByFiles(filePaths: string[]) {
  * Add projects by a collection file (.bib, .ris, etc...)
  * @param isCreateFolder
  */
-async function addProjectsByCollection(isCreateFolder: boolean) {
-  if (collectionPath.value === "") return;
+async function addProjectsByCollection(
+  collectionPath: string,
+  isCreateFolder: boolean
+) {
+  if (collectionPath === "") return;
   // create folder if user wants to
   if (isCreateFolder) {
     if (!treeview.value) return;
     let rootNode = treeview.value.getLibraryNode();
     if (!rootNode) return;
     let folderName = await basename(
-      collectionPath.value,
-      `.${await extname(collectionPath.value)}`
+      collectionPath,
+      `.${await extname(collectionPath)}`
     );
 
     let focus = true;
@@ -254,16 +217,13 @@ async function addProjectsByCollection(isCreateFolder: boolean) {
 
   await nextTick(); //wait until ui actions settled
 
-  let metas = await importMeta(collectionPath.value);
+  let metas = await importMeta(collectionPath);
   for (let meta of metas) {
     // add a new project to db and update it with meta
     let project = projectStore.createProject(stateStore.selectedFolderId);
     await projectStore.addProject(project, true);
     await projectStore.updateProject(project._id, meta as Project);
   }
-
-  importDialog.value = false;
-  collectionPath.value = "";
 }
 
 async function processIdentifier(identifier: string) {
@@ -282,43 +242,6 @@ async function processIdentifier(identifier: string) {
     await projectStore.updateProject(
       projectStore.selected[0]._id,
       meta as Project
-    );
-  }
-}
-
-/**
- * Delete a project from the current folder,
- * if deleteFromDB is true, delete the project from database and remove the actual files
- */
-async function deleteProject() {
-  // delete projects
-  let deleteIds = projectStore.selected.map((p) => p._id);
-
-  for (let projectId of deleteIds) {
-    let project = projectStore.openedProjects.find((p) => p._id === projectId);
-    if (project) {
-      for (let note of project.children as Note[]) {
-        layoutStore.closePage(projectId);
-        await nextTick(); // do it slowly one by one
-        layoutStore.closePage(note._id);
-      }
-
-      // remove project from openedProjects
-      projectStore.openedProjects = projectStore.openedProjects.filter(
-        (p) => p._id !== projectId
-      );
-
-      // if no page left, open library page
-      setTimeout(() => {
-        if (projectStore.openedProjects.length === 0)
-          layoutStore.currentItemId = "library";
-      }, 50);
-    }
-    // delete from db
-    projectStore.deleteProject(
-      projectId,
-      deleteFromDB.value,
-      stateStore.selectedFolderId
     );
   }
 }

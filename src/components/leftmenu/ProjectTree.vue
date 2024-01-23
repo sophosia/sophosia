@@ -1,8 +1,8 @@
 <template>
-  <ExportDialog
+  <!-- <ExportDialog
     v-model:show="exportCitationDialog"
     @confirm="(format:any, options:any) => exportCitation(format, options)"
-  />
+  /> -->
   <q-tree
     ref="tree"
     dense
@@ -186,7 +186,6 @@ import { useQuasar } from "quasar";
 import { generateCiteKey } from "src/backend/project/meta";
 import { getNotes } from "src/backend/project/note";
 import { getProject } from "src/backend/project/project";
-import ExportDialog from "src/components/library/ExportDialog.vue";
 import FolderMenu from "./FolderMenu.vue";
 import NoteMenu from "./NoteMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";

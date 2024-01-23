@@ -53,6 +53,7 @@ watchEffect(async () => {
 });
 
 onMounted(async () => {
+  console.log("onmounted");
   if (process.env.PROD) {
     // disable default context menu
     // use ctrl+shift+i on window / linux, command+option+i on macos to open dev tool
