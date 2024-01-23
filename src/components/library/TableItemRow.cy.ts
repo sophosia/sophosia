@@ -1,6 +1,6 @@
 import { Note } from "src/backend/database";
+import { useStateStore } from "src/stores/stateStore";
 import TableItemRow from "./TableItemRow.vue";
-import { useStateStore } from "src/stores/appState";
 
 describe("<TableItemRow />", () => {
   beforeEach(() => {

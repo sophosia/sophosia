@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from "react";
 import {
-  Excalidraw,
-  MainMenu,
-  serializeAsJSON,
-  serializeLibraryAsJSON,
+    Excalidraw,
+    MainMenu,
+    serializeAsJSON,
+    serializeLibraryAsJSON,
 } from "@excalidraw/excalidraw";
-import "src/css/excalidraw/theme.scss";
-import { debounce } from "quasar";
-import { useStateStore } from "src/stores/appState";
 import { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
 import {
-  AppState as ExcalidrawState,
-  BinaryFiles,
-  ExcalidrawImperativeAPI,
-  LibraryItems,
+    BinaryFiles,
+    ExcalidrawImperativeAPI,
+    AppState as ExcalidrawState,
+    LibraryItems,
 } from "@excalidraw/excalidraw/types/types";
-import { db } from "src/backend/database";
-import { join } from "@tauri-apps/api/path";
 import {
-  readTextFile,
-  writeTextFile,
-  exists,
-  createDir,
+    createDir,
+    exists,
+    readTextFile,
+    writeTextFile,
 } from "@tauri-apps/api/fs";
+import { join } from "@tauri-apps/api/path";
+import { debounce } from "quasar";
+import { useEffect, useState } from "react";
+import { db } from "src/backend/database";
 import { loadNote, saveNote } from "src/backend/project/note";
+import "src/css/excalidraw/theme.scss";
+import { useStateStore } from "src/stores/stateStore";
 
 interface InitialData {
   elements: ExcalidrawElement[];

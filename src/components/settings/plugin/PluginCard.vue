@@ -87,9 +87,9 @@
   </q-card>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, PropType, computed, watch, nextTick } from "vue";
 import { PluginMeta, PluginStatus } from "src/backend/database";
-import { useStateStore } from "src/stores/appState";
+import { useStateStore } from "src/stores/stateStore";
+import { PropType, computed, onMounted, ref, watch } from "vue";
 const stateStore = useStateStore();
 
 const props = defineProps({
