@@ -1,5 +1,5 @@
 import { Project } from "src/backend/database";
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 
 class Dialog {
   private _visible = ref(false);
@@ -71,5 +71,41 @@ class DeleteDialog extends Dialog {
   }
 }
 
+class IdentifierDialog extends Dialog {
+  private _identifier = ref("");
+
+  get identifier() {
+    return this._identifier.value;
+  }
+
+  set identifier(id: string) {
+    this._identifier.value = id;
+  }
+}
+
+class ExportDialog extends Dialog {
+  formats = reactive([
+    { label: "Bibliography", value: "bibliography" },
+    { label: "BibTeX", value: "bibtex" },
+    { label: "BibLaTeX", value: "biblatex" },
+    { label: "CLS-JSON", value: "json" },
+    { label: "RIS", value: "ris" },
+  ]);
+  format = this.formats[1];
+
+  templates = reactive([
+    // { label: "APA", value: "apa" },//this is the default APA citation-js template - not needed
+    { label: "APA 7th", value: "APA 7th" },
+    { label: "Chicago 17th", value: "Chicago 17th" },
+    { label: "IEEE", value: "IEEE" },
+    { label: "MLA 9th", value: "MLA 9th" },
+    { label: "Vancouver", value: "vancouver" },
+    { label: "Havard1", value: "havard1" },
+  ]);
+  template = this.templates[0];
+}
+
 export const importDialog = new ImportDialog();
 export const deleteDialog = new DeleteDialog();
+export const identifierDialog = new IdentifierDialog();
+export const exportDialog = new ExportDialog();

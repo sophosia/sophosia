@@ -74,6 +74,7 @@ import ProjectTable from "src/components/library/ProjectTable.vue";
 import RightMenu from "src/components/library/RightMenu.vue";
 // db
 import { basename, extname } from "@tauri-apps/api/path";
+import { template } from "lodash";
 import { copyFileToProjectFolder } from "src/backend/project/file";
 import {
   exportMeta,
@@ -81,9 +82,13 @@ import {
   getMetaFromFile,
   importMeta,
 } from "src/backend/project/meta";
+import {
+  exportDialog,
+  identifierDialog,
+  importDialog,
+} from "src/components/dialogs/dialogController";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/stateStore";
-import { importDialog } from "../dialogs/dialogController";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -99,12 +104,6 @@ const searchString = ref("");
 
 const treeViewSize = ref(20);
 const rightMenuSize = ref(0);
-
-const exportFolderDialog = ref(false);
-const folder = ref<Folder | undefined>();
-
-const identifierDialog = ref(false);
-const createProject = ref(false);
 
 watch(
   () => stateStore.selectedFolderId,
@@ -142,9 +141,12 @@ function showSearchMetaDialog() {
  * otherwise the identifier will be used to update an existing project
  * @param createProject
  */
-function showIdentifierDialog(_createProject: boolean) {
-  identifierDialog.value = true;
-  createProject.value = _createProject;
+function showIdentifierDialog(isCreateProject: boolean) {
+  identifierDialog.show();
+  identifierDialog.onConfirm(async () => {
+    await processIdentifier(identifierDialog.identifier, isCreateProject);
+    identifierDialog.identifier = "";
+  });
 }
 
 function showImportDialog(collectionPath: string) {
@@ -226,13 +228,13 @@ async function addProjectsByCollection(
   }
 }
 
-async function processIdentifier(identifier: string) {
+async function processIdentifier(identifier: string, isCreateProject: boolean) {
   if (!identifier) return;
 
   let metas = await getMeta([identifier], "json");
   let meta = metas[0];
 
-  if (createProject.value) {
+  if (isCreateProject) {
     // add a new project to db and update it with meta
     let project = projectStore.createProject(stateStore.selectedFolderId);
     await projectStore.addProject(project, true);
@@ -246,9 +248,15 @@ async function processIdentifier(identifier: string) {
   }
 }
 
-function showExportReferenceDialog(_folder: Folder) {
-  folder.value = _folder;
-  exportFolderDialog.value = true;
+function showExportReferenceDialog(folder: Folder) {
+  exportDialog.show();
+  exportDialog.onConfirm(async () => {
+    let options = undefined;
+    const format = exportDialog.format.value;
+    if (format === "bibliography")
+      options = { template: exportDialog.template.value };
+    await exportFolder(format, folder, options);
+  });
 }
 /**********************************************************
  * FolderTree
@@ -261,9 +269,10 @@ function showExportReferenceDialog(_folder: Folder) {
  */
 async function exportFolder(
   format: string,
-  options: { format?: string; template?: string }
+  folder: Folder,
+  options?: { format?: string; template?: string }
 ) {
-  await exportMeta(format, options, folder.value);
+  await exportMeta(format, options, folder);
 }
 
 /**************************************************

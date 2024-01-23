@@ -71,7 +71,7 @@ export async function getMeta(
  */
 export async function exportMeta(
   format: string,
-  options: { format?: string; template?: string },
+  options?: { format?: string; template?: string },
   folder?: Folder,
   project?: Project //for single project citation
 ) {

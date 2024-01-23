@@ -1,7 +1,7 @@
 <template>
   <q-dialog
-    :model-value="show"
-    @hide="cancel"
+    v-model="exportDialog.visible"
+    @hide="exportDialog.close()"
   >
     <q-card style="min-width: 300px">
       <q-card-section>
@@ -15,18 +15,18 @@
             outlined
             dense
             options-dense
-            :options="formats"
-            v-model="format"
+            :options="exportDialog.formats"
+            v-model="exportDialog.format"
             data-cy="format-select"
           />
 
           <q-select
-            v-if="format.value === 'bibliography'"
+            v-if="exportDialog.format.value === 'bibliography'"
             outlined
             dense
             options-dense
-            :options="templates"
-            v-model="template"
+            :options="exportDialog.templates"
+            v-model="exportDialog.template"
             data-cy="template-select"
           />
         </div>
@@ -36,14 +36,14 @@
           flat
           square
           label="cancel"
-          @click="cancel"
+          @click="exportDialog.close()"
           data-cy="btn-cancel"
         />
         <q-btn
           flat
           square
           label="confirm"
-          @click="confirm"
+          @click="exportDialog.confirm()"
           data-cy="btn-confirm"
         />
       </q-card-actions>
@@ -51,41 +51,5 @@
   </q-dialog>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
-
-const props = defineProps({ show: { type: Boolean, required: true } });
-const emit = defineEmits(["update:show", "confirm"]);
-
-const formats = ref([
-  { label: "Bibliography", value: "bibliography" },
-  { label: "BibTeX", value: "bibtex" },
-  { label: "BibLaTeX", value: "biblatex" },
-  { label: "CLS-JSON", value: "json" },
-  { label: "RIS", value: "ris" }
-]);
-const format = ref({ label: "BibTeX", value: "bibtex" });
-const templates = ref([
-  // { label: "APA", value: "apa" },//this is the default APA citation-js template - not needed
-  { label: "APA 7th", value: "APA 7th" },
-  { label: "Chicago 17th", value: "Chicago 17th" },
-  { label: "IEEE", value: "IEEE" },
-  { label: "MLA 9th", value: "MLA 9th" },
-  { label: "Vancouver", value: "vancouver" },
-  { label: "Havard1", value: "havard1" }
-]);
-
-const template = ref({ label: "APA 7th", value: "APA 7th" });
-
-function confirm() {
-  let options = null;
-  if (format.value.value === "bibliography")
-    options = { template: template.value.value };
-  emit("confirm", format.value.value, options);
-  emit("update:show", false);
-}
-
-function cancel() {
-  // do nothing, only close the dialog
-  emit("update:show", false);
-}
+import { exportDialog } from "./dialogController";
 </script>
