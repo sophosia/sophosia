@@ -26,7 +26,7 @@
           dragover:
             !!dragoverNode &&
             dragoverNode == prop.node &&
-            draggingNode != prop.node
+            draggingNode != prop.node,
         }"
         @click="selectItem(prop.node._id)"
         :draggable="prop.node.dataType !== 'project'"
@@ -162,35 +162,34 @@
   </q-tree>
 </template>
 <script setup lang="ts">
-import { inject, nextTick, onMounted, ref, watchEffect } from "vue";
 import { QTree, copyToClipboard } from "quasar";
 import {
   FolderOrNote,
   Note,
   NoteType,
   Page,
-  Project
+  Project,
 } from "src/backend/database";
+import { nextTick, onMounted, ref, watchEffect } from "vue";
 // db
-import { useStateStore } from "src/stores/appState";
+import { invoke } from "@tauri-apps/api";
+import { exists } from "@tauri-apps/api/fs";
+import { dirname, join } from "@tauri-apps/api/path";
+import { exportMeta } from "src/backend/project/meta";
+import { idToPath, oldToNewId } from "src/backend/project/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
-import { dirname, join } from "@tauri-apps/api/path";
-import { exists } from "@tauri-apps/api/fs";
-import { invoke } from "@tauri-apps/api";
+import { useStateStore } from "src/stores/stateStore";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import { idToPath, oldToNewId } from "src/backend/project/utils";
-import { exportMeta } from "src/backend/project/meta";
-
 //components
+import { useQuasar } from "quasar";
+import { generateCiteKey } from "src/backend/project/meta";
+import { getNotes } from "src/backend/project/note";
+import { getProject } from "src/backend/project/project";
+import ExportDialog from "src/components/library/ExportDialog.vue";
+import FolderMenu from "./FolderMenu.vue";
 import NoteMenu from "./NoteMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
-import FolderMenu from "./FolderMenu.vue";
-import { getNotes } from "src/backend/project/note";
-import { generateCiteKey } from "src/backend/project/meta";
-import ExportDialog from "src/components/library/ExportDialog.vue";
-import { getProject } from "src/backend/project/project";
-import { useQuasar } from "quasar";
 
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
@@ -241,7 +240,7 @@ async function exportCitation(
       message: "Copied",
       color: "blue",
       position: "bottom",
-      timeout: 500
+      timeout: 500,
     });
   }
 }
@@ -260,7 +259,7 @@ function selectItem(nodeId: string) {
 async function showInExplorer(node: Project | Note) {
   const path = idToPath(node._id);
   await invoke("show_in_folder", {
-    path: path
+    path: path,
   });
 }
 
@@ -347,7 +346,7 @@ async function renameNode() {
       // update window tab name
       layoutStore.renamePage(oldNodeId, {
         id: newNodeId,
-        label: newLabel
+        label: newLabel,
       } as Page);
       await nextTick(); // wait until itemId changes in the page
     }
@@ -472,13 +471,13 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
       const newNoteId = oldNoteId.replace(dragId, newId);
       layoutStore.renamePage(oldNoteId, {
         id: newNoteId,
-        label: note.label
+        label: note.label,
       } as Page);
     }
   } else {
     layoutStore.renamePage(dragId, {
       id: newId,
-      label: label
+      label: label,
     } as Page);
   }
   await nextTick(); // wait until the itemId is updated

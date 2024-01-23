@@ -39,10 +39,10 @@
 
 <script setup lang="ts">
 // types
+import { EdgeUI, NodeUI } from "src/backend/database";
 import { inject, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { NodeUI, EdgeUI } from "src/backend/database";
 // db
-import { useStateStore } from "src/stores/appState";
+import { useStateStore } from "src/stores/stateStore";
 // cytoscape
 import cytoscape from "cytoscape";
 import cola from "cytoscape-cola";

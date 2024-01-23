@@ -55,7 +55,7 @@
         :class="{
           'tableview-highlighted-row':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
-            !isClickingPDF
+            !isClickingPDF,
         }"
         draggable="true"
         @dragstart="onDragStart"
@@ -75,7 +75,7 @@
         :class="{
           'bg-primary':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
-            isClickingPDF
+            isClickingPDF,
         }"
         @click="isClickingPDF = true"
       />
@@ -88,7 +88,7 @@
         :class="{
           'bg-primary': projectStore.selected
             .map((item) => item._id)
-            .includes(note._id)
+            .includes(note._id),
         }"
       />
 
@@ -98,7 +98,7 @@
         :class="{
           'bg-primary': projectStore.selected
             .map((item) => item._id)
-            .includes(props.key)
+            .includes(props.key),
         }"
         :width="searchRowWidth"
         :text="expansionText[props.rowIndex]"
@@ -109,6 +109,8 @@
 
 <script setup lang="ts">
 // types
+import { QTable, QTableColumn, QTr } from "quasar";
+import { Note, Project } from "src/backend/database";
 import {
   computed,
   nextTick,
@@ -116,27 +118,25 @@ import {
   PropType,
   provide,
   ref,
-  toRaw
+  toRaw,
 } from "vue";
-import { Project, Note } from "src/backend/database";
-import { QTable, QTableColumn, QTr } from "quasar";
 // components
 import TableItemRow from "./TableItemRow.vue";
-import TableSearchRow from "./TableSearchRow.vue";
 import TableProjectRow from "./TableProjectRow.vue";
+import TableSearchRow from "./TableSearchRow.vue";
 // db
-import { useStateStore } from "src/stores/appState";
 import { useProjectStore } from "src/stores/projectStore";
+import { useStateStore } from "src/stores/stateStore";
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 // utils
-import { useI18n } from "vue-i18n";
 import { authorToString } from "src/backend/project/utils";
+import { useI18n } from "vue-i18n";
 const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   searchString: { type: String, required: true },
-  projects: { type: Array as PropType<Project[]>, required: true }
+  projects: { type: Array as PropType<Project[]>, required: true },
 });
 
 const emit = defineEmits(["dragProject", "update:projects"]);
@@ -157,22 +157,21 @@ const headers = computed(() => {
       field: "title",
       label: t("title"),
       align: "left",
-      sortable: true
+      sortable: true,
     },
     {
       name: "author",
       field: "author",
       label: t("author"),
       align: "left",
-      sortable: true
-    }
+      sortable: true,
+    },
   ] as QTableColumn[];
 });
 
 onMounted(() => {
   searchRowWidth.value = table.value.$el.getBoundingClientRect().width * 0.8;
 });
-
 
 function handleSelection(rows: Project[], added: boolean, evt: KeyboardEvent) {
   // ignore selection change from header of not from a direct click event
@@ -332,7 +331,7 @@ function searchProject(
       "publisher",
       "container-title",
       "path",
-      "citation-key"
+      "citation-key",
     ]) {
       if (row[prop] === undefined) continue;
       if (row[prop].search(re) != -1) {

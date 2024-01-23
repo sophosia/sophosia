@@ -121,12 +121,12 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
-import pluginManager from "src/backend/plugin";
-import { Button, ComponentName, ToggleButton, db } from "src/backend/database";
-import { useI18n } from "vue-i18n";
-import { useStateStore } from "src/stores/appState";
 import { resolveResource } from "@tauri-apps/api/path";
+import { Button, ComponentName, db } from "src/backend/database";
+import pluginManager from "src/backend/plugin";
+import { useStateStore } from "src/stores/stateStore";
+import { onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
 const stateStore = useStateStore();
 const { t, locale } = useI18n({ useScope: "global" });

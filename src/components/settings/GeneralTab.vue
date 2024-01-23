@@ -180,14 +180,13 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 // db
-import { Config, db } from "src/backend/database";
-import { useStateStore } from "src/stores/appState";
-import { getAllProjects } from "src/backend/project/project";
+import { Config, Meta, db } from "src/backend/database";
 import { generateCiteKey } from "src/backend/project/meta";
-import { Meta } from "src/backend/database";
+import { getAllProjects } from "src/backend/project/project";
+import { useStateStore } from "src/stores/stateStore";
 // utils
-import { useI18n } from "vue-i18n";
 import { useQuasar } from "quasar";
+import { useI18n } from "vue-i18n";
 const $q = useQuasar();
 
 const stateStore = useStateStore();
@@ -197,7 +196,7 @@ const { locale, t } = useI18n({ useScope: "global" });
 const languageOptions = [
   { value: "en_US", label: "English (en)" },
   { value: "zh_CN", label: "中文 (zh)" },
-  { value: "fr_CA", label: "Français (fr)" }
+  { value: "fr_CA", label: "Français (fr)" },
 ];
 
 const translateLabels = [
@@ -221,7 +220,7 @@ const translateLabels = [
   "தமிழ் (ta)",
   "Tiếng Việt (vi)",
   "한국어 (ko)",
-  "فارسی (fa)"
+  "فارسی (fa)",
 ];
 
 const themeOptions = ["dark", "light"];
@@ -233,25 +232,25 @@ const exampleMetas = [
   {
     title: "A Long Title",
     author: [{ family: "Last", given: "First" }],
-    issued: { "date-parts": [[2023]] }
-  },
-  {
-    title: "A Long Title",
-    author: [
-      { family: "Last1", given: "First1" },
-      { family: "Last2", given: "First2" }
-    ],
-    issued: { "date-parts": [[2023]] }
+    issued: { "date-parts": [[2023]] },
   },
   {
     title: "A Long Title",
     author: [
       { family: "Last1", given: "First1" },
       { family: "Last2", given: "First2" },
-      { family: "Last3", given: "First3" }
     ],
-    issued: { "date-parts": [[2023]] }
-  }
+    issued: { "date-parts": [[2023]] },
+  },
+  {
+    title: "A Long Title",
+    author: [
+      { family: "Last1", given: "First1" },
+      { family: "Last2", given: "First2" },
+      { family: "Last3", given: "First3" },
+    ],
+    issued: { "date-parts": [[2023]] },
+  },
 ] as Meta[];
 
 const language = computed({
@@ -267,7 +266,7 @@ const language = computed({
   set(option: { value: string; label: string }) {
     locale.value = option.value;
     db.setConfig({ language: option.value } as Config);
-  }
+  },
 });
 
 const theme = computed({
@@ -276,7 +275,7 @@ const theme = computed({
   },
   set(option: string) {
     stateStore.changeTheme(option);
-  }
+  },
 });
 
 const fontSize = computed({
@@ -285,7 +284,7 @@ const fontSize = computed({
   },
   set(size: number) {
     stateStore.changeFontSize(size);
-  }
+  },
 });
 
 const translate = computed({
@@ -294,7 +293,7 @@ const translate = computed({
   },
   set(language: string) {
     stateStore.changeTranslate(language);
-  }
+  },
 });
 
 // citeKeyRule = "author<connector>title<connector>year"
