@@ -203,7 +203,6 @@ const expanded = ref<string[]>([]);
 const draggingNode = ref<FolderOrNote | null>(null);
 const dragoverNode = ref<FolderOrNote | null>(null);
 const enterTime = ref(0);
-const project = ref<Project | null>(null);
 const $q = useQuasar();
 
 onMounted(async () => {

@@ -1,9 +1,5 @@
 <template>
   <q-tr>
-    <!-- <ExportDialog
-      v-model:show="exportCitationDialog"
-      @confirm="(format, options) => exportCitation(format, options)"
-    /> -->
     <q-th auto-width>
       <input
         type="checkbox"
@@ -57,7 +53,7 @@
     <TableProjectMenu
       :projectId="tableProps.key"
       @expandRow="expandRow"
-      @exportCitation="showExportCitationDialog"
+      @exportCitation="(project: Project) => showExportCitationDialog(project)"
       ref="menu"
     />
   </q-tr>
@@ -69,12 +65,11 @@ import { Author, Project } from "src/backend/database";
 import { getMeta } from "src/backend/project/meta";
 import { PropType, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { exportDialog } from "../dialogs/dialogController";
 import TableProjectMenu from "./TableProjectMenu.vue";
 const { t } = useI18n({ useScope: "global" });
 
 const menu = ref<InstanceType<typeof TableProjectMenu>>();
-const exportCitationDialog = ref(false);
-const project = ref<Project | null>(null);
 const $q = useQuasar();
 
 const props = defineProps({
@@ -96,27 +91,15 @@ function expandRow(isExpand: boolean) {
   emit("expandRow", isExpand);
 }
 
-function showExportCitationDialog(_project: Project) {
-  exportCitationDialog.value = true;
-  project.value = _project;
-}
-
-/**
- * Export project citation as
- * @param format - citation.js supported format see - citation_styles
- * @param options - extra options
- */
-
-async function exportCitation(
-  format: string,
-  options: { format?: string; template?: string }
-) {
-  if (project.value) {
-    // const metas = await exportMeta(format, options, undefined, project.value);
-    const meta = await getMeta([project.value], format, options);
+async function showExportCitationDialog(project: Project) {
+  exportDialog.show();
+  exportDialog.onConfirm(async () => {
+    const format = exportDialog.format.value;
+    const options = { template: exportDialog.template.value };
+    const meta = await getMeta([project], format, options);
     await copyToClipboard(meta as string);
     $q.notify(t("text-copied"));
-  }
+  });
 }
 
 function shortAuthorString(authors: Author[]) {

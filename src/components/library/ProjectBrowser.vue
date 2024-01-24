@@ -249,7 +249,7 @@ async function exportFolder(
   folder: Folder,
   options?: { format?: string; template?: string }
 ) {
-  await exportMeta(format, options, folder);
+  await exportMeta(folder, format, options);
 }
 
 /**************************************************
