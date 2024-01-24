@@ -105,7 +105,20 @@ class ExportDialog extends Dialog {
   template = this.templates[0];
 }
 
+class ErrorDialog extends Dialog {
+  private _error = ref(new Error());
+
+  get error() {
+    return this._error.value;
+  }
+
+  set error(err: Error) {
+    this._error.value = err;
+  }
+}
+
 export const importDialog = new ImportDialog();
 export const deleteDialog = new DeleteDialog();
 export const identifierDialog = new IdentifierDialog();
 export const exportDialog = new ExportDialog();
+export const errorDialog = new ErrorDialog();
