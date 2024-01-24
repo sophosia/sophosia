@@ -52,7 +52,7 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 import {
   checkUpdate,
   installUpdate,
-  onUpdaterEvent,
+  onUpdaterEvent
 } from "@tauri-apps/api/updater";
 import { getVersion } from "@tauri-apps/api/app";
 import { useI18n } from "vue-i18n";
@@ -80,6 +80,10 @@ onMounted(async () => {
 
 onBeforeUnmount(() => unlisten.value());
 
+/**
+ * Checks if an update is available for the application.
+ * Updates the `updateMsg` and `isUpdateAvailable` properties based on the availability of a new update.
+ */
 async function checkForUpdate() {
   updateMsg.value = t("check-for-updates");
   const update = await checkUpdate();
@@ -92,6 +96,10 @@ ${t("version", ["v" + update.manifest.version])}
 ${update.manifest.body}`;
 }
 
+/**
+ * Initiates the download and installation of the available application update.
+ * Updates the `updateMsg` during the installation process.
+ */
 async function downloadUpdate() {
   updateMsg.value = "Installing update";
   await installUpdate();

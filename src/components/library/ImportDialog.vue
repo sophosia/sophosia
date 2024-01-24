@@ -46,11 +46,17 @@ const emit = defineEmits(["update:show", "confirm"]);
 
 const isCreateFolder = ref(true);
 
+/**
+ * Handler function to confirm the action and emit a confirmation event.
+ */
 function confirm() {
   emit("confirm", isCreateFolder.value);
   emit("update:show", false);
 }
 
+/**
+ * Handler function to cancel the action and close the dialog.
+ */
 function cancel() {
   emit("update:show", false);
 }

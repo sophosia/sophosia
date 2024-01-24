@@ -242,7 +242,7 @@
             @click="
               async () => {
                 await invoke('show_in_folder', {
-                  path: meta!.path as string,
+                  path: meta!.path as string
                 });
               }
             "
@@ -413,7 +413,7 @@ const title = computed({
     if (!meta.value) return;
     meta.value.title = newTitle;
     meta.value.label = newTitle;
-  },
+  }
 });
 const year = computed({
   get() {
@@ -424,11 +424,11 @@ const year = computed({
     if (!meta.value) return;
     if (!meta.value.issued) {
       meta.value.issued = {
-        "date-parts": [[1, 1]], // initialize it
+        "date-parts": [[1, 1]] // initialize it
       };
     }
     meta.value.issued["date-parts"][0][0] = parseInt(newYear);
-  },
+  }
 });
 const authors = computed(() => {
   let authors = meta.value?.author;
@@ -471,8 +471,9 @@ watchEffect(async () => {
  * Methods
  **********************************************/
 /**
- * Update project info
- * @param updateEdgeData - if true, also modify the edge data
+ * Modifies the project information based on user input.
+ * Updates the citation key using the current citation key rule.
+ * Reflects changes in the project store and layout store.
  */
 async function modifyInfo() {
   if (meta.value === undefined) return;
@@ -483,10 +484,15 @@ async function modifyInfo() {
   projectStore.updateProject(meta.value._id, meta.value);
   layoutStore.renamePage(meta.value._id, {
     id: meta.value._id,
-    label: meta.value.label,
+    label: meta.value.label
   } as Page);
 }
 
+/**
+ * Adds an author to the project metadata.
+ * Processes and splits the input string into given and family names.
+ * Updates the project information after adding the author.
+ */
 async function addAuthor() {
   if (meta.value === undefined) {
     name.value = "";
@@ -517,6 +523,10 @@ async function addAuthor() {
   modifyInfo();
 }
 
+/**
+ * Removes an author from the project metadata at a specified index.
+ * Updates the project information after removal.
+ */
 async function removeAuthor(index: number) {
   if (meta.value === undefined) return;
   if (!meta.value.author) return;
@@ -527,7 +537,10 @@ async function removeAuthor(index: number) {
   // update db
   modifyInfo();
 }
-
+/**
+ * Adds a tag to the project metadata.
+ * Updates the project information after adding the tag.
+ */
 async function addTag() {
   if (meta.value === undefined) return;
 
@@ -539,6 +552,10 @@ async function addTag() {
   modifyInfo();
 }
 
+/**
+ * Removes a specific tag from the project metadata.
+ * Updates the project information after removing the tag.
+ */
 async function removeTag(tag: string) {
   if (meta.value === undefined) return;
 
@@ -549,6 +566,10 @@ async function removeTag(tag: string) {
   modifyInfo();
 }
 
+/**
+ * Retrieves and sets references for the project.
+ * Formats the references for display in the UI.
+ */
 async function getReferences() {
   if (!!!meta.value?.reference || meta.value.reference.length === 0) return;
 
@@ -559,7 +580,7 @@ async function getReferences() {
   for (let [i, ref] of meta.value.reference.entries()) {
     try {
       getMeta([ref.DOI || ref.key], "bibliography", {
-        format: "html",
+        format: "html"
       }).then((text: string | Meta[]) => {
         if (text === null) return;
         let match = (text as string).match(/(https[a-zA-Z0-9:\.\/\-\_]+)/g);
@@ -581,6 +602,10 @@ async function getReferences() {
   }
 }
 
+/**
+ * Updates the project metadata using an external source (DOI, ISBN, URL).
+ * Retrieves updated metadata and applies it to the project.
+ */
 async function updateMeta() {
   let metas: Meta[];
   let identifier: string;
@@ -596,6 +621,10 @@ async function updateMeta() {
   modifyInfo();
 }
 
+/**
+ * Opens a specified URL in the default web browser.
+ * @param url - The URL to be opened.
+ */
 function openURL(url: string | undefined) {
   if (url === undefined || url === "") return;
   open(url);

@@ -9,7 +9,7 @@ import {
   readDir,
   renameFile,
   removeFile,
-  removeDir,
+  removeDir
 } from "@tauri-apps/api/fs";
 import { join, extname, basename, sep } from "@tauri-apps/api/path";
 import type { FileEntry } from "@tauri-apps/api/fs";
@@ -21,9 +21,13 @@ import { i18n } from "src/boot/i18n";
 const { t } = i18n.global;
 
 /**
- * Create a note
- * @param folderId
- * @param type
+ * Creates a new note with a unique name in the specified folder.
+ *
+ * @param {string} folderId - The ID of the folder where the note will be created.
+ * @param {NoteType} type - The type of note (Markdown or Excalidraw).
+ * @returns {Promise<Note>} A promise that resolves to the newly created note object.
+ *
+ * Generates a note file path, ensuring no naming conflicts. Constructs and returns a note object.
  */
 export async function createNote(folderId: string, type: NoteType) {
   const splits = folderId.split("/");
@@ -45,16 +49,19 @@ export async function createNote(folderId: string, type: NoteType) {
     projectId: projectId,
     label: name + ext,
     path: path,
-    type: type,
+    type: type
   } as Note;
 
   return note;
 }
 
 /**
- * and creates the actual markdown file in project folder
- * @param note
- * @returns updated note
+ * Adds a note to the database and creates its file.
+ *
+ * @param {Note} note - The note to add.
+ * @returns {Promise<Note | undefined>} The added note or undefined if failed.
+ *
+ * @throws Logs an error on failure.
  */
 export async function addNote(note: Note): Promise<Note | undefined> {
   try {
@@ -70,8 +77,13 @@ export async function addNote(note: Note): Promise<Note | undefined> {
 }
 
 /**
- * Delete a note from disk
- * @param noteId
+ * Deletes a note and its associated links from the database and file system.
+ *
+ * @param {string} noteId - The ID of the note to be deleted.
+ *
+ * Removes the note file and its entry from the database, along with any links starting from this note.
+ *
+ * @throws Logs an error if the deletion process encounters any issues.
  */
 export async function deleteNote(noteId: string) {
   try {
@@ -86,9 +98,16 @@ export async function deleteNote(noteId: string) {
 }
 
 /**
- * Update information of a note data according to the new label
- * @param noteId
- * @param props - update properties
+ * Renames a note and updates its references in the database and file system.
+ *
+ * @param {string} oldNoteId - The current ID of the note to be renamed.
+ * @param {string} newNoteId - The new ID for the note.
+ * @returns {Promise<Note | undefined>} A promise resolving to the updated note object or undefined on error.
+ *
+ * Renames the note file and updates its ID in the database. Also updates any related links.
+ * Handles the addition of file extensions if not present in the new name.
+ *
+ * @throws Logs an error if the renaming process fails.
  */
 export async function renameNote(oldNoteId: string, newNoteId: string) {
   try {
@@ -116,7 +135,7 @@ export async function renameNote(oldNoteId: string, newNoteId: string) {
       type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
       projectId: newNoteId.split("/")[0],
       path: newPath,
-      label: await basename(newNoteId),
+      label: await basename(newNoteId)
     } as Note;
   } catch (error) {
     console.log(error);
@@ -124,9 +143,14 @@ export async function renameNote(oldNoteId: string, newNoteId: string) {
 }
 
 /**
- * Get a note by its ID
- * @param {string} noteId
- * @returns {Note} note
+ * Retrieves a note by its ID.
+ *
+ * @param {string} noteId - The ID of the note to retrieve.
+ * @returns {Promise<Note | undefined>} A promise resolving to the note object or undefined if not found or on error.
+ *
+ * Constructs a note object from the given ID, including its type based on the file extension.
+ *
+ * @throws Logs an error if the retrieval process encounters any issues.
  */
 export async function getNote(noteId: string): Promise<Note | undefined> {
   try {
@@ -142,7 +166,7 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
       projectId: projectId,
       label: label,
       path: path,
-      type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
+      type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW
     } as Note;
     return note;
   } catch (error) {
@@ -151,9 +175,15 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
 }
 
 /**
- * Get all notes in a specific folder
- * @param folderId
- * @returns array of notes
+ * Retrieves all notes within a specified folder.
+ *
+ * @param {string} folderId - The ID of the folder to search for notes.
+ * @returns {Promise<Note[]>} A promise resolving to an array of Note objects.
+ *
+ * Recursively searches the folder and its subfolders for note files, constructs Note objects for each,
+ * and returns a sorted array of these notes.
+ *
+ * @throws Logs an error and returns an empty array if an error occurs during the search process.
  */
 export async function getNotes(folderId: string): Promise<Note[]> {
   try {
@@ -177,7 +207,7 @@ export async function getNotes(folderId: string): Promise<Note[]> {
             projectId: projectId,
             label: label,
             path: entry.path,
-            type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
+            type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW
           } as Note);
         } else if (entry.children) {
           await processEntries(entry.children);
@@ -195,7 +225,13 @@ export async function getNotes(folderId: string): Promise<Note[]> {
 }
 
 /**
- * Get notes of a project and returns the tree of these notes
+ * Generates a tree structure of notes and folders for a given project.
+ *
+ * @param {string} projectId - The ID of the project.
+ * @returns {Promise<FolderOrNote[]>} A promise resolving to an array representing the tree structure.
+ *
+ * Recursively traverses through folders and notes, constructing a hierarchical tree structure.
+ * Skips non-note files and the project's main note.
  */
 export async function getNoteTree(projectId: string) {
   async function _dfs(entries: FileEntry[], children: FolderOrNote[]) {
@@ -220,7 +256,7 @@ export async function getNoteTree(projectId: string) {
   }
 
   const entries = await readDir(await join(db.config.storagePath, projectId), {
-    recursive: true,
+    recursive: true
   });
   const notes = [] as FolderOrNote[];
   await _dfs(entries, notes);
@@ -282,7 +318,7 @@ export async function uploadImage(
 
   try {
     const imgType: string = await extname(file.name); // png
-    const imgName: string = `SI${db.nanoid}.${imgType}`; // use nanoid as img name
+    const imgName = `SI${db.nanoid}.${imgType}`; // use nanoid as img name
     const imgFolder: string = await join(
       db.config.storagePath,
       ".sophosia",
@@ -299,6 +335,15 @@ export async function uploadImage(
   }
 }
 
+/**
+ * Creates a new folder within a specified parent folder.
+ *
+ * @param {string} parentFolderId - The ID of the parent folder.
+ * @returns {Promise<FolderOrNote>} A promise resolving to the newly created folder object.
+ *
+ * Generates a unique name for the new folder and creates it under the parent folder.
+ * Returns the folder object with its properties.
+ */
 export async function createFolder(parentFolderId: string) {
   let name = t("new", { type: t("folder") });
   let path = await join(idToPath(parentFolderId), name);
@@ -314,12 +359,21 @@ export async function createFolder(parentFolderId: string) {
     dataType: "folder",
     label: name,
     path: path,
-    children: [],
+    children: []
   } as FolderOrNote;
 
   return folder;
 }
 
+/**
+ * Adds a new folder to the file system based on the provided folder object.
+ *
+ * @param {FolderOrNote} folder - The folder object to be added.
+ *
+ * Creates a directory in the file system using the folder's ID as the path.
+ *
+ * @throws Logs an error if the folder creation process fails.
+ */
 export async function addFolder(folder: FolderOrNote) {
   try {
     await createDir(idToPath(folder._id));
@@ -329,9 +383,14 @@ export async function addFolder(folder: FolderOrNote) {
 }
 
 /**
- * Delete a folder and its containing notes
- * Also delete the links in indexeddb
- * @param folderId
+ * Deletes a folder and its contents from the file system and database.
+ *
+ * @param {string} folderId - The ID of the folder to be deleted.
+ *
+ * First removes all notes within the folder from the indexed database, along with any associated links.
+ * Then deletes the folder itself from the file system, including all files within it.
+ *
+ * @throws Logs an error if the deletion process encounters any issues.
  */
 export async function deleteFolder(folderId: string) {
   try {
@@ -350,9 +409,15 @@ export async function deleteFolder(folderId: string) {
 }
 
 /**
- * Rename folder and update note links
- * @param oldFolderId
- * @param newFolderId
+ * Renames a folder and updates references in the database.
+ *
+ * @param {string} oldFolderId - The current ID of the folder to be renamed.
+ * @param {string} newFolderId - The new ID for the folder.
+ *
+ * Updates the IDs of all notes within the folder in the database, adjusts any related links,
+ * and then renames the folder in the file system.
+ *
+ * @throws Logs an error if the renaming process encounters any issues.
  */
 export async function renameFolder(oldFolderId: string, newFolderId: string) {
   try {

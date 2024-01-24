@@ -3,7 +3,7 @@ import {
   LayoutConfig,
   ResolvedLayoutConfig,
   RowOrColumnItemConfig,
-  StackItemConfig,
+  StackItemConfig
 } from "golden-layout";
 import { customAlphabet } from "nanoid";
 import { defineStore } from "pinia";
@@ -22,14 +22,14 @@ export const useLayoutStore = defineStore("layoutStore", {
 
     addedPage: {} as Page,
     renamedPage: {} as Page,
-    closedItemId: "",
+    closedItemId: ""
   }),
 
   actions: {
     /**
-     * Open a page
-     * Focus on the page if the it exists
-     * @param page
+     * Opens a page within the application. If the page already exists, it focuses on the page.
+     * Otherwise, it adds the page to the store and prepares it for rendering.
+     * @param page - The page object to be opened, containing necessary properties like id, label, type, etc.
      */
     openPage(page: Page) {
       if (this.IdToRef.has(page.id)) {
@@ -46,9 +46,8 @@ export const useLayoutStore = defineStore("layoutStore", {
     },
 
     /**
-     * Remove a page by itemId
-     * Removal of the Ids will be handled in unbindComponentEventListener
-     * @param itemId
+     * Closes a page identified by its itemId. The method removes the page from the store and updates the application state.
+     * @param itemId - The unique identifier of the page to be closed.
      */
     closePage(itemId: string) {
       if (!this.IdToRef.has(itemId)) return;
@@ -56,9 +55,9 @@ export const useLayoutStore = defineStore("layoutStore", {
     },
 
     /**
-     * Update a page by its oldItemId
-     * @param oldItemId
-     * @param newPage
+     * Renames a page in the store. This method is used to update the properties of a page, including changing its identifier.
+     * @param oldItemId - The original unique identifier of the page.
+     * @param newPage - The updated page object with new properties.
      */
     renamePage(oldItemId: string, newPage: Page) {
       if (!this.IdToRef.has(oldItemId)) return;
@@ -69,7 +68,11 @@ export const useLayoutStore = defineStore("layoutStore", {
       this.renamedPage = newPage;
     },
 
-    // load layout
+    /**
+     * Loads the layout configuration from the backend and initializes pages based on this configuration.
+     * It transforms the layout configuration into a usable format for the frontend.
+     * @returns The transformed layout configuration suitable for the frontend application.
+     */
     async loadLayout() {
       const layout = await getLayout();
       const config = (
@@ -96,7 +99,7 @@ export const useLayoutStore = defineStore("layoutStore", {
               id: state.id,
               label: state.label || itemConfig.title,
               type: state.type || itemConfig.componentType,
-              data: state.data,
+              data: state.data
             } as Page;
             this.openPage(page);
             await nextTick();
@@ -115,9 +118,13 @@ export const useLayoutStore = defineStore("layoutStore", {
       return config;
     },
 
-    // save layout
+    /**
+     * Saves the current layout configuration to the backend. This method captures the current state of the layout
+     * and persists it for future sessions.
+     * @param config - The layout configuration object representing the current state of the application layout.
+     */
     async saveLayout(config: LayoutConfig | ResolvedLayoutConfig) {
       await updateLayout(config);
-    },
-  },
+    }
+  }
 });

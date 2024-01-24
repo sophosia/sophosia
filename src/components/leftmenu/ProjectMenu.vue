@@ -112,6 +112,10 @@ const emit = defineEmits([
   "exportCitation"
 ]);
 
+/**
+ * Emits an event to export the citation for a specific project.
+ * @param {string} project - The ID of the project for which to export the citation.
+ */
 function exportCitation() {
   let project = props.projectId; //grab the project's id that's clicked
   emit("exportCitation", project);

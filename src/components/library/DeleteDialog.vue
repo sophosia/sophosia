@@ -64,14 +64,23 @@ import { Project } from "src/backend/database";
 const props = defineProps({
   show: { type: Boolean, required: true },
   projects: { type: Object as PropType<Project[]>, required: false },
-  deleteFromDB: { type: Boolean, required: true },
+  deleteFromDB: { type: Boolean, required: true }
 });
 const emit = defineEmits(["update:show", "confirm"]);
 
+/**
+ * Emits a confirmation event and closes the dialog.
+ * This method is called when the user confirms their decision to delete the projects.
+ */
 function confirm() {
   emit("confirm");
   emit("update:show", false);
 }
+
+/**
+ * Closes the dialog without performing any action.
+ * This method is called when the user decides to cancel the deletion process.
+ */
 
 function cancel() {
   // do nothing, only close the dialog

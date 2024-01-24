@@ -16,7 +16,7 @@
         emit-immediately
         separator-style="background: var(--q-edge)"
         :separator-class="{
-          'q-splitter-separator': stateStore.showLeftMenu,
+          'q-splitter-separator': stateStore.showLeftMenu
         }"
         :disable="!stateStore.showLeftMenu"
         v-model="leftMenuSize"
@@ -106,10 +106,10 @@ stateStore.$subscribe((mutation, state) => {
  * Methods
  *******************************************************/
 
-/***************************************************
- * Layout and AppState
- ***************************************************/
-
+/**
+ * Resizes the left menu according to the given size.
+ * @param size - The new size to which the left menu should be resized.
+ */
 async function resizeLeftMenu(size: number) {
   if (size < 8) {
     leftMenuSize.value = 0;
@@ -121,9 +121,10 @@ async function resizeLeftMenu(size: number) {
 }
 
 /**
- * Given a request url, return the requested itemId
- * @params url
- * @returns itemId
+ * Parses a deep link URL to extract the item ID. This is used to handle navigation to a specific item
+ * within the application based on a URL scheme.
+ * @param url - The deep link URL received by the application.
+ * @returns itemId - The extracted item ID from the URL.
  */
 function parseDeepLink(url: string | undefined): string {
   const request = "sophosia://open-item/";

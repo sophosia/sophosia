@@ -89,11 +89,17 @@ const translateOptions = [
   { value: "fa", label: "فارسی (fa)" },
 ];
 
+/**
+ * Copies the selected text to the clipboard.
+ */
 function copyText() {
   let selection = window.getSelection();
   if (selection) copyToClipboard(selection.toString());
 }
 
+/**
+ * Translates the selected text and updates the UI.
+ */
 async function translateText() {
   let textToTranslate = window.getSelection()?.toString();
   const language = stateStore.settings.translateLanguage;

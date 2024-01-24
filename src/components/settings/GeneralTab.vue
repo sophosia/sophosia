@@ -310,6 +310,12 @@ const citeKeyConnector = ref(
  * Methods
  *********************/
 
+/**
+ * Generates an example citation key for a given metadata.
+ * Utilizes the current citation key rule set in stateStore settings.
+ * @param meta - The metadata object containing details like title, year, and authors.
+ * @returns A string representing the example citation key.
+ */
 function citeKeyExample(meta: Meta) {
   return `title: ${meta.title}, year: ${
     (meta.issued as { "date-parts": any })["date-parts"][0][0]
@@ -318,6 +324,10 @@ function citeKeyExample(meta: Meta) {
     .join(", ")} => ${generateCiteKey(meta, stateStore.settings.citeKeyRule)}`;
 }
 
+/**
+ * Updates the citation key rule based on the user's selection of parts and connectors.
+ * Saves the updated citation key rule in the application state.
+ */
 function updateCiteKeyRule() {
   stateStore.settings.citeKeyRule = citeKeyPartKeys.join(
     citeKeyConnector.value
@@ -325,6 +335,11 @@ function updateCiteKeyRule() {
   stateStore.saveAppState();
 }
 
+/**
+ * Updates the citation keys for all projects in the database.
+ * Utilizes the current citation key rule set in stateStore settings.
+ * Notifies the user upon successful update.
+ */
 async function updateCiteKeys() {
   let projects = await getAllProjects();
   for (let project of projects)

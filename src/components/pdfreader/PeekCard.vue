@@ -102,7 +102,7 @@ import { PeekManager } from "src/backend/pdfreader/peekManager";
 const props = defineProps({
   link: { type: HTMLAnchorElement, required: true },
   peekManager: { type: Object as PropType<PeekManager>, required: true },
-  darkMode: { type: Boolean, required: true },
+  darkMode: { type: Boolean, required: true }
 });
 const card = ref();
 const peekContainer = ref();
@@ -119,7 +119,7 @@ onMounted(() => {
   // init viewer
   const eventBus = new pdfjsViewer.EventBus();
   const pdfLinkService = new pdfjsViewer.PDFLinkService({
-    eventBus,
+    eventBus
   });
   pdfSinglePageViewer = new pdfjsViewer.PDFSinglePageViewer({
     container: peekContainer.value,
@@ -127,7 +127,7 @@ onMounted(() => {
     linkService: pdfLinkService,
     textLayerMode: 0, // DISABLE: 0, ENABLE: 1
     annotationMode: pdfjsLib.AnnotationMode.DISABLE,
-    l10n: pdfjsViewer.NullL10n,
+    l10n: pdfjsViewer.NullL10n
   });
   pdfLinkService.setViewer(pdfSinglePageViewer);
 
@@ -170,9 +170,8 @@ onMounted(() => {
 });
 
 /**
- * Given the viewerContainer and linkElment, calculate the peekCard position
- * There is no need for user to call this
- * @param viewerContainer
+ * Calculates and sets the position of the PeekCard relative to the provided link annotation element.
+ * @param {HTMLElement} linkAnnot - The link annotation element associated with the peek card.
  */
 function setPos(linkAnnot: HTMLElement) {
   let viewerContainer = linkAnnot.parentElement?.parentElement?.parentElement
@@ -209,6 +208,9 @@ function setPos(linkAnnot: HTMLElement) {
   card.value.$el.style.zIndex = "1000";
 }
 
+/**
+ * Displays the PeekCard and activates the grab-to-pan functionality.
+ */
 function show() {
   if (!card.value.$el) return;
   card.value.$el.style.display = "block";
@@ -221,19 +223,29 @@ function enableGrabToPan() {
   handtool.activate();
 }
 
+/**
+ * Zooms in or out of the PDF content in the PeekCard.
+ * @param {number} delta - The zoom factor (positive for zoom in, negative for zoom out).
+ */
 function zoom(delta: number) {
   if (!pdfSinglePageViewer) return;
   pdfSinglePageViewer.currentScale += delta;
 }
 
 /**
- * User can close the PeekCard even if it's pinned
+ * Closes the PeekCard. If the card is pinned, it can still be closed if 'force' is true.
+ * @param {boolean} [force=false] - Force close the card even if it is pinned.
  */
 function close(force?: boolean) {
   props.peekManager.supposeToDestroy = true;
   if (!!force || !pinned.value) props.peekManager.destroy(props.link.id);
 }
 
+/**
+ * Enables dragging functionality for the PeekCard, allowing it to be moved around within its parent element.
+ * The function sets up the necessary event listeners for drag events and calculates the new position of the card during the drag.
+ * It also ensures no ghost image appears during dragging and sets the PeekCard as pinned for better user interaction.
+ */
 function enableDragToMove() {
   let dom = card.value.$el;
   let annotLayerRect: DOMRect;
@@ -283,31 +295,11 @@ function enableDragToMove() {
       dom.parentElement.onmouseup = null;
     };
   };
-
-  // Webkit can' deal with these events, have to use the above implementations
-  // dom.ondrag = (e: DragEvent) => {
-  //   console.log("on drag", e);
-  //   // when drag is released, e.pageX and e.pageY will jump to 0, weird
-  //   // need to calculate tmpLeft/tmpTop first to avoid this
-  //   left = e.pageX - offsetX - shiftX;
-  //   top = e.pageY - offsetY - shiftY;
-
-  //   if (left < 0 || left + domRect.width > annotLayerRect.width) return;
-  //   if (top < 0 || top + domRect.height > annotLayerRect.height) return;
-
-  //   dom.style.left = `${left}px`;
-  //   dom.style.top = `${top}px`;
-  // };
-
-  // dom.ondragend = (e: DragEvent) => {
-  //   console.log("on drag end", e);
-  //   dom.onmousemove = null;
-  // };
 }
 
 /**
- * Set dark or light mode of the peekCard
- * @param darkMode
+ * Sets the view mode (dark or light) of the PeekCard's content.
+ * @param {boolean} darkMode - True for dark mode, false for light mode.
  */
 function setViewMode(darkMode: boolean) {
   if (!peekContainer.value) return;
@@ -319,6 +311,10 @@ function setViewMode(darkMode: boolean) {
   else peekContainer.value.style.filter = "unset";
 }
 
+/**
+ * Enables resizing of the PeekCard by dragging its bottom-right corner.
+ * @param {MouseEvent} e - The mouse event triggered on mousedown.
+ */
 function resizeCard(e: MouseEvent) {
   // prevent dragging the card
   e.preventDefault();

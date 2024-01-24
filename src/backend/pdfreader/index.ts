@@ -3,7 +3,7 @@ import * as pdfjsViewer from "pdfjs-dist/web/pdf_viewer";
 import {
   PDFFindController,
   PDFPageView,
-  PDFViewer,
+  PDFViewer
 } from "pdfjs-dist/web/pdf_viewer";
 import { debounce } from "quasar";
 import { nextTick, reactive, ref } from "vue";
@@ -14,7 +14,7 @@ import {
   PDFState,
   SpreadMode,
   TOCNode,
-  db,
+  db
 } from "../database";
 import { AnnotationFactory, AnnotationStore } from "../pdfannotation";
 import { Annotation } from "../pdfannotation/annotations";
@@ -24,6 +24,9 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the pu
 import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 
+/**
+ * Class for managing PDF viewing and annotation functionality.
+ */
 export default class PDFApplication {
   container: HTMLDivElement | undefined;
   eventBus: pdfjsViewer.EventBus | undefined;
@@ -71,18 +74,22 @@ export default class PDFApplication {
       inkThickness: 5,
       inkOpacity: 1,
       eraserType: EraserType.STROKE,
-      eraserThickness: 20,
+      eraserThickness: 20
     } as PDFState);
   }
 
+  /**
+   * Initializes the PDF viewer and associated components.
+   * @param {HTMLDivElement} container - The container element for the PDF viewer.
+   */
   init(container: HTMLDivElement) {
     const eventBus = new pdfjsViewer.EventBus();
     const pdfLinkService = new pdfjsViewer.PDFLinkService({
-      eventBus,
+      eventBus
     });
     const pdfFindController = new pdfjsViewer.PDFFindController({
       eventBus,
-      linkService: pdfLinkService,
+      linkService: pdfLinkService
     });
 
     // l10n resource
@@ -99,7 +106,7 @@ export default class PDFApplication {
       linkService: pdfLinkService,
       findController: pdfFindController,
       annotationEditorMode: pdfjsLib.AnnotationEditorType.NONE,
-      l10n: l10n,
+      l10n: l10n
     });
     // must have this otherwise find controller does not work
     pdfLinkService.setViewer(pdfViewer);
@@ -234,6 +241,10 @@ export default class PDFApplication {
     );
   }
 
+  /**
+   * Loads a PDF document into the viewer.
+   * @param {string} filePath - The file path of the PDF document.
+   */
   async loadPDF(filePath: string) {
     const cMapUrl =
       (process.env.DEV ? "http://localhost:9000/" : "") + "pdfjs/cmaps/";
@@ -244,7 +255,7 @@ export default class PDFApplication {
       // data: buffer,
       url: url,
       cMapUrl: cMapUrl,
-      cMapPacked: true,
+      cMapPacked: true
     }).promise;
     if (this.pdfLinkService)
       this.pdfLinkService.setDocument(this.pdfDocument, null);
@@ -256,6 +267,11 @@ export default class PDFApplication {
     this.getPageLabels();
   }
 
+  /**
+   * Loads the saved state for a specific project.
+   * @param {string} projectId - The project ID.
+   * @returns {Promise<PDFState | undefined>} The loaded PDF state or undefined if an error occurs.
+   */
   async loadState(projectId: string): Promise<PDFState | undefined> {
     try {
       let pdfState = await db.get("SS" + projectId.slice(2));
@@ -276,7 +292,7 @@ export default class PDFApplication {
         inkThickness: 5,
         inkOpacity: 100,
         scrollLeft: 0,
-        scrollTop: 0,
+        scrollTop: 0
       } as PDFState;
       // doing this we can make sure if anything missing from db, the default values are there
       Object.assign(state, pdfState);
@@ -287,6 +303,10 @@ export default class PDFApplication {
     }
   }
 
+  /**
+   * Saves the current state of the PDF viewer.
+   * @param {PDFState} state - The state to save.
+   */
   private async _saveState(state: PDFState) {
     if (!this.container) return;
     // also save the scroll position
@@ -317,16 +337,28 @@ export default class PDFApplication {
     }
   }
 
+  /**
+   * Changes the current page number in the PDF viewer.
+   * @param {number} pageNumber - The page number to navigate to.
+   */
   changePageNumber(pageNumber: number) {
     if (!this.pdfViewer) return;
     this.pdfViewer.currentPageNumber = pageNumber;
   }
 
+  /**
+   * Sets the spread mode for viewing pages in the PDF.
+   * @param {SpreadMode} spreadMode - The spread mode to apply.
+   */
   changeSpreadMode(spreadMode: SpreadMode) {
     if (!this.pdfViewer) return;
     this.pdfViewer.spreadMode = spreadMode;
   }
 
+  /**
+   * Adjusts the scale of the PDF view.
+   * @param {Object} params - Parameters for scaling, including delta, scale value, and scale factor.
+   */
   changeScale(params: {
     delta?: number;
     scaleValue?: "page-width" | "page-height";
@@ -341,14 +373,26 @@ export default class PDFApplication {
     if (!!params.scale) this.pdfViewer.currentScale = params.scale;
   }
 
+  /**
+   * Changes the current annotation tool.
+   * @param {AnnotationType} tool - The annotation tool to be set.
+   */
   changeTool(tool: AnnotationType) {
     this.state.tool = tool;
   }
 
+  /**
+   * Updates the color setting for annotations.
+   * @param {string} color - The color value to set.
+   */
   changeColor(color: string) {
     this.state.color = color;
   }
 
+  /**
+   * Toggles the dark mode view for the PDF.
+   * @param {boolean} darkMode - Indicates whether to enable or disable dark mode.
+   */
   changeViewMode(darkMode: boolean) {
     this.state.darkMode = darkMode;
     let viewer = this.container?.querySelector(
@@ -361,14 +405,26 @@ export default class PDFApplication {
     else viewer.style.filter = "unset";
   }
 
+  /**
+   * Sets the thickness for ink-based annotations.
+   * @param {number} thickness - The thickness of the ink.
+   */
   changeInkThickness(thickness: number) {
     this.state.inkThickness = thickness;
   }
 
+  /**
+   * Sets the opacity for ink-based annotations.
+   * @param {number} opacity - The opacity level of the ink.
+   */
   changeInkOpacity(opacity: number) {
     this.state.inkOpacity = opacity;
   }
 
+  /**
+   * Handles scroll events with control key for zooming in and out.
+   * @param {WheelEvent} e - The wheel event triggered by user action.
+   */
   handleCtrlScroll(e: WheelEvent) {
     if (!this.pdfViewer || !this.container) return;
     if (e.ctrlKey === true) {
@@ -395,6 +451,9 @@ export default class PDFApplication {
     }
   }
 
+  /**
+   * Retrieves page labels for the PDF document.
+   */
   async getPageLabels() {
     if (this.pdfDocument === undefined) return [];
     let labels = await this.pdfDocument.getPageLabels();
@@ -402,6 +461,9 @@ export default class PDFApplication {
     Object.assign(this.pageLabels, labels);
   }
 
+  /**
+   * Loads the table of contents for the PDF document.
+   */
   async getTOC() {
     if (this.pdfDocument === undefined) return [];
 
@@ -410,7 +472,7 @@ export default class PDFApplication {
       for (let k in oldNodes) {
         let node = {
           label: oldNodes[k].title,
-          children: _dfs(oldNodes[k].items),
+          children: _dfs(oldNodes[k].items)
         } as TOCNode;
         if (typeof oldNodes[k].dest === "string") node.dest = oldNodes[k].dest;
         else {
@@ -431,7 +493,9 @@ export default class PDFApplication {
   }
 
   /**
-   * Get page number of a TOCNode
+   * Retrieves the page number associated with a TOCNode.
+   * @param {TOCNode} node - The table of contents node.
+   * @returns {Promise<number>} The page number associated with the TOCNode.
    */
   async getTOCPage(node: TOCNode): Promise<number> {
     if (this.pdfDocument === undefined) return 1;
@@ -452,16 +516,28 @@ export default class PDFApplication {
     return pageNumber;
   }
 
+  /**
+   * Navigates to a specified page from the table of contents.
+   * @param {TOCNode} node - The TOCNode representing the target page.
+   */
   async clickTOC(node: TOCNode) {
     let pageNumber = await this.getTOCPage(node);
     this.changePageNumber(pageNumber);
   }
 
+  /**
+   * Initiates a text search in the PDF document.
+   * @param {PDFSearch} search - The search parameters.
+   */
   searchText(search: PDFSearch) {
     if (!this.eventBus) return;
     this.eventBus.dispatch("find", search);
   }
 
+  /**
+   * Navigates to the next or previous search match.
+   * @param {number} delta - The direction and magnitude to move among search matches.
+   */
   changeMatch(delta: number) {
     if (!this.pdfFindController || !this.eventBus) return;
     // delta can only be +1 (next) or -1 (prev)
@@ -495,10 +571,14 @@ export default class PDFApplication {
     this.changePageNumber(pageIdx + 1);
     this.eventBus.dispatch("updatetextlayermatches", {
       source: this.pdfFindController,
-      pageIndex: pageIdx,
+      pageIndex: pageIdx
     });
   }
 
+  /**
+   * Scrolls the view to center on a specified annotation.
+   * @param {string} annotId - The ID of the annotation to view.
+   */
   scrollAnnotIntoView(annotId: string) {
     if (!!!annotId) return;
     let annot = this.annotStore.getById(annotId) as Annotation;
@@ -506,7 +586,7 @@ export default class PDFApplication {
     this.changePageNumber(annot.data.pageNumber);
     annot.doms[0].scrollIntoView({
       block: "center",
-      inline: "center",
+      inline: "center"
     });
     nextTick(() => {
       this.annotStore.setActive(annotId);

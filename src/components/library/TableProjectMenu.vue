@@ -187,15 +187,27 @@ const showDeleteDialog = inject(KEY_deleteDialog) as (
   deleteFromDB: boolean
 ) => void;
 
+/**
+ * Handles the export of the citation information for the selected project.
+ * Copies the citation to the clipboard or performs an export action.
+ */
 function exportCitation() {
   let project = projectStore.getProject(props.projectId); //grab the project that's clicked
   emit("exportCitation", project);
 }
 
+/**
+ * Handles the expansion of a row in the table.
+ * @param {boolean} isExpand - Indicates whether to expand or collapse the row.
+ */
 function expandRow(isExpand: boolean) {
   emit("expandRow", isExpand);
 }
 
+/**
+ * Adds a new note of the specified type to the selected project.
+ * @param {NoteType} noteType - The type of note to add (Markdown or Excalidraw).
+ */
 async function addNote(noteType: NoteType) {
   let project = projectStore.selected[0];
   let note = await projectStore.createNode(project._id, "note", noteType);
@@ -205,6 +217,9 @@ async function addNote(noteType: NoteType) {
   renamingNoteId.value = note._id;
 }
 
+/**
+ * Opens the selected project(s) for viewing and editing.
+ */
 async function openProject() {
   for (let project of projectStore.selected) {
     stateStore.openItem(project._id);
@@ -212,6 +227,9 @@ async function openProject() {
   }
 }
 
+/**
+ * Opens the file explorer and navigates to the location of the selected project(s).
+ */
 async function showInExplorer() {
   for (let project of projectStore.selected) {
     let path = await join(db.config.storagePath, project._id);
@@ -221,25 +239,33 @@ async function showInExplorer() {
   }
 }
 
+/**
+ * Deletes the selected project(s) from either the folder or the database.
+ * @param {boolean} deleteFromDB - Indicates whether to delete from the database or just from the folder.
+ */
 function deleteProject(deleteFromDB: boolean) {
   showDeleteDialog(projectStore.selected as Project[], deleteFromDB);
 }
 
 /**
- * Update a project by meta
+ * Initiates a search for metadata related to the selected project(s).
  */
 function searchMeta() {
   showSearchMetaDialog();
 }
 
 /**
- * Attach PDF to a project
+ * Attaches a PDF file to the selected project.
  */
 async function onAttachFile() {
   await projectStore.attachPDF(props.projectId);
   expandRow(true);
 }
 
+/**
+ * Sets the favorite status of the project to the specified value.
+ * @param {boolean} isFavorite - Indicates whether the project should be marked as a favorite.
+ */
 async function setFavorite(isFavorite: boolean) {
   await projectStore.updateProject(props.projectId, {
     favorite: isFavorite,

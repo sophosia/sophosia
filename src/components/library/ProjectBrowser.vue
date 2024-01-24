@@ -39,7 +39,7 @@
         separator-style="background: var(--q-edge)"
         :separator-class="{
           'q-splitter-separator': stateStore.showLibraryRightMenu,
-          hidden: !stateStore.showLibraryRightMenu,
+          hidden: !stateStore.showLibraryRightMenu
         }"
         :disable="!stateStore.showLibraryRightMenu"
         v-model="rightMenuSize"
@@ -102,7 +102,7 @@ import {
   exportMeta,
   getMeta,
   getMetaFromFile,
-  importMeta,
+  importMeta
 } from "src/backend/project/meta";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
@@ -160,9 +160,9 @@ onMounted(async () => {
  * Projects (get, add, delete, update, attachFile, renameFromMeta)
  ************************************************/
 /**
- * Delete project
- * @param project
- * @param deleteFromDB
+ * Shows the delete dialog for specified projects and options.
+ * @param {Project[]} _deleteProjects - The projects to be deleted.
+ * @param {boolean} _deleteFromDB - Whether to delete projects from the database.
  */
 function showDeleteDialog(_deleteProjects: Project[], _deleteFromDB: boolean) {
   deleteDialog.value = true;
@@ -171,7 +171,7 @@ function showDeleteDialog(_deleteProjects: Project[], _deleteFromDB: boolean) {
 }
 
 /**
- * Update project by meta
+ * Shows the search meta dialog for searching and updating project metadata.
  */
 function showSearchMetaDialog() {
   let createProject = false;
@@ -179,16 +179,18 @@ function showSearchMetaDialog() {
 }
 
 /**
- * Open identifier dialog.
- * If createProject is true, the identifier will be used to create a new project
- * otherwise the identifier will be used to update an existing project
- * @param createProject
+ * Shows the identifier dialog for creating or updating projects using identifiers.
+ * @param {boolean} _createProject - Indicates whether to create a new project.
  */
 function showIdentifierDialog(_createProject: boolean) {
   identifierDialog.value = true;
   createProject.value = _createProject;
 }
 
+/**
+ * Shows the import dialog for importing projects from a collection file.
+ * @param {string} _collectionPath - The path to the collection file.
+ */
 function showImportDialog(_collectionPath: string) {
   importDialog.value = true;
   collectionPath.value = _collectionPath;
@@ -204,8 +206,8 @@ async function addEmptyProject() {
 }
 
 /**
- * Add projects by importing files
- * @param filePaths - pdfs paths imported
+ * Adds projects by importing files from specified file paths.
+ * @param {string[]} filePaths - The paths of the files to import as projects.
  */
 async function addProjectsByFiles(filePaths: string[]) {
   for (let filePath of filePaths) {
@@ -220,7 +222,7 @@ async function addProjectsByFiles(filePaths: string[]) {
       await projectStore.updateProject(project._id, {
         path: filename,
         title: title,
-        label: title,
+        label: title
       } as Project);
       // do not use await since this task takes time
       getMetaFromFile(filePath).then((meta) => {
@@ -233,8 +235,8 @@ async function addProjectsByFiles(filePaths: string[]) {
 }
 
 /**
- * Add projects by a collection file (.bib, .ris, etc...)
- * @param isCreateFolder
+ * Adds projects by importing projects from a collection file (.bib, ris, etc...)
+ * @param {boolean} isCreateFolder - Indicates whether to create a new folder.
  */
 async function addProjectsByCollection(isCreateFolder: boolean) {
   if (collectionPath.value === "") return;
@@ -266,6 +268,10 @@ async function addProjectsByCollection(isCreateFolder: boolean) {
   collectionPath.value = "";
 }
 
+/**
+ * Processes an identifier for creating or updating projects.
+ * @param {string} identifier - The identifier used for creating or updating projects.
+ */
 async function processIdentifier(identifier: string) {
   if (!identifier) return;
 
@@ -287,8 +293,7 @@ async function processIdentifier(identifier: string) {
 }
 
 /**
- * Delete a project from the current folder,
- * if deleteFromDB is true, delete the project from database and remove the actual files
+ * Deletes selected projects from the current folder and optionally from the database.
  */
 async function deleteProject() {
   // delete projects
@@ -323,6 +328,10 @@ async function deleteProject() {
   }
 }
 
+/**
+ * Shows the export reference dialog for exporting a folder as a collection of references.
+ * @param {Folder} _folder - The folder to export.
+ */
 function showExportReferenceDialog(_folder: Folder) {
   folder.value = _folder;
   exportFolderDialog.value = true;
@@ -332,9 +341,9 @@ function showExportReferenceDialog(_folder: Folder) {
  **********************************************************/
 
 /**
- * Export a folder as a collection of references
- * @param format - citation.js suported format
- * @param options - extra options
+ * Exports a folder as a collection of references in a specified format.
+ * @param {string} format - The citation.js supported format.
+ * @param {object} options - Extra export options.
  */
 async function exportFolder(
   format: string,
@@ -360,6 +369,10 @@ watch(
   }
 );
 
+/**
+ * Handles resizing of the right menu.
+ * @param {number} size - The new size of the right menu.
+ */
 function resizeRightMenu(size: number) {
   if (size < 20) {
     rightMenuSize.value = 0;

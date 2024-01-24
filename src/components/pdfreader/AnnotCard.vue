@@ -127,6 +127,13 @@ const annotContent = computed({
 const isMovable = ref(false);
 defineExpose({ isMovable });
 
+/**
+ * Renders mathematical expressions in the annotation content using KaTeX.
+ *
+ * This function is triggered whenever the annotation content is accessed or modified.
+ * It uses KaTeX to parse and render any mathematical expressions embedded within the
+ * content. The rendering is done asynchronously after the next DOM update cycle.
+ */
 async function liveRender() {
   await nextTick();
   if (mdContentDiv.value)
@@ -144,12 +151,28 @@ async function liveRender() {
     });
 }
 
+/**
+ * Updates the color of the annotation.
+ *
+ * Changes the color of the current annotation. It updates
+ * the annotation's color in the application's state and reflects this change in the
+ * PDF application's annotation store.
+ *
+ * @param {string} color - The new color value to be set for the annotation.
+ */
 const changeColor = (color: string) => {
   pdfApp.annotStore?.update(props.annot.data._id, {
     color: color,
   } as AnnotationData);
 };
 
+/**
+ * Deletes the current annotation.
+ *
+ * Removes the current annotation from the PDF application's annotation
+ * store. It is typically triggered by a user action, such as selecting a delete option
+ * from the annotation's context menu.
+ */
 const deleteAnnot = () => {
   pdfApp.annotStore?.delete(props.annot.data._id);
 };

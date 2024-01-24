@@ -173,6 +173,13 @@ onMounted(() => {
   searchRowWidth.value = table.value.$el.getBoundingClientRect().width * 0.8;
 });
 
+
+/**
+ * Handle the selection of rows in the table.
+ * @param {Project[]} rows - The selected rows (projects).
+ * @param {boolean} added - Indicates if rows were added to the selection.
+ * @param {KeyboardEvent} evt - The keyboard event associated with the selection.
+ */
 function handleSelection(rows: Project[], added: boolean, evt: KeyboardEvent) {
   // ignore selection change from header of not from a direct click event
   if (rows.length !== 1 || evt === void 0) {
@@ -221,9 +228,9 @@ function handleSelection(rows: Project[], added: boolean, evt: KeyboardEvent) {
 }
 
 /**
- * Select a row in the table
- * @param row
- * @param rowIndex
+ * Handle a click event on a project row.
+ * @param {Object} props - The properties of the clicked row.
+ * @param {PointerEvent} e - The mouse event associated with the click.
  */
 function clickProject(
   props: {
@@ -253,13 +260,18 @@ function clickProject(
 }
 
 /**
- * Double-click a row in the table
- * @param row
+ * Handle a double-click event on a project row.
+ * @param {Project} row - The project row that was double-clicked.
  */
 function dblclickProject(row: Project) {
   stateStore.openItem(row._id);
 }
 
+/**
+ * Toggle the context menu on right-clicking a project row.
+ * @param {Object} props - The properties of the clicked row.
+ * @param {PointerEvent} e - The mouse event associated with the right-click.
+ */
 function toggleContextMenu(
   props: { selected: boolean; row: Project },
   e: PointerEvent
@@ -305,18 +317,19 @@ function onDragEnd() {
 }
 
 /**
- * Filter method for the table
- * @param rows - array of projects
- * @param terms - terms to filter with (is essentially the 'filter' prop value)
- * @param cols - array of columns
- * @param getCellValue - optional function to get a cell value
+ * Custom filter method for the table.
+ * @param {Project[]} rows - The array of projects to filter.
+ * @param {string} terms - The search terms to filter with.
+ * @param {QTableColumn[]} cols - The array of table columns.
+ * @param {Function} getCellValue - Optional function to get a cell value.
+ * @returns {Project[]} - The filtered projects.
  */
 function searchProject(
   rows: Project[],
   terms: string,
   cols: QTableColumn[],
   getCellValue: (col: QTableColumn, row: Project) => any
-) {
+): Project[] {
   loading.value = true;
   expansionText.value = [];
   let text = "";

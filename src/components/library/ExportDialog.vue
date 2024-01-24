@@ -76,6 +76,10 @@ const templates = ref([
 
 const template = ref({ label: "APA 7th", value: "APA 7th" });
 
+/**
+ * Emits the selected citation format and template options and closes the dialog.
+ * This function is called when the user confirms their choices for citation export.
+ */
 function confirm() {
   let options = null;
   if (format.value.value === "bibliography")
@@ -84,6 +88,10 @@ function confirm() {
   emit("update:show", false);
 }
 
+/**
+ * Closes the dialog without performing any action.
+ * This function is called when the user decides to cancel the operation.
+ */
 function cancel() {
   // do nothing, only close the dialog
   emit("update:show", false);
