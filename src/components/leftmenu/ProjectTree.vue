@@ -1,8 +1,4 @@
 <template>
-  <!-- <ExportDialog
-    v-model:show="exportCitationDialog"
-    @confirm="(format:any, options:any) => exportCitation(format, options)"
-  /> -->
   <q-tree
     ref="tree"
     dense
@@ -41,7 +37,7 @@
           @showInExplorer="showInExplorer(prop.node)"
           @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
           @addFolder="addNode(prop.node._id, 'folder')"
-          @exportCitation="showExportCitationDialog"
+          @exportCitation="showExportCitationDialog(prop.node)"
           @closeProject="closeProject(prop.node._id)"
           @copyId="
             () => {
@@ -175,7 +171,7 @@ import { nextTick, onMounted, ref, watchEffect } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
 import { dirname, join } from "@tauri-apps/api/path";
-import { exportMeta } from "src/backend/project/meta";
+import { getMeta } from "src/backend/project/meta";
 import { idToPath, oldToNewId } from "src/backend/project/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
@@ -185,10 +181,12 @@ import { metadata } from "tauri-plugin-fs-extra-api";
 import { useQuasar } from "quasar";
 import { generateCiteKey } from "src/backend/project/meta";
 import { getNotes } from "src/backend/project/note";
-import { getProject } from "src/backend/project/project";
+import { exportDialog } from "src/components/dialogs/dialogController";
+import { useI18n } from "vue-i18n";
 import FolderMenu from "./FolderMenu.vue";
 import NoteMenu from "./NoteMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
+const { t } = useI18n({ useScope: "global" });
 
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
@@ -205,7 +203,6 @@ const expanded = ref<string[]>([]);
 const draggingNode = ref<FolderOrNote | null>(null);
 const dragoverNode = ref<FolderOrNote | null>(null);
 const enterTime = ref(0);
-const exportCitationDialog = ref(false);
 const project = ref<Project | null>(null);
 const $q = useQuasar();
 
@@ -218,30 +215,15 @@ watchEffect(() => {
   showInTree(layoutStore.currentItemId);
 });
 
-async function showExportCitationDialog(_projectid: Project) {
-  exportCitationDialog.value = true;
-  project.value = (await getProject(_projectid.toString())) as Project;
-}
-
-/**
- * Export project citation
- * @param format - citation.js supported format see - citation_styles
- * @param options - extra options
- */
-async function exportCitation(
-  format: string,
-  options: { format?: string; template?: string }
-) {
-  if (project.value) {
-    await exportMeta(format, options, undefined, project.value);
-
-    $q.notify({
-      message: "Copied",
-      color: "blue",
-      position: "bottom",
-      timeout: 500,
-    });
-  }
+async function showExportCitationDialog(project: Project) {
+  exportDialog.show();
+  exportDialog.onConfirm(async () => {
+    const format = exportDialog.format.value;
+    const options = { template: exportDialog.template.value };
+    const meta = await getMeta([project], format, options);
+    await copyToClipboard(meta as string);
+    $q.notify(t("text-copied"));
+  });
 }
 
 function selectItem(nodeId: string) {

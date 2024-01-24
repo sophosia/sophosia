@@ -30,7 +30,7 @@
       <q-item
         clickable
         v-close-popup
-        @click="exportCitation"
+        @click="$emit('exportCitation')"
       >
         <q-item-section>
           {{ $t("copy-reference") }}
@@ -99,7 +99,7 @@
 import { NoteType } from "src/backend/database";
 
 const props = defineProps({
-  projectId: { type: String, required: true }
+  projectId: { type: String, required: true },
 });
 
 const emit = defineEmits([
@@ -109,11 +109,6 @@ const emit = defineEmits([
   "addNote",
   "addFolder",
   "closeProject",
-  "exportCitation"
+  "exportCitation",
 ]);
-
-function exportCitation() {
-  let project = props.projectId; //grab the project's id that's clicked
-  emit("exportCitation", project);
-}
 </script>
