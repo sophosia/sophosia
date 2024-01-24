@@ -52,7 +52,7 @@
           $emit('openPage', {
             id: 'library',
             label: t('library'),
-            type: 'LibraryPage',
+            type: 'LibraryPage'
           })
         "
       >
@@ -85,8 +85,8 @@
               data: {
                 path: await resolveResource(
                   `help/help_${db.config.language}.md`
-                ),
-              },
+                )
+              }
             });
           }
         "
@@ -104,7 +104,7 @@
           $emit('openPage', {
             id: 'settings',
             label: t('settings'),
-            type: 'SettingsPage',
+            type: 'SettingsPage'
           })
         "
       >
@@ -132,7 +132,7 @@ const stateStore = useStateStore();
 const { t, locale } = useI18n({ useScope: "global" });
 
 const props = defineProps({
-  isLeftMenuVisible: { type: Boolean, required: true },
+  isLeftMenuVisible: { type: Boolean, required: true }
 });
 const emit = defineEmits(["update:isLeftMenuVisible", "openPage"]);
 
@@ -170,11 +170,21 @@ watch(
   { deep: true }
 );
 
+/**
+ * Handles the click event on plugin buttons.
+ * When a plugin button is clicked, the method sets the clicked button's UID and triggers the button's click action.
+ * @param btn - The button object which contains details about the plugin button clicked.
+ */
 function onPluginBtnClick(btn: Button) {
   clickedBtnUid.value = btn.uid;
   btn.click();
 }
 
+/**
+ * Mounts buttons on the ribbon.
+ * This method is responsible for loading and displaying buttons on the ribbon, both regular and toggle buttons, from the plugin manager.
+ * It updates the `pluginBtns` and `toggleBtns` reactive properties with the relevant button data.
+ */
 function mountBtns() {
   let buttons = pluginManager.getBtns(ComponentName.RIBBON);
   pluginBtns.value = buttons.btns;
@@ -183,28 +193,20 @@ function mountBtns() {
     icon: "mdi-file-tree",
     value: "projectNavigator",
     tooltip: t("openedProjects"),
-    slot: "projectNavigator",
+    slot: "projectNavigator"
   });
   for (let toggleBtn of buttons.toggleBtns) {
     toggleBtns.value.push({
       icon: toggleBtn.icon,
       value: toggleBtn.uid,
       tooltip: toggleBtn.tooltip,
-      slot: toggleBtn.uid,
+      slot: toggleBtn.uid
     });
   }
 }
 
 onMounted(() => {
   mountBtns();
-
-  // // check if update is available
-  // // if available, show a blue dot on settings icon
-  // setTimeout(() => {
-  //   window.updater.updateAvailable((event, isAvailable: boolean) => {
-  //     isUpdateAvailable.value = isAvailable;
-  //   });
-  // }, 1000);
 });
 </script>
 <style scoped lang="scss">

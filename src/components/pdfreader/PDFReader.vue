@@ -71,7 +71,7 @@ import {
   AnnotationData,
   AnnotationType,
   Project,
-  Rect,
+  Rect
 } from "src/backend/database";
 import { computed, nextTick, onMounted, provide, ref, watch } from "vue";
 import { KEY_pdfApp, KEY_project } from "./injectKeys";
@@ -95,7 +95,7 @@ const layoutStore = useLayoutStore();
  **********************************/
 const props = defineProps({
   projectId: { type: String, required: true },
-  focusAnnotId: { type: String, required: false },
+  focusAnnotId: { type: String, required: false }
 });
 
 const initialized = ref(false);
@@ -124,7 +124,7 @@ const showRightMenu = computed({
 
       rightMenuSize.value = 0;
     }
-  },
+  }
 });
 
 // annot card & colorpicker
@@ -145,6 +145,11 @@ const renderEvt = ref<{
 /******************************
  * RightMenu
  ******************************/
+
+/**
+ * Resizes the right-side menu based on user interaction with the splitter.
+ * @param {number} size - The new size of the right menu.
+ */
 function resizeRightMenu(size: number) {
   if (size < 15) {
     rightMenuSize.value = 0;
@@ -157,8 +162,10 @@ function resizeRightMenu(size: number) {
  * AnnotCard & FloatingMenu
  *******************************/
 /**
- * Toggle Floating Menu after text selection
- * @param page - the pageNumber where the selection is on
+ * Toggles the visibility of the floating menu for text selection actions.
+ * The menu is positioned based on the page and selection coordinates.
+ * @param {boolean} show - Flag indicating whether to show or hide the menu.
+ * @param {number} [page] - The page number where the selection is made.
  */
 function toggleFloatingMenu(show: boolean, page?: number) {
   if (!show) {
@@ -191,6 +198,12 @@ function toggleFloatingMenu(show: boolean, page?: number) {
   }
 }
 
+/**
+ * Toggles the annotation card visibility for displaying or editing annotations.
+ * Positions the card based on the annotation's location on the page.
+ * @param {boolean} show - Flag indicating whether to show or hide the annotation card.
+ * @param {Annotation} [annot] - The annotation object for which the card is shown.
+ */
 function toggleAnnotCard(show: boolean, annot?: Annotation) {
   if (!show) {
     showAnnotCard.value = false;
@@ -205,8 +218,9 @@ function toggleAnnotCard(show: boolean, annot?: Annotation) {
 }
 
 /**
- * Set position of FloatingMenu / AnnotCard
- * @param rects - doms of text selections / annotation
+ * Sets the position of the floating menu or annotation card relative to the PDF viewer.
+ * Calculates the position based on the provided DOMRect objects.
+ * @param {DOMRect[] | DOMRectList} rects - The DOMRect objects representing the position of text selection or annotation.
  */
 function setPosition(rects: DOMRect[] | DOMRectList) {
   if (!viewerContainer.value) return;
@@ -234,6 +248,9 @@ function setPosition(rects: DOMRect[] | DOMRectList) {
   `;
 }
 
+/**
+ * Enables dragging functionality for the annotation card, allowing it to be moved around the screen.
+ */
 function enableDragToMoveAnnotCard() {
   if (!card.value) return;
   card.value.isMovable = true;
@@ -262,6 +279,11 @@ function enableDragToMoveAnnotCard() {
   };
 }
 
+/**
+ * Highlights the selected text in the PDF document with the specified color.
+ * Creates a new annotation for the highlighted text.
+ * @param {string} color - The color to use for highlighting the text.
+ */
 function highlightText(color: string) {
   if (!renderEvt.value) return;
   let annot = pdfApp.annotFactory.buildSelectionBasedAnnot(
@@ -284,9 +306,13 @@ function highlightText(color: string) {
 /***************************
  * PDF realated
  ***************************/
+/**
+ * Loads a PDF into the viewer and initializes necessary states.
+ * @param {string} projectId - The ID of the project associated with the PDF.
+ */
 async function loadPDF(projectId: string) {
   project.value = (await getProject(projectId, {
-    includePDF: true,
+    includePDF: true
   })) as Project;
   if (!project.value.path) return;
   // load state before loading pdf
@@ -377,7 +403,7 @@ onMounted(async () => {
               content: "",
               color: "",
               rects: [] as Rect[],
-              type: AnnotationType.INK,
+              type: AnnotationType.INK
             } as AnnotationData;
             let annot = pdfApp.annotFactory.build(annotData);
             if (annot) {
@@ -418,7 +444,7 @@ onMounted(async () => {
             layoutStore.openPage({
               id: project.value._id,
               type: "ReaderPage",
-              label: project.value.label,
+              label: project.value.label
             });
           }
         }
@@ -476,8 +502,8 @@ onMounted(async () => {
                   left: Math.min(x1, ev.clientX),
                   top: Math.min(y1, ev.clientY),
                   width: Math.abs(x1 - ev.clientX),
-                  height: Math.abs(y1 - ev.clientY),
-                },
+                  height: Math.abs(y1 - ev.clientY)
+                }
               ];
               if (rects[0].width < 1 || rects[0].height < 1) return;
               rects[0] = pdfApp.annotFactory.offsetTransform(
@@ -495,7 +521,7 @@ onMounted(async () => {
                 pageNumber: e.pageNumber,
                 projectId: pdfApp.state.projectId,
                 dataType: "pdfAnnotation",
-                content: "",
+                content: ""
               } as AnnotationData;
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {
@@ -518,8 +544,8 @@ onMounted(async () => {
                   left: ev.clientX,
                   top: ev.clientY,
                   width: 0,
-                  height: 0,
-                },
+                  height: 0
+                }
               ];
               rects[0] = pdfApp.annotFactory.offsetTransform(
                 rects[0],
@@ -535,7 +561,7 @@ onMounted(async () => {
                 pageNumber: e.pageNumber,
                 projectId: pdfApp.state.projectId,
                 dataType: "pdfAnnotation",
-                content: "",
+                content: ""
               } as AnnotationData;
               let annot = pdfApp.annotFactory.build(annotData);
               if (annot) {

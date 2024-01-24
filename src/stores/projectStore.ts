@@ -4,14 +4,14 @@ import {
   addFolder,
   createFolder,
   deleteFolder,
-  renameFolder,
+  renameFolder
 } from "src/backend/project/note";
 import {
   getNote,
   addNote,
   deleteNote,
   renameNote,
-  createNote,
+  createNote
 } from "src/backend/project/note";
 import {
   getProjects,
@@ -21,7 +21,7 @@ import {
   updateProject,
   renamePDF,
   attachPDF,
-  createProject,
+  createProject
 } from "src/backend/project/project";
 import { sortTree } from "src/backend/project/utils";
 
@@ -32,26 +32,35 @@ export const useProjectStore = defineStore("projectStore", {
     projects: [] as Project[], // array of projects
     openedProjects: [] as Project[], // array of opened projects
 
-    updatedProject: {} as Project, // for updating window tab name
+    updatedProject: {} as Project // for updating window tab name
   }),
 
   actions: {
     /**
-     * Get project by projectId
-     * @param projectId
-     * @returns
+     * Retrieves a project from the store based on its projectId.
+     * @param projectId - The unique identifier of the project.
+     * @returns The project object if found, otherwise undefined.
      */
     getProject(projectId: string) {
       return this.projects.find((project) => project._id === projectId);
     },
 
+    /**
+     * Loads a project from the database including its PDF and notes, if any.
+     * @param projectId - The unique identifier of the project to load.
+     * @returns A project object with detailed information.
+     */
     async getProjectFromDB(projectId: string) {
       return await getProject(projectId, {
         includePDF: true,
-        includeNotes: true,
+        includeNotes: true
       });
     },
 
+    /**
+     * Loads projects identified by their IDs into the openedProjects array.
+     * @param openedProjectIds - An array or set of project IDs to be loaded.
+     */
     async loadOpenedProjects(openedProjectIds: string[] | Set<string>) {
       this.openedProjects = [];
       let pushedIds = this.openedProjects.map((p) => p._id);
@@ -64,6 +73,10 @@ export const useProjectStore = defineStore("projectStore", {
       }
     },
 
+    /**
+     * Opens a project by loading its details from the database and adding it to the openedProjects array if not already present.
+     * @param projectId - The unique identifier of the project to open.
+     */
     async openProject(projectId: string) {
       let project = (await this.getProjectFromDB(projectId)) as Project;
       if (!this.openedProjects.map((p) => p._id).includes(project._id))
@@ -71,17 +84,18 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     /**
-     * Create a project data
-     * @param folderId
+     * Creates a new project in a specified folder.
+     * @param folderId - The unique identifier of the folder where the project is to be created.
+     * @returns A new project object.
      */
     createProject(folderId: string) {
       return createProject(folderId);
     },
 
     /**
-     * Add a project to the list
-     * @param project
-     * @param saveToDB
+     * Adds a project to the projects array in the store. Optionally saves the project to the database.
+     * @param project - The project object to add.
+     * @param saveToDB - Boolean indicating whether to save the project to the database.
      */
     async addProject(project: Project, saveToDB?: boolean) {
       if (saveToDB) project = (await addProject(project)) as Project;
@@ -89,10 +103,9 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     /**
-     * Update a project
-     * This maintains both lists, openedProjects and projects
-     * @param projectId
-     * @param props
+     * Updates the details of a project both in the projects and openedProjects arrays.
+     * @param projectId - The unique identifier of the project to update.
+     * @param props - The new properties to be updated in the project.
      */
     async updateProject(projectId: string, props: Project) {
       let newProject = (await updateProject(projectId, props)) as Project;
@@ -113,6 +126,12 @@ export const useProjectStore = defineStore("projectStore", {
       this.updatedProject = newProject;
     },
 
+    /**
+     * Deletes a project from the projects array and optionally from the database.
+     * @param projectId - The unique identifier of the project to delete.
+     * @param deleteFromDB - Boolean indicating whether to delete the project from the database.
+     * @param folderId - Optional folder ID if the project is within a folder.
+     */
     async deleteProject(
       projectId: string,
       deleteFromDB: boolean,
@@ -129,23 +148,31 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     /**
-     * Load projects and their notes from database
-     * @param folderId
+     * Loads all projects under a specific folder from the database.
+     * @param folderId - The unique identifier of the folder whose projects are to be loaded.
      */
     async loadProjects(folderId: string) {
       this.projects = await getProjects(folderId, {
         includePDF: true,
-        includeNotes: true,
+        includeNotes: true
       });
       this.ready = true;
     },
 
+    /**
+     * Renames the PDF file associated with a project.
+     * @param projectId - The unique identifier of the project whose PDF is to be renamed.
+     */
     async renamePDF(projectId: string) {
       let project = this.getProject(projectId);
       // update ui
       if (project) Object.assign(project, { path: await renamePDF(project) });
     },
 
+    /**
+     * Attaches a PDF to a project.
+     * @param projectId - The unique identifier of the project to which the PDF will be attached.
+     */
     async attachPDF(projectId: string) {
       // update db
       const filename = await attachPDF(projectId);
@@ -154,10 +181,22 @@ export const useProjectStore = defineStore("projectStore", {
         await this.updateProject(projectId, { path: filename } as Project);
     },
 
+    /**
+     * Retrieves a note from the database based on its unique identifier.
+     * @param noteId - The unique identifier of the note to retrieve.
+     * @returns The requested note object.
+     */
     async getNoteFromDB(noteId: string) {
       return await getNote(noteId);
     },
 
+    /**
+     * Creates a new folder or note under a specific parent node.
+     * @param parentNodeId - The unique identifier of the parent node.
+     * @param nodeType - Type of the node to create ('folder' or 'note').
+     * @param noteType - The type of note to create, if the node is a note.
+     * @returns The newly created node object.
+     */
     async createNode(
       parentNodeId: string,
       nodeType: "folder" | "note",
@@ -167,6 +206,10 @@ export const useProjectStore = defineStore("projectStore", {
       else return await createNote(parentNodeId, noteType);
     },
 
+    /**
+     * Adds a folder or note to the store and database.
+     * @param node - The node object (folder or note) to add.
+     */
     async addNode(node: FolderOrNote) {
       // update db
       if (node.dataType === "folder") await addFolder(node);
@@ -178,6 +221,12 @@ export const useProjectStore = defineStore("projectStore", {
       this._updateProjectUI(project);
     },
 
+    /**
+     * Renames a folder or note both in the store and the database.
+     * @param oldNodeId - The original unique identifier of the node.
+     * @param newNodeId - The new unique identifier for the node.
+     * @param nodeType - The type of the node ('folder' or 'note').
+     */
     async renameNode(
       oldNodeId: string,
       newNodeId: string,
@@ -196,6 +245,11 @@ export const useProjectStore = defineStore("projectStore", {
       }
     },
 
+    /**
+     * Deletes a folder or note from the store and database.
+     * @param nodeId - The unique identifier of the node to delete.
+     * @param nodeType - The type of the node ('folder' or 'note').
+     */
     async deleteNode(nodeId: string, nodeType: "folder" | "note") {
       if (nodeType === "folder") await deleteFolder(nodeId);
       else await deleteNote(nodeId);
@@ -204,6 +258,6 @@ export const useProjectStore = defineStore("projectStore", {
       let project = (await this.getProjectFromDB(projectId)) as Project;
       sortTree(project);
       this._updateProjectUI(project);
-    },
-  },
+    }
+  }
 });
