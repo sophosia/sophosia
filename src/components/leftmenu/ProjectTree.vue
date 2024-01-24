@@ -220,15 +220,19 @@ watchEffect(() => {
   showInTree(layoutStore.currentItemId);
 });
 
+/**
+ * Shows the dialog to export a project's citation.
+ * @param {string} _projectid - The ID of the project to export.
+ */
 async function showExportCitationDialog(_projectid: Project) {
   exportCitationDialog.value = true;
   project.value = (await getProject(_projectid.toString())) as Project;
 }
 
 /**
- * Export project citation
- * @param format - citation.js supported format see - citation_styles
- * @param options - extra options
+ * Exports the citation of a project in the specified format.
+ * @param {string} format - The format to export the citation in.
+ * @param {Object} options - Additional options for the export.
  */
 async function exportCitation(
   format: string,
@@ -246,6 +250,10 @@ async function exportCitation(
   }
 }
 
+/**
+ * Selects a project or note item and expands its tree view if necessary.
+ * @param {string} nodeId - The ID of the item to select.
+ */
 function selectItem(nodeId: string) {
   if (!tree.value) return;
   const node = tree.value.getNodeByKey(nodeId);
@@ -257,6 +265,10 @@ function selectItem(nodeId: string) {
   stateStore.openItem(node._id);
 }
 
+/**
+ * Opens the file explorer at the location of the specified project or note.
+ * @param {Project | Note} node - The project or note to show in the explorer.
+ */
 async function showInExplorer(node: Project | Note) {
   const path = idToPath(node._id);
   await invoke("show_in_folder", {
@@ -274,6 +286,10 @@ function showInTree(nodeId: string) {
   }
 }
 
+/**
+ * Closes the specified project and all its associated notes.
+ * @param {string} projectId - The ID of the project to close.
+ */
 async function closeProject(projectId: string) {
   // close all pages
   let project = projectStore.openedProjects.find((p) => p._id === projectId);
@@ -295,9 +311,10 @@ async function closeProject(projectId: string) {
 }
 
 /**
- * Add a node with nodeType under the parent node
- * @param parentNodeId add node under this parent node
- * @param noteType (optional) the added note type
+ * Adds a new folder or note under the specified parent node.
+ * @param {string} parentNodeId - The ID of the parent node.
+ * @param {"folder" | "note"} nodeType - The type of node to add.
+ * @param {NoteType} [noteType=NoteType.MARKDOWN] - The type of note to add (if nodeType is 'note').
  */
 async function addNode(
   parentNodeId: string,
@@ -314,6 +331,10 @@ async function addNode(
   setRenameNode(node);
 }
 
+/**
+ * Sets up a node for renaming.
+ * @param {FolderOrNote} node - The node to rename.
+ */
 function setRenameNode(node: FolderOrNote) {
   // set renaming note and show input
   renamingNodeId.value = node._id;
@@ -333,6 +354,9 @@ function setRenameNode(node: FolderOrNote) {
   }, 100);
 }
 
+/**
+ * Renames the specified node.
+ */
 async function renameNode() {
   const node = tree.value?.getNodeByKey(renamingNodeId.value) as FolderOrNote;
   if (!!!node) return;
@@ -365,6 +389,10 @@ async function renameNode() {
   oldNoteName.value = "";
 }
 
+/**
+ * Checks for duplicate paths when renaming a node.
+ * @param {Note} note - The note being renamed to check for duplicates.
+ */
 async function checkDuplicate(note: Note) {
   if (!note) return;
   const extension = note.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
@@ -377,7 +405,10 @@ async function checkDuplicate(note: Note) {
     pathDuplicate.value = true;
   else pathDuplicate.value = false;
 }
-
+/**
+ * Deletes the specified node from the project structure.
+ * @param {FolderOrNote} node - The node to delete.
+ */
 async function deleteNode(node: FolderOrNote) {
   if (node.dataType === "note") {
     layoutStore.closePage(node._id);
@@ -402,12 +433,9 @@ async function deleteNode(node: FolderOrNote) {
 }
 
 /**
- * Drag and Drop
- */
-/**
- * On dragstart, set the dragging folder
- * @param e - dragevent
- * @param node - the folder user is dragging
+ * Handles the start of a drag operation.
+ * @param {DragEvent} e - The drag event.
+ * @param {FolderOrNote} node - The node being dragged.
  */
 function onDragStart(e: DragEvent, node: FolderOrNote) {
   draggingNode.value = node;
@@ -416,9 +444,9 @@ function onDragStart(e: DragEvent, node: FolderOrNote) {
 }
 
 /**
- * When dragging node enters the folder, highlight and expand it.
- * @param e - dragevent
- * @param node - the folder user is dragging over
+ * Handles a node being dragged over another node.
+ * @param {DragEvent} e - The drag event.
+ * @param {FolderOrNote} node - The node being dragged over.
  */
 function onDragOver(e: DragEvent, node: FolderOrNote) {
   // enable drop on the node
@@ -436,9 +464,9 @@ function onDragOver(e: DragEvent, node: FolderOrNote) {
 }
 
 /**
- * When the dragging node leaves the folders, reset the timer
- * @param e
- * @param node
+ * Resets the drag state when leaving a node.
+ * @param {DragEvent} e - The drag event.
+ * @param {FolderOrNote} node - The node being left.
  */
 function onDragLeave(e: DragEvent, node: FolderOrNote) {
   enterTime.value = 0;
@@ -446,10 +474,9 @@ function onDragLeave(e: DragEvent, node: FolderOrNote) {
 }
 
 /**
- * If draggedProjects is not empty, then we are dropping projects into folder
- * Otherwise we are dropping folder into another folder
- * @param e - dragevent
- * @param node - the folder / project user is dragging over
+ * Handles dropping a node onto another node.
+ * @param {DragEvent} e - The drag event.
+ * @param {Project | FolderOrNote} node - The node being dropped onto.
  */
 async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
   // record this first otherwise dragend event makes it null

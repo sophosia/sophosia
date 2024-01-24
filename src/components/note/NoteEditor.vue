@@ -30,7 +30,7 @@ import {
   getNote,
   loadNote,
   saveNote,
-  uploadImage,
+  uploadImage
 } from "src/backend/project/note";
 import { useStateStore } from "src/stores/appState";
 
@@ -57,7 +57,7 @@ const props = defineProps({
   noteId: { type: String, required: true },
   hasToolbar: { type: Boolean, required: true },
   data: { type: Object, required: false },
-  save: { type: Boolean, required: true, default: true },
+  save: { type: Boolean, required: true, default: true }
 });
 // noteId might change as user rename
 // data.path won't change since it will be some special note
@@ -88,14 +88,6 @@ watch(isLinkUpdated, async () => {
   isLinkUpdated.value = false;
 });
 
-// onMounted(async () => {
-//   if (!vditorDiv.value) return;
-//   links.value = await getForwardLinks(props.noteId);
-//   showEditor.value = true;
-//   initEditor();
-//   await nextTick();
-// });
-
 onMounted(async () => {
   if (!vditorDiv.value) return;
   links.value = await getForwardLinks(props.noteId);
@@ -118,6 +110,15 @@ onMounted(async () => {
 /************************************************
  * Initialization of vditor
  ************************************************/
+
+/**
+ * Initializes the Vditor editor with specified settings and custom toolbar.
+ *
+ * This function creates a new instance of Vditor and applies various configurations
+ * based on the props and application state. It defines the toolbar, themes, language,
+ * preview options, and other settings. It also handles custom actions like exporting
+ * to PDF and uploading images.
+ */
 function initEditor() {
   let toolbar = [] as (
     | {
@@ -133,7 +134,7 @@ function initEditor() {
     toolbar = [
       {
         name: "outline",
-        tipPosition: "s",
+        tipPosition: "s"
       },
       "|",
       { name: "headings", tipPosition: "s" },
@@ -149,7 +150,7 @@ function initEditor() {
         icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-image" viewBox="0 0 16 16">
                 <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
                 <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54L1 12.5v-9a.5.5 0 0 1 .5-.5z"/>
-              </svg>`,
+              </svg>`
       },
       "|",
       {
@@ -162,14 +163,14 @@ function initEditor() {
         click: () => {
           const Ivditor = vditor.value?.vditor;
           if (Ivditor) exportPDF(Ivditor);
-        },
-      },
+        }
+      }
     ];
   vditor.value = new Vditor("vditor-" + props.noteId, {
     height: "100%",
     mode: "ir",
     toolbarConfig: {
-      pin: true,
+      pin: true
     },
     // don't know why vditor import style sheets from cdn instead of node_module
     // we put the css in the public folder
@@ -181,20 +182,20 @@ function initEditor() {
     preview: {
       theme: {
         current: stateStore.settings.theme,
-        path: "vditor/dist/css/content-theme",
+        path: "vditor/dist/css/content-theme"
       },
       math: {
         // able to use digit in inline math
-        inlineDigit: true,
+        inlineDigit: true
       },
       hljs: {
         // enable line number in code block
         lineNumber: true,
-        style: "native",
-      },
+        style: "native"
+      }
     },
     cache: {
-      enable: false,
+      enable: false
     },
     hint: {
       parse: false,
@@ -202,9 +203,9 @@ function initEditor() {
       extend: [
         {
           key: "[[",
-          hint: filterHints,
-        },
-      ],
+          hint: filterHints
+        }
+      ]
     },
     after: async () => {
       if (!showEditor.value) return;
@@ -233,11 +234,19 @@ function initEditor() {
           });
         }
         return null;
-      },
-    },
+      }
+    }
   });
 }
 
+/**
+ * Sets the theme for the Vditor editor.
+ *
+ * This function updates the theme of the Vditor editor based on the provided theme
+ * name. It adjusts the code theme and the overall visual theme of the editor.
+ *
+ * @param {string} theme - The name of the theme to set (e.g., 'dark', 'classic').
+ */
 function setTheme(theme: string) {
   // this is used to set code theme
   if (!!vditor.value) {
@@ -255,12 +264,25 @@ function setTheme(theme: string) {
  * Set and save content
  *****************************************/
 
+/**
+ * Loads and sets the content in the Vditor editor.
+ *
+ * This function asynchronously loads the content from the backend using the note ID
+ * or data path and sets this content in the Vditor editor.
+ */
 async function setContent() {
   if (!vditor.value || (!props.noteId && !props.data?.path)) return;
   let content = await loadNote(props.noteId, props.data?.path);
   vditor.value.setValue(content);
 }
 
+/**
+ * Saves the current content from the Vditor editor.
+ *
+ * This function is used internally to save the content of the editor. It retrieves
+ * the current content from the editor and saves it using the note ID. It also handles
+ * saving link information.
+ */
 async function _saveContent() {
   // save the content when it's blur
   // this will be called before unmount
@@ -272,6 +294,13 @@ async function _saveContent() {
 
 const saveContent = debounce(_saveContent, 100) as () => void;
 
+/**
+ * Saves link information related to the current note.
+ *
+ * This function extracts links from the current note content and updates the link
+ * information in the database. It ensures that only new or updated links are saved,
+ * optimizing database interactions.
+ */
 async function saveLinks() {
   if (!vditor.value) return;
   let newLinks = [] as Edge[]; // target ids
@@ -306,6 +335,14 @@ async function saveLinks() {
 /*****************************************
  * Modify the default click link behavior
  *****************************************/
+
+/**
+ * Modifies the default behavior of hyperlinks in the Vditor editor.
+ *
+ * This function customizes the click behavior of links within the editor. It sets
+ * up click handlers for each link to open them externally or handle internal navigation.
+ * It also sets up hover behavior to show additional information using the HoverPane component.
+ */
 function _changeLinks() {
   if (!vditorDiv.value) return;
 
@@ -323,6 +360,16 @@ function _changeLinks() {
 }
 const changeLinks = debounce(_changeLinks, 50) as () => void;
 
+/**
+ * Handles click events on hyperlinks within the editor.
+ *
+ * This function intercepts click events on links to implement custom behavior. It
+ * determines whether to open links externally or perform internal navigation based
+ * on the link format.
+ *
+ * @param {MouseEvent} e - The mouse event associated with the click.
+ * @param {string} link - The URL or identifier of the clicked link.
+ */
 async function clickLink(e: MouseEvent, link: string) {
   if (!vditor.value) return;
   e.stopImmediatePropagation(); // stop propagating the click event
@@ -337,6 +384,16 @@ async function clickLink(e: MouseEvent, link: string) {
     stateStore.openItem(linkToId(link));
   }
 }
+
+/**
+ * Handles hover events over links to display additional information.
+ *
+ * This function is triggered when a user hovers over a link. It fetches and displays
+ * related information in the HoverPane component, providing context like project or
+ * note details.
+ *
+ * @param {HTMLElement} linkNode - The HTML element of the hovered link.
+ */
 async function hoverLink(linkNode: HTMLElement) {
   if (!hoverPane.value) return;
   // when hover on link, keep the hoverPane
@@ -358,7 +415,7 @@ async function hoverLink(linkNode: HTMLElement) {
         let lines = [
           `## ${item.title}`,
           `Author(s): ${authorToString(item.author)}`,
-          `Abstract: ${item.abstract}`,
+          `Abstract: ${item.abstract}`
         ];
         hoverContent.value = lines.join("\n");
         hoverData.value.content = lines.join("\n");
@@ -370,7 +427,7 @@ async function hoverLink(linkNode: HTMLElement) {
               (await getProject(item.projectId)) as Project,
               "author_year_title",
               true
-            )}`,
+            )}`
           ];
           hoverContent.value = lines.join("\n");
           hoverData.value.content = lines.join("\n");
@@ -387,7 +444,7 @@ async function hoverLink(linkNode: HTMLElement) {
           `page: ${item.pageNumber}`,
           `project: ${project.label}`,
           "content:",
-          item.content,
+          item.content
         ];
         hoverContent.value = lines.join("\n");
         hoverData.value.content = lines.join("\n");
@@ -417,7 +474,14 @@ async function hoverLink(linkNode: HTMLElement) {
 /********************************************
  * Add image resize handle on each image in the note
  ********************************************/
-// TODO: save image size
+
+/**
+ * Adds interactive resize handles to images in the note content.
+ *
+ * This function goes through all images in the note content and adds a drag handle
+ * to each for resizing. It ensures that only images from certain sources are processed
+ * and avoids adding multiple handles to the same image.
+ */
 async function _hangleImage() {
   if (!vditorDiv.value) return;
   let imgs = vditorDiv.value.querySelectorAll("img");
@@ -491,10 +555,16 @@ const handleImage = debounce(_hangleImage, 50) as () => void;
  *******************************************/
 
 /**
- * Return a filtered list of projects / notes according to key
- * @param key - keywords to filter
+ * Filters and returns filtered lists of projects/note hints for the Vditor editor.
+ *
+ * This function is used to provide suggestions for link insertion within the editor.
+ * It searches through projects and notes based on the provided keyword and returns
+ * a list of matching hints with custom HTML formatting.
+ *
+ * @param {string} key - The keyword used for filtering suggestions.
+ * @returns {Promise<Array>} A promise that resolves to an array of hint objects.
  */
-async function filterHints(key: string) {
+async function filterHints(key: string): Promise<Array<any>> {
   let hints = [];
   let projects = (await getAllProjects()) as Project[];
   let noteIds = await getAllNotes();
@@ -513,7 +583,7 @@ async function filterHints(key: string) {
           <p class="ellipsis q-my-none">
             Author(s): ${authorToString(project.author)}
           </p>
-          `,
+          `
       });
     }
   }
@@ -533,7 +603,7 @@ async function filterHints(key: string) {
           <p class="ellipsis q-my-none">
             Belongs to: ${parentProject?.label}
           </p>
-          `,
+          `
       });
     }
   }

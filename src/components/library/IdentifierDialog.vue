@@ -59,12 +59,20 @@ const emit = defineEmits(["update:show", "confirm"]);
 
 const identifier = ref("");
 
+/**
+ * Emits the entered identifier and closes the dialog.
+ * This function is called when the user confirms their identifier input.
+ */
 function confirm() {
   emit("confirm", identifier.value);
   emit("update:show", false);
   identifier.value = "";
 }
 
+/**
+ * Closes the dialog without performing any action and clears the input field.
+ * This function is called when the user decides to cancel the operation.
+ */
 function cancel() {
   // do nothing, only close the dialog
   emit("update:show", false);

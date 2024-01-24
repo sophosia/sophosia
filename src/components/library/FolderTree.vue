@@ -113,7 +113,7 @@
 
 <script setup lang="ts">
 // types
-import { computed, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { Folder, SpecialFolder, db } from "src/backend/database";
 import { QTree, QTreeNode } from "quasar";
 //db
@@ -184,9 +184,10 @@ async function saveState() {
  **************************/
 
 /**
- * Add folder to selected node
- * @param parentNode
- * @param label - folder name
+ * Adds a new folder as a child of the specified parent folder.
+ * @param {Folder} parentNode - The parent folder under which the new folder is added.
+ * @param {string} [label] - Optional label for the new folder.
+ * @param {boolean} [focus] - If true, sets the focus on the newly added folder.
  */
 async function addFolder(parentNode: Folder, label?: string, focus?: boolean) {
   // add to database
@@ -212,8 +213,8 @@ async function addFolder(parentNode: Folder, label?: string, focus?: boolean) {
 }
 
 /**
- * Delete selected folder
- * @param node
+ * Deletes the specified folder from the tree and database.
+ * @param {Folder} node - The folder to be deleted.
  */
 function deleteFolder(node: Folder) {
   if ((Object.values(SpecialFolder) as string[]).includes(node._id)) return;
@@ -247,8 +248,8 @@ function deleteFolder(node: Folder) {
 }
 
 /**
- * Reveal input to rename for selected folder
- * @param node
+ * Initiates the renaming process for a given folder.
+ * @param {Folder} node - The folder to be renamed.
  */
 function setRenameFolder(node: Folder) {
   renamingFolderId.value = node._id;
@@ -264,7 +265,7 @@ function setRenameFolder(node: Folder) {
 }
 
 /**
- * Hide input and update db and ui
+ * Finalizes the renaming of a folder and updates it in the database.
  */
 function renameFolder() {
   if (!!!renamingFolderId.value) return;
@@ -281,8 +282,8 @@ function renameFolder() {
 }
 
 /**
- * Export a collection of references
- * @param folder
+ * Triggers the export process for the specified folder's references.
+ * @param {Folder} folder - The folder whose references are to be exported.
  */
 function exportFolder(folder: Folder) {
   console.log(folder);
