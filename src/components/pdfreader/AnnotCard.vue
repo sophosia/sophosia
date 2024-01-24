@@ -92,24 +92,22 @@
   </q-card>
 </template>
 <script setup lang="ts">
-import { ref, inject, PropType, computed, nextTick } from "vue";
 import { Annotation } from "src/backend/pdfannotation/annotations";
+import { PropType, computed, inject, nextTick, ref } from "vue";
 
 import AnnotMenu from "./AnnotMenu.vue";
 
-import { copyToClipboard, colors } from "quasar";
+import renderMathInElement from "katex/contrib/auto-render";
+import "katex/dist/katex.min.css";
+import { colors, copyToClipboard } from "quasar";
 import { AnnotationData } from "src/backend/database";
 import PDFApplication from "src/backend/pdfreader";
 import { KEY_pdfApp } from "./injectKeys";
-import { useStateStore } from "src/stores/appState";
-import renderMathInElement from "katex/contrib/auto-render";
-import "katex/dist/katex.min.css";
 const { luminosity } = colors;
-const stateStore = useStateStore();
 
 const props = defineProps({
   annot: { type: Object as PropType<Annotation>, required: true },
-  style: { type: String, required: true }
+  style: { type: String, required: true },
 });
 const pdfApp = inject(KEY_pdfApp) as PDFApplication;
 
@@ -122,9 +120,9 @@ const annotContent = computed({
   },
   set(text: string) {
     pdfApp.annotStore?.update(props.annot.data._id, {
-      content: text
+      content: text,
     } as AnnotationData);
-  }
+  },
 });
 const isMovable = ref(false);
 defineExpose({ isMovable });
@@ -146,10 +144,10 @@ async function liveRender() {
         { left: "$$", right: "$$", display: true },
         { left: "$", right: "$", display: false },
         { left: "\\(", right: "\\)", display: false },
-        { left: "\\[", right: "\\]", display: true }
+        { left: "\\[", right: "\\]", display: true },
       ],
       // • rendering keys, e.g.:
-      throwOnError: false
+      throwOnError: false,
     });
 }
 
@@ -164,7 +162,7 @@ async function liveRender() {
  */
 const changeColor = (color: string) => {
   pdfApp.annotStore?.update(props.annot.data._id, {
-    color: color
+    color: color,
   } as AnnotationData);
 };
 

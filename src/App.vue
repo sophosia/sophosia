@@ -21,13 +21,13 @@
 </template>
 
 <script setup lang="ts">
-import WelcomeCarousel from "src/components/welcome/WelcomeCarousel.vue";
-import { onMounted, ref, watchEffect } from "vue";
-import { useStateStore } from "src/stores/appState";
-import { useProjectStore } from "src/stores/projectStore";
-import { useI18n } from "vue-i18n";
 import { db } from "src/backend/database";
-import { scanAndUpdateDB, isScanned } from "src/backend/project/scan";
+import { isScanned, scanAndUpdateDB } from "src/backend/project/scan";
+import WelcomeCarousel from "src/components/welcome/WelcomeCarousel.vue";
+import { useProjectStore } from "src/stores/projectStore";
+import { useStateStore } from "src/stores/stateStore";
+import { onMounted, ref, watchEffect } from "vue";
+import { useI18n } from "vue-i18n";
 const { locale } = useI18n({ useScope: "global" });
 const stateStore = useStateStore();
 const projectStore = useProjectStore();

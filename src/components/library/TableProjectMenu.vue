@@ -152,30 +152,29 @@
 </template>
 <script setup lang="ts">
 // types
-import { Ref, inject, nextTick } from "vue";
+import { QMenu } from "quasar";
 import {
   Meta,
   NoteType,
   Project,
   SpecialFolder,
-  db
+  db,
 } from "src/backend/database";
-import { QMenu } from "quasar";
-import { KEY_metaDialog, KEY_deleteDialog } from "./injectKeys";
+import { Ref, inject, nextTick } from "vue";
+import { KEY_deleteDialog, KEY_metaDialog } from "./injectKeys";
 // db
-import { copyToClipboard } from "quasar";
-import { useStateStore } from "src/stores/appState";
-import { useProjectStore } from "src/stores/projectStore";
-import { join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
+import { join } from "@tauri-apps/api/path";
+import { copyToClipboard } from "quasar";
 import { generateCiteKey } from "src/backend/project/meta";
-import { emitKeypressEvents } from "readline";
+import { useProjectStore } from "src/stores/projectStore";
+import { useStateStore } from "src/stores/stateStore";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 
 const props = defineProps({
-  projectId: { type: String, required: true }
+  projectId: { type: String, required: true },
 });
 const emit = defineEmits(["expandRow", "exportCitation"]);
 
@@ -235,7 +234,7 @@ async function showInExplorer() {
   for (let project of projectStore.selected) {
     let path = await join(db.config.storagePath, project._id);
     await invoke("show_in_folder", {
-      path: path
+      path: path,
     });
   }
 }
@@ -269,7 +268,7 @@ async function onAttachFile() {
  */
 async function setFavorite(isFavorite: boolean) {
   await projectStore.updateProject(props.projectId, {
-    favorite: isFavorite
+    favorite: isFavorite,
   } as Project);
 }
 

@@ -51,7 +51,7 @@ import "src/css/goldenlayout/base.scss";
 import "src/css/goldenlayout/theme.scss";
 import GLayout from "./GLayout.vue";
 // db
-import { useStateStore } from "src/stores/appState";
+import { useStateStore } from "src/stores/stateStore";
 // utils
 import { listen } from "@tauri-apps/api/event";
 import pluginManager from "src/backend/plugin";

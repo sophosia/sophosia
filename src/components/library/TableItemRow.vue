@@ -112,17 +112,17 @@
 </template>
 <script setup lang="ts">
 // types
-import { PropType, Ref, inject, ref, watchEffect, nextTick } from "vue";
-import { Project, Note, NoteType, Page } from "src/backend/database";
+import { Note, NoteType, Page, Project } from "src/backend/database";
+import { PropType, Ref, inject, nextTick, ref, watchEffect } from "vue";
 // db
-import { useStateStore } from "src/stores/appState";
-import { useLayoutStore } from "src/stores/layoutStore";
-import { useProjectStore } from "src/stores/projectStore";
-import { copyToClipboard } from "quasar";
-import { basename, dirname, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
+import { basename, dirname, join } from "@tauri-apps/api/path";
+import { copyToClipboard } from "quasar";
 import { idToPath, oldToNewId } from "src/backend/project/utils";
+import { useLayoutStore } from "src/stores/layoutStore";
+import { useProjectStore } from "src/stores/projectStore";
+import { useStateStore } from "src/stores/stateStore";
 import TableItemMenu from "./TableItemMenu.vue";
 
 const props = defineProps({

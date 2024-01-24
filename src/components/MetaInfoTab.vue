@@ -380,19 +380,19 @@
 
 <script setup lang="ts">
 // types
-import { ref, watch, computed, inject, watchEffect } from "vue";
-import type { PropType } from "vue";
 import { Author, Folder, Meta, Page, Project } from "src/backend/database";
+import type { PropType } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 // backend stuff
-import { generateCiteKey, getMeta } from "src/backend/project/meta";
-import { getFolder } from "src/backend/project/folder";
-import { useProjectStore } from "src/stores/projectStore";
-import { useStateStore } from "src/stores/appState";
-import { useLayoutStore } from "src/stores/layoutStore";
-import { open } from "@tauri-apps/api/shell";
-import { copyToClipboard } from "quasar";
 import { invoke } from "@tauri-apps/api";
 import { basename } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/api/shell";
+import { copyToClipboard } from "quasar";
+import { getFolder } from "src/backend/project/folder";
+import { generateCiteKey, getMeta } from "src/backend/project/meta";
+import { useLayoutStore } from "src/stores/layoutStore";
+import { useProjectStore } from "src/stores/projectStore";
+import { useStateStore } from "src/stores/stateStore";
 const projectStore = useProjectStore();
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();

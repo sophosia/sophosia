@@ -8,10 +8,10 @@
   />
 </template>
 <script setup lang="ts">
+import { useStateStore } from "src/stores/stateStore";
 import { nextTick, ref, watch } from "vue";
 import PluginView from "./PluginView.vue";
 import ProjectNavigator from "./ProjectNavigator.vue";
-import { useStateStore } from "src/stores/appState";
 
 const stateStore = useStateStore();
 // refresh the plugin view whenever the pluginId is changed

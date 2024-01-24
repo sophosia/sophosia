@@ -42,17 +42,19 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { ComponentName, ToggleButton } from "src/backend/database";
 import { copyToClipboard } from "quasar";
+import {
+  Button,
+  ComponentName,
+  ToggleButton,
+  View,
+} from "src/backend/database";
+import pluginManager from "src/backend/plugin";
+import { useStateStore } from "src/stores/stateStore";
+import translate from "translate";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import ColorPicker from "./ColorPicker.vue";
 import FloatingMenuView from "./FloatingMenuView.vue";
-import pluginManager from "src/backend/plugin";
-import { Button, View } from "src/backend/database";
-import { useStateStore } from "src/stores/appState";
-import translate from "translate";
-import { stat } from "fs";
-import { tryParseNumber } from "@excalidraw/excalidraw/types/charts";
 
 defineEmits(["highlightText"]);
 
@@ -84,7 +86,7 @@ const translateOptions = [
   { value: "ta", label: "தமிழ் (ta)" },
   { value: "vi", label: "Tiếng Việt (vi)" },
   { value: "ko", label: "한국어 (ko)" },
-  { value: "fa", label: "فارسی (fa)" }
+  { value: "fa", label: "فارسی (fa)" },
 ];
 
 /**

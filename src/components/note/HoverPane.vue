@@ -15,12 +15,12 @@
   </q-card>
 </template>
 <script setup lang="ts">
+import { sep } from "@tauri-apps/api/path";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { db } from "src/backend/database";
+import { useStateStore } from "src/stores/stateStore";
 import Vditor from "vditor/dist/method.min";
 import { onMounted, PropType, ref, watchEffect } from "vue";
-import { useStateStore } from "src/stores/appState";
-import { convertFileSrc } from "@tauri-apps/api/tauri";
-import { sep } from "@tauri-apps/api/path";
-import { db } from "src/backend/database";
 const stateStore = useStateStore();
 
 const props = defineProps({

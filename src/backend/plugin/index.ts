@@ -1,16 +1,14 @@
+import { useStateStore } from "src/stores/stateStore";
 import { ref } from "vue";
 import {
+  Button,
+  ComponentName,
+  Plugin,
   PluginMeta,
   PluginStatusMap,
-  Plugin,
-  Button,
-  View,
-  ComponentName,
   ToggleButton,
+  View,
 } from "../database";
-import { Buffer } from "buffer";
-import { getAppState } from "../appState";
-import { useStateStore } from "src/stores/appState";
 const stateStore = useStateStore();
 
 const controller = {

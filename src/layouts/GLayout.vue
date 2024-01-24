@@ -29,28 +29,27 @@
 
 <script setup lang="ts">
 import {
+  ComponentContainer,
+  ComponentItem,
+  LogicalZIndex,
+  ResolvedComponentItemConfig,
+  RowOrColumn,
+  Stack,
+  VirtualLayout,
+} from "golden-layout";
+import { type GLState, type Page } from "src/backend/database";
+import GLComponent from "src/pages/GLComponent.vue";
+import { useLayoutStore } from "src/stores/layoutStore";
+import { useStateStore } from "src/stores/stateStore";
+import {
+  defineAsyncComponent,
+  getCurrentInstance,
+  markRaw,
+  nextTick,
   onMounted,
   ref,
-  markRaw,
-  defineAsyncComponent,
-  nextTick,
-  getCurrentInstance,
   watch,
-  computed
 } from "vue";
-import {
-  ComponentContainer,
-  ResolvedComponentItemConfig,
-  LogicalZIndex,
-  VirtualLayout,
-  ComponentItem,
-  RowOrColumn,
-  Stack
-} from "golden-layout";
-import GLComponent from "src/pages/GLComponent.vue";
-import { type Page, type GLState } from "src/backend/database";
-import { useStateStore } from "src/stores/appState";
-import { useLayoutStore } from "src/stores/layoutStore";
 import { useI18n } from "vue-i18n";
 const { t, locale } = useI18n({ useScope: "global" });
 

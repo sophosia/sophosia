@@ -102,10 +102,10 @@
 
 <script setup lang="ts">
 // types
-import { computed } from "vue";
-import { debounce } from "quasar";
-import { useStateStore } from "src/stores/appState";
 import { open } from "@tauri-apps/api/dialog";
+import { debounce } from "quasar";
+import { useStateStore } from "src/stores/stateStore";
+import { computed } from "vue";
 
 const stateStore = useStateStore();
 

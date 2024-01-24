@@ -32,7 +32,7 @@ import {
   saveNote,
   uploadImage
 } from "src/backend/project/note";
-import { useStateStore } from "src/stores/appState";
+import { useStateStore } from "src/stores/stateStore";
 
 import { getAllProjects, getProject } from "src/backend/project/project";
 // util

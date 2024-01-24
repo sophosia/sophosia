@@ -104,9 +104,9 @@ import {
   getMetaFromFile,
   importMeta
 } from "src/backend/project/meta";
-import { useStateStore } from "src/stores/appState";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
+import { useStateStore } from "src/stores/stateStore";
 
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
