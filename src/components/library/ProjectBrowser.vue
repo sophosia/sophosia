@@ -39,7 +39,7 @@
             @addByCollection="
               (collectionPath) => showImportDialog(collectionPath)
             "
-            @showIdentifierDialog="showIdentifierDialog(true)"
+            @showIdentifierDialog="showIdentifierDialog()"
             ref="actionBar"
           />
           <!-- actionbar height 36px, table view is 100%-36px -->
@@ -63,10 +63,9 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, provide, ref, watch } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
 // types
 import { Folder, Project } from "src/backend/database";
-import { KEY_metaDialog } from "./injectKeys";
 // components
 import ActionBar from "src/components/library/ActionBar.vue";
 import FolderTree from "src/components/library/FolderTree.vue";
@@ -113,9 +112,6 @@ watch(
   }
 );
 
-// for projectRow
-provide(KEY_metaDialog, showSearchMetaDialog);
-
 onMounted(async () => {
   projectStore.loadProjects(stateStore.selectedFolderId);
   // rightmenu
@@ -128,23 +124,15 @@ onMounted(async () => {
  ************************************************/
 
 /**
- * Update project by meta
- */
-function showSearchMetaDialog() {
-  let createProject = false;
-  showIdentifierDialog(createProject);
-}
-
-/**
  * Open identifier dialog.
  * If createProject is true, the identifier will be used to create a new project
  * otherwise the identifier will be used to update an existing project
  * @param createProject
  */
-function showIdentifierDialog(isCreateProject: boolean) {
+function showIdentifierDialog() {
   identifierDialog.show();
   identifierDialog.onConfirm(async () => {
-    await processIdentifier(identifierDialog.identifier, isCreateProject);
+    await addProjectByIdentifier(identifierDialog.identifier);
     identifierDialog.identifier = "";
   });
 }
@@ -228,24 +216,13 @@ async function addProjectsByCollection(
   }
 }
 
-async function processIdentifier(identifier: string, isCreateProject: boolean) {
-  if (!identifier) return;
-
-  let metas = await getMeta([identifier], "json");
-  let meta = metas[0];
-
-  if (isCreateProject) {
-    // add a new project to db and update it with meta
-    let project = projectStore.createProject(stateStore.selectedFolderId);
-    await projectStore.addProject(project, true);
-    await projectStore.updateProject(project._id, meta as Project);
-  } else {
-    // update existing project
-    await projectStore.updateProject(
-      projectStore.selected[0]._id,
-      meta as Project
-    );
-  }
+async function addProjectByIdentifier(identifier: string) {
+  const metas = await getMeta([identifier], "json");
+  const meta = metas[0];
+  // add a new project to db and update it with meta
+  const project = projectStore.createProject(stateStore.selectedFolderId);
+  await projectStore.addProject(project, true);
+  await projectStore.updateProject(project._id, meta as Project);
 }
 
 function showExportReferenceDialog(folder: Folder) {

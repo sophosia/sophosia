@@ -123,7 +123,7 @@
         v-if="projectStore.selected.length == 1"
         clickable
         v-close-popup
-        @click="searchMeta"
+        @click="showIdentifierDialog()"
       >
         <q-item-section>
           <i18n-t keypath="search">
@@ -162,16 +162,15 @@ import {
   db,
 } from "src/backend/database";
 import { Ref, inject, nextTick } from "vue";
-import { KEY_metaDialog } from "./injectKeys";
 // db
 import { invoke } from "@tauri-apps/api";
 import { join } from "@tauri-apps/api/path";
 import { copyToClipboard } from "quasar";
-import { generateCiteKey } from "src/backend/project/meta";
+import { generateCiteKey, getMeta } from "src/backend/project/meta";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/stateStore";
-import { deleteDialog } from "../dialogs/dialogController";
+import { deleteDialog, identifierDialog } from "../dialogs/dialogController";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
@@ -183,9 +182,6 @@ const props = defineProps({
 const emit = defineEmits(["expandRow", "exportCitation"]);
 
 const renamingNoteId = inject("renamingNoteId") as Ref<string>;
-
-// dialogs
-const showSearchMetaDialog = inject(KEY_metaDialog) as () => void;
 
 function exportCitation() {
   let project = projectStore.getProject(props.projectId); //grab the project that's clicked
@@ -272,10 +268,22 @@ async function deleteProject(
 }
 
 /**
- * Update a project by meta
+ * Open identifier dialog for user to input identifier
+ * Then update the project using the identifier
+ * @param createProject
  */
-function searchMeta() {
-  showSearchMetaDialog();
+function showIdentifierDialog() {
+  identifierDialog.show();
+  identifierDialog.onConfirm(async () => {
+    const metas = await getMeta([identifierDialog.identifier], "json");
+    const meta = metas[0];
+    // update existing project
+    await projectStore.updateProject(
+      projectStore.selected[0]._id,
+      meta as Project
+    );
+    identifierDialog.identifier = "";
+  });
 }
 
 /**
