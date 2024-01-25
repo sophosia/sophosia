@@ -67,11 +67,11 @@
   </q-splitter>
 </template>
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useI18n } from "vue-i18n";
 import { open } from "@tauri-apps/api/dialog";
 import { homeDir } from "@tauri-apps/api/path";
-import { db, Config } from "src/backend/database";
+import { Config, db } from "src/backend/database";
+import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import WorkspaceList from "./WorkspaceList.vue";
 
 const { locale } = useI18n({ useScope: "global" });

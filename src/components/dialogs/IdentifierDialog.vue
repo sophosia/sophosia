@@ -1,7 +1,7 @@
 <template>
   <q-dialog
-    :model-value="show"
-    @hide="cancel"
+    v-model="identifierDialog.visible"
+    @hide="identifierDialog.close()"
   >
     <q-card
       square
@@ -22,8 +22,8 @@
           autofocus
           class="full-width"
           placeholder="DOI, ISBN, Wikidata, Ris, ..."
-          v-model.trim="identifier"
-          @keydown.enter="confirm"
+          v-model.trim="identifierDialog.identifier"
+          @keydown.enter="identifierDialog.confirm()"
           data-cy="identifier-input"
         />
       </q-card-section>
@@ -34,7 +34,7 @@
           v-close-popup
           :ripple="false"
           :label="$t('cancel')"
-          @click="cancel"
+          @click="identifierDialog.close()"
           data-cy="btn-cancel"
         />
         <q-btn
@@ -43,8 +43,8 @@
           v-close-popup
           :ripple="false"
           :label="$t('confirm')"
-          :disable="!identifier"
-          @click="confirm"
+          :disable="!identifierDialog.identifier"
+          @click="identifierDialog.confirm()"
           data-cy="btn-confirm"
         />
       </q-card-actions>
@@ -52,30 +52,5 @@
   </q-dialog>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
-
-const props = defineProps({ show: Boolean });
-const emit = defineEmits(["update:show", "confirm"]);
-
-const identifier = ref("");
-
-/**
- * Emits the entered identifier and closes the dialog.
- * This function is called when the user confirms their identifier input.
- */
-function confirm() {
-  emit("confirm", identifier.value);
-  emit("update:show", false);
-  identifier.value = "";
-}
-
-/**
- * Closes the dialog without performing any action and clears the input field.
- * This function is called when the user decides to cancel the operation.
- */
-function cancel() {
-  // do nothing, only close the dialog
-  emit("update:show", false);
-  identifier.value = "";
-}
+import { identifierDialog } from "src/components/dialogs/dialogController";
 </script>

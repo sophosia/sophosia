@@ -1,9 +1,4 @@
 <template>
-  <ProgressDialog
-    v-model="showProgressDialog"
-    :progress="progress"
-    :errors="errors"
-  />
   <div
     class="q-ml-md q-mt-sm"
     style="font-size: 1.3rem"
@@ -48,14 +43,13 @@
   </q-list>
 </template>
 <script setup lang="ts">
-import WorkspaceMenu from "./WorkspaceMenu.vue";
-import ProgressDialog from "./ProgressDialog.vue";
-import { PropType, computed, ref } from "vue";
-import { Config, db } from "src/backend/database";
-import { invoke } from "@tauri-apps/api/tauri";
-import { basename, homeDir, sep } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
 import { renameFile } from "@tauri-apps/api/fs";
+import { homeDir, sep } from "@tauri-apps/api/path";
+import { invoke } from "@tauri-apps/api/tauri";
+import { Config, db } from "src/backend/database";
+import { PropType, computed } from "vue";
+import WorkspaceMenu from "./WorkspaceMenu.vue";
 
 const props = defineProps({
   modelValue: { type: String, default: "" },
@@ -74,10 +68,6 @@ const workspaces = computed(() => {
   }
   return array;
 });
-// progressDialog
-const showProgressDialog = ref(false);
-const errors = ref<Error[]>([]);
-const progress = ref(0.0);
 
 async function showInExplorer() {
   if (props.modelValue)

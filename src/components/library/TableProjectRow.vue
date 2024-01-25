@@ -1,9 +1,5 @@
 <template>
   <q-tr>
-    <ExportDialog
-      v-model:show="exportCitationDialog"
-      @confirm="(format, options) => exportCitation(format, options)"
-    />
     <q-th auto-width>
       <input
         type="checkbox"
@@ -57,7 +53,7 @@
     <TableProjectMenu
       :projectId="tableProps.key"
       @expandRow="expandRow"
-      @exportCitation="showExportCitationDialog"
+      @exportCitation="(project: Project) => showExportCitationDialog(project)"
       ref="menu"
     />
   </q-tr>
@@ -69,13 +65,11 @@ import { Author, Project } from "src/backend/database";
 import { getMeta } from "src/backend/project/meta";
 import { PropType, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import ExportDialog from "./ExportDialog.vue";
+import { exportDialog } from "../dialogs/dialogController";
 import TableProjectMenu from "./TableProjectMenu.vue";
 const { t } = useI18n({ useScope: "global" });
 
 const menu = ref<InstanceType<typeof TableProjectMenu>>();
-const exportCitationDialog = ref(false);
-const project = ref<Project | null>(null);
 const $q = useQuasar();
 
 const props = defineProps({
@@ -88,8 +82,8 @@ const props = defineProps({
       expand: boolean;
       selected: boolean;
     }>,
-    required: true
-  }
+    required: true,
+  },
 });
 const emit = defineEmits(["expandRow", "setFavorite"]);
 
@@ -103,28 +97,17 @@ function expandRow(isExpand: boolean) {
 
 /**
  * Opens the export citation dialog for the given project.
- * @param {Project} _project - The project to export the citation for.
+ * @param {Project} project - The project to export the citation for.
  */
-function showExportCitationDialog(_project: Project) {
-  exportCitationDialog.value = true;
-  project.value = _project;
-}
-
-/**
- * Exports the citation for the current project in the specified format with optional options.
- * @param {string} format - The citation format (citation.js supported format).
- * @param {object} options - Optional extra options for the export.
- */
-async function exportCitation(
-  format: string,
-  options: { format?: string; template?: string }
-) {
-  if (project.value) {
-    // const metas = await exportMeta(format, options, undefined, project.value);
-    const meta = await getMeta([project.value], format, options);
+async function showExportCitationDialog(project: Project) {
+  exportDialog.show();
+  exportDialog.onConfirm(async () => {
+    const format = exportDialog.format.value;
+    const options = { template: exportDialog.template.value };
+    const meta = await getMeta([project], format, options);
     await copyToClipboard(meta as string);
     $q.notify(t("text-copied"));
-  }
+  });
 }
 
 /**

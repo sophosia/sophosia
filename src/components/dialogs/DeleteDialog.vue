@@ -1,14 +1,14 @@
 <template>
   <q-dialog
-    :model-value="show"
+    v-model="deleteDialog.visible"
     persistent
     no-shake
-    @hide="cancel"
+    @hide="deleteDialog.close()"
   >
     <q-card>
       <q-card-section>
         <div
-          v-if="deleteFromDB"
+          v-if="deleteDialog.isDeleteFromDB"
           class="text-h6"
         >
           {{ $t("permenantly-delete") }}
@@ -25,9 +25,11 @@
           {{ $t("are-you-sure-you-want-to-delete-the-following-project") }}
         </strong>
         <ul>
-          <li v-for="project in projects">"{{ project.title }}"</li>
+          <li v-for="project in deleteDialog.deleteProjects">
+            "{{ project.title }}"
+          </li>
         </ul>
-        <strong v-if="deleteFromDB">
+        <strong v-if="deleteDialog.isDeleteFromDB">
           <div>{{ $t("this-operation-is-not-reversible") }}</div>
           <div>{{ $t("notes-in-this-project-will-be-deleted") }}</div>
         </strong>
@@ -38,7 +40,7 @@
           square
           v-close-popup
           :ripple="false"
-          @click="cancel"
+          @click="deleteDialog.close()"
           data-cy="btn-cancel"
         >
           {{ $t("cancel") }}
@@ -48,7 +50,7 @@
           square
           v-close-popup
           :ripple="false"
-          @click="confirm"
+          @click="deleteDialog.confirm()"
           color="negative"
           data-cy="btn-confirm"
         >
@@ -59,31 +61,5 @@
   </q-dialog>
 </template>
 <script setup lang="ts">
-import { PropType } from "vue";
-import { Project } from "src/backend/database";
-const props = defineProps({
-  show: { type: Boolean, required: true },
-  projects: { type: Object as PropType<Project[]>, required: false },
-  deleteFromDB: { type: Boolean, required: true }
-});
-const emit = defineEmits(["update:show", "confirm"]);
-
-/**
- * Emits a confirmation event and closes the dialog.
- * This method is called when the user confirms their decision to delete the projects.
- */
-function confirm() {
-  emit("confirm");
-  emit("update:show", false);
-}
-
-/**
- * Closes the dialog without performing any action.
- * This method is called when the user decides to cancel the deletion process.
- */
-
-function cancel() {
-  // do nothing, only close the dialog
-  emit("update:show", false);
-}
+import { deleteDialog } from "./dialogController";
 </script>
