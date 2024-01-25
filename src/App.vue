@@ -1,4 +1,5 @@
 <template>
+  <DialogContainer />
   <WelcomeCarousel
     v-if="stateStore.showWelcomeCarousel"
     v-model="stateStore.showWelcomeCarousel"
@@ -28,6 +29,7 @@ import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/stateStore";
 import { onMounted, ref, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
+import DialogContainer from "./components/dialogs/DialogContainer.vue";
 const { locale } = useI18n({ useScope: "global" });
 const stateStore = useStateStore();
 const projectStore = useProjectStore();

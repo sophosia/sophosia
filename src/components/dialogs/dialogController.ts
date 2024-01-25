@@ -1,6 +1,10 @@
 import { Project } from "src/backend/database";
 import { reactive, ref } from "vue";
 
+/**
+ * Base "class" for dialog, has all the basic controls
+ * @returns properties and control function of dialog
+ */
 function useDialog() {
   const visible = ref(false);
   let onConfirmCallback: () => void;
@@ -39,6 +43,10 @@ function useDialog() {
   };
 }
 
+/**
+ * Controller for ImportDialog
+ * @returns properties and controls
+ */
 function useImportDialog() {
   const dialog = useDialog();
   const isCreateFolder = ref(true);
@@ -48,6 +56,10 @@ function useImportDialog() {
   };
 }
 
+/**
+ * Controller for DeleteDialog
+ * @returns properties and controls
+ */
 function useDeleteDialog() {
   const dialog = useDialog();
   const isDeleteFromDB = ref(false);
@@ -59,6 +71,10 @@ function useDeleteDialog() {
   };
 }
 
+/**
+ * Controller for IdentifierDialog
+ * @returns properties and controls
+ */
 function useIdentifierDialog() {
   const dialog = useDialog();
   const identifier = ref("");
@@ -68,6 +84,10 @@ function useIdentifierDialog() {
   };
 }
 
+/**
+ * Controller for ExportDialog
+ * @returns properties and controls
+ */
 function useExportDialog() {
   const dialog = useDialog();
   const formats = [
@@ -99,6 +119,10 @@ function useExportDialog() {
   };
 }
 
+/**
+ * Controller for ErrorDialog
+ * @returns properties and controls
+ */
 function useErrorDialog() {
   const dialog = useDialog();
   const error = ref(new Error());
@@ -108,8 +132,25 @@ function useErrorDialog() {
   };
 }
 
+/**
+ * Controller for ProgressDialog
+ * @returns properties and controls
+ */
+function useProgressDialog() {
+  const dialog = useDialog();
+  const progress = ref(0.0);
+  const errors = reactive<Error[]>([]);
+  return {
+    ...dialog,
+    progress,
+    errors,
+  };
+}
+
+// use reative here so we can use properties in the composable reactively without desconstruct them
 export const importDialog = reactive(useImportDialog());
 export const deleteDialog = reactive(useDeleteDialog());
 export const identifierDialog = reactive(useIdentifierDialog());
 export const exportDialog = reactive(useExportDialog());
 export const errorDialog = reactive(useErrorDialog());
+export const progressDialog = reactive(useProgressDialog());

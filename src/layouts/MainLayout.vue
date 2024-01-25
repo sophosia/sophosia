@@ -38,7 +38,6 @@
       </q-splitter>
     </template>
   </q-splitter>
-  <DialogContainer />
 </template>
 
 <script setup lang="ts">
@@ -56,7 +55,6 @@ import { useStateStore } from "src/stores/stateStore";
 // utils
 import { listen } from "@tauri-apps/api/event";
 import pluginManager from "src/backend/plugin";
-import DialogContainer from "src/components/dialogs/DialogContainer.vue";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
