@@ -1,5 +1,5 @@
 <template>
-  <q-dialog :model-value="show">
+  <q-dialog v-model="importDialog.visible">
     <q-card
       square
       style="min-width: 500px"
@@ -10,7 +10,7 @@
       <q-card-section class="q-pt-none">
         <q-checkbox
           dense
-          v-model="isCreateFolder"
+          v-model="importDialog.isCreateFolder"
           :label="$t('create-a-new-folder-for-this-collection')"
         />
       </q-card-section>
@@ -21,7 +21,7 @@
           v-close-popup
           :ripple="false"
           :label="$t('cancel')"
-          @click="cancel"
+          @click="importDialog.close()"
           data-cy="btn-cancel"
         />
         <q-btn
@@ -30,7 +30,7 @@
           v-close-popup
           :ripple="false"
           :label="$t('confirm')"
-          @click="confirm"
+          @click="importDialog.confirm()"
           data-cy="btn-confirm"
         />
       </q-card-actions>
@@ -39,25 +39,5 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-
-const props = defineProps({ show: Boolean });
-const emit = defineEmits(["update:show", "confirm"]);
-
-const isCreateFolder = ref(true);
-
-/**
- * Handler function to confirm the action and emit a confirmation event.
- */
-function confirm() {
-  emit("confirm", isCreateFolder.value);
-  emit("update:show", false);
-}
-
-/**
- * Handler function to cancel the action and close the dialog.
- */
-function cancel() {
-  emit("update:show", false);
-}
+import { importDialog } from "./dialogController";
 </script>

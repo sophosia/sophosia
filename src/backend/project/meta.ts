@@ -84,22 +84,13 @@ export async function getMeta(
  * @throws Throws and logs an error if the export process encounters any issues.
  */
 export async function exportMeta(
+  folder: Folder,
   format: string,
-  options: { format?: string; template?: string },
-  folder?: Folder,
-  project?: Project //for single project citation
+  options?: { format?: string; template?: string }
 ) {
-  let single = false;
   try {
-    let projects: Project[] = [];
-    if (project) {
-      projects = [project];
-      single = true;
-    } else if (folder) {
-      projects = await getProjects(folder._id);
-    } else return;
-
-    let metas = await getMeta(projects, format, options);
+    const projects = await getProjects(folder._id);
+    const metas = await getMeta(projects, format, options);
 
     if (format === "json") {
       let path = await save();

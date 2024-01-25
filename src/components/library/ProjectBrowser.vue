@@ -1,23 +1,4 @@
 <template>
-  <ImportDialog
-    v-model:show="importDialog"
-    @confirm="(isCreateFolder) => addProjectsByCollection(isCreateFolder)"
-  />
-  <ExportDialog
-    v-model:show="exportFolderDialog"
-    @confirm="(format, options) => exportFolder(format, options)"
-  />
-  <IdentifierDialog
-    v-model:show="identifierDialog"
-    @confirm="(identifier) => processIdentifier(identifier)"
-  />
-  <DeleteDialog
-    v-model:show="deleteDialog"
-    :projects="deleteProjects"
-    :deleteFromDB="deleteFromDB"
-    @confirm="deleteProject"
-  />
-
   <q-splitter
     style="position: absolute; width: 100%; height: 100%"
     :limits="[10, 30]"
@@ -39,7 +20,7 @@
         separator-style="background: var(--q-edge)"
         :separator-class="{
           'q-splitter-separator': stateStore.showLibraryRightMenu,
-          hidden: !stateStore.showLibraryRightMenu
+          hidden: !stateStore.showLibraryRightMenu,
         }"
         :disable="!stateStore.showLibraryRightMenu"
         v-model="rightMenuSize"
@@ -58,7 +39,7 @@
             @addByCollection="
               (collectionPath) => showImportDialog(collectionPath)
             "
-            @showIdentifierDialog="showIdentifierDialog(true)"
+            @showIdentifierDialog="showIdentifierDialog()"
             ref="actionBar"
           />
           <!-- actionbar height 36px, table view is 100%-36px -->
@@ -82,34 +63,33 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, provide, ref, watch } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
 // types
-import { Folder, Note, Project } from "src/backend/database";
-import { KEY_deleteDialog, KEY_metaDialog } from "./injectKeys";
+import { Folder, Project } from "src/backend/database";
 // components
 import ActionBar from "src/components/library/ActionBar.vue";
-import DeleteDialog from "src/components/library/DeleteDialog.vue";
-import ExportDialog from "src/components/library/ExportDialog.vue";
 import FolderTree from "src/components/library/FolderTree.vue";
-import IdentifierDialog from "src/components/library/IdentifierDialog.vue";
-import ImportDialog from "src/components/library/ImportDialog.vue";
 import ProjectTable from "src/components/library/ProjectTable.vue";
 import RightMenu from "src/components/library/RightMenu.vue";
 // db
 import { basename, extname } from "@tauri-apps/api/path";
+import { template } from "lodash";
 import { copyFileToProjectFolder } from "src/backend/project/file";
 import {
   exportMeta,
   getMeta,
   getMetaFromFile,
-  importMeta
+  importMeta,
 } from "src/backend/project/meta";
-import { useLayoutStore } from "src/stores/layoutStore";
+import {
+  exportDialog,
+  identifierDialog,
+  importDialog,
+} from "src/components/dialogs/dialogController";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/stateStore";
 
 const stateStore = useStateStore();
-const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 
 /*********************************
@@ -124,19 +104,6 @@ const searchString = ref("");
 const treeViewSize = ref(20);
 const rightMenuSize = ref(0);
 
-const exportFolderDialog = ref(false);
-const folder = ref<Folder | undefined>();
-
-const deleteDialog = ref(false);
-const deleteProjects = ref<Project[]>([]);
-const deleteFromDB = ref(false);
-
-const identifierDialog = ref(false);
-const createProject = ref(false);
-
-const importDialog = ref(false);
-const collectionPath = ref<string>("");
-
 watch(
   () => stateStore.selectedFolderId,
   async (folderId: string) => {
@@ -144,10 +111,6 @@ watch(
     projectStore.loadProjects(folderId);
   }
 );
-
-// for projectRow
-provide(KEY_deleteDialog, showDeleteDialog);
-provide(KEY_metaDialog, showSearchMetaDialog);
 
 onMounted(async () => {
   projectStore.loadProjects(stateStore.selectedFolderId);
@@ -159,41 +122,29 @@ onMounted(async () => {
 /************************************************
  * Projects (get, add, delete, update, attachFile, renameFromMeta)
  ************************************************/
-/**
- * Shows the delete dialog for specified projects and options.
- * @param {Project[]} _deleteProjects - The projects to be deleted.
- * @param {boolean} _deleteFromDB - Whether to delete projects from the database.
- */
-function showDeleteDialog(_deleteProjects: Project[], _deleteFromDB: boolean) {
-  deleteDialog.value = true;
-  deleteProjects.value = _deleteProjects; // project to be delted
-  deleteFromDB.value = _deleteFromDB;
-}
 
 /**
- * Shows the search meta dialog for searching and updating project metadata.
+ * Open identifier dialog.
+ * If createProject is true, the identifier will be used to create a new project
+ * otherwise the identifier will be used to update an existing project
  */
-function showSearchMetaDialog() {
-  let createProject = false;
-  showIdentifierDialog(createProject);
-}
-
-/**
- * Shows the identifier dialog for creating or updating projects using identifiers.
- * @param {boolean} _createProject - Indicates whether to create a new project.
- */
-function showIdentifierDialog(_createProject: boolean) {
-  identifierDialog.value = true;
-  createProject.value = _createProject;
+function showIdentifierDialog() {
+  identifierDialog.show();
+  identifierDialog.onConfirm(async () => {
+    await addProjectByIdentifier(identifierDialog.identifier);
+    identifierDialog.identifier = "";
+  });
 }
 
 /**
  * Shows the import dialog for importing projects from a collection file.
  * @param {string} _collectionPath - The path to the collection file.
  */
-function showImportDialog(_collectionPath: string) {
-  importDialog.value = true;
-  collectionPath.value = _collectionPath;
+function showImportDialog(collectionPath: string) {
+  importDialog.show();
+  importDialog.onConfirm(() => {
+    addProjectsByCollection(collectionPath, importDialog.isCreateFolder);
+  });
 }
 
 /**
@@ -222,7 +173,7 @@ async function addProjectsByFiles(filePaths: string[]) {
       await projectStore.updateProject(project._id, {
         path: filename,
         title: title,
-        label: title
+        label: title,
       } as Project);
       // do not use await since this task takes time
       getMetaFromFile(filePath).then((meta) => {
@@ -238,16 +189,19 @@ async function addProjectsByFiles(filePaths: string[]) {
  * Adds projects by importing projects from a collection file (.bib, ris, etc...)
  * @param {boolean} isCreateFolder - Indicates whether to create a new folder.
  */
-async function addProjectsByCollection(isCreateFolder: boolean) {
-  if (collectionPath.value === "") return;
+async function addProjectsByCollection(
+  collectionPath: string,
+  isCreateFolder: boolean
+) {
+  if (collectionPath === "") return;
   // create folder if user wants to
   if (isCreateFolder) {
     if (!treeview.value) return;
     let rootNode = treeview.value.getLibraryNode();
     if (!rootNode) return;
     let folderName = await basename(
-      collectionPath.value,
-      `.${await extname(collectionPath.value)}`
+      collectionPath,
+      `.${await extname(collectionPath)}`
     );
 
     let focus = true;
@@ -256,85 +210,41 @@ async function addProjectsByCollection(isCreateFolder: boolean) {
 
   await nextTick(); //wait until ui actions settled
 
-  let metas = await importMeta(collectionPath.value);
+  let metas = await importMeta(collectionPath);
   for (let meta of metas) {
     // add a new project to db and update it with meta
     let project = projectStore.createProject(stateStore.selectedFolderId);
     await projectStore.addProject(project, true);
     await projectStore.updateProject(project._id, meta as Project);
   }
-
-  importDialog.value = false;
-  collectionPath.value = "";
 }
 
 /**
  * Processes an identifier for creating or updating projects.
  * @param {string} identifier - The identifier used for creating or updating projects.
  */
-async function processIdentifier(identifier: string) {
-  if (!identifier) return;
-
-  let metas = await getMeta([identifier], "json");
-  let meta = metas[0];
-
-  if (createProject.value) {
-    // add a new project to db and update it with meta
-    let project = projectStore.createProject(stateStore.selectedFolderId);
-    await projectStore.addProject(project, true);
-    await projectStore.updateProject(project._id, meta as Project);
-  } else {
-    // update existing project
-    await projectStore.updateProject(
-      projectStore.selected[0]._id,
-      meta as Project
-    );
-  }
+async function addProjectByIdentifier(identifier: string) {
+  const metas = await getMeta([identifier], "json");
+  const meta = metas[0];
+  // add a new project to db and update it with meta
+  const project = projectStore.createProject(stateStore.selectedFolderId);
+  await projectStore.addProject(project, true);
+  await projectStore.updateProject(project._id, meta as Project);
 }
 
 /**
- * Deletes selected projects from the current folder and optionally from the database.
+ * Open export dialog for citation export
+ * @param {Folder} folder - The folder which needs to be exported
  */
-async function deleteProject() {
-  // delete projects
-  let deleteIds = projectStore.selected.map((p) => p._id);
-
-  for (let projectId of deleteIds) {
-    let project = projectStore.openedProjects.find((p) => p._id === projectId);
-    if (project) {
-      for (let note of project.children as Note[]) {
-        layoutStore.closePage(projectId);
-        await nextTick(); // do it slowly one by one
-        layoutStore.closePage(note._id);
-      }
-
-      // remove project from openedProjects
-      projectStore.openedProjects = projectStore.openedProjects.filter(
-        (p) => p._id !== projectId
-      );
-
-      // if no page left, open library page
-      setTimeout(() => {
-        if (projectStore.openedProjects.length === 0)
-          layoutStore.currentItemId = "library";
-      }, 50);
-    }
-    // delete from db
-    projectStore.deleteProject(
-      projectId,
-      deleteFromDB.value,
-      stateStore.selectedFolderId
-    );
-  }
-}
-
-/**
- * Shows the export reference dialog for exporting a folder as a collection of references.
- * @param {Folder} _folder - The folder to export.
- */
-function showExportReferenceDialog(_folder: Folder) {
-  folder.value = _folder;
-  exportFolderDialog.value = true;
+function showExportReferenceDialog(folder: Folder) {
+  exportDialog.show();
+  exportDialog.onConfirm(async () => {
+    let options = undefined;
+    const format = exportDialog.format.value;
+    if (format === "bibliography")
+      options = { template: exportDialog.template.value };
+    await exportFolder(format, folder, options);
+  });
 }
 /**********************************************************
  * FolderTree
@@ -347,9 +257,10 @@ function showExportReferenceDialog(_folder: Folder) {
  */
 async function exportFolder(
   format: string,
-  options: { format?: string; template?: string }
+  folder: Folder,
+  options?: { format?: string; template?: string }
 ) {
-  await exportMeta(format, options, folder.value);
+  await exportMeta(folder, format, options);
 }
 
 /**************************************************

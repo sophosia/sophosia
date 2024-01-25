@@ -123,7 +123,7 @@
         v-if="projectStore.selected.length == 1"
         clickable
         v-close-popup
-        @click="searchMeta"
+        @click="showIdentifierDialog()"
       >
         <q-item-section>
           <i18n-t keypath="search">
@@ -136,14 +136,14 @@
         v-if="stateStore.selectedFolderId != SpecialFolder.LIBRARY.toString()"
         clickable
         v-close-popup
-        @click="deleteProject(false)"
+        @click="showDeleteDialog(false)"
       >
         <q-item-section>{{ $t("delete-from-folder") }}</q-item-section>
       </q-item>
       <q-item
         clickable
         v-close-popup
-        @click="deleteProject(true)"
+        @click="showDeleteDialog(true)"
       >
         <q-item-section>{{ $t("delete-from-database") }}</q-item-section>
       </q-item>
@@ -155,23 +155,26 @@
 import { QMenu } from "quasar";
 import {
   Meta,
+  Note,
   NoteType,
   Project,
   SpecialFolder,
   db,
 } from "src/backend/database";
 import { Ref, inject, nextTick } from "vue";
-import { KEY_deleteDialog, KEY_metaDialog } from "./injectKeys";
 // db
 import { invoke } from "@tauri-apps/api";
 import { join } from "@tauri-apps/api/path";
 import { copyToClipboard } from "quasar";
-import { generateCiteKey } from "src/backend/project/meta";
+import { generateCiteKey, getMeta } from "src/backend/project/meta";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/stateStore";
+import { deleteDialog, identifierDialog } from "../dialogs/dialogController";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
+const layoutStore = useLayoutStore();
 
 const props = defineProps({
   projectId: { type: String, required: true },
@@ -179,13 +182,6 @@ const props = defineProps({
 const emit = defineEmits(["expandRow", "exportCitation"]);
 
 const renamingNoteId = inject("renamingNoteId") as Ref<string>;
-
-// dialogs
-const showSearchMetaDialog = inject(KEY_metaDialog) as () => void;
-const showDeleteDialog = inject(KEY_deleteDialog) as (
-  deleteProjects: Project[],
-  deleteFromDB: boolean
-) => void;
 
 /**
  * Handles the export of the citation information for the selected project.
@@ -243,15 +239,73 @@ async function showInExplorer() {
  * Deletes the selected project(s) from either the folder or the database.
  * @param {boolean} deleteFromDB - Indicates whether to delete from the database or just from the folder.
  */
-function deleteProject(deleteFromDB: boolean) {
-  showDeleteDialog(projectStore.selected as Project[], deleteFromDB);
+function showDeleteDialog(deleteFromDB: boolean) {
+  deleteDialog.show();
+  deleteDialog.deleteProjects = projectStore.selected as Project[];
+  deleteDialog.isDeleteFromDB = deleteFromDB;
+  deleteDialog.onConfirm(() =>
+    deleteProject(
+      stateStore.selectedFolderId,
+      deleteDialog.deleteProjects,
+      deleteDialog.isDeleteFromDB
+    )
+  );
 }
 
 /**
- * Initiates a search for metadata related to the selected project(s).
+ * Delete a project from the current folder,
+ * if deleteFromDB is true, delete the project from database and remove the actual files
  */
-function searchMeta() {
-  showSearchMetaDialog();
+async function deleteProject(
+  folderId: string,
+  deleteProjects: Project[],
+  isDeleteFromDB: boolean
+) {
+  // delete projects
+  let deleteIds = deleteProjects.map((p) => p._id);
+
+  for (let projectId of deleteIds) {
+    let project = projectStore.openedProjects.find((p) => p._id === projectId);
+    if (project) {
+      for (let note of project.children as Note[]) {
+        layoutStore.closePage(projectId);
+        await nextTick(); // do it slowly one by one
+        layoutStore.closePage(note._id);
+      }
+
+      // remove project from openedProjects
+      projectStore.openedProjects = projectStore.openedProjects.filter(
+        (p) => p._id !== projectId
+      );
+
+      // if no page left, open library page
+      setTimeout(() => {
+        if (projectStore.openedProjects.length === 0)
+          layoutStore.currentItemId = "library";
+      }, 50);
+    }
+    // delete from db
+    projectStore.deleteProject(projectId, isDeleteFromDB, folderId);
+  }
+}
+
+/**
+ * Open identifier dialog for user to input identifier
+ * Then update the project using the identifier
+ * @param createProject
+ */
+function showIdentifierDialog() {
+  identifierDialog.show();
+  identifierDialog.onConfirm(async () => {
+    const metas = await getMeta([identifierDialog.identifier], "json");
+    const meta = metas[0];
+    // update existing project
+    await projectStore.updateProject(
+      projectStore.selected[0]._id,
+      meta as Project
+    );
+    identifierDialog.identifier = "";
+  });
 }
 
 /**
