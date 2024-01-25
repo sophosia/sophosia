@@ -175,14 +175,3 @@ function addByID() {
   emit("showIdentifierDialog");
 }
 </script>
-<style lang="scss">
-.actionbar-input {
-  /* for sizing the q-input */
-  .q-field__control {
-    height: min(1.8rem, 36px) !important;
-  }
-  .q-field__marginal {
-    height: min(1.8rem, 36px) !important;
-  }
-}
-</style>

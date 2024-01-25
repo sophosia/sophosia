@@ -1,31 +1,25 @@
 import {
-
-
-    Excalidraw,
-    MainMenu,
-    serializeAsJSON,
-    serializeLibraryAsJSON,
-
+  Excalidraw,
+  MainMenu,
+  serializeAsJSON,
+  serializeLibraryAsJSON
 } from "@excalidraw/excalidraw";
 import { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
 import {
-
-    BinaryFiles,
-    ExcalidrawImperativeAPI,
-    AppState as ExcalidrawState,
-    LibraryItems,
+  BinaryFiles,
+  ExcalidrawImperativeAPI,
+  AppState as ExcalidrawState,
+  LibraryItems
 } from "@excalidraw/excalidraw/types/types";
 import {
-
-    createDir,
-    exists,
-    readTextFile,
-    writeTextFile,
-
+  createDir,
+  exists,
+  readTextFile,
+  writeTextFile
 } from "@tauri-apps/api/fs";
 import { join } from "@tauri-apps/api/path";
 import { debounce } from "quasar";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { db } from "src/backend/database";
 import { loadNote, saveNote } from "src/backend/project/note";
 import "src/css/excalidraw/theme.scss";

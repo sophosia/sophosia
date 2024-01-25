@@ -26,7 +26,7 @@
           dragover:
             !!dragoverNode &&
             dragoverNode == prop.node &&
-            draggingNode != prop.node,
+            draggingNode != prop.node
         }"
         @click="selectItem(prop.node._id)"
         :draggable="prop.node.dataType !== 'project'"
@@ -168,7 +168,7 @@ import {
   Note,
   NoteType,
   Page,
-  Project,
+  Project
 } from "src/backend/database";
 import { nextTick, onMounted, ref, watchEffect } from "vue";
 // db
@@ -244,7 +244,7 @@ async function exportCitation(
       message: "Copied",
       color: "blue",
       position: "bottom",
-      timeout: 500,
+      timeout: 500
     });
   }
 }
@@ -271,7 +271,7 @@ function selectItem(nodeId: string) {
 async function showInExplorer(node: Project | Note) {
   const path = idToPath(node._id);
   await invoke("show_in_folder", {
-    path: path,
+    path: path
   });
 }
 
@@ -370,7 +370,7 @@ async function renameNode() {
       // update window tab name
       layoutStore.renamePage(oldNodeId, {
         id: newNodeId,
-        label: newLabel,
+        label: newLabel
       } as Page);
       await nextTick(); // wait until itemId changes in the page
     }
@@ -498,13 +498,13 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
       const newNoteId = oldNoteId.replace(dragId, newId);
       layoutStore.renamePage(oldNoteId, {
         id: newNoteId,
-        label: note.label,
+        label: note.label
       } as Page);
     }
   } else {
     layoutStore.renamePage(dragId, {
       id: newId,
-      label: label,
+      label: label
     } as Page);
   }
   await nextTick(); // wait until the itemId is updated
@@ -520,9 +520,3 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
   dragoverNode.value = null;
 }
 </script>
-<style lang="scss" scoped>
-.dragover {
-  border: 1px solid aqua;
-  background-color: rgba(0, 255, 255, 0.5);
-}
-</style>

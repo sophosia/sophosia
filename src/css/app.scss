@@ -1,10 +1,19 @@
 // app global css in SCSS form
 body.body--dark {
-  --q-primary: #3d59a1;
+  --q-primary: red;
   --q-dark: #16161e;
   --q-dark-page: #1a1b26;
   --q-edge: black;
   --color-text: white;
+
+  //Color theme
+  --q-main-layout-bkgd: #1F212D;
+  --q-menus-layout-bkgd:#30313B;
+  --q-icons: #D1D1D3;
+  --q-reg-text: #D1D1D3;
+  --q-special-text: white;
+  --q-menu-highlight:#474851;
+  --q-main-highlight: #30313B; 
 }
 
 body {
@@ -15,49 +24,49 @@ body {
   --color-text: black;
   
   // golden-layout background
-  --color-layout-base-bkgd: var(--q-dark-page);
+  --color-layout-base-bkgd: var(--q-main-layout-bkgd); 
   // golden-layout tabs
-  --color-layout-active-tab-bkgd: var(--q-dark-page);
-  --color-layout-active-tab-fore: var(--color-text);
-  --color-layout-focused-tab-bkgd: var(--q-dark-page);
-  --color-layout-single-tab-container-fore: var(--color-text);
-  --color-layout-single-tab-container-bkgd: var(--q-dark);
-  --color-layout-header-bkgd: var(--q-dark);
+  --color-layout-active-tab-bkgd:var(--q-menu-highlight); // tab hover mode background
+  --color-layout-active-tab-fore: var(--q-reg-text); // tab hover mode text color
+  --color-layout-focused-tab-bkgd: var(--q-main-layout-bkgd); // selected tab background
+  --color-layout-single-tab-container-fore: var(--q-reg-text);  //tab text color
+  --color-layout-single-tab-container-bkgd: var(--q-menus-layout-bkgd); //tabs background
+  --color-layout-header-bkgd: var(--q-menus-layout-bkgd);  //header background
 
   // left menu
-  --color-leftmenu-bkgd: var(--q-dark);
+  --color-leftmenu-bkgd: var(--q-menus-layout-bkgd);
 
   // project tree
-  --color-projecttree-bkgd: var(--q-dark);
+  --color-projecttree-bkgd: var(--q-menus-layout-bkgd);
 
   // library page
-  --color-library-tableview-header-bkgd: var(--q-dark-page);
-  --color-library-tableview-row-bkgd: var(--q-dark-page);
-  --color-library-tableview-highlighted-row-bkgd: var(--q-primary);
-  --color-library-toolbar-bkgd: var(--q-dark);
-  --color-library-tableview-bkgd: var(--q-dark-page);
-  --color-library-treeview-bkgd: var(--q-dark-page);
+  --color-library-tableview-header-bkgd: var(--q-main-layout-bkgd); //title and authors header background
+  --color-library-tableview-row-bkgd: var(--q-main-layout-bkgd); //table rows background
+  --color-library-tableview-highlighted-row-bkgd: var(--q-main-highlight); // selected table row background
+  --color-library-toolbar-bkgd: var(--q-main-layout-bkgd); //toolbar background
+  --color-library-tableview-bkgd: var(--q-main-layout-bkgd); //library background
+  --color-library-treeview-bkgd: var(--q-main-layout-bkgd); //library column
 
   // settings page
-  --color-settings-tabs-area-bkgd: var(--q-dark-page);
-  --color-settings-tab-panel-bkgd: var(--q-dark-page);
-  --color-settings-card-bkgd: var(--q-dark);
+  --color-settings-tabs-area-bkgd: var(--q-main-layout-bkgd); //settings menu column
+  --color-settings-tab-panel-bkgd: var(--q-main-layout-bkgd); // settings page background
+  --color-settings-card-bkgd: var(--q-main-layout-bkgd); //settings cards
 
   // reader page
-  --color-pdfreader-viewer-bkgd: var(--q-dark-page);
-  --color-pdfreader-toolbar-bkgd: var(--q-dark);
-  --color-pdfreader-colorpicker-bkgd: var(--q-dark);
+  --color-pdfreader-viewer-bkgd: var(--q-main-layout-bkgd); //pdf-reader background
+  --color-pdfreader-toolbar-bkgd: var(--q-main-layout-bkgd); //pdf toolbar background
+  --color-pdfreader-colorpicker-bkgd: var(--q-main-layout-bkgd); // pdf colorpicker 
 
   // right menu
-  --color-rightmenu-tabs-bkgd: var(--q-dark);
-  --color-rightmenu-tab-panel-bkgd: var(--q-dark);
+  --color-rightmenu-tabs-bkgd: var(--q-menus-layout-bkgd); //right menu tabs bar background
+  --color-rightmenu-tab-panel-bkgd: var(--q-menus-layout-bkgd); //right menu background
 
   // plugin store
-  --color-pluginstore-dialog-bkgd: var(--q-dark);
+  --color-pluginstore-dialog-bkgd: var(--q-menus-layout-bkgd);
 
   // hoverPane
-  --color-hoverpane-border: var(--q-primary);
-  --color-hoverpane-bkgd: var(--q-dark-page);
+  --color-hoverpane-border: var(--q-main-layout-bkgd);
+  --color-hoverpane-bkgd: var(--q-main-layout-bkgd);
 }
 
 html {
@@ -82,8 +91,9 @@ a {
   overflow: hidden;
 }
 
+
 .q-splitter-separator {
-  background-color: var(--q-edge) !important;
+  background-color: transparent !important;
   &:hover {
     background-color: rgba($primary, 0.5) !important;
     box-shadow: 0 0 0px 2px rgba($primary, 0.5);
@@ -95,7 +105,7 @@ a {
 }
 
 .q-splitter-separator-horizontal {
-  background-color: var(--q-edge) !important;
+  background-color: transparent !important;
   &:hover {
     background-color: rgba($primary, 0.5) !important;
     box-shadow: 0 0 0px 2px rgba($primary, 0.5);
@@ -130,4 +140,71 @@ a {
 // no hover effect on the button
 .q-btn .q-focus-helper {
   display: none;
+}
+
+
+
+//GraphView
+
+.square {
+  width: 1rem;
+  height: 1rem;
+  background: var(--color-text);
+}
+.circle {
+  width: 1rem;
+  height: 1rem;
+  background: var(--color-text);
+  border-radius: 50%;
+}
+.triangle {
+  width: 0;
+  height: 0;
+  border-left: 0.6rem solid transparent;
+  border-right: 0.6rem solid transparent;
+  border-bottom: 1rem solid var(--color-text);
+}
+
+//Project Navigator
+
+.project-nav-panel{
+  background-color: var(--q-menus-layout-bkgd);
+  overflow: hidden;
+
+}
+
+//Project tree
+.dragover {
+  border: 1px solid var(--q-menu-highlight);
+  background-color: var(--q-menu-highlight);
+}
+
+
+//Action bar
+.actionbar-input {
+  /* for sizing the q-input */
+  .q-field__control {
+    height: min(1.8rem, 36px) !important;
+  }
+  .q-field__marginal {
+    height: min(1.8rem, 36px) !important;
+  }
+}
+
+//Export dialog
+
+.export-dialog{
+  min-width: 300px;
+}
+
+
+//Folder tree
+
+.q-folder-tree{
+  height: 100%;
+}
+
+//Identifier dialog
+.identifier-dialog{
+  min-width: 500px;
 }

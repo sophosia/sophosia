@@ -4,8 +4,8 @@
     @hide="cancel"
   >
     <q-card
+      class="identifier-dialog"
       square
-      style="min-width: 500px"
     >
       <q-card-section>
         <div class="text-h6">

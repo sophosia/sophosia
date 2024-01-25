@@ -169,23 +169,3 @@ function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
 
 defineExpose({ reload });
 </script>
-<style scoped>
-.square {
-  width: 1rem;
-  height: 1rem;
-  background: var(--color-text);
-}
-.circle {
-  width: 1rem;
-  height: 1rem;
-  background: var(--color-text);
-  border-radius: 50%;
-}
-.triangle {
-  width: 0;
-  height: 0;
-  border-left: 0.6rem solid transparent;
-  border-right: 0.6rem solid transparent;
-  border-bottom: 1rem solid var(--color-text);
-}
-</style>

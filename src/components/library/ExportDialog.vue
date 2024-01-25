@@ -3,7 +3,7 @@
     :model-value="show"
     @hide="cancel"
   >
-    <q-card style="min-width: 300px">
+    <q-card class="export-dialog">
       <q-card-section>
         <div class="text-h6">{{ $t("options") }}</div>
       </q-card-section>

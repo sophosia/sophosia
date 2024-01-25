@@ -1,6 +1,6 @@
 <template>
   <q-splitter
-    style="background: var(--color-projecttree-bkgd)"
+    class="project-nav-panel"
     horizontal
     emit-immediately
     :limits="[36, maxHeight]"
@@ -8,7 +8,7 @@
     separator-style="background: var(--q-edge)"
     :separator-class="{
       'q-splitter-separator-horizontal': isGraphViewOpened && isTreeOpened,
-      'no-pointer-events': !isGraphViewOpened || !isTreeOpened,
+      'no-pointer-events': !isGraphViewOpened || !isTreeOpened
     }"
     v-model="treeSize"
     ref="root"
@@ -162,8 +162,3 @@ watch(
   }
 );
 </script>
-<style>
-.q-splitter__panel {
-  overflow: hidden;
-}
-</style>
