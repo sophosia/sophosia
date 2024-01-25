@@ -7,16 +7,22 @@ import {
   copyFile,
   exists,
   renameFile,
-  writeTextFile,
+  writeTextFile
 } from "@tauri-apps/api/fs";
 import { authorToString } from "./utils";
 import { i18n } from "src/boot/i18n";
 const { t } = i18n.global;
 
 /**
- * Create project folder in storage path
- * And create folder note inside this folder
- * @param projectId
+ * Creates a project folder and initializes a Markdown note file for the given project.
+ *
+ * @param {Project} project - The project for which the folder and note file are to be created.
+ *
+ * Creates a new directory for the project in the designated storage path, and a Markdown file
+ * with basic project details if they don't already exist. The Markdown file includes the project's label,
+ * author, and abstract, along with a note about auto-management.
+ *
+ * @throws Logs an error if any file or directory creation process fails.
  */
 async function createProjectFolder(project: Project) {
   try {
@@ -101,5 +107,5 @@ export {
   createProjectFolder,
   deleteProjectFolder,
   copyFileToProjectFolder,
-  changePath,
+  changePath
 };

@@ -51,41 +51,41 @@
         {
           value: AnnotationType.CURSOR,
           icon: 'mdi-cursor-text',
-          slot: AnnotationType.CURSOR,
+          slot: AnnotationType.CURSOR
         },
         {
           value: AnnotationType.HIGHLIGHT,
           icon: 'mdi-marker',
-          slot: AnnotationType.HIGHLIGHT,
+          slot: AnnotationType.HIGHLIGHT
         },
         {
           value: AnnotationType.UNDERLINE,
           icon: 'mdi-format-underline',
-          slot: AnnotationType.UNDERLINE,
+          slot: AnnotationType.UNDERLINE
         },
         {
           value: AnnotationType.STRIKEOUT,
           icon: 'mdi-format-strikethrough',
-          slot: AnnotationType.STRIKEOUT,
+          slot: AnnotationType.STRIKEOUT
         },
         {
           value: AnnotationType.RECTANGLE,
           icon: 'mdi-rectangle',
-          slot: AnnotationType.RECTANGLE,
+          slot: AnnotationType.RECTANGLE
         },
         {
           value: AnnotationType.COMMENT,
           icon: 'mdi-comment-text',
-          slot: AnnotationType.COMMENT,
+          slot: AnnotationType.COMMENT
         },
         {
           value: AnnotationType.INK,
-          slot: AnnotationType.INK,
+          slot: AnnotationType.INK
         },
         {
           value: AnnotationType.ERASER,
-          slot: AnnotationType.ERASER,
-        },
+          slot: AnnotationType.ERASER
+        }
       ]"
     >
       <template v-slot:cursor>
@@ -192,7 +192,7 @@ const $q = useQuasar();
  * Props, emits, data
  */
 const props = defineProps({
-  showRightMenu: { type: Boolean, required: true },
+  showRightMenu: { type: Boolean, required: true }
 });
 const emit = defineEmits(["update:showRightMenu"]);
 
@@ -209,6 +209,11 @@ const pageLabel = computed(() => {
   }
 });
 
+/**
+ * Changes the current page of the PDF document based on the provided page label.
+ * If page labels are defined, it finds the corresponding page number; otherwise, it parses the label as a number.
+ * @param {string} pageLabel - The label or number of the page to navigate to.
+ */
 function changePage(pageLabel: string) {
   let pageNumber = 1;
   if (pdfApp.pageLabels.length > 0) {
@@ -223,6 +228,10 @@ function changePage(pageLabel: string) {
   pdfApp.changePageNumber(pageNumber);
 }
 
+/**
+ * Toggles the fullscreen mode of the PDF viewer.
+ * Uses the Quasar framework's fullscreen utility to enter or exit fullscreen mode.
+ */
 async function toggleFullscreen() {
   if (isFullscreen.value) await $q.fullscreen.exit();
   else await $q.fullscreen.request();
@@ -230,6 +239,10 @@ async function toggleFullscreen() {
   isFullscreen.value = !isFullscreen.value;
 }
 
+/**
+ * Toggles the dark mode view of the PDF document.
+ * Changes the appearance of the PDF viewer to a dark-themed view.
+ */
 async function toggleDarkMode() {
   pdfApp.changeViewMode(!pdfApp.state.darkMode);
 }

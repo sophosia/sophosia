@@ -4,7 +4,7 @@ import {
   exists,
   readDir,
   readTextFile,
-  writeTextFile,
+  writeTextFile
 } from "@tauri-apps/api/fs";
 import { extname } from "@tauri-apps/api/path";
 import { Notify } from "quasar";
@@ -55,7 +55,7 @@ export async function scanAndUpdateDB() {
   // path in jsondb is not ready yet, must use this
   const workspace = JSON.parse(
     await readTextFile("workspace.json", {
-      dir: BaseDirectory.AppConfig,
+      dir: BaseDirectory.AppConfig
     })
   );
   const { storagePath, lastScanTime } = workspace;
@@ -79,7 +79,7 @@ export async function scanAndUpdateDB() {
 
   workspace.lastScanTime = Date.now();
   await writeTextFile("workspace.json", JSON.stringify(workspace), {
-    dir: BaseDirectory.AppConfig,
+    dir: BaseDirectory.AppConfig
   });
 
   isScanned.value = true;
@@ -123,7 +123,7 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
   // path in jsondb is not ready yet, must use this
   const workspace = JSON.parse(
     await readTextFile("workspace.json", {
-      dir: BaseDirectory.AppConfig,
+      dir: BaseDirectory.AppConfig
     })
   );
   const { storagePath, lastScanTime } = workspace;
@@ -161,7 +161,7 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
     // replace to links in indexeddb pointing to the old note
     const key1 = await idb.getKeyFromIndex("links", "sourceAndTarget", [
       currentNoteId,
-      oldNoteId,
+      oldNoteId
     ]);
     if (key1)
       idb.put("links", { source: currentNoteId, target: newNoteId }, key1);
@@ -169,7 +169,7 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
     // replace to links in indexeddb from the old note
     const key2 = await idb.getKeyFromIndex("links", "sourceAndTarget", [
       oldNoteId,
-      currentNoteId,
+      currentNoteId
     ]);
     if (key2)
       idb.put("links", { source: newNoteId, target: currentNoteId }, key2);

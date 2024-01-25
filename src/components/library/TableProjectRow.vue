@@ -87,10 +87,18 @@ const props = defineProps({
 });
 const emit = defineEmits(["expandRow", "setFavorite"]);
 
+/**
+ * Handles the expansion of a row in the table.
+ * @param {boolean} isExpand - Indicates whether to expand or collapse the row.
+ */
 function expandRow(isExpand: boolean) {
   emit("expandRow", isExpand);
 }
 
+/**
+ * Opens the export citation dialog for the given project.
+ * @param {Project} project - The project to export the citation for.
+ */
 async function showExportCitationDialog(project: Project) {
   exportDialog.show();
   exportDialog.onConfirm(async () => {
@@ -102,6 +110,11 @@ async function showExportCitationDialog(project: Project) {
   });
 }
 
+/**
+ * Generates a short author string based on the provided list of authors.
+ * @param {Author[]} authors - The list of authors to generate the string from.
+ * @returns {string} - The short author string.
+ */
 function shortAuthorString(authors: Author[]) {
   if (authors === undefined) return;
 

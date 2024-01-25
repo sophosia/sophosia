@@ -126,7 +126,7 @@ import { useStateStore } from "src/stores/stateStore";
 import TableItemMenu from "./TableItemMenu.vue";
 
 const props = defineProps({
-  item: { type: Object as PropType<Project | Note>, required: true },
+  item: { type: Object as PropType<Project | Note>, required: true }
 });
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
@@ -148,6 +148,11 @@ watchEffect(async () => {
   if (renamingNoteId.value === props.item._id) setRenaming();
 });
 
+/**
+ * Opens the file explorer and navigates to the location of the item.
+ * If the item is a project, it opens the directory containing the project files.
+ * If the item is a note, it opens the directory containing the note file.
+ */
 async function showInExplorer() {
   const path =
     props.item.dataType === "project"
@@ -157,14 +162,26 @@ async function showInExplorer() {
   await invoke("show_in_folder", { path: path });
 }
 
+/**
+ * Handles a single-click event on the item row.
+ * Selects the item when clicked.
+ */
 function clickItem() {
   projectStore.selected = [props.item];
 }
 
+/**
+ * Handles a double-click event on the item row.
+ * Opens the item for further interaction.
+ */
 function openItem() {
   stateStore.openItem(props.item._id);
 }
 
+/**
+ * Initiates the renaming of the item.
+ * Enables the user to edit the item's label.
+ */
 function setRenaming() {
   renaming.value = true;
   props.item.label;
@@ -178,6 +195,11 @@ function setRenaming() {
   }, 100);
 }
 
+/**
+ * Renames a note item.
+ * Updates the item's label and updates the window tab name.
+ * If a name collision occurs, reverts the name to the previous one.
+ */
 async function renameNote() {
   let note = props.item as Note;
   if (pathDuplicate.value) {
@@ -189,7 +211,7 @@ async function renameNote() {
     // update window tab name
     layoutStore.renamePage(oldNoteId, {
       id: newNoteId,
-      label: newLabel,
+      label: newLabel
     } as Page);
     await nextTick(); // wait until itemId changes in the page
     await projectStore.renameNode(oldNoteId, newNoteId, "note");
@@ -199,14 +221,24 @@ async function renameNote() {
   pathDuplicate.value = false;
 }
 
+/**
+ * Deletes the item from the project.
+ */
 async function deleteItem() {
   await projectStore.deleteNode(props.item._id, "note");
 }
 
+/**
+ * Renames a PDF item.
+ */
 async function renamePDF() {
   await projectStore.renamePDF(props.item._id);
 }
 
+/**
+ * Checks for duplicate names when renaming an item.
+ * Sets the `pathDuplicate` flag to `true` if a duplicate name is found.
+ */
 async function checkDuplicate() {
   const extension =
     props.item.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";

@@ -118,9 +118,10 @@ watch(locale, () => {
  * Method
  *******************/
 /**
- * Add a GL component by page
- * @param
- * @param page
+ * Adds a Golden Layout (GL) component to the layout based on a given page.
+ * Dynamically defines an asynchronous component based on the page type.
+ * If the layout is initialized, the component is added immediately, otherwise, it is prepared for later addition.
+ * @param page - The page object containing the information for the component to be added.
  */
 const addGLComponent = (page: Page) => {
   const refId = layoutStore.IdToRef.get(page.id) as string;
@@ -140,6 +141,11 @@ const addGLComponent = (page: Page) => {
   }); // wait 1 tick for vue to add the dom
 };
 
+/**
+ * Removes a Golden Layout (GL) component from the layout using the specified item ID.
+ * Clears the associated references and closes the container of the GL component.
+ * @param itemId - The ID of the item (page) to be removed.
+ */
 const removeGLComponent = (removeId: string) => {
   layoutStore.closedItemId = "";
   const refId = layoutStore.IdToRef.get(removeId);
@@ -149,6 +155,11 @@ const removeGLComponent = (removeId: string) => {
   console.log("removeGLComponent");
 };
 
+/**
+ * Updates a Golden Layout (GL) component with new page information.
+ * Changes the window title of the GL component and updates its state.
+ * @param newPage - The new page object containing updated information.
+ */
 const updateGLComponent = (newPage: Page) => {
   const refId = layoutStore.IdToRef.get(newPage.id);
   if (!refId) return;
@@ -161,6 +172,10 @@ const updateGLComponent = (newPage: Page) => {
   container.setState(state);
 };
 
+/**
+ * Loads the Golden Layout (GL) configuration and initializes the layout.
+ * Clears the current layout, pages, and components before loading the new configuration.
+ */
 const loadGLLayout = async () => {
   GLayout.clear();
   layoutStore.pages.clear();
@@ -174,12 +189,20 @@ const loadGLLayout = async () => {
   await GLayout.loadLayout(config);
 };
 
+/**
+ * Saves the current state of the Golden Layout (GL) configuration.
+ * Persists the layout configuration for later retrieval and usage.
+ */
 const saveGLLayout = async () => {
   await nextTick();
   const config = GLayout.saveLayout();
   await layoutStore.saveLayout(config);
 };
 
+/**
+ * Adjusts the size of the Golden Layout (GL) to fit the container.
+ * Invokes the layout's `setSize` method and saves the new layout configuration.
+ */
 const resize = () => {
   const dom = GLRoot.value;
   let width = dom ? dom.offsetWidth : 0;
@@ -189,8 +212,9 @@ const resize = () => {
 };
 
 /**
- * Focus window by itemId
- * @param itemId
+ * Focuses on a specific Golden Layout (GL) component identified by the item ID.
+ * Brings the specified component into view and focuses on it.
+ * @param id - The ID of the item to be focused.
  */
 const focusById = (id: string) => {
   const refId = layoutStore.IdToRef.get(id);
@@ -199,6 +223,10 @@ const focusById = (id: string) => {
   if (container) container.focus();
 };
 
+/**
+ * Translates the titles of special pages (like 'library', 'help', 'settings') based on the current locale.
+ * Updates the layout store with the translated titles.
+ */
 const translateSpecialPageTitles = async () => {
   for (const page of layoutStore.pages.values()) {
     if (["library", "help", "settings"].includes(page.id)) {
@@ -290,7 +318,7 @@ onMounted(async () => {
 
     glItems.value.set(refId, {
       container: container,
-      glc: (component as any)[0],
+      glc: (component as any)[0]
     });
 
     container.virtualRectingRequiredEvent = (container, width, height) =>
@@ -312,7 +340,7 @@ onMounted(async () => {
 
     return {
       component,
-      virtual: true,
+      virtual: true
     };
   };
 

@@ -110,14 +110,14 @@ import { computed } from "vue";
 const stateStore = useStateStore();
 
 const props = defineProps({
-  searchString: { type: String, required: true },
+  searchString: { type: String, required: true }
 });
 const emit = defineEmits([
   "update:searchString",
   "addEmptyProject",
   "addByFiles",
   "addByCollection",
-  "showIdentifierDialog",
+  "showIdentifierDialog"
 ]);
 
 const searchText = computed({
@@ -126,16 +126,21 @@ const searchText = computed({
   },
   set: debounce((text: string) => {
     emit("update:searchString", text);
-  }, 500),
+  }, 500)
 });
 
+/**
+ * Opens a file dialog and adds projects based on the selected files.
+ * Handles different types of file imports, including single files or collections.
+ * @param {string} type - The type of file import ('file' or 'collection').
+ */
 async function addByFiles(type: string) {
   let filePath: string | string[] | null; //no type checking for now
   switch (type) {
     case "file":
       filePath = await open({
         multiple: true,
-        filters: [{ name: "*.pdf", extensions: ["pdf"] }],
+        filters: [{ name: "*.pdf", extensions: ["pdf"] }]
       });
 
       if (Array.isArray(filePath)) emit("addByFiles", filePath);
@@ -147,8 +152,8 @@ async function addByFiles(type: string) {
       filePath = await open({
         multiple: false,
         filters: [
-          { name: "*.bib, *.ris, *.json", extensions: ["bib", "ris", "json"] },
-        ],
+          { name: "*.bib, *.ris, *.json", extensions: ["bib", "ris", "json"] }
+        ]
       });
       if (!filePath) return;
       emit("addByCollection", filePath);
@@ -156,10 +161,16 @@ async function addByFiles(type: string) {
   }
 }
 
+/**
+ * Emits an event to trigger the creation of an empty project.
+ */
 function addEmpty() {
   emit("addEmptyProject");
 }
 
+/**
+ * Emits an event to show the dialog for adding a project by identifier.
+ */
 function addByID() {
   emit("showIdentifierDialog");
 }

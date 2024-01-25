@@ -5,7 +5,7 @@ import { save } from "@tauri-apps/api/dialog";
 import {
   readBinaryFile,
   readTextFile,
-  writeTextFile,
+  writeTextFile
 } from "@tauri-apps/api/fs";
 import { AppState, Author, Folder, Meta, Project, db } from "../database";
 import { getProjects } from "./project";
@@ -13,12 +13,19 @@ import { getProjects } from "./project";
 import * as pdfjsLib from "pdfjs-dist";
 import { TextItem } from "pdfjs-dist/types/src/display/api";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
+
 /**
- * Get artible/book info given an identifier using citation.js
- * @param identifier - identifier(s)
- * @param format - json, bib, bibliography, ris, ...
- * @param options - e.g. {format: "html"}, {template: "vancouver"}
- * @returns citation data
+ * Retrieves metadata for given identifiers and formats it based on the specified options.
+ *
+ * @param {string | string[] | Project[]} identifiers - The identifiers for which metadata is to be retrieved.
+ * @param {string} [format] - The format in which to return the metadata (e.g., 'json').
+ * @param {Object} [options] - Additional formatting options.
+ * @returns {Promise<Meta[] | string>} A promise resolving to the formatted metadata.
+ *
+ * Processes the identifiers, making necessary adjustments for DOI URLs, and retrieves metadata using the Cite library.
+ * Returns the metadata in the specified format, handling JSON formatting and citation key generation if needed.
+ *
+ * @throws Logs an error and returns an empty array if an error occurs during the retrieval process.
  */
 export async function getMeta(
   identifiers: string | string[] | Project[],
@@ -63,11 +70,18 @@ export async function getMeta(
 (window as any).getMeta = getMeta;
 
 /**
- * Export a folder of references to a specific format
- * @param folder
- * @param format
- * @param options
- * @param project Optional project
+ * Exports metadata in a specified format.
+ *
+ * @param {string} format - The format for the metadata export (e.g., 'json', 'bibtex').
+ * @param {Object} options - Formatting options.
+ * @param {Folder} [folder] - The folder containing projects to export metadata for.
+ * @param {Project} [project] - A single project for which to export metadata.
+ *
+ * Depending on the provided parameters, this function either exports metadata for a single project,
+ * all projects in a folder, or returns if neither is provided. The metadata is then saved to a file
+ * in the chosen format.
+ *
+ * @throws Throws and logs an error if the export process encounters any issues.
  */
 export async function exportMeta(
   folder: Folder,
@@ -93,9 +107,9 @@ export async function exportMeta(
         filters: [
           {
             name: extension,
-            extensions: [extension],
-          },
-        ],
+            extensions: [extension]
+          }
+        ]
       });
       if (path) {
         if (path.slice(-4).indexOf(`.${extension}`) === -1)
@@ -110,9 +124,12 @@ export async function exportMeta(
 }
 
 /**
- * Read a reference file (such as .bib) and return the containing metas
- * @param filePath
- * @returns citation data
+ * Imports metadata from a file.
+ *
+ * @param {string} filePath - The path to the file containing metadata.
+ * @returns {Promise<Meta[]>} A promise resolving to an array of Meta objects.
+ *
+ * Reads the metadata from the specified file and converts it into an array of Meta objects.
  */
 export async function importMeta(filePath: string): Promise<Meta[]> {
   let data = await readTextFile(filePath);
@@ -120,9 +137,15 @@ export async function importMeta(filePath: string): Promise<Meta[]> {
 }
 
 /**
- * Generate citation-key according to given meta
- * @param meta
- * @param rule - example: "author_year_title", "author year title" (space means no connector in between) ...
+ * Generates a citation key based on given metadata and a rule.
+ *
+ * @param {Meta} meta - The metadata object used to generate the citation key.
+ * @param {string} [rule="author_year_title"] - The rule for generating the citation key (default: "author_year_title").
+ * @param {boolean} [longTitle=false] - Whether to use the full title or just the first word for the title part of the key.
+ * @returns {string} The generated citation key.
+ *
+ * Constructs the citation key by extracting and formatting parts of the metadata (author, year, title)
+ * based on the specified rule and title length preference.
  */
 export function generateCiteKey(
   meta: Meta,
@@ -209,6 +232,17 @@ export function generateCiteKey(
   return citeKey;
 }
 
+/**
+ * Extracts metadata from a file, such as a PDF, by reading its content.
+ *
+ * @param {string} filePath - The path to the file from which metadata is to be extracted.
+ * @returns {Promise<Meta | undefined>} A promise resolving to a Meta object if metadata is found, undefined otherwise.
+ *
+ * Scans the initial pages of the file for identifiers like ISBNs or DOIs, then retrieves corresponding metadata.
+ * Focuses primarily on text content to identify possible metadata sources.
+ *
+ * @throws Logs an error if the file reading or metadata extraction process fails.
+ */
 export async function getMetaFromFile(
   filePath: string
 ): Promise<Meta | undefined> {

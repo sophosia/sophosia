@@ -6,7 +6,7 @@ import { FolderOrNote, Project, SpecialFolder, db } from "../database";
 import {
   copyFileToProjectFolder,
   createProjectFolder,
-  deleteProjectFolder,
+  deleteProjectFolder
 } from "./file";
 import { generateCiteKey } from "./meta";
 import { getNoteTree, getNotes, saveNote } from "./note";
@@ -14,8 +14,12 @@ import { authorToString } from "./utils";
 const { t } = i18n.global;
 
 /**
- * Create a project data
- * @param folderId
+ * Initializes a new project in a specified folder.
+ *
+ * @param {string} folderId - The folder ID where the project is created.
+ * @returns {Project} The newly created project object.
+ *
+ * Generates a project with a unique ID and default properties.
  */
 export function createProject(folderId: string) {
   // create empty project entry
@@ -30,7 +34,7 @@ export function createProject(folderId: string) {
     tags: [] as string[],
     folderIds: [SpecialFolder.LIBRARY.toString()],
     favorite: false,
-    children: [] as FolderOrNote[],
+    children: [] as FolderOrNote[]
   } as Project;
   if (folderId != SpecialFolder.LIBRARY.toString())
     project.folderIds.push(folderId);
@@ -38,10 +42,11 @@ export function createProject(folderId: string) {
 }
 
 /**
- * Add empty projet to database, creates project folder and returns the project
- * The project is added to folder with folderId
- * @param project
- * @returns project
+ * Adds a new project to the database and creates its associated folder.
+ *
+ * @param {Project} project - The project to be added.
+ * @returns {Promise<Project | undefined>} The added project or undefined if an error occurs.
+ *
  */
 export async function addProject(
   project: Project
@@ -96,9 +101,12 @@ export async function deleteProject(
 }
 
 /**
- * Update project in database and returns the updated project
- * @param project
- * @returns updated project
+ * Updates the properties of an existing project in the database.
+ *
+ * @param {string} projectId - The ID of the project to update.
+ * @param {Project} props - An object with properties to update in the project.
+ * @returns {Promise<Project | undefined>} The updated project or undefined if an error occurs.
+ *
  */
 export async function updateProject(
   projectId: string,
@@ -107,7 +115,7 @@ export async function updateProject(
   try {
     const project = (await getProject(projectId, {
       includeNotes: true,
-      includePDF: true,
+      includePDF: true
     })) as Project;
     const notes = project.children;
     const path = project.path;
@@ -137,10 +145,13 @@ ${t("note-is-auto-manged")}`;
 }
 
 /**
- * Get project from database by projectId
- * @param projectId
- * @param options
- * @returns Project
+ * Retrieves a project from the database with optional inclusion of associated PDFs and notes.
+ *
+ * @param {string} projectId - The ID of the project to retrieve.
+ * @param {Object} [options] - Options to include PDFs and/or notes in the project data.
+ * @returns {Promise<Project | undefined>} The project with the specified ID, or undefined if not found or on error.
+ *
+ * Fetches the project and optionally attaches its associated PDF and note tree based on the provided options.
  */
 export async function getProject(
   projectId: string,
@@ -157,9 +168,13 @@ export async function getProject(
 }
 
 /**
- * Get all projects from database
- * @param options
- * @returns {Project[]} array of projects
+ * Retrieves all projects from the database, with options to include related PDFs and notes.
+ *
+ * @param {Object} [options] - Options to include associated PDFs and/or notes for each project.
+ * @returns {Promise<Project[]>} A promise resolving to an array of Project objects.
+ *
+ * Iterates through all projects in the database, optionally attaching their associated PDF paths and note trees
+ * based on the specified options.
  */
 export async function getAllProjects(options?: {
   includePDF?: boolean;
@@ -174,10 +189,14 @@ export async function getAllProjects(options?: {
 }
 
 /**
- * Get corresponding projects given the ID of folder containing them
- * @param folderId
- * @param options
- * @returns array of projects
+ * Retrieves projects from a specific folder, with options to include related PDFs and notes.
+ *
+ * @param {string} folderId - The ID of the folder to filter projects by.
+ * @param {Object} [options] - Options to include associated PDFs and/or notes for each project.
+ * @returns {Promise<Project[]>} A promise resolving to an array of Project objects filtered by the folder ID.
+ *
+ * Fetches projects based on the specified folder ID, applying additional filters for special folders like Library, Added, and Favorites.
+ * Optionally attaches associated PDF paths and note trees for each project based on provided options.
  */
 export async function getProjects(
   folderId: string,
@@ -226,9 +245,12 @@ export async function getProjects(
 }
 
 /**
- * Rename the PDF file and then return the new path
- * @param project
- * @returns newPath
+ * Renames the PDF file associated with a project based on a generated citation key.
+ *
+ * @param {Project} project - The project whose associated PDF needs renaming.
+ * @returns {Promise<string | undefined>} The new path of the renamed PDF file or undefined if the project has no associated path.
+ *
+ * Generates a new filename using the citation key and moves the PDF file to this new path.
  */
 export async function renamePDF(project: Project) {
   if (project.path === undefined) return;
@@ -240,15 +262,19 @@ export async function renamePDF(project: Project) {
 }
 
 /**
- * Attach a PDF file and returns the new relative path to file
- * @param projectId
+ * Attaches a PDF file to a project by copying it to the project's folder.
+ *
+ * @param {string} projectId - The ID of the project to attach the PDF to.
+ * @returns {Promise<string | undefined>} The path of the copied PDF file in the project's folder, or undefined if no file is selected.
+ *
+ * Opens a file dialog to select a PDF, removes any existing PDF associated with the project, and copies the selected PDF to the project's folder.
  */
 export async function attachPDF(
   projectId: string
 ): Promise<string | undefined> {
   const filePath = await open({
     multiple: false,
-    filters: [{ name: "*.pdf", extensions: ["pdf"] }],
+    filters: [{ name: "*.pdf", extensions: ["pdf"] }]
   });
 
   if (typeof filePath !== "string") return;
@@ -258,8 +284,10 @@ export async function attachPDF(
 }
 
 /**
- * Return the path of the pdf of a project
- * @param projectId
+ * Retrieve the path of the first PDF file found within a project folder.
+ *
+ * @param {string} projectId - The unique identifier of the project.
+ * @returns {Promise<string | undefined>} The path of the first PDF file found, or undefined if no PDF is found or an error occurs.
  */
 export async function getPDF(projectId: string) {
   try {

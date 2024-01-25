@@ -127,7 +127,6 @@ onMounted(async () => {
  * Open identifier dialog.
  * If createProject is true, the identifier will be used to create a new project
  * otherwise the identifier will be used to update an existing project
- * @param createProject
  */
 function showIdentifierDialog() {
   identifierDialog.show();
@@ -137,6 +136,10 @@ function showIdentifierDialog() {
   });
 }
 
+/**
+ * Shows the import dialog for importing projects from a collection file.
+ * @param {string} _collectionPath - The path to the collection file.
+ */
 function showImportDialog(collectionPath: string) {
   importDialog.show();
   importDialog.onConfirm(() => {
@@ -154,8 +157,8 @@ async function addEmptyProject() {
 }
 
 /**
- * Add projects by importing files
- * @param filePaths - pdfs paths imported
+ * Adds projects by importing files from specified file paths.
+ * @param {string[]} filePaths - The paths of the files to import as projects.
  */
 async function addProjectsByFiles(filePaths: string[]) {
   for (let filePath of filePaths) {
@@ -183,8 +186,8 @@ async function addProjectsByFiles(filePaths: string[]) {
 }
 
 /**
- * Add projects by a collection file (.bib, .ris, etc...)
- * @param isCreateFolder
+ * Adds projects by importing projects from a collection file (.bib, ris, etc...)
+ * @param {boolean} isCreateFolder - Indicates whether to create a new folder.
  */
 async function addProjectsByCollection(
   collectionPath: string,
@@ -216,6 +219,10 @@ async function addProjectsByCollection(
   }
 }
 
+/**
+ * Processes an identifier for creating or updating projects.
+ * @param {string} identifier - The identifier used for creating or updating projects.
+ */
 async function addProjectByIdentifier(identifier: string) {
   const metas = await getMeta([identifier], "json");
   const meta = metas[0];
@@ -225,6 +232,10 @@ async function addProjectByIdentifier(identifier: string) {
   await projectStore.updateProject(project._id, meta as Project);
 }
 
+/**
+ * Open export dialog for citation export
+ * @param {Folder} folder - The folder which needs to be exported
+ */
 function showExportReferenceDialog(folder: Folder) {
   exportDialog.show();
   exportDialog.onConfirm(async () => {
@@ -240,9 +251,9 @@ function showExportReferenceDialog(folder: Folder) {
  **********************************************************/
 
 /**
- * Export a folder as a collection of references
- * @param format - citation.js suported format
- * @param options - extra options
+ * Exports a folder as a collection of references in a specified format.
+ * @param {string} format - The citation.js supported format.
+ * @param {object} options - Extra export options.
  */
 async function exportFolder(
   format: string,
@@ -269,6 +280,10 @@ watch(
   }
 );
 
+/**
+ * Handles resizing of the right menu.
+ * @param {number} size - The new size of the right menu.
+ */
 function resizeRightMenu(size: number) {
   if (size < 20) {
     rightMenuSize.value = 0;

@@ -52,7 +52,7 @@ cytoscape.use(cola);
 
 const props = defineProps({
   itemId: { type: String, required: true },
-  height: { type: Number, required: true },
+  height: { type: Number, required: true }
 });
 
 const stateStore = useStateStore();
@@ -78,6 +78,10 @@ onBeforeUnmount(() => {
   bus.off("updateGraph", reload);
 });
 
+/**
+ * Reloads the graph data and redraws the graph.
+ * @returns {Promise<void>}
+ */
 async function reload() {
   if (!!!props.itemId || specialPages.value.includes(props.itemId)) return;
   const elements = await getGraph(props.itemId);
@@ -86,7 +90,8 @@ async function reload() {
 }
 
 /**
- * Note centered local graph
+ * Sets the style of graph elements based on their type.
+ * @param {Object} elements - Elements to style.
  */
 function setStyle(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
   let color = getComputedStyle(document.body).getPropertyValue("--color-text");
@@ -99,6 +104,10 @@ function setStyle(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
   }
 }
 
+/**
+ * Draws the graph using Cytoscape.
+ * @param {Object} elements - Elements to add to the graph.
+ */
 function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
   let cy = cytoscape({
     container: document.getElementById("cy"),
@@ -118,26 +127,26 @@ function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
           },
           "background-color": function (el) {
             return el.data("bg");
-          },
+          }
         },
         css: {
           "text-valign": "top",
-          "text-halign": "center",
-        },
+          "text-halign": "center"
+        }
       },
       {
         selector: ":parent",
         css: {
-          "background-color": "grey",
-        },
+          "background-color": "grey"
+        }
       },
       {
         selector: "edge",
         css: {
           "target-arrow-shape": "triangle",
-          "curve-style": "straight",
-        },
-      },
+          "curve-style": "straight"
+        }
+      }
     ] as cytoscape.Stylesheet[],
 
     elements: elements,
@@ -146,8 +155,8 @@ function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
       name: "cola" as any, // cytoscape's type is not good
       animate: false,
       avoidOverlap: true,
-      nodeDimensionsIncludeLabels: true,
-    },
+      nodeDimensionsIncludeLabels: true
+    }
   });
 
   cy.on("tap", "node", function () {
