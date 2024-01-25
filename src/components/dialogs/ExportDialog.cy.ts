@@ -1,53 +1,53 @@
 import ExportDialog from "./ExportDialog.vue";
+import { exportDialog } from "./dialogController";
 
 describe("<ExportDialog />", () => {
-  it("cancel", () => {
-    const vue = cy.mount(ExportDialog, { props: { show: true } });
-    cy.dataCy("btn-cancel").click();
-    vue.then(({ wrapper }) => {
-      expect(wrapper.emitted("update:show")).to.eql([[false]]);
-    });
+  beforeEach(() => {
+    cy.mount(ExportDialog);
+    exportDialog.show();
+    exportDialog.onConfirm(
+      cy
+        .stub()
+        .as("onConfirmCallback")
+        .callsFake(() => {
+          const format = exportDialog.format.value;
+          const template = exportDialog.template.value;
+          if (exportDialog.format.value !== "bibliography") return { format };
+          else return { format, template };
+        })
+    );
   });
 
-  it("confirm format!=bibliorgraphy", () => {
-    const vue = cy.mount(ExportDialog, { props: { show: true } });
-    const formats = [
-      { label: "BibTeX", value: "bibtex" },
-      { label: "BibLaTeX", value: "biblatex" },
-      { label: "CLS-JSON", value: "json" },
-      { label: "RIS", value: "ris" },
-    ];
-    let randomFormat = formats[Math.floor(Math.random() * formats.length)];
+  it("cancel", () => {
+    cy.dataCy("btn-cancel").click().should("not.exist");
+  });
+
+  it("confirm format!=bibliography", () => {
+    const formats = exportDialog.formats.filter(
+      (format) => format.value !== "bibliography"
+    );
+    const randomFormat = formats[Math.floor(Math.random() * formats.length)];
     const formatSelector = cy.dataCy("format-select");
     formatSelector.select(randomFormat.label);
-
-    cy.dataCy("btn-confirm").click();
-    vue.then(({ wrapper }) => {
-      expect(wrapper.emitted("update:show")).to.eql([[false]]);
-      console.log(wrapper.emitted("confirm"));
-      expect(wrapper.emitted("confirm")).to.eql([[randomFormat.value, null]]);
-    });
+    cy.contains(randomFormat.label).should("exist");
+    cy.dataCy("btn-confirm").click().should("not.exist");
+    cy.get("@onConfirmCallback")
+      .should("be.called")
+      .should("returned", { format: randomFormat.value });
   });
 
-  it("confirm format==bibliorgraphy", () => {
-    const vue = cy.mount(ExportDialog, { props: { show: true } });
-    const templates = [
-      { label: "APA", value: "APA 7th" },
-      { label: "Vancouver", value: "vancouver" },
-      { label: "Havard1", value: "havard1" },
-    ];
-    let randomTemplate =
+  it("confirm format==bibliography", () => {
+    const templates = exportDialog.templates;
+    const randomTemplate =
       templates[Math.floor(Math.random() * templates.length)];
     cy.dataCy("format-select").select("Bibliography");
     const templateSelector = cy.dataCy("template-select");
     templateSelector.select(randomTemplate.label);
-
-    cy.dataCy("btn-confirm").click();
-    vue.then(({ wrapper }) => {
-      expect(wrapper.emitted("update:show")).to.eql([[false]]);
-      expect(wrapper.emitted("confirm")).to.eql([
-        ["bibliography", { template: randomTemplate.value }],
-      ]);
+    cy.contains(randomTemplate.label).should("exist");
+    cy.dataCy("btn-confirm").click().should("not.exist");
+    cy.get("@onConfirmCallback").should("be.called").should("returned", {
+      format: "bibliography",
+      template: randomTemplate.value,
     });
   });
 });

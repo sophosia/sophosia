@@ -1,99 +1,85 @@
 import { Project } from "src/backend/database";
 import { reactive, ref } from "vue";
 
-class Dialog {
-  private _visible = ref(false);
-  private onConfirmCallback: (() => void) | null = null;
+function useDialog() {
+  const visible = ref(false);
+  let onConfirmCallback: () => void;
 
-  get visible() {
-    return this._visible.value;
+  function show() {
+    visible.value = true;
   }
 
-  set visible(isVisible: boolean) {
-    this._visible.value = isVisible;
+  function close() {
+    visible.value = false;
   }
 
-  show() {
-    this.visible = true;
+  function toggle(isVisible?: boolean) {
+    if (isVisible === undefined) visible.value = !visible.value;
+    else visible.value = isVisible;
   }
 
-  close() {
-    this.visible = false;
+  function onConfirm(callback: () => void) {
+    onConfirmCallback = callback;
   }
 
-  toggle(isVisible?: boolean) {
-    if (isVisible === undefined) this.visible = !this.visible;
-    else this.visible = isVisible;
+  function confirm() {
+    if (onConfirmCallback === undefined)
+      throw Error("Must implement onConfirmCallback");
+    close();
+    onConfirmCallback();
   }
 
-  onConfirm(callback: () => void) {
-    this.onConfirmCallback = callback;
-  }
-
-  confirm() {
-    if (this.onConfirmCallback === null)
-      throw Error("must implement onConfirm");
-    this.close();
-    this.onConfirmCallback();
-  }
+  return {
+    visible,
+    show,
+    close,
+    toggle,
+    onConfirm,
+    confirm,
+  };
 }
 
-class ImportDialog extends Dialog {
-  private _isCreateFolder = ref(true);
-
-  get isCreateFolder() {
-    return this._isCreateFolder.value;
-  }
-
-  set isCreateFolder(create: boolean) {
-    this._isCreateFolder.value = create;
-  }
+function useImportDialog() {
+  const dialog = useDialog();
+  const isCreateFolder = ref(true);
+  return {
+    ...dialog,
+    isCreateFolder,
+  };
 }
 
-class DeleteDialog extends Dialog {
-  private _isDeleteFromDB = ref(false);
-  private _deleteProjects = ref<Project[]>([]);
-
-  get isDeleteFromDB() {
-    return this._isDeleteFromDB.value;
-  }
-
-  set isDeleteFromDB(isDelete: boolean) {
-    this._isDeleteFromDB.value = isDelete;
-  }
-
-  get deleteProjects() {
-    return this._deleteProjects.value;
-  }
-
-  set deleteProjects(projects: Project[]) {
-    this._deleteProjects.value = projects;
-  }
+function useDeleteDialog() {
+  const dialog = useDialog();
+  const isDeleteFromDB = ref(false);
+  const deleteProjects = ref<Project[]>([]);
+  return {
+    ...dialog,
+    isDeleteFromDB,
+    deleteProjects,
+  };
 }
 
-class IdentifierDialog extends Dialog {
-  private _identifier = ref("");
-
-  get identifier() {
-    return this._identifier.value;
-  }
-
-  set identifier(id: string) {
-    this._identifier.value = id;
-  }
+function useIdentifierDialog() {
+  const dialog = useDialog();
+  const identifier = ref("");
+  return {
+    ...dialog,
+    identifier,
+  };
 }
 
-class ExportDialog extends Dialog {
-  formats = reactive([
+function useExportDialog() {
+  const dialog = useDialog();
+  const formats = [
     { label: "Bibliography", value: "bibliography" },
     { label: "BibTeX", value: "bibtex" },
     { label: "BibLaTeX", value: "biblatex" },
     { label: "CLS-JSON", value: "json" },
     { label: "RIS", value: "ris" },
-  ]);
-  format = this.formats[1];
+  ];
+  const format = ref(formats[1]);
 
-  templates = reactive([
+  const templates = [
     // { label: "APA", value: "apa" },//this is the default APA citation-js template - not needed
     { label: "APA 7th", value: "APA 7th" },
     { label: "Chicago 17th", value: "Chicago 17th" },
@@ -101,24 +87,29 @@ class ExportDialog extends Dialog {
     { label: "MLA 9th", value: "MLA 9th" },
     { label: "Vancouver", value: "vancouver" },
     { label: "Havard1", value: "havard1" },
-  ]);
-  template = this.templates[0];
+  ];
+  const template = ref(templates[0]);
+
+  return {
+    ...dialog,
+    templates,
+    template,
+    formats,
+    format,
+  };
 }
 
-class ErrorDialog extends Dialog {
-  private _error = ref(new Error());
-
-  get error() {
-    return this._error.value;
-  }
-
-  set error(err: Error) {
-    this._error.value = err;
-  }
+function useErrorDialog() {
+  const dialog = useDialog();
+  const error = ref(new Error());
+  return {
+    ...dialog,
+    error,
+  };
 }
 
-export const importDialog = new ImportDialog();
-export const deleteDialog = new DeleteDialog();
-export const identifierDialog = new IdentifierDialog();
-export const exportDialog = new ExportDialog();
-export const errorDialog = new ErrorDialog();
+export const importDialog = reactive(useImportDialog());
+export const deleteDialog = reactive(useDeleteDialog());
+export const identifierDialog = reactive(useIdentifierDialog());
+export const exportDialog = reactive(useExportDialog());
+export const errorDialog = reactive(useErrorDialog());

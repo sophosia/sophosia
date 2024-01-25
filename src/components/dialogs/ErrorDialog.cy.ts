@@ -1,25 +1,21 @@
 import ErrorDialog from "./ErrorDialog.vue";
+import { errorDialog } from "./dialogController";
+
+const error = new Error("test error");
 
 describe("<ErrorDialog />", () => {
+  beforeEach(() => {
+    cy.mount(ErrorDialog);
+    errorDialog.error = error;
+    errorDialog.show();
+  });
+
   it("renders", () => {
-    let errMsg = "test error";
-    let error = new Error(errMsg);
-    cy.mount(ErrorDialog, { props: { show: true, error: error } });
-    cy.dataCy("error-msg").should("have.text", errMsg);
+    cy.dataCy("error-msg").should("have.text", error.message);
   });
 
   it("close", () => {
-    let errMsg = "test error";
-    let error = new Error(errMsg);
-    const vue = cy.mount(ErrorDialog, {
-      props: {
-        show: true,
-        error: error,
-      },
-    });
     cy.dataCy("btn-ok").click();
-    vue.then(({ wrapper }) => {
-      expect(wrapper.emitted("update:show")).to.have.length(1);
-    });
+    cy.contains(error.message).should("not.exist");
   });
 });

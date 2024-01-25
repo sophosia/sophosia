@@ -1,26 +1,31 @@
 import IdentifierDialog from "./IdentifierDialog.vue";
+import { identifierDialog } from "./dialogController";
 
 describe("<IdentifierDialog />", () => {
+  beforeEach(() => {
+    cy.mount(IdentifierDialog);
+    identifierDialog.show();
+    identifierDialog.onConfirm(
+      cy
+        .stub()
+        .as("onConfirmCallback")
+        .callsFake(() => identifierDialog.identifier)
+    );
+  });
   it("renders", () => {
-    cy.mount(IdentifierDialog, { props: { show: true } });
     cy.dataCy("btn-confirm").should("be.disabled");
   });
 
   it("cancel", () => {
-    const vue = cy.mount(IdentifierDialog, { props: { show: true } });
-    cy.dataCy("btn-cancel").click();
-    vue.then(({ wrapper }) => {
-      expect(wrapper.emitted("update:show")).to.eql([[false]]);
-    });
+    cy.dataCy("btn-cancel").click().should("not.exist");
   });
 
   it("confirm", () => {
-    const vue = cy.mount(IdentifierDialog, { props: { show: true } });
-    cy.dataCy("identifier-input").type("test-identifier");
-    cy.dataCy("btn-confirm").click();
-    vue.then(({ wrapper }) => {
-      expect(wrapper.emitted("update:show")).to.eql([[false]]);
-      expect(wrapper.emitted("confirm")).to.eql([["test-identifier"]]);
-    });
+    const identifier = "test-identifier";
+    cy.dataCy("identifier-input").type(identifier);
+    cy.dataCy("btn-confirm").click().should("not.exist");
+    cy.get("@onConfirmCallback")
+      .should("be.called")
+      .should("returned", identifier);
   });
 });

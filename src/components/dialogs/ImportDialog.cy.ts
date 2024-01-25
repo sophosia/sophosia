@@ -1,30 +1,30 @@
 import ImportDialog from "./ImportDialog.vue";
+import { importDialog } from "./dialogController";
 
 describe("<ImportDialog />", () => {
+  beforeEach(() => {
+    cy.mount(ImportDialog);
+    importDialog.show();
+    importDialog.onConfirm(
+      cy
+        .stub()
+        .as("onConfirmCallback")
+        .callsFake(() => importDialog.isCreateFolder)
+    );
+  });
+
   it("cancel", () => {
-    const vue = cy.mount(ImportDialog, { props: { show: true } });
-    cy.dataCy("btn-cancel").click();
-    vue.then(({ wrapper }) => {
-      expect(wrapper.emitted("update:show")).to.eql([[false]]);
-    });
+    cy.dataCy("btn-cancel").click().should("not.exist");
   });
 
   it("confirm createFolder=true", () => {
-    const vue = cy.mount(ImportDialog, { props: { show: true } });
-    cy.dataCy("btn-confirm").click();
-    vue.then(({ wrapper }) => {
-      expect(wrapper.emitted("update:show")).to.eql([[false]]);
-      expect(wrapper.emitted("confirm")).to.eql([[true]]);
-    });
+    cy.dataCy("btn-confirm").click().should("not.exist");
+    cy.get("@onConfirmCallback").should("be.called").should("returned", true);
   });
 
   it("confirm createFolder=false", () => {
-    const vue = cy.mount(ImportDialog, { props: { show: true } });
     cy.get(".q-checkbox").click();
-    cy.dataCy("btn-confirm").click();
-    vue.then(({ wrapper }) => {
-      expect(wrapper.emitted("update:show")).to.eql([[false]]);
-      expect(wrapper.emitted("confirm")).to.eql([[false]]);
-    });
+    cy.dataCy("btn-confirm").click().should("not.exist");
+    cy.get("@onConfirmCallback").should("be.called").should("returned", false);
   });
 });

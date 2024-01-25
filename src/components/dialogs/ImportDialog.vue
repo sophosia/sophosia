@@ -1,5 +1,5 @@
 <template>
-  <q-dialog :model-value="importDialog.visible">
+  <q-dialog v-model="importDialog.visible">
     <q-card
       square
       style="min-width: 500px"
