@@ -4,7 +4,7 @@
     @hide="identifierDialog.close()"
   >
     <q-card
-      class="identifier-dialog"
+      class="identifier-dialog dialog"
       square
     >
       <q-card-section>

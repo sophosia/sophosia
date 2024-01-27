@@ -36,6 +36,7 @@
           <q-menu
             touch-position
             context-menu
+            class="menu"
           >
             <q-list dense>
               <q-item

@@ -84,6 +84,21 @@ a {
   color: var(--q-primary);
 }
 
+// ALl menu base setup
+.menu{
+  border-radius: 8px;
+  background: var(--q-main-layout-bkgd);
+  border: var(--q-main-highlight);
+}
+
+.dialog{
+  border-radius: 8px;
+  background: var(--q-main-layout-bkgd);
+  border: var(--q-main-highlight);
+
+}
+
+
 .q-tooltip {
   font-size: 0.8rem;
   // fixed weired line breaks for chinese tooltip
@@ -182,13 +197,14 @@ a {
 
 //Action bar
 .actionbar-input {
-  /* for sizing the q-input */
-  .q-field__control {
-    height: min(1.8rem, 36px) !important;
-  }
-  .q-field__marginal {
-    height: min(1.8rem, 36px) !important;
-  }
+  border-radius: 8px;
+}
+.q-field__control {
+  height: min(2rem, 36px) !important;
+  border-radius: 8px !important;
+}
+.q-field__marginal {
+  height: min(2rem, 36px) !important;
 }
 
 //Export dialog
@@ -197,7 +213,17 @@ a {
   min-width: 300px;
 }
 
+//Progress dialog
 
+.progess-dialog{
+  width: 50vw;
+}
+
+//Import dialog 
+
+.import-dialog{
+  min-width: 500px;
+}
 //Folder tree
 
 .q-folder-tree{
@@ -207,4 +233,175 @@ a {
 //Identifier dialog
 .identifier-dialog{
   min-width: 500px;
+}
+
+
+//Project browser
+.project-browser-splitter{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.library-right-menu-panel{
+  overflow: hidden;
+}
+
+.project-action-bar{
+  min-height: 36px;
+  background: var(--color-library-toolbar-bkgd);
+}
+
+//Project table
+
+.stickyHeader {
+  /* height or max-height is important */
+  height: 20px;
+
+  .q-table__top,
+  .q-table__bottom,
+  thead tr:first-child th {
+    /* bg color is important for th; just specify one */
+    background-color: var(--color-library-tableview-header-bkgd);
+  }
+
+  thead tr th {
+    position: sticky;
+    z-index: 1;
+  }
+  thead tr:first-child th {
+    top: 0;
+  }
+}
+
+.tableview-row {
+  background: var(--color-library-tableview-row-bkgd);
+}
+.tableview-highlighted-row {
+  background: var(--color-library-tableview-highlighted-row-bkgd);
+}
+
+#projectList td {
+  padding: 0;
+}
+
+
+
+//TableSearch row
+
+.q-px-lg{
+  font-size: 0.8rem
+}
+
+
+//Annotation card
+
+.annot-card {
+  min-width: 250px;
+}
+
+
+//Annotation List
+// Styles for .q-item-annotlist will be added in the future
+
+//Annotation Menu
+// Styles for .q-menu-annotmenu will be added in the future
+
+
+
+.color-picker{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.button {
+  cursor: pointer;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  align-self: center;
+  font-size: 1rem;
+
+  &:hover {
+    background: var(--q-menu-highlight);
+    border-radius: 5px;
+  }
+}
+
+
+
+
+//PDF reader
+
+.PDF-reader{
+  position: absolute; width: 100%; height: 100%
+}
+
+.PDF-toolBar{
+  position: absolute;
+  top: 0;
+  background: var(--color-pdfreader-toolbar-bkgd);
+}
+
+//PDF toolbar
+.toolbar{
+  min-height: unset;
+  height: 36px;
+  background: var(--color-pdfreader-toolbar-bkgd);
+    
+}
+
+//Right menu
+.right-menu-tabs{
+  background: var(--color-rightmenu-tabs-bkgd)
+}
+
+
+.right-menu-panel {
+  height: calc(100% - 36px);
+  background: var(--color-rightmenu-tab-panel-bkgd);
+}
+
+//About tab
+.card {
+  background: var(--color-settings-card-bkgd);
+}
+
+//Settings Menu
+
+.settings-panel{
+  height: 100%; background: var(--color-settings-tabs-area-bkgd)
+}
+
+.settings{
+  background: var(--color-settings-tab-panel-bkgd)
+
+}
+
+//Metainfo tab
+.tab-panel {
+  background: var(--color-rightmenu-tab-panel-bkgd);
+}
+
+.input {
+  color: var(--color-text);
+  background: var(--color-rightmenu-tab-panel-bkgd);
+  border: 1px solid grey;
+  font-size: 1rem;
+
+  &:focus-visible {
+    outline: none !important;
+    border: 2px solid $primary;
+  }
+}
+
+.link {
+  color: $primary;
+  text-decoration: underline;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+.chip {
+  background-color: var(--color-rightmenu-tab-panel-bkgd);
 }

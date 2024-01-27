@@ -1,11 +1,5 @@
 <template>
-  <q-toolbar
-    style="
-      min-height: unset;
-      height: 36px;
-      background: var(--color-pdfreader-toolbar-bkgd);
-    "
-  >
+  <q-toolbar class="toolbar">
     <!-- navigation -->
     <div data-cy="page-control">
       <input

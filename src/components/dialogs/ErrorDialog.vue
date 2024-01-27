@@ -6,7 +6,10 @@
     no-shake
     @hide="errorDialog.close()"
   >
-    <q-card square>
+    <q-card
+      square
+      class="dialog"
+    >
       <q-card-section>
         <div class="text-h6">
           <q-icon

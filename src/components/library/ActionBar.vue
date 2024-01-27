@@ -14,7 +14,10 @@
           <template #type>{{ $t("project") }}</template>
         </i18n-t>
       </q-tooltip>
-      <q-menu square>
+      <q-menu
+        square
+        class="menu"
+      >
         <q-list dense>
           <q-item
             clickable
@@ -67,8 +70,6 @@
 
     <q-input
       outlined
-      dense
-      square
       class="actionbar-input"
       :placeholder="$t('search', { type: $t('local') })"
       v-model="searchText"

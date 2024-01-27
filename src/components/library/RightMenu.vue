@@ -16,10 +16,7 @@
   </q-tabs>
   <!-- q-tab height 36px -->
   <q-tab-panels
-    style="
-      height: calc(100% - 36px);
-      background: var(--color-rightmenu-tab-panel-bkgd);
-    "
+    class="right-menu-panel"
     model-value="metaInfoTab"
   >
     <q-tab-panel

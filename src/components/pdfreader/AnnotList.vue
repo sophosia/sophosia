@@ -11,7 +11,7 @@
     dense
   >
     <q-item
-      style="padding: 5px 5px"
+      class="q-item-annotlist"
       v-for="(annot, index) in annots.filter(
         (annot) => annot.data.type !== AnnotationType.INK
       )"
@@ -21,7 +21,7 @@
         :annot="(annot as Annotation)"
         :style="'width: 100%'"
         :class="{
-          activeAnnotation: selectedId === annot.data._id,
+          activeAnnotation: selectedId === annot.data._id
         }"
         @click="$emit('setActive', annot.data._id)"
         ref="cards"
@@ -40,7 +40,7 @@ import AnnotCard from "./AnnotCard.vue";
 
 const props = defineProps({
   annots: { type: Object as PropType<Annotation[]>, required: true },
-  selectedId: { type: String, required: true },
+  selectedId: { type: String, required: true }
 });
 const emit = defineEmits(["setActive"]);
 </script>

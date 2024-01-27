@@ -1,6 +1,6 @@
 <template>
   <q-splitter
-    style="position: absolute; width: 100%; height: 100%"
+    class="project-browser-splitter"
     :limits="[10, 30]"
     separator-class="q-splitter-separator"
     v-model="treeViewSize"
@@ -14,13 +14,13 @@
     </template>
     <template v-slot:after>
       <q-splitter
-        style="overflow: hidden"
+        class="library-right-menu-panel"
         reverse
         :limits="[0, 60]"
         separator-style="background: var(--q-edge)"
         :separator-class="{
           'q-splitter-separator': stateStore.showLibraryRightMenu,
-          hidden: !stateStore.showLibraryRightMenu,
+          hidden: !stateStore.showLibraryRightMenu
         }"
         :disable="!stateStore.showLibraryRightMenu"
         v-model="rightMenuSize"
@@ -29,10 +29,7 @@
       >
         <template v-slot:before>
           <ActionBar
-            style="
-              min-height: 36px;
-              background: var(--color-library-toolbar-bkgd);
-            "
+            class="project-action-bar"
             v-model:searchString="searchString"
             @addEmptyProject="addEmptyProject"
             @addByFiles="(filePaths) => addProjectsByFiles(filePaths)"
@@ -79,12 +76,12 @@ import {
   exportMeta,
   getMeta,
   getMetaFromFile,
-  importMeta,
+  importMeta
 } from "src/backend/project/meta";
 import {
   exportDialog,
   identifierDialog,
-  importDialog,
+  importDialog
 } from "src/components/dialogs/dialogController";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/stateStore";
@@ -173,7 +170,7 @@ async function addProjectsByFiles(filePaths: string[]) {
       await projectStore.updateProject(project._id, {
         path: filename,
         title: title,
-        label: title,
+        label: title
       } as Project);
       // do not use await since this task takes time
       getMetaFromFile(filePath).then((meta) => {

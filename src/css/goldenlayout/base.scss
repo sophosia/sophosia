@@ -129,9 +129,6 @@ $highlightStripHeight: 3px;
     height: $height2;
     min-width: 100px;
     max-width: 150px;
-    // margin-top: 1px;
-    // padding: 0px 10px 5px;
-    // padding-right: 25px;
     padding: 0px 10px;
     padding-right: 25px;
     position: relative;
@@ -141,21 +138,7 @@ $highlightStripHeight: 3px;
     align-items: center;
     white-space: nowrap;
 
-    i {
-      width: $width6;
-      height: $height4;
-      position: absolute;
 
-      &.lm_left {
-        top: 0;
-        // left: -2px;
-      }
-
-      &.lm_right {
-        top: 0;
-        // right: -2px;
-      }
-    }
 
     .lm_title {
       display: inline-block;

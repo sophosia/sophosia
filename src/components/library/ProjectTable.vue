@@ -55,7 +55,7 @@
         :class="{
           'tableview-highlighted-row':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
-            !isClickingPDF,
+            !isClickingPDF
         }"
         draggable="true"
         @dragstart="onDragStart"
@@ -75,7 +75,7 @@
         :class="{
           'bg-primary':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
-            isClickingPDF,
+            isClickingPDF
         }"
         @click="isClickingPDF = true"
       />
@@ -88,7 +88,7 @@
         :class="{
           'bg-primary': projectStore.selected
             .map((item) => item._id)
-            .includes(note._id),
+            .includes(note._id)
         }"
       />
 
@@ -98,7 +98,7 @@
         :class="{
           'bg-primary': projectStore.selected
             .map((item) => item._id)
-            .includes(props.key),
+            .includes(props.key)
         }"
         :width="searchRowWidth"
         :text="expansionText[props.rowIndex]"
@@ -118,7 +118,7 @@ import {
   PropType,
   provide,
   ref,
-  toRaw,
+  toRaw
 } from "vue";
 // components
 import TableItemRow from "./TableItemRow.vue";
@@ -136,7 +136,7 @@ const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   searchString: { type: String, required: true },
-  projects: { type: Array as PropType<Project[]>, required: true },
+  projects: { type: Array as PropType<Project[]>, required: true }
 });
 
 const emit = defineEmits(["dragProject", "update:projects"]);
@@ -157,22 +157,21 @@ const headers = computed(() => {
       field: "title",
       label: t("title"),
       align: "left",
-      sortable: true,
+      sortable: true
     },
     {
       name: "author",
       field: "author",
       label: t("author"),
       align: "left",
-      sortable: true,
-    },
+      sortable: true
+    }
   ] as QTableColumn[];
 });
 
 onMounted(() => {
   searchRowWidth.value = table.value.$el.getBoundingClientRect().width * 0.8;
 });
-
 
 /**
  * Handle the selection of rows in the table.
@@ -344,7 +343,7 @@ function searchProject(
       "publisher",
       "container-title",
       "path",
-      "citation-key",
+      "citation-key"
     ]) {
       if (row[prop] === undefined) continue;
       if (row[prop].search(re) != -1) {
@@ -407,36 +406,3 @@ function searchProject(
   return filtered;
 }
 </script>
-
-<style lang="scss">
-.stickyHeader {
-  /* height or max-height is important */
-  height: 20px;
-
-  .q-table__top,
-  .q-table__bottom,
-  thead tr:first-child th {
-    /* bg color is important for th; just specify one */
-    background-color: var(--color-library-tableview-header-bkgd);
-  }
-
-  thead tr th {
-    position: sticky;
-    z-index: 1;
-  }
-  thead tr:first-child th {
-    top: 0;
-  }
-}
-
-.tableview-row {
-  background: var(--color-library-tableview-row-bkgd);
-}
-.tableview-highlighted-row {
-  background: var(--color-library-tableview-highlighted-row-bkgd);
-}
-
-#projectList td {
-  padding: 0;
-}
-</style>

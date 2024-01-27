@@ -2,7 +2,7 @@
   <q-dialog v-model="importDialog.visible">
     <q-card
       square
-      style="min-width: 500px"
+      class="import-dialog dialog"
     >
       <q-card-section>
         <div class="text-h6">{{ $t("import-collection") }}</div>

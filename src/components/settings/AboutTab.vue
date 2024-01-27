@@ -105,8 +105,3 @@ async function downloadUpdate() {
   await installUpdate();
 }
 </script>
-<style scoped>
-.card {
-  background: var(--color-settings-card-bkgd);
-}
-</style>

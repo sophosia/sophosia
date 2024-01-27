@@ -107,7 +107,7 @@ const { luminosity } = colors;
 
 const props = defineProps({
   annot: { type: Object as PropType<Annotation>, required: true },
-  style: { type: String, required: true },
+  style: { type: String, required: true }
 });
 const pdfApp = inject(KEY_pdfApp) as PDFApplication;
 
@@ -120,9 +120,9 @@ const annotContent = computed({
   },
   set(text: string) {
     pdfApp.annotStore?.update(props.annot.data._id, {
-      content: text,
+      content: text
     } as AnnotationData);
-  },
+  }
 });
 const isMovable = ref(false);
 defineExpose({ isMovable });
@@ -144,13 +144,13 @@ async function liveRender() {
         { left: "$$", right: "$$", display: true },
         { left: "$", right: "$", display: false },
         { left: "\\(", right: "\\)", display: false },
-        { left: "\\[", right: "\\]", display: true },
+        { left: "\\[", right: "\\]", display: true }
       ],
-      // • rendering keys, e.g.:
-      throwOnError: false,
+
+      throwOnError: false
     });
 }
-
+ 
 /**
  * Updates the color of the annotation.
  *
@@ -162,7 +162,7 @@ async function liveRender() {
  */
 const changeColor = (color: string) => {
   pdfApp.annotStore?.update(props.annot.data._id, {
-    color: color,
+    color: color
   } as AnnotationData);
 };
 
@@ -187,8 +187,3 @@ const handleDragStart = (event: DragEvent) => {
   }
 };
 </script>
-<style scoped lang="scss">
-.annot-card {
-  min-width: 250px;
-}
-</style>
