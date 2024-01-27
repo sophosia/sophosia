@@ -122,13 +122,11 @@ import { copyToClipboard } from "quasar";
 import { idToPath, oldToNewId } from "src/backend/project/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
-import { useStateStore } from "src/stores/stateStore";
 import TableItemMenu from "./TableItemMenu.vue";
 
 const props = defineProps({
-  item: { type: Object as PropType<Project | Note>, required: true }
+  item: { type: Object as PropType<Project | Note>, required: true },
 });
-const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 
@@ -175,7 +173,7 @@ function clickItem() {
  * Opens the item for further interaction.
  */
 function openItem() {
-  stateStore.openItem(props.item._id);
+  layoutStore.openItem(props.item._id);
 }
 
 /**
@@ -211,7 +209,7 @@ async function renameNote() {
     // update window tab name
     layoutStore.renamePage(oldNoteId, {
       id: newNoteId,
-      label: newLabel
+      label: newLabel,
     } as Page);
     await nextTick(); // wait until itemId changes in the page
     await projectStore.renameNode(oldNoteId, newNoteId, "note");

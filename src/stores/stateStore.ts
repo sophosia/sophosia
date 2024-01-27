@@ -1,19 +1,7 @@
 import { defineStore } from "pinia";
 import { Dark } from "quasar";
 import { getAppState, updateAppState } from "src/backend/appState";
-import {
-  AnnotationData,
-  AppState,
-  Note,
-  NoteType,
-  Page,
-  Project,
-  Settings,
-  SpecialFolder,
-  db,
-} from "src/backend/database";
-import { getPDF } from "src/backend/project/project";
-import { useLayoutStore } from "./layoutStore";
+import { AppState, Settings, SpecialFolder } from "src/backend/database";
 import { useProjectStore } from "./projectStore";
 
 export const useStateStore = defineStore("stateStore", {
@@ -87,55 +75,6 @@ export const useStateStore = defineStore("stateStore", {
     /**
      * Layout Control
      */
-
-    /**
-     * Open the associated page for an item and then open the associated project
-     * @param itemId
-     */
-    async openItem(itemId: string) {
-      if (!itemId) return;
-      try {
-        // open associated project
-        const projectStore = useProjectStore();
-        let item: Project | Note | AnnotationData | undefined;
-        item = itemId.includes("/")
-          ? await projectStore.getNoteFromDB(itemId)
-          : await projectStore.getProjectFromDB(itemId);
-        try {
-          if (!item) item = (await db.get(itemId)) as AnnotationData;
-        } catch (error) {
-          console.log(error);
-          return;
-        }
-        await projectStore.openProject(item.projectId || itemId);
-
-        // open associated page
-        const page = {} as Page;
-        if (item.dataType === "project") {
-          page.id = itemId;
-          page.type = "ReaderPage";
-          page.label = item.label;
-          // do not open page if there is no pdf
-          if (!(await getPDF(itemId))) return;
-        } else if (item.dataType === "note") {
-          page.id = itemId;
-          page.type =
-            item.type === NoteType.MARKDOWN ? "NotePage" : "ExcalidrawPage";
-          page.label = item.label;
-        } else if (item.dataType === "pdfAnnotation") {
-          const project = (await db.get(item.projectId)) as Project;
-          page.id = project._id;
-          page.type = "ReaderPage";
-          page.label = project.label;
-          page.data = { focusAnnotId: itemId };
-        }
-        const layoutStore = useLayoutStore();
-        layoutStore.openPage(page);
-      } catch (error) {
-        console.log(error);
-      }
-    },
-
     toggleWelcome(visible?: boolean) {
       if (visible === undefined) {
         this.showWelcomeCarousel = !this.showWelcomeCarousel;

@@ -218,7 +218,7 @@ async function addNote(noteType: NoteType) {
  */
 async function openProject() {
   for (let project of projectStore.selected) {
-    stateStore.openItem(project._id);
+    layoutStore.openItem(project._id);
     await nextTick();
   }
 }

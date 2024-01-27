@@ -241,7 +241,7 @@ function selectItem(nodeId: string) {
   if ((node.children?.length as number) > 0) expanded.value.push(node._id);
   if (node.dataType === "folder") return;
 
-  stateStore.openItem(node._id);
+  layoutStore.openItem(node._id);
 }
 
 /**

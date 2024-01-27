@@ -16,7 +16,7 @@
         emit-immediately
         separator-style="background: var(--q-edge)"
         :separator-class="{
-          'q-splitter-separator': stateStore.showLeftMenu
+          'q-splitter-separator': stateStore.showLeftMenu,
         }"
         :disable="!stateStore.showLeftMenu"
         v-model="leftMenuSize"
@@ -153,12 +153,12 @@ onMounted(async () => {
     (window as Window & typeof globalThis & { urlSchemeRequest: string })
       .urlSchemeRequest
   );
-  await stateStore.openItem(itemId);
+  await layoutStore.openItem(itemId);
 
   // listen to the deep link event
   unlisten = await listen("deep-link", async (e) => {
     const itemId = parseDeepLink(e.payload as string);
-    await stateStore.openItem(itemId);
+    await layoutStore.openItem(itemId);
   });
 });
 

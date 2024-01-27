@@ -112,10 +112,10 @@
 import { QTable, QTableColumn, QTr } from "quasar";
 import { Note, Project } from "src/backend/database";
 import {
+  PropType,
   computed,
   nextTick,
   onMounted,
-  PropType,
   provide,
   ref,
   toRaw,
@@ -125,9 +125,9 @@ import TableItemRow from "./TableItemRow.vue";
 import TableProjectRow from "./TableProjectRow.vue";
 import TableSearchRow from "./TableSearchRow.vue";
 // db
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
-import { useStateStore } from "src/stores/stateStore";
-const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 // utils
 import { authorToString } from "src/backend/project/utils";
@@ -172,7 +172,6 @@ const headers = computed(() => {
 onMounted(() => {
   searchRowWidth.value = table.value.$el.getBoundingClientRect().width * 0.8;
 });
-
 
 /**
  * Handle the selection of rows in the table.
@@ -264,7 +263,7 @@ function clickProject(
  * @param {Project} row - The project row that was double-clicked.
  */
 function dblclickProject(row: Project) {
-  stateStore.openItem(row._id);
+  layoutStore.openItem(row._id);
 }
 
 /**

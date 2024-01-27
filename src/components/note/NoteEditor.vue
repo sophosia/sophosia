@@ -30,8 +30,9 @@ import {
   getNote,
   loadNote,
   saveNote,
-  uploadImage
+  uploadImage,
 } from "src/backend/project/note";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useStateStore } from "src/stores/stateStore";
 
 import { getAllProjects, getProject } from "src/backend/project/project";
@@ -50,6 +51,7 @@ import { isLinkUpdated } from "src/backend/project/scan";
 import HoverPane from "./HoverPane.vue";
 
 const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 const { t } = useI18n({ useScope: "global" });
 const bus = inject("bus") as EventBus;
 
@@ -57,7 +59,7 @@ const props = defineProps({
   noteId: { type: String, required: true },
   hasToolbar: { type: Boolean, required: true },
   data: { type: Object, required: false },
-  save: { type: Boolean, required: true, default: true }
+  save: { type: Boolean, required: true, default: true },
 });
 // noteId might change as user rename
 // data.path won't change since it will be some special note
@@ -134,7 +136,7 @@ function initEditor() {
     toolbar = [
       {
         name: "outline",
-        tipPosition: "s"
+        tipPosition: "s",
       },
       "|",
       { name: "headings", tipPosition: "s" },
@@ -150,7 +152,7 @@ function initEditor() {
         icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-image" viewBox="0 0 16 16">
                 <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
                 <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54L1 12.5v-9a.5.5 0 0 1 .5-.5z"/>
-              </svg>`
+              </svg>`,
       },
       "|",
       {
@@ -163,14 +165,14 @@ function initEditor() {
         click: () => {
           const Ivditor = vditor.value?.vditor;
           if (Ivditor) exportPDF(Ivditor);
-        }
-      }
+        },
+      },
     ];
   vditor.value = new Vditor("vditor-" + props.noteId, {
     height: "100%",
     mode: "ir",
     toolbarConfig: {
-      pin: true
+      pin: true,
     },
     // don't know why vditor import style sheets from cdn instead of node_module
     // we put the css in the public folder
@@ -182,20 +184,20 @@ function initEditor() {
     preview: {
       theme: {
         current: stateStore.settings.theme,
-        path: "vditor/dist/css/content-theme"
+        path: "vditor/dist/css/content-theme",
       },
       math: {
         // able to use digit in inline math
-        inlineDigit: true
+        inlineDigit: true,
       },
       hljs: {
         // enable line number in code block
         lineNumber: true,
-        style: "native"
-      }
+        style: "native",
+      },
     },
     cache: {
-      enable: false
+      enable: false,
     },
     hint: {
       parse: false,
@@ -203,9 +205,9 @@ function initEditor() {
       extend: [
         {
           key: "[[",
-          hint: filterHints
-        }
-      ]
+          hint: filterHints,
+        },
+      ],
     },
     after: async () => {
       if (!showEditor.value) return;
@@ -234,8 +236,8 @@ function initEditor() {
           });
         }
         return null;
-      }
-    }
+      },
+    },
   });
 }
 
@@ -381,7 +383,7 @@ async function clickLink(e: MouseEvent, link: string) {
     new URL(link);
     await open(link);
   } catch (error) {
-    stateStore.openItem(linkToId(link));
+    layoutStore.openItem(linkToId(link));
   }
 }
 
@@ -415,7 +417,7 @@ async function hoverLink(linkNode: HTMLElement) {
         let lines = [
           `## ${item.title}`,
           `Author(s): ${authorToString(item.author)}`,
-          `Abstract: ${item.abstract}`
+          `Abstract: ${item.abstract}`,
         ];
         hoverContent.value = lines.join("\n");
         hoverData.value.content = lines.join("\n");
@@ -427,7 +429,7 @@ async function hoverLink(linkNode: HTMLElement) {
               (await getProject(item.projectId)) as Project,
               "author_year_title",
               true
-            )}`
+            )}`,
           ];
           hoverContent.value = lines.join("\n");
           hoverData.value.content = lines.join("\n");
@@ -444,7 +446,7 @@ async function hoverLink(linkNode: HTMLElement) {
           `page: ${item.pageNumber}`,
           `project: ${project.label}`,
           "content:",
-          item.content
+          item.content,
         ];
         hoverContent.value = lines.join("\n");
         hoverData.value.content = lines.join("\n");
@@ -583,7 +585,7 @@ async function filterHints(key: string): Promise<Array<any>> {
           <p class="ellipsis q-my-none">
             Author(s): ${authorToString(project.author)}
           </p>
-          `
+          `,
       });
     }
   }
@@ -603,7 +605,7 @@ async function filterHints(key: string): Promise<Array<any>> {
           <p class="ellipsis q-my-none">
             Belongs to: ${parentProject?.label}
           </p>
-          `
+          `,
       });
     }
   }
