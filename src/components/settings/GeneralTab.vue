@@ -105,11 +105,10 @@
         <div class="row">
           <div class="text-h6">{{ $t("citation-key") }}</div>
           <q-btn
-            class="q-ml-sm"
+            class="buttons q-ml-sm"
             unelevated
             square
             no-caps
-            color="primary"
             :ripple="false"
             :label="$t('update-references')"
             @click="updateCiteKeys"

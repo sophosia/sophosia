@@ -15,7 +15,6 @@
           inline-label
           align="left"
           indicator-color="transparent"
-          active-color="primary"
         >
           <q-tab
             name="general"

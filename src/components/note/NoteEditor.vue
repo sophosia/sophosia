@@ -610,8 +610,3 @@ async function filterHints(key: string): Promise<Array<any>> {
   return hints;
 }
 </script>
-<style scoped lang="scss">
-.highlight-editor {
-  border: 2px dashed rgba($primary, 0.5);
-}
-</style>

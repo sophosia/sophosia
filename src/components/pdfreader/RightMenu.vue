@@ -5,7 +5,6 @@
     align="justify"
     class="right-menu-tabs"
     indicator-color="transparent"
-    active-color="primary"
   >
     <q-tab
       name="metaInfoTab"

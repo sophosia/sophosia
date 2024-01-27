@@ -40,7 +40,7 @@
       unelevated
       size="0.7rem"
       padding="xs"
-      toggle-color="primary"
+      toggle-color="#474851"
       :options="[
         {
           value: AnnotationType.CURSOR,
@@ -150,6 +150,7 @@
     />
     <!-- right menu -->
     <q-btn-toggle
+      class="toggle"
       :model-value="showRightMenu"
       @update:model-value="(visible: boolean) => $emit('update:showRightMenu', visible)"
       clearable
@@ -157,7 +158,6 @@
       :ripple="false"
       size="0.7rem"
       padding="xs"
-      toggle-color="primary"
       :options="[{ value: true, icon: 'mdi-format-list-bulleted' }]"
     >
       <template v-slot:default>

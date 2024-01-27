@@ -382,17 +382,6 @@ onMounted(async () => {
     const state = e.container.state as GLState;
     layoutStore.currentItemId = state.id;
 
-    // used to highlight active tab
-    document.querySelectorAll(".lm_tab").forEach((tab) => {
-      tab.classList.remove("active-tab");
-    });
-
-    // Find the active tab and add the class to it
-    const activeTab = document.querySelector(".lm_tab.lm_active");
-    if (activeTab) {
-      activeTab.classList.add("active-tab");
-    }
-
     nextTick(() => {
       // wait until layout is updated
       // this is needed for closing component

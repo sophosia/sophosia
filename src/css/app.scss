@@ -81,7 +81,22 @@ html {
 }
 
 a {
-  color: var(--q-primary);
+  color: var(--q-reg-text);
+}
+
+//ALL buttons
+.buttons {
+  border-radius: 8px;
+  background: #007AFF;
+  border: 2px solid var(--q-main-highlight); /* Added '2px solid' as an example */
+  color: var(--q-special-text);
+
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transition for hover effect */
+  
+  &:hover {
+    background: #007AFF; 
+  }
 }
 
 // ALl menu base setup
@@ -109,26 +124,11 @@ a {
 
 .q-splitter-separator {
   background-color: transparent !important;
-  &:hover {
-    background-color: rgba($primary, 0.5) !important;
-    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
-  }
-  &:active {
-    background-color: rgba($primary, 0.5) !important;
-    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
-  }
+
 }
 
 .q-splitter-separator-horizontal {
   background-color: transparent !important;
-  &:hover {
-    background-color: rgba($primary, 0.5) !important;
-    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
-  }
-  &:active {
-    background-color: rgba($primary, 0.5) !important;
-    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
-  }
 }
 
 // scrollbar styles
@@ -143,7 +143,7 @@ a {
   background: rgb(75, 75, 75, 75%);
   border-radius: 5px;
   &:hover {
-    background: $primary;
+    background: var(--q-main-highlight);
   }
 }
 
@@ -158,6 +158,42 @@ a {
 }
 
 
+//Markdown - hoverpane
+
+.hoverPane {
+  position: absolute;
+  width: 40%;
+  height: 50%;
+  overflow: auto;
+  border: 2px solid var(--color-hoverpane-border);
+  background-color: var(--color-hoverpane-bkgd);
+}
+
+//Peek card
+
+.peekCard {
+  position: absolute !important;
+  background: var(--color-pdfreader-viewer-bkgd);
+  display: none;
+  z-index: 1000;
+
+  &:hover {
+    box-shadow: 0 0 0px 2px rgba(var(--q-main-layout-bkgd), 0.8) !important;
+    z-index: 1001 !important;
+  }
+  &:active {
+    box-shadow: 0 0 0px 2px rgba(var(--q-main-layout-bkgd), 0.8) !important;
+    z-index: 1001 !important;
+  }
+}
+.peekContainer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: auto;
+  height: 100%;
+  width: 100%;
+}
 
 //GraphView
 
@@ -347,7 +383,7 @@ a {
   min-height: unset;
   height: 36px;
   background: var(--color-pdfreader-toolbar-bkgd);
-    
+  color: rgb(162, 171, 182);
 }
 
 //Right menu
@@ -369,7 +405,8 @@ a {
 //Settings Menu
 
 .settings-panel{
-  height: 100%; background: var(--color-settings-tabs-area-bkgd)
+  height: 100%; background: var(--color-settings-tabs-area-bkgd);
+  color: var(--q-main-highlights);
 }
 
 .settings{

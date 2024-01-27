@@ -336,9 +336,8 @@
 
       <div>
         <q-btn
-          class="full-width"
+          class="buttons full-width"
           square
-          color="primary"
           :label="$t('update-meta')"
           no-caps
           :disable="!meta.URL && !meta.ISBN && !meta.DOI"

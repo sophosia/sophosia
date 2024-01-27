@@ -65,7 +65,7 @@ $highlightStripHeight: 3px;
   z-index: 2;
   touch-action: none;
 
-  &.lm_vertical {
+  &.lm_vertical {    
     .lm_drag_handle {
       width: $width0;
       position: absolute;
@@ -78,7 +78,7 @@ $highlightStripHeight: 3px;
   &.lm_horizontal {
     float: left;
     height: $height0;
-
+    
     .lm_drag_handle {
       height: $height0;
       position: absolute;
@@ -88,6 +88,7 @@ $highlightStripHeight: 3px;
     }
   }
 }
+
 
 // Pane Header (container of Tabs for each pane)
 .lm_header {
@@ -100,6 +101,8 @@ $highlightStripHeight: 3px;
   [class^="lm_"] {
     box-sizing: content-box !important;
   }
+
+  
 
   // Pane controls (popout, maximize, minimize, close)
   .lm_controls {
@@ -120,6 +123,10 @@ $highlightStripHeight: 3px;
   .lm_tabs {
     position: absolute;
     display: flex;
+    border: transparent !important;
+    position: relative;
+    margin-right: 4px;
+    transition: background-color 0.3s;
   }
 
   // Single Tab container. A single Tab is set for each pane, a group of Tabs are contained in ".lm_header"
@@ -133,12 +140,12 @@ $highlightStripHeight: 3px;
     padding-right: 25px;
     position: relative;
     touch-action: none;
-
     display: flex;
     align-items: center;
     white-space: nowrap;
-
-
+    border: transparent !important;
+    margin-right: 4px;
+    transition: background-color 0.3s;
 
     .lm_title {
       display: inline-block;
@@ -151,12 +158,37 @@ $highlightStripHeight: 3px;
       width: $width3;
       height: $height2;
       position: absolute;
-      // top: 0;
       top: unset !important;
       right: 0;
       text-align: center;
     }
   }
+
+  .lm_tabs .lm_tab.lm_active {
+    border-radius: 8px 8px 0 0;    
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Optional: Shadow for active tab */
+    top: 3px;
+    z-index: 1;
+  }
+
+  .lm_tabs .lm_tab:not(.lm_active):hover {
+    border-radius: 8px;
+
+  }
+ 
+}
+
+
+.lm_tab:not(:last-child):not(.lm_active):not(.lm_tab + .lm_active)::after {
+  content: '';
+  display: block;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  height: calc(100% - 20px); /* Adjusted to match the margin */
+  width: 1px;
+  background: var(--q-menu-highlight); /* Ensure this CSS variable is defined elsewhere in your styles */
+  position: absolute;
+  right: 0;
 }
 
 // Change stack style to absolute positioning for docking transition ability
