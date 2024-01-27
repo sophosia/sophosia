@@ -1,8 +1,8 @@
 <template>
   <DialogContainer />
   <WelcomeCarousel
-    v-if="stateStore.showWelcomeCarousel"
-    v-model="stateStore.showWelcomeCarousel"
+    v-if="layoutStore.showWelcomeCarousel"
+    v-model="layoutStore.showWelcomeCarousel"
   />
   <div
     v-else-if="!isScanned"
@@ -25,6 +25,7 @@
 import { db } from "src/backend/database";
 import { isScanned, scanAndUpdateDB } from "src/backend/project/scan";
 import WelcomeCarousel from "src/components/welcome/WelcomeCarousel.vue";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/stateStore";
 import { onMounted, ref, watchEffect } from "vue";
@@ -33,6 +34,7 @@ import DialogContainer from "./components/dialogs/DialogContainer.vue";
 const { locale } = useI18n({ useScope: "global" });
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
+const layoutStore = useLayoutStore();
 // must determine the existence of storagePath before heading to MainLayout
 const loading = ref(false);
 
@@ -41,7 +43,7 @@ watchEffect(async () => {
   // we need to load the app state
   // so the app doesn't overwrite the already existing app state
   // then we can start to scan the storage path and build indexeddb (for faster data retrieval)
-  if (!stateStore.showWelcomeCarousel) {
+  if (!layoutStore.showWelcomeCarousel) {
     await stateStore.loadState();
     await projectStore.loadOpenedProjects(stateStore.openedProjectIds);
     scanAndUpdateDB();
@@ -78,11 +80,9 @@ onMounted(async () => {
 
   // if there is no path, show welcome carousel
   if (!db.config.storagePath) {
-    // showWelcomeCarousel.value = true;
-    stateStore.toggleWelcome(true);
+    layoutStore.toggleWelcome(true);
   } else {
-    // showWelcomeCarousel.value = false;
-    stateStore.toggleWelcome(false);
+    layoutStore.toggleWelcome(false);
   }
 });
 </script>

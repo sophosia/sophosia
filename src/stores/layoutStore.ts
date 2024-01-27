@@ -24,18 +24,28 @@ const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
 export const useLayoutStore = defineStore("layoutStore", {
   state: () => ({
+    initialized: false,
+    // pages
     currentItemId: "library",
     pages: new Map<string, Page>(), // {refId: Page}
     IdToRef: new Map<string, string>(),
-
-    initialized: false,
-
     addedPage: {} as Page,
     renamedPage: {} as Page,
     closedItemId: "",
+
+    // sizes
+    leftMenuSize: 20,
+    showLeftMenu: false,
+    showPDFMenuView: false,
+    libraryRightMenuSize: 30,
+    showLibraryRightMenu: false,
+    showWelcomeCarousel: true,
   }),
 
   actions: {
+    /**********************************
+     * Page Control
+     **********************************/
     /**
      * Opens a page within the application. If the page already exists, it focuses on the page.
      * Otherwise, it adds the page to the store and prepares it for rendering.
@@ -181,6 +191,36 @@ export const useLayoutStore = defineStore("layoutStore", {
         this.openPage(page);
       } catch (error) {
         console.log(error);
+      }
+    },
+
+    /*****************************************
+     * Layout Control
+     *****************************************/
+
+    /**
+     * Toggle welcome page
+     * If visible is given, set the state as it is
+     * @param visible
+     */
+    toggleWelcome(visible?: boolean) {
+      if (visible === undefined) {
+        this.showWelcomeCarousel = !this.showWelcomeCarousel;
+      } else {
+        this.showWelcomeCarousel = visible;
+      }
+    },
+
+    /**
+     * Toggle left menu
+     * If visible is given, set the state as it is
+     * @param visible
+     */
+    toggleLeftMenu(visible?: boolean) {
+      if (visible === undefined) {
+        this.showLeftMenu = !this.showLeftMenu;
+      } else {
+        this.showLeftMenu = visible;
       }
     },
   },

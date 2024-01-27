@@ -15,7 +15,7 @@ export const useStateStore = defineStore("stateStore", {
     showPDFMenuView: false,
     libraryRightMenuSize: 30,
     showLibraryRightMenu: false,
-    showWelcomeCarousel: true,
+    // showWelcomeCarousel: true,
 
     // tree view
     selectedFolderId: SpecialFolder.LIBRARY.toString(),
@@ -75,14 +75,6 @@ export const useStateStore = defineStore("stateStore", {
     /**
      * Layout Control
      */
-    toggleWelcome(visible?: boolean) {
-      if (visible === undefined) {
-        this.showWelcomeCarousel = !this.showWelcomeCarousel;
-      } else {
-        this.showWelcomeCarousel = visible;
-      }
-    },
-
     /**
      * Toggle left menu
      * If visible is given, set the state as it is
