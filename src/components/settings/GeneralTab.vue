@@ -1,8 +1,6 @@
 <template>
   <div class="q-pb-md">
     <q-card
-      square
-      bordered
       flat
       class="q-my-md card"
     >
@@ -11,9 +9,9 @@
       </q-card-section>
       <q-card-section class="q-pt-none">
         <q-select
+          class="selector"
           dense
           outlined
-          square
           :options="themeOptions"
           :display-value="theme[0].toUpperCase() + theme.slice(1)"
           v-model="theme"
@@ -32,8 +30,6 @@
     </q-card>
 
     <q-card
-      square
-      bordered
       flat
       class="q-my-md card"
     >
@@ -56,8 +52,6 @@
     </q-card>
 
     <q-card
-      square
-      bordered
       flat
       class="q-my-md card"
     >
@@ -68,7 +62,6 @@
         <q-select
           dense
           outlined
-          square
           v-model="language"
           :options="languageOptions"
         />
@@ -76,8 +69,6 @@
     </q-card>
 
     <q-card
-      square
-      bordered
       flat
       class="q-my-md card"
     >
@@ -88,7 +79,6 @@
         <q-select
           dense
           outlined
-          square
           v-model="translate"
           :options="translateLabels"
         />
@@ -96,8 +86,6 @@
     </q-card>
 
     <q-card
-      square
-      bordered
       flat
       class="q-my-md card"
     >
@@ -107,7 +95,6 @@
           <q-btn
             class="buttons q-ml-sm"
             unelevated
-            square
             no-caps
             :ripple="false"
             :label="$t('update-references')"
@@ -126,7 +113,6 @@
           <q-select
             dense
             outlined
-            square
             :options="citeKeyPartKeyOptions"
             :display-value="$t(citeKeyPartKeys[0])"
             :option-label="(opt) => $t(opt)"
@@ -136,7 +122,6 @@
           <q-select
             dense
             outlined
-            square
             :options="citeKeyConnectorOptions"
             v-model="citeKeyConnector"
             :option-label="(opt) => opt.trim() || '(None)'"
@@ -145,7 +130,6 @@
           <q-select
             dense
             outlined
-            square
             :options="citeKeyPartKeyOptions"
             :display-value="$t(citeKeyPartKeys[1])"
             :option-label="(opt) => $t(opt)"
@@ -155,7 +139,6 @@
           <q-select
             dense
             outlined
-            square
             :options="citeKeyConnectorOptions"
             v-model="citeKeyConnector"
             :option-label="(opt) => opt.trim() || '(None)'"
@@ -164,7 +147,6 @@
           <q-select
             dense
             outlined
-            square
             :options="citeKeyPartKeyOptions"
             :display-value="$t(citeKeyPartKeys[2])"
             :option-label="(opt) => $t(opt)"

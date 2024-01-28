@@ -7,7 +7,10 @@
       v-if="content"
       class="q-pa-xs"
     >
-      <div ref="mdContentDiv"></div>
+      <div
+        ref="mdContentDiv"
+        class="contentPane"
+      ></div>
     </q-card-section>
   </q-card>
 </template>
@@ -68,6 +71,7 @@ function changeLinks() {
   let linkNodes = mdContentDiv.value.querySelectorAll(
     "a"
   ) as NodeListOf<HTMLAnchorElement>;
+
   for (let linkNode of linkNodes) {
     linkNode.onclick = (e: MouseEvent) => {
       // do not open link winthin app

@@ -85,6 +85,7 @@
     <q-space />
 
     <q-btn-toggle
+      class="toggle-btn"
       v-model="stateStore.showLibraryRightMenu"
       clearable
       flat
@@ -93,7 +94,6 @@
       size="0.8rem"
       padding="none"
       :ripple="false"
-      toggle-color="primary"
       :options="[{ value: true, icon: 'mdi-format-list-bulleted' }]"
     >
       <q-tooltip>{{ $t("info") }}</q-tooltip>
@@ -176,3 +176,16 @@ function addByID() {
   emit("showIdentifierDialog");
 }
 </script>
+<stlye lang="scss" scoped>
+//here to prevent conflict with general tabs selector in global scss file
+.actionbar-input {
+  border-radius: 8px;
+}
+.q-field__control {
+  height: min(2rem, 36px) !important;
+  border-radius: 8px !important;
+}
+.q-field__marginal {
+  height: min(2rem, 36px) !important;
+}
+</stlye>
