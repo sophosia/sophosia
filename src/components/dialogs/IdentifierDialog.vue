@@ -4,8 +4,8 @@
     @hide="identifierDialog.close()"
   >
     <q-card
+      class="identifier-dialog dialog"
       square
-      style="min-width: 500px"
     >
       <q-card-section>
         <div class="text-h6">

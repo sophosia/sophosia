@@ -1,6 +1,6 @@
 <template>
   <q-splitter
-    style="position: absolute; width: 100%; height: 100%"
+    class="PDF-reader"
     v-model="rightMenuSize"
     :separator-class="{ 'q-splitter-separator': showRightMenu }"
     :disable="!showRightMenu"
@@ -11,11 +11,7 @@
   >
     <template v-slot:before>
       <PDFToolBar
-        style="
-          position: absolute;
-          top: 0;
-          background: var(--color-pdfreader-toolbar-bkgd);
-        "
+        class="PDF-toolbar"
         :pdfState="pdfApp.state"
         :pageLabels="pdfApp.pageLabels"
         :matchesCount="pdfApp.matchesCount"

@@ -7,7 +7,7 @@
       <!-- Root dom for Golden-Layout manager -->
     </div>
 
-    <div style="position: absolute; width: 100%; height: 100%">
+    <div style="position: absolute; width: 100%; height: 100">
       <GLComponent
         v-for="[refId, page] in layoutStore.pages"
         :key="refId"
@@ -35,7 +35,7 @@ import {
   ResolvedComponentItemConfig,
   RowOrColumn,
   Stack,
-  VirtualLayout,
+  VirtualLayout
 } from "golden-layout";
 import { type GLState, type Page } from "src/backend/database";
 import GLComponent from "src/pages/GLComponent.vue";
@@ -48,7 +48,7 @@ import {
   nextTick,
   onMounted,
   ref,
-  watch,
+  watch
 } from "vue";
 import { useI18n } from "vue-i18n";
 const { t, locale } = useI18n({ useScope: "global" });
@@ -71,6 +71,7 @@ const layoutStore = useLayoutStore();
 /*******************
  * Watcher
  *******************/
+
 watch(
   () => layoutStore.currentItemId,
   (id) => {
@@ -380,6 +381,7 @@ onMounted(async () => {
   GLayout.on("activeContentItemChanged", (e) => {
     const state = e.container.state as GLState;
     layoutStore.currentItemId = state.id;
+
     nextTick(() => {
       // wait until layout is updated
       // this is needed for closing component

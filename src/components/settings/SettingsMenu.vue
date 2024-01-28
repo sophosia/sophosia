@@ -6,9 +6,7 @@
     separator-class="q-splitter-separator"
   >
     <template v-slot:before>
-      <div
-        style="height: 100%; background: var(--color-settings-tabs-area-bkgd)"
-      >
+      <div class="settings-panel">
         <q-tabs
           v-model="tab"
           vertical
@@ -17,7 +15,6 @@
           inline-label
           align="left"
           indicator-color="transparent"
-          active-color="primary"
         >
           <q-tab
             name="general"
@@ -62,10 +59,9 @@
     <template v-slot:after>
       <div class="fit row">
         <q-tab-panels
-          style="background: var(--color-settings-tab-panel-bkgd)"
           v-model="tab"
           vertical
-          class="fit"
+          class="settings fit"
         >
           <q-tab-panel name="general">
             <GeneralTab />

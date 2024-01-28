@@ -1,14 +1,13 @@
 <template>
   <q-splitter
-    style="background: var(--color-projecttree-bkgd)"
+    class="project-nav-panel"
     horizontal
     emit-immediately
     :limits="[36, maxHeight]"
     unit="px"
-    separator-style="background: var(--q-edge)"
     :separator-class="{
       'q-splitter-separator-horizontal': isGraphViewOpened && isTreeOpened,
-      'no-pointer-events': !isGraphViewOpened || !isTreeOpened,
+      'no-pointer-events': !isGraphViewOpened || !isTreeOpened
     }"
     v-model="treeSize"
     ref="root"
@@ -23,7 +22,6 @@
         default-opened
         hide-expand-icon
         header-class="q-pa-none q-ma-none"
-        header-style="height: 36px"
         :duration="0"
       >
         <template v-slot:header="props">
@@ -36,18 +34,12 @@
             />
           </q-item-section>
           <q-item-section>
-            <div
-              style="font-size: 1rem; width: 100%"
-              class="text-bold non-selectable ellipsis"
-            >
+            <div class="menu-title">
               {{ $t("active-projects") }}
             </div>
           </q-item-section>
         </template>
-        <div
-          :style="`height: ${treeSize - 36}px; overflow-y: auto`"
-          class="q-px-xs"
-        >
+        <div class="project-tree">
           <ProjectTree />
         </div>
       </q-expansion-item>
@@ -74,10 +66,7 @@
             />
           </q-item-section>
           <q-item-section>
-            <div
-              style="font-size: 1rem; width: 100%"
-              class="text-bold non-selectable ellipsis"
-            >
+            <div class="menu-title">
               {{ $t("related-items") }}
             </div>
           </q-item-section>
@@ -162,8 +151,3 @@ watch(
   }
 );
 </script>
-<style>
-.q-splitter__panel {
-  overflow: hidden;
-}
-</style>

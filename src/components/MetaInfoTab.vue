@@ -336,9 +336,8 @@
 
       <div>
         <q-btn
-          class="full-width"
+          class="buttons full-width"
           square
-          color="primary"
           :label="$t('update-meta')"
           no-caps
           :disable="!meta.URL && !meta.ISBN && !meta.DOI"
@@ -630,32 +629,3 @@ function openURL(url: string | undefined) {
   open(url);
 }
 </script>
-<style lang="scss" scoped>
-.tab-panel {
-  background: var(--color-rightmenu-tab-panel-bkgd);
-}
-
-.input {
-  color: var(--color-text);
-  background: var(--color-rightmenu-tab-panel-bkgd);
-  border: 1px solid grey;
-  font-size: 1rem;
-
-  &:focus-visible {
-    outline: none !important;
-    border: 2px solid $primary;
-  }
-}
-
-.link {
-  color: $primary;
-  text-decoration: underline;
-
-  &:hover {
-    cursor: pointer;
-  }
-}
-.chip {
-  background-color: var(--color-rightmenu-tab-panel-bkgd);
-}
-</style>

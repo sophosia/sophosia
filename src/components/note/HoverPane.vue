@@ -9,7 +9,7 @@
     >
       <div
         ref="mdContentDiv"
-        style="background-color: var(--color-hoverpane-bkgd)"
+        class="contentPane"
       ></div>
     </q-card-section>
   </q-card>
@@ -27,8 +27,8 @@ const props = defineProps({
   content: { type: String },
   data: {
     type: Object as PropType<{ content: string }>,
-    required: true,
-  },
+    required: true
+  }
 });
 const emit = defineEmits(["clickLink"]);
 const card = ref();
@@ -42,10 +42,10 @@ watchEffect(() => {
       mode: stateStore.settings.theme,
       hljs: {
         lineNumber: true,
-        style: stateStore.settings.theme === "dark" ? "native" : "emacs",
+        style: stateStore.settings.theme === "dark" ? "native" : "emacs"
       },
       after: changeLinks,
-      cdn: "vditor",
+      cdn: "vditor"
     });
 });
 
@@ -71,6 +71,7 @@ function changeLinks() {
   let linkNodes = mdContentDiv.value.querySelectorAll(
     "a"
   ) as NodeListOf<HTMLAnchorElement>;
+
   for (let linkNode of linkNodes) {
     linkNode.onclick = (e: MouseEvent) => {
       // do not open link winthin app
@@ -105,13 +106,3 @@ function changeLinks() {
 
 defineExpose({ card, close, supposeToClose });
 </script>
-<style lang="scss">
-.hoverPane {
-  position: absolute;
-  width: 40%;
-  height: 50%;
-  overflow: auto;
-  border: 2px solid var(--color-hoverpane-border);
-  background-color: var(--color-hoverpane-bkgd);
-}
-</style>

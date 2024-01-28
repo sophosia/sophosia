@@ -3,6 +3,7 @@
     square
     touch-position
     context-menu
+    class="menu"
   >
     <q-list dense>
       <q-item
@@ -68,6 +69,6 @@ const emit = defineEmits([
   "copyAsLink",
   "showInExplorer",
   "rename",
-  "delete",
+  "delete"
 ]);
 </script>

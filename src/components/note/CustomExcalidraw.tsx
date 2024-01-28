@@ -2,20 +2,20 @@ import {
   Excalidraw,
   MainMenu,
   serializeAsJSON,
-  serializeLibraryAsJSON,
+  serializeLibraryAsJSON
 } from "@excalidraw/excalidraw";
 import { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
 import {
   BinaryFiles,
   ExcalidrawImperativeAPI,
   AppState as ExcalidrawState,
-  LibraryItems,
+  LibraryItems
 } from "@excalidraw/excalidraw/types/types";
 import {
   createDir,
   exists,
   readTextFile,
-  writeTextFile,
+  writeTextFile
 } from "@tauri-apps/api/fs";
 import { join } from "@tauri-apps/api/path";
 import { debounce } from "quasar";

@@ -51,7 +51,7 @@ import { computed, inject } from "vue";
 const props = defineProps({
   search: { type: String, required: true },
   showAddBtn: { type: Boolean, required: true },
-  showCloseBtn: { type: Boolean, required: true },
+  showCloseBtn: { type: Boolean, required: true }
 });
 const emit = defineEmits(["update:search"]);
 
@@ -61,10 +61,22 @@ const searchText = computed({
   },
   set: debounce((text: string | number | null) => {
     emit("update:search", typeof text === "number" ? text.toString() : text);
-  }),
+  })
 });
 
 const togglePluginStore = inject("togglePluginStore") as (
   show: boolean
 ) => void;
 </script>
+<style scoped lang="scss">
+.actionbar-input {
+  border-radius: 8px;
+}
+.q-field__control {
+  height: min(2rem, 36px) !important;
+  border-radius: 8px !important;
+}
+.q-field__marginal {
+  height: min(2rem, 36px) !important;
+}
+</style>

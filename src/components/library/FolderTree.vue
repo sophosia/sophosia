@@ -3,7 +3,7 @@
     div spans the entire background.
     q-tree only spans enough height to display its elements
   -->
-  <div style="height: 100%">
+  <div class="q-folder-tree">
     <q-tree
       dense
       no-connectors
@@ -24,7 +24,7 @@
             dragover:
               !!dragoverNode &&
               dragoverNode == prop.node &&
-              draggingNode != prop.node,
+              draggingNode != prop.node
           }"
           draggable="true"
           @dragstart="(e: DragEvent) => onDragStart(e, prop.node)"
@@ -36,6 +36,7 @@
           <q-menu
             touch-position
             context-menu
+            class="menu"
           >
             <q-list dense>
               <q-item
@@ -114,8 +115,6 @@
 <script setup lang="ts">
 // types
 
-
-
 import { QTree, QTreeNode } from "quasar";
 import { Folder, SpecialFolder, db } from "src/backend/database";
 import { onMounted, ref, watch } from "vue";
@@ -126,7 +125,7 @@ import {
   getFolderTree,
   getParentFolder,
   moveFolderInto,
-  updateFolder,
+  updateFolder
 } from "src/backend/project/folder";
 import { sortTree } from "src/backend/project/utils";
 import { useProjectStore } from "src/stores/projectStore";
@@ -169,12 +168,12 @@ onMounted(async () => {
   folders.value.push({
     _id: SpecialFolder.ADDED,
     label: t("added"),
-    icon: "mdi-history",
+    icon: "mdi-history"
   });
   folders.value.push({
     _id: SpecialFolder.FAVORITES,
     label: t("favorites"),
-    icon: "mdi-star",
+    icon: "mdi-star"
   });
 });
 
@@ -200,7 +199,7 @@ async function addFolder(parentNode: Folder, label?: string, focus?: boolean) {
   if (!!label) {
     node.label = label;
     node = (await updateFolder(node._id, {
-      label: node.label,
+      label: node.label
     } as Folder)) as Folder;
   }
 
@@ -231,7 +230,7 @@ function deleteFolder(node: Folder) {
           _id: (n as Folder)._id,
           icon: (n as Folder).icon,
           label: (n as Folder).label,
-          children: _dfs(n as Folder),
+          children: _dfs(n as Folder)
         } as Folder);
       }
     }
@@ -397,7 +396,7 @@ function getLibraryNode() {
 defineExpose({
   getLibraryNode,
   addFolder,
-  onDragEnd,
+  onDragEnd
 });
 </script>
 <style lang="scss" scoped>

@@ -1,8 +1,6 @@
 <template>
   <div class="q-pb-md">
     <q-card
-      square
-      bordered
       flat
       class="q-my-md card"
     >
@@ -11,9 +9,9 @@
       </q-card-section>
       <q-card-section class="q-pt-none">
         <q-select
+          class="selector"
           dense
           outlined
-          square
           :options="themeOptions"
           :display-value="theme[0].toUpperCase() + theme.slice(1)"
           v-model="theme"
@@ -32,8 +30,6 @@
     </q-card>
 
     <q-card
-      square
-      bordered
       flat
       class="q-my-md card"
     >
@@ -56,8 +52,6 @@
     </q-card>
 
     <q-card
-      square
-      bordered
       flat
       class="q-my-md card"
     >
@@ -68,7 +62,6 @@
         <q-select
           dense
           outlined
-          square
           v-model="language"
           :options="languageOptions"
         />
@@ -76,8 +69,6 @@
     </q-card>
 
     <q-card
-      square
-      bordered
       flat
       class="q-my-md card"
     >
@@ -88,7 +79,6 @@
         <q-select
           dense
           outlined
-          square
           v-model="translate"
           :options="translateLabels"
         />
@@ -96,8 +86,6 @@
     </q-card>
 
     <q-card
-      square
-      bordered
       flat
       class="q-my-md card"
     >
@@ -105,11 +93,9 @@
         <div class="row">
           <div class="text-h6">{{ $t("citation-key") }}</div>
           <q-btn
-            class="q-ml-sm"
+            class="buttons q-ml-sm"
             unelevated
-            square
             no-caps
-            color="primary"
             :ripple="false"
             :label="$t('update-references')"
             @click="updateCiteKeys"
@@ -127,7 +113,6 @@
           <q-select
             dense
             outlined
-            square
             :options="citeKeyPartKeyOptions"
             :display-value="$t(citeKeyPartKeys[0])"
             :option-label="(opt) => $t(opt)"
@@ -137,7 +122,6 @@
           <q-select
             dense
             outlined
-            square
             :options="citeKeyConnectorOptions"
             v-model="citeKeyConnector"
             :option-label="(opt) => opt.trim() || '(None)'"
@@ -146,7 +130,6 @@
           <q-select
             dense
             outlined
-            square
             :options="citeKeyPartKeyOptions"
             :display-value="$t(citeKeyPartKeys[1])"
             :option-label="(opt) => $t(opt)"
@@ -156,7 +139,6 @@
           <q-select
             dense
             outlined
-            square
             :options="citeKeyConnectorOptions"
             v-model="citeKeyConnector"
             :option-label="(opt) => opt.trim() || '(None)'"
@@ -165,7 +147,6 @@
           <q-select
             dense
             outlined
-            square
             :options="citeKeyPartKeyOptions"
             :display-value="$t(citeKeyPartKeys[2])"
             :option-label="(opt) => $t(opt)"
@@ -196,7 +177,7 @@ const { locale, t } = useI18n({ useScope: "global" });
 const languageOptions = [
   { value: "en_US", label: "English (en)" },
   { value: "zh_CN", label: "中文 (zh)" },
-  { value: "fr_CA", label: "Français (fr)" },
+  { value: "fr_CA", label: "Français (fr)" }
 ];
 
 const translateLabels = [
@@ -220,7 +201,7 @@ const translateLabels = [
   "தமிழ் (ta)",
   "Tiếng Việt (vi)",
   "한국어 (ko)",
-  "فارسی (fa)",
+  "فارسی (fa)"
 ];
 
 const themeOptions = ["dark", "light"];
@@ -232,25 +213,25 @@ const exampleMetas = [
   {
     title: "A Long Title",
     author: [{ family: "Last", given: "First" }],
-    issued: { "date-parts": [[2023]] },
+    issued: { "date-parts": [[2023]] }
+  },
+  {
+    title: "A Long Title",
+    author: [
+      { family: "Last1", given: "First1" },
+      { family: "Last2", given: "First2" }
+    ],
+    issued: { "date-parts": [[2023]] }
   },
   {
     title: "A Long Title",
     author: [
       { family: "Last1", given: "First1" },
       { family: "Last2", given: "First2" },
+      { family: "Last3", given: "First3" }
     ],
-    issued: { "date-parts": [[2023]] },
-  },
-  {
-    title: "A Long Title",
-    author: [
-      { family: "Last1", given: "First1" },
-      { family: "Last2", given: "First2" },
-      { family: "Last3", given: "First3" },
-    ],
-    issued: { "date-parts": [[2023]] },
-  },
+    issued: { "date-parts": [[2023]] }
+  }
 ] as Meta[];
 
 const language = computed({
@@ -266,7 +247,7 @@ const language = computed({
   set(option: { value: string; label: string }) {
     locale.value = option.value;
     db.setConfig({ language: option.value } as Config);
-  },
+  }
 });
 
 const theme = computed({
@@ -275,7 +256,7 @@ const theme = computed({
   },
   set(option: string) {
     stateStore.changeTheme(option);
-  },
+  }
 });
 
 const fontSize = computed({
@@ -284,7 +265,7 @@ const fontSize = computed({
   },
   set(size: number) {
     stateStore.changeFontSize(size);
-  },
+  }
 });
 
 const translate = computed({
@@ -293,7 +274,7 @@ const translate = computed({
   },
   set(language: string) {
     stateStore.changeTranslate(language);
-  },
+  }
 });
 
 // citeKeyRule = "author<connector>title<connector>year"
@@ -351,9 +332,3 @@ async function updateCiteKeys() {
   $q.notify(t("citation-keys-updated"));
 }
 </script>
-
-<style scoped>
-.card {
-  background: var(--color-settings-card-bkgd);
-}
-</style>

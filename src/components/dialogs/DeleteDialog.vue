@@ -5,7 +5,7 @@
     no-shake
     @hide="deleteDialog.close()"
   >
-    <q-card>
+    <q-card class="dialog">
       <q-card-section>
         <div
           v-if="deleteDialog.isDeleteFromDB"

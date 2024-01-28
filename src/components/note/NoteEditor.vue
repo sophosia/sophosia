@@ -413,7 +413,7 @@ async function hoverLink(linkNode: HTMLElement) {
       else item = (await db.get(itemId)) as Project | AnnotationData;
       if (item.dataType === "project") {
         let lines = [
-          `## ${item.title}`,
+          `#### ${item.title}`,
           `Author(s): ${authorToString(item.author)}`,
           `Abstract: ${item.abstract}`
         ];
@@ -440,7 +440,7 @@ async function hoverLink(linkNode: HTMLElement) {
       } else if (item.dataType === "pdfAnnotation") {
         const project = (await getProject(item.projectId)) as Project;
         let lines = [
-          `## ${item.type.toLocaleUpperCase()}`,
+          `#### ${item.type.toLocaleUpperCase()}`,
           `page: ${item.pageNumber}`,
           `project: ${project.label}`,
           "content:",
@@ -610,8 +610,3 @@ async function filterHints(key: string): Promise<Array<any>> {
   return hints;
 }
 </script>
-<style scoped lang="scss">
-.highlight-editor {
-  border: 2px dashed rgba($primary, 0.5);
-}
-</style>

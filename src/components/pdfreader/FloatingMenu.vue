@@ -1,5 +1,8 @@
 <template>
-  <div style="z-index: 100; max-width: 20vw">
+  <div
+    class="menu"
+    style="z-index: 100; max-width: 20vw"
+  >
     <div class="row items-center q-px-sm q-py-xs">
       <ColorPicker
         @selected="(color: string) => $emit('highlightText', color)"
@@ -47,7 +50,7 @@ import {
   Button,
   ComponentName,
   ToggleButton,
-  View,
+  View
 } from "src/backend/database";
 import pluginManager from "src/backend/plugin";
 import { useStateStore } from "src/stores/stateStore";
@@ -86,7 +89,7 @@ const translateOptions = [
   { value: "ta", label: "தமிழ் (ta)" },
   { value: "vi", label: "Tiếng Việt (vi)" },
   { value: "ko", label: "한국어 (ko)" },
-  { value: "fa", label: "فارسی (fa)" },
+  { value: "fa", label: "فارسی (fa)" }
 ];
 
 /**
