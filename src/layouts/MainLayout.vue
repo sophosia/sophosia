@@ -51,14 +51,12 @@ import "src/css/goldenlayout/base.scss";
 import "src/css/goldenlayout/theme.scss";
 import GLayout from "./GLayout.vue";
 // db
-import { useStateStore } from "src/stores/stateStore";
 // utils
 import { listen } from "@tauri-apps/api/event";
 import pluginManager from "src/backend/plugin";
 import { useLayoutStore } from "src/stores/layoutStore";
-import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 
-const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
 
 /*************************************************
@@ -88,19 +86,8 @@ watch(
 
       leftMenuSize.value = 0;
     }
-    nextTick(() => {
-      stateStore.saveAppState();
-    });
   }
 );
-
-// onLayouChanged, appstate and layout will be saved
-layoutStore.$subscribe((_, state) => {
-  if (state.initialized) stateStore.currentItemId = state.currentItemId;
-});
-stateStore.$subscribe((mutation, state) => {
-  stateStore.saveAppState();
-});
 
 /*******************************************************
  * Methods
@@ -117,7 +104,6 @@ async function resizeLeftMenu(size: number) {
     // this will trigger layoutStore.showLeftMenu = false;
   }
   layoutStore.leftMenuSize = size > 10 ? size : 20;
-  stateStore.saveAppState();
 }
 
 /**

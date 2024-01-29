@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import {
+  AppState,
   FolderOrNote,
   Note,
   NoteType,
@@ -31,7 +32,7 @@ import { sortTree } from "src/backend/project/utils";
 
 export const useProjectStore = defineStore("projectStore", {
   state: () => ({
-    ready: false, // is project loaded
+    initialized: false, // is project loaded
     selected: [] as (Project | Note)[], // projectIds selected by checkbox
     projects: [] as Project[], // array of projects
     openedProjects: [] as Project[], // array of opened projects
@@ -41,6 +42,23 @@ export const useProjectStore = defineStore("projectStore", {
   }),
 
   actions: {
+    async loadState(state: AppState) {
+      if (this.initialized) return;
+      this.selectedFolderId = state.selectedFolderId;
+      await this.loadOpenedProjects(state.openedProjectIds);
+      await this.loadProjects(state.selectedFolderId);
+      this.initialized = true;
+    },
+
+    saveState(): AppState {
+      const projectIds = this.openedProjects.map((project) => project._id);
+      const uniqueIds = new Set(projectIds);
+      return {
+        openedProjectIds: [...uniqueIds],
+        selectedFolderId: this.selectedFolderId,
+      } as AppState;
+    },
+
     /**
      * Retrieves a project from the store based on its projectId.
      * @param projectId - The unique identifier of the project.
@@ -161,7 +179,6 @@ export const useProjectStore = defineStore("projectStore", {
         includePDF: true,
         includeNotes: true,
       });
-      this.ready = true;
     },
 
     /**

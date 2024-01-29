@@ -9,6 +9,7 @@ import { customAlphabet } from "nanoid";
 import { defineStore } from "pinia";
 import { getLayout, updateLayout } from "src/backend/appState";
 import {
+  AppState,
   NoteType,
   db,
   type AnnotationData,
@@ -33,7 +34,7 @@ export const useLayoutStore = defineStore("layoutStore", {
     renamedPage: {} as Page,
     closedItemId: "",
 
-    // sizes
+    // toggles and sizes
     ribbonToggledBtnUid: "",
     leftMenuSize: 20,
     showLeftMenu: false,
@@ -44,6 +45,30 @@ export const useLayoutStore = defineStore("layoutStore", {
   }),
 
   actions: {
+    async loadState(state: AppState) {
+      if (this.initialized) return;
+      this.currentItemId = state.currentItemId;
+      this.ribbonToggledBtnUid = state.ribbonToggledBtnUid;
+      this.leftMenuSize = state.leftMenuSize;
+      this.showLeftMenu = state.showLeftMenu;
+      this.libraryRightMenuSize = state.libraryRightMenuSize;
+      this.showLibraryRightMenu = state.showLibraryRightMenu;
+      this.showPDFMenuView = state.showPDFMenuView;
+      this.initialized = true;
+    },
+
+    saveState(): AppState {
+      return {
+        currentItemId: this.currentItemId,
+        ribbonToggledBtnUid: this.ribbonToggledBtnUid,
+        leftMenuSize: this.leftMenuSize,
+        showLeftMenu: this.showLeftMenu,
+        libraryRightMenuSize: this.libraryRightMenuSize,
+        showLibraryRightMenu: this.showLibraryRightMenu,
+        showPDFMenuView: this.showPDFMenuView,
+      } as AppState;
+    },
+
     /**********************************
      * Page Control
      **********************************/

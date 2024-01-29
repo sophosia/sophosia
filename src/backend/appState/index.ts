@@ -1,6 +1,6 @@
-import { db, AppState, Layout, SpecialFolder } from "../database";
 import { LayoutConfig, ResolvedLayoutConfig } from "golden-layout";
-import { debounce } from "quasar";
+import { debounce } from "lodash";
+import { AppState, Layout, SpecialFolder, db } from "../database";
 
 /*****************************
  * App State
@@ -18,32 +18,31 @@ import { debounce } from "quasar";
  * with predefined values for all the state parameters.
  */
 async function getAppState(): Promise<AppState> {
+  const defaultState: AppState = {
+    _id: "appState",
+    dataType: "appState",
+    ribbonToggledBtnUid: "",
+    leftMenuSize: 20,
+    showLeftMenu: false,
+    showPDFMenuView: false,
+    pdfRightMenuSize: 30,
+    showPDFRightMenu: false,
+    libraryRightMenuSize: 30,
+    showLibraryRightMenu: false,
+    selectedFolderId: SpecialFolder.LIBRARY,
+    currentItemId: "library",
+    openedProjectIds: [],
+    theme: "dark",
+    fontSize: "16px",
+    translateLanguage: "Français (fr)",
+    citeKeyRule: "author_title_year",
+  };
   try {
-    return (await db.get("appState")) as AppState;
+    const state = (await db.get("appState")) as AppState;
+    return Object.assign(defaultState, state);
   } catch (error) {
     // return default app state
-    let state: AppState = {
-      _id: "appState",
-      dataType: "appState",
-      ribbonToggledBtnUid: "",
-      leftMenuSize: 20,
-      showLeftMenu: false,
-      showPDFMenuView: false,
-      pdfRightMenuSize: 30,
-      showPDFRightMenu: false,
-      libraryRightMenuSize: 30,
-      showLibraryRightMenu: false,
-      selectedFolderId: SpecialFolder.LIBRARY,
-      currentItemId: "library",
-      openedProjectIds: [],
-      settings: {
-        theme: "dark",
-        fontSize: "16px",
-        translateLanguage: "Français (fr)",
-        citeKeyRule: "author_title_year"
-      }
-    };
-    return state;
+    return defaultState;
   }
 }
 
@@ -95,14 +94,14 @@ async function getLayout(): Promise<Layout> {
         showPopoutIcon: false,
         showMaximiseIcon: false,
         // must have close icon otherwise the last tab can't close
-        showCloseIcon: true
+        showCloseIcon: true,
       },
       dimensions: {
         borderWidth: 3,
         headerHeight: 36,
         // no need to show ghost image of the content
         dragProxyWidth: 0,
-        dragProxyHeight: 0
+        dragProxyHeight: 0,
       },
       root: {
         type: "stack",
@@ -111,11 +110,11 @@ async function getLayout(): Promise<Layout> {
             type: "component",
             title: "Library",
             componentType: "LibraryPage",
-            componentState: { id: "library" }
-          }
-        ]
-      }
-    }
+            componentState: { id: "library" },
+          },
+        ],
+      },
+    },
   } as Layout;
   try {
     const layout = (await db.get("layout")) as Layout;
@@ -147,4 +146,4 @@ async function _updateLayout(config: LayoutConfig | ResolvedLayoutConfig) {
 
 const updateLayout = debounce(_updateLayout, 200);
 
-export { getLayout, updateLayout, getAppState, updateAppState };
+export { getAppState, getLayout, updateAppState, updateLayout };

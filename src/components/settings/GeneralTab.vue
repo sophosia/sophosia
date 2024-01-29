@@ -183,14 +183,12 @@ import { computed, reactive, ref } from "vue";
 import { Config, Meta, db } from "src/backend/database";
 import { generateCiteKey } from "src/backend/project/meta";
 import { getAllProjects } from "src/backend/project/project";
-import { useStateStore } from "src/stores/stateStore";
 // utils
 import { useQuasar } from "quasar";
 import { useSettingStore } from "src/stores/settingStore";
 import { useI18n } from "vue-i18n";
 const $q = useQuasar();
 
-const stateStore = useStateStore();
 const settingStore = useSettingStore();
 const { locale, t } = useI18n({ useScope: "global" });
 
@@ -330,7 +328,6 @@ function citeKeyExample(meta: Meta) {
  */
 function updateCiteKeyRule() {
   settingStore.citeKeyRule = citeKeyPartKeys.join(citeKeyConnector.value);
-  stateStore.saveAppState();
 }
 
 /**

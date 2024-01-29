@@ -12,7 +12,6 @@
       node-key="_id"
       v-model:expanded="expandedKeys"
       v-model:selected="projectStore.selectedFolderId"
-      @update:selected="saveState"
       :no-selection-unset="true"
       selected-color="primary"
       ref="tree"
@@ -175,10 +174,6 @@ onMounted(async () => {
     icon: "mdi-star",
   });
 });
-
-async function saveState() {
-  await stateStore.saveAppState();
-}
 
 /**************************
  * Add, delete, update, export
