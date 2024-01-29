@@ -27,6 +27,7 @@ import { isScanned, scanAndUpdateDB } from "src/backend/project/scan";
 import WelcomeCarousel from "src/components/welcome/WelcomeCarousel.vue";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
+import { useSettingStore } from "src/stores/settingStore";
 import { useStateStore } from "src/stores/stateStore";
 import { onMounted, ref, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
@@ -35,6 +36,7 @@ const { locale } = useI18n({ useScope: "global" });
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
+const settingStore = useSettingStore();
 // must determine the existence of storagePath before heading to MainLayout
 const loading = ref(false);
 
@@ -74,8 +76,8 @@ onMounted(async () => {
   await projectStore.loadOpenedProjects(stateStore.openedProjectIds);
 
   // apply settings
-  stateStore.changeTheme(stateStore.settings.theme);
-  stateStore.changeFontSize(parseFloat(stateStore.settings.fontSize));
+  settingStore.changeTheme(settingStore.theme);
+  settingStore.changeFontSize(parseFloat(settingStore.fontSize));
   locale.value = db.config.language;
 
   // if there is no path, show welcome carousel

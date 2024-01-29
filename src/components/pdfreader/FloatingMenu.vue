@@ -50,7 +50,8 @@ import {
   View,
 } from "src/backend/database";
 import pluginManager from "src/backend/plugin";
-import { useStateStore } from "src/stores/stateStore";
+import { useLayoutStore } from "src/stores/layoutStore";
+import { useSettingStore } from "src/stores/settingStore";
 import translate from "translate";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import ColorPicker from "./ColorPicker.vue";
@@ -58,7 +59,8 @@ import FloatingMenuView from "./FloatingMenuView.vue";
 
 defineEmits(["highlightText"]);
 
-const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
+const settingStore = useSettingStore();
 const pluginBtns = ref<Button[]>([]);
 const pluginToggleBtns = ref<ToggleButton[]>([]);
 const pluginViews = ref<View[]>([]);
@@ -102,7 +104,7 @@ function copyText() {
  */
 async function translateText() {
   let textToTranslate = window.getSelection()?.toString();
-  const language = stateStore.settings.translateLanguage;
+  const language = settingStore.translateLanguage;
   let ln;
   for (let option of translateOptions) {
     if (option.label === language) {
@@ -140,6 +142,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  stateStore.togglePDFMenuView(false);
+  layoutStore.togglePDFMenuView(false);
 });
 </script>

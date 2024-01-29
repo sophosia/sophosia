@@ -186,10 +186,12 @@ import { getAllProjects } from "src/backend/project/project";
 import { useStateStore } from "src/stores/stateStore";
 // utils
 import { useQuasar } from "quasar";
+import { useSettingStore } from "src/stores/settingStore";
 import { useI18n } from "vue-i18n";
 const $q = useQuasar();
 
 const stateStore = useStateStore();
+const settingStore = useSettingStore();
 const { locale, t } = useI18n({ useScope: "global" });
 
 // options
@@ -271,39 +273,37 @@ const language = computed({
 
 const theme = computed({
   get() {
-    return stateStore.settings.theme;
+    return settingStore.theme;
   },
   set(option: string) {
-    stateStore.changeTheme(option);
+    settingStore.changeTheme(option);
   },
 });
 
 const fontSize = computed({
   get() {
-    return parseFloat(stateStore.settings.fontSize);
+    return parseFloat(settingStore.fontSize);
   },
   set(size: number) {
-    stateStore.changeFontSize(size);
+    settingStore.changeFontSize(size);
   },
 });
 
 const translate = computed({
   get() {
-    return stateStore.settings.translateLanguage;
+    return settingStore.translateLanguage;
   },
   set(language: string) {
-    stateStore.changeTranslate(language);
+    settingStore.changeTranslate(language);
   },
 });
 
 // citeKeyRule = "author<connector>title<connector>year"
-// stateStore.settings.citeKeyRule.split(/[^a-z]/) => ["author", "title", "year"]
-const citeKeyPartKeys = reactive(
-  stateStore.settings.citeKeyRule.split(/[^a-z]/)
-);
-// stateStore.settings.citeKeyRule.split(/[a-z]/).filter((s) => s) => [ connector, connector ]
+// settingStore.citeKeyRule.split(/[^a-z]/) => ["author", "title", "year"]
+const citeKeyPartKeys = reactive(settingStore.citeKeyRule.split(/[^a-z]/));
+// settingStore.citeKeyRule.split(/[a-z]/).filter((s) => s) => [ connector, connector ]
 const citeKeyConnector = ref(
-  stateStore.settings.citeKeyRule.split(/[a-z]/).filter((s) => s)[0]
+  settingStore.citeKeyRule.split(/[a-z]/).filter((s) => s)[0]
 );
 
 /*********************
@@ -321,7 +321,7 @@ function citeKeyExample(meta: Meta) {
     (meta.issued as { "date-parts": any })["date-parts"][0][0]
   }, authors: ${meta.author
     .map((name) => name.given + " " + name.family)
-    .join(", ")} => ${generateCiteKey(meta, stateStore.settings.citeKeyRule)}`;
+    .join(", ")} => ${generateCiteKey(meta, settingStore.citeKeyRule)}`;
 }
 
 /**
@@ -329,9 +329,7 @@ function citeKeyExample(meta: Meta) {
  * Saves the updated citation key rule in the application state.
  */
 function updateCiteKeyRule() {
-  stateStore.settings.citeKeyRule = citeKeyPartKeys.join(
-    citeKeyConnector.value
-  );
+  settingStore.citeKeyRule = citeKeyPartKeys.join(citeKeyConnector.value);
   stateStore.saveAppState();
 }
 
@@ -345,7 +343,7 @@ async function updateCiteKeys() {
   for (let project of projects)
     project["citation-key"] = generateCiteKey(
       project,
-      stateStore.settings.citeKeyRule
+      settingStore.citeKeyRule
     );
   await db.bulkDocs(projects);
   $q.notify(t("citation-keys-updated"));

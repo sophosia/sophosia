@@ -38,6 +38,7 @@
   "storage": "Storage",
   "language": "Language",
   "pdftranslate": "PDF Translator",
+  "translate": "Translate",
   "font-size-fontsize-px": "Font size: {0}px",
   "font": "Font",
   "theme": "Theme",

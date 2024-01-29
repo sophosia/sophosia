@@ -36,7 +36,7 @@ class PluginManager {
   init() {
     // create all necessary folders and files
     // const hiddenFolder = window.path.join(
-    //   stateStore.settings.storagePath,
+    //   settingStore.storagePath,
     //   ".research-helper"
     // );
     // if (!window.fs.existsSync(hiddenFolder)) window.fs.mkdirSync(hiddenFolder);

@@ -392,9 +392,9 @@ import { getFolder } from "src/backend/project/folder";
 import { generateCiteKey, getMeta } from "src/backend/project/meta";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
-import { useStateStore } from "src/stores/stateStore";
+import { useSettingStore } from "src/stores/settingStore";
 const projectStore = useProjectStore();
-const stateStore = useStateStore();
+const settingStore = useSettingStore();
 const layoutStore = useLayoutStore();
 
 const props = defineProps({ project: Object as PropType<Project> });
@@ -479,7 +479,7 @@ async function modifyInfo() {
   if (meta.value === undefined) return;
   meta.value["citation-key"] = generateCiteKey(
     meta.value,
-    stateStore.settings.citeKeyRule
+    settingStore.citeKeyRule
   );
   projectStore.updateProject(meta.value._id, meta.value);
   layoutStore.renamePage(meta.value._id, {

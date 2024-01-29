@@ -40,6 +40,7 @@ export const useLayoutStore = defineStore("layoutStore", {
     libraryRightMenuSize: 30,
     showLibraryRightMenu: false,
     showWelcomeCarousel: true,
+    showPDFMenuView: false,
   }),
 
   actions: {
@@ -208,6 +209,19 @@ export const useLayoutStore = defineStore("layoutStore", {
         this.showWelcomeCarousel = !this.showWelcomeCarousel;
       } else {
         this.showWelcomeCarousel = visible;
+      }
+    },
+
+    /**
+     * Toggle pdf floating menu
+     * If visible is given, set the state as it is
+     * @param visible
+     */
+    togglePDFMenuView(visible?: boolean) {
+      if (visible === undefined) {
+        this.showPDFMenuView = !this.showPDFMenuView;
+      } else {
+        this.showPDFMenuView = visible;
       }
     },
   },

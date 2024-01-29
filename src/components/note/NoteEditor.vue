@@ -33,7 +33,6 @@ import {
   uploadImage,
 } from "src/backend/project/note";
 import { useLayoutStore } from "src/stores/layoutStore";
-import { useStateStore } from "src/stores/stateStore";
 
 import { getAllProjects, getProject } from "src/backend/project/project";
 // util
@@ -48,10 +47,11 @@ import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { getForwardLinks, updateLinks } from "src/backend/project/graph";
 import { isLinkUpdated } from "src/backend/project/scan";
+import { useSettingStore } from "src/stores/settingStore";
 import HoverPane from "./HoverPane.vue";
 
-const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
+const settingStore = useSettingStore();
 const { t } = useI18n({ useScope: "global" });
 const bus = inject("bus") as EventBus;
 
@@ -74,7 +74,7 @@ const hoverData = ref({ content: "" });
 const links = ref<Edge[]>([]);
 
 watch(
-  () => stateStore.settings.theme,
+  () => settingStore.theme,
   (theme: string) => {
     setTheme(theme);
   }
@@ -180,10 +180,10 @@ function initEditor() {
     toolbar: toolbar,
     lang: db.config.language as keyof II18n,
     tab: "    ", // use 4 spaces as tab
-    theme: stateStore.settings.theme === "dark" ? "dark" : "classic",
+    theme: settingStore.theme === "dark" ? "dark" : "classic",
     preview: {
       theme: {
-        current: stateStore.settings.theme,
+        current: settingStore.theme,
         path: "vditor/dist/css/content-theme",
       },
       math: {
@@ -258,8 +258,6 @@ function setTheme(theme: string) {
       theme === "dark" ? "native" : "emacs"
     );
   }
-
-  stateStore.changeTheme(theme);
 }
 
 /*****************************************
