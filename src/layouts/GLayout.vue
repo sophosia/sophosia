@@ -74,6 +74,7 @@ const layoutStore = useLayoutStore();
 watch(
   () => layoutStore.currentItemId,
   (id) => {
+    console.log("focus on id", id);
     focusById(id);
   }
 );
@@ -387,13 +388,9 @@ onMounted(async () => {
     });
   });
 
-  // when loading layout, the components are added by GLayout.loadLayout
-  // if initialized is not false, GLayout.addComponent will take control and is not we want
-  layoutStore.initialized = false;
   await loadGLLayout();
   translateSpecialPageTitles();
-  focusById(stateStore.currentItemId);
-  layoutStore.initialized = true;
+  focusById(layoutStore.currentItemId);
 });
 
 /*************
