@@ -11,7 +11,7 @@
       :nodes="folders"
       node-key="_id"
       v-model:expanded="expandedKeys"
-      v-model:selected="stateStore.selectedFolderId"
+      v-model:selected="projectStore.selectedFolderId"
       @update:selected="saveState"
       :no-selection-unset="true"
       selected-color="primary"
@@ -82,7 +82,7 @@
                 Object.values(SpecialFolder).includes(prop.node._id) 
                   ? prop.node.icon as string
                   : (
-                    (prop.node._id === stateStore.selectedFolderId || prop.expanded)
+                    (prop.node._id === projectStore.selectedFolderId || prop.expanded)
                     ? 'mdi-folder-open'
                     : 'mdi-folder'
                   )
@@ -113,8 +113,6 @@
 
 <script setup lang="ts">
 // types
-
-
 
 import { QTree, QTreeNode } from "quasar";
 import { Folder, SpecialFolder, db } from "src/backend/database";
@@ -209,7 +207,7 @@ async function addFolder(parentNode: Folder, label?: string, focus?: boolean) {
   expandedKeys.value.push(parentNode._id);
 
   // focus on it
-  if (focus) stateStore.selectedFolderId = node._id;
+  if (focus) projectStore.selectedFolderId = node._id;
 
   // rename it if label is empty
   if (!!!label) setRenameFolder(node);
@@ -246,8 +244,8 @@ function deleteFolder(node: Folder) {
   // if user is delete folder that are not currently selected, table won't refresh
   // but that's fine becase the database has been updated and the frontend is working as expected
   // it's just one line saying id=SFxxxx not found in console
-  if (stateStore.selectedFolderId === node._id)
-    stateStore.selectedFolderId = SpecialFolder.LIBRARY;
+  if (projectStore.selectedFolderId === node._id)
+    projectStore.selectedFolderId = SpecialFolder.LIBRARY;
 }
 
 /**

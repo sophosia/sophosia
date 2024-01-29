@@ -133,7 +133,7 @@
       </q-item>
 
       <q-item
-        v-if="stateStore.selectedFolderId != SpecialFolder.LIBRARY.toString()"
+        v-if="projectStore.selectedFolderId != SpecialFolder.LIBRARY.toString()"
         clickable
         v-close-popup
         @click="showDeleteDialog(false)"
@@ -245,7 +245,7 @@ function showDeleteDialog(deleteFromDB: boolean) {
   deleteDialog.isDeleteFromDB = deleteFromDB;
   deleteDialog.onConfirm(() =>
     deleteProject(
-      stateStore.selectedFolderId,
+      projectStore.selectedFolderId,
       deleteDialog.deleteProjects,
       deleteDialog.isDeleteFromDB
     )

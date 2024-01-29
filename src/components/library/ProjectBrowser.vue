@@ -107,7 +107,7 @@ const treeViewSize = ref(20);
 const rightMenuSize = ref(0);
 
 watch(
-  () => stateStore.selectedFolderId,
+  () => projectStore.selectedFolderId,
   async (folderId: string) => {
     projectStore.selected = [];
     projectStore.loadProjects(folderId);
@@ -115,7 +115,7 @@ watch(
 );
 
 onMounted(async () => {
-  projectStore.loadProjects(stateStore.selectedFolderId);
+  projectStore.loadProjects(projectStore.selectedFolderId);
   // rightmenu
   if (layoutStore.showLibraryRightMenu)
     rightMenuSize.value = layoutStore.libraryRightMenuSize;
@@ -154,7 +154,7 @@ function showImportDialog(collectionPath: string) {
  */
 async function addEmptyProject() {
   // udpate db and ui
-  let project = projectStore.createProject(stateStore.selectedFolderId);
+  let project = projectStore.createProject(projectStore.selectedFolderId);
   projectStore.addProject(project, true);
 }
 
@@ -165,7 +165,7 @@ async function addEmptyProject() {
 async function addProjectsByFiles(filePaths: string[]) {
   for (let filePath of filePaths) {
     try {
-      let project = projectStore.createProject(stateStore.selectedFolderId);
+      let project = projectStore.createProject(projectStore.selectedFolderId);
       await projectStore.addProject(project, true);
       let filename = (await copyFileToProjectFolder(
         filePath,
@@ -215,7 +215,7 @@ async function addProjectsByCollection(
   let metas = await importMeta(collectionPath);
   for (let meta of metas) {
     // add a new project to db and update it with meta
-    let project = projectStore.createProject(stateStore.selectedFolderId);
+    let project = projectStore.createProject(projectStore.selectedFolderId);
     await projectStore.addProject(project, true);
     await projectStore.updateProject(project._id, meta as Project);
   }
@@ -229,7 +229,7 @@ async function addProjectByIdentifier(identifier: string) {
   const metas = await getMeta([identifier], "json");
   const meta = metas[0];
   // add a new project to db and update it with meta
-  const project = projectStore.createProject(stateStore.selectedFolderId);
+  const project = projectStore.createProject(projectStore.selectedFolderId);
   await projectStore.addProject(project, true);
   await projectStore.updateProject(project._id, meta as Project);
 }
