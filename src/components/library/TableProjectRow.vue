@@ -1,5 +1,5 @@
 <template>
-  <q-tr>
+  <q-tr class="table">
     <q-th auto-width>
       <input
         type="checkbox"
@@ -82,8 +82,8 @@ const props = defineProps({
       expand: boolean;
       selected: boolean;
     }>,
-    required: true,
-  },
+    required: true
+  }
 });
 const emit = defineEmits(["expandRow", "setFavorite"]);
 

@@ -1,7 +1,10 @@
 <template>
-  <q-menu data-cy="annot-menu">
+  <q-menu
+    class="menu"
+    data-cy="annot-menu"
+  >
     <q-list dense>
-      <q-item>
+      <q-item class="color-picker">
         <ColorPicker
           @selected="(color: string) => $emit('changeColor', color)"
         />
@@ -12,7 +15,7 @@
           v-close-popup
           @click="$emit('copyId')"
         >
-          <div style="font-size: 1rem">
+          <div>
             <q-icon name="mdi-content-copy"></q-icon>
             <i18n-t keypath="copy-id">
               <template #type>{{ $t("annotation") }}</template>
@@ -26,7 +29,7 @@
           v-close-popup
           @click="$emit('copyAsLink')"
         >
-          <div style="font-size: 1rem">
+          <div>
             <q-icon name="mdi-content-copy"></q-icon>
             <i18n-t keypath="copy-as-link">
               <template #type>{{ $t("annotation") }}</template>
@@ -40,7 +43,7 @@
           v-close-popup
           @click="$emit('deleteAnnot')"
         >
-          <div style="font-size: 1rem">
+          <div>
             <q-icon name="mdi-delete-outline"></q-icon>
             <i18n-t keypath="delete">
               <template #type>{{ $t("annotation") }}</template>
@@ -54,7 +57,7 @@
           v-close-popup
           @click="$emit('scrollIntoView')"
         >
-          <div style="font-size: 1rem">
+          <div>
             <q-icon name="mdi-crosshairs"> </q-icon>
             {{ $t("scroll-into-view") }}
           </div>
@@ -72,18 +75,8 @@ const emit = defineEmits([
   "deleteAnnot",
   "scrollIntoView",
   "copyId",
-  "copyAsLink",
+  "copyAsLink"
 ]);
 </script>
 
-<style scoped lang="scss">
-.button {
-  cursor: pointer;
-  padding-left: 10px !important;
-  padding-right: 10px !important;
-
-  &:hover {
-    background: grey;
-  }
-}
-</style>
+<style scoped lang="scss"></style>

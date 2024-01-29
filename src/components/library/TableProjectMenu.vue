@@ -4,6 +4,7 @@
     context-menu
     square
     transition-duration="0"
+    class="menu"
   >
     <q-list dense>
       <q-item
@@ -159,7 +160,7 @@ import {
   NoteType,
   Project,
   SpecialFolder,
-  db,
+  db
 } from "src/backend/database";
 import { Ref, inject, nextTick } from "vue";
 // db
@@ -177,7 +178,7 @@ const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 
 const props = defineProps({
-  projectId: { type: String, required: true },
+  projectId: { type: String, required: true }
 });
 const emit = defineEmits(["expandRow", "exportCitation"]);
 
@@ -230,7 +231,7 @@ async function showInExplorer() {
   for (let project of projectStore.selected) {
     let path = await join(db.config.storagePath, project._id);
     await invoke("show_in_folder", {
-      path: path,
+      path: path
     });
   }
 }
@@ -322,7 +323,7 @@ async function onAttachFile() {
  */
 async function setFavorite(isFavorite: boolean) {
   await projectStore.updateProject(props.projectId, {
-    favorite: isFavorite,
+    favorite: isFavorite
   } as Project);
 }
 

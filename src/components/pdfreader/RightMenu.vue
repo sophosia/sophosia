@@ -3,9 +3,8 @@
     v-model="rightMenuTab"
     dense
     align="justify"
-    style="background: var(--color-rightmenu-tabs-bkgd)"
+    class="right-menu-tabs"
     indicator-color="transparent"
-    active-color="primary"
   >
     <q-tab
       name="metaInfoTab"
@@ -34,10 +33,7 @@
   </q-tabs>
   <!-- q-tab height: 36px -->
   <q-tab-panels
-    style="
-      height: calc(100% - 36px);
-      background: var(--color-rightmenu-tab-panel-bkgd);
-    "
+    class="right-menu-panel"
     v-model="rightMenuTab"
   >
     <q-tab-panel name="metaInfoTab">

@@ -6,6 +6,7 @@
     auto-close
     transition-duration="0"
     data-cy="menu"
+    class="menu"
   >
     <q-list
       v-if="menuType === 'note'"
@@ -119,7 +120,7 @@
 </template>
 <script setup lang="ts">
 const props = defineProps({
-  menuType: { type: String, required: true },
+  menuType: { type: String, required: true }
 });
 const emit = defineEmits([
   "copyId",
@@ -128,6 +129,6 @@ const emit = defineEmits([
   "openItem",
   "deleteItem",
   "setRenaming",
-  "renamePDF",
+  "renamePDF"
 ]);
 </script>

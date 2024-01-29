@@ -3,6 +3,7 @@
     square
     touch-position
     context-menu
+    class="menu"
   >
     <q-list dense>
       <q-item
@@ -99,7 +100,7 @@
 import { NoteType } from "src/backend/database";
 
 const props = defineProps({
-  projectId: { type: String, required: true },
+  projectId: { type: String, required: true }
 });
 
 const emit = defineEmits([
@@ -109,6 +110,6 @@ const emit = defineEmits([
   "addNote",
   "addFolder",
   "closeProject",
-  "exportCitation",
+  "exportCitation"
 ]);
 </script>

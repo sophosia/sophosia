@@ -333,29 +333,3 @@ function resizeCard(e: MouseEvent) {
 
 defineExpose({ close });
 </script>
-<style lang="scss">
-.peekCard {
-  position: absolute !important;
-  background: var(--color-pdfreader-viewer-bkgd);
-  display: none;
-  z-index: 1000;
-  border: 1px solid var(--q-edge);
-
-  &:hover {
-    box-shadow: 0 0 0px 2px rgba($primary, 0.8) !important;
-    z-index: 1001 !important;
-  }
-  &:active {
-    box-shadow: 0 0 0px 2px rgba($primary, 0.8) !important;
-    z-index: 1001 !important;
-  }
-}
-.peekContainer {
-  position: absolute;
-  left: 0;
-  top: 0;
-  overflow: auto;
-  height: 100%;
-  width: 100%;
-}
-</style>

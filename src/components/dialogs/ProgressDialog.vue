@@ -3,7 +3,7 @@
     v-model="progressDialog.visible"
     persistent
   >
-    <q-card style="width: 50vw">
+    <q-card class="progress-dialog dialog">
       <q-card-section>
         <div class="text-h6">{{ $t("moving-files") }}</div>
       </q-card-section>

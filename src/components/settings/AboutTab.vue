@@ -19,22 +19,20 @@
           <div>
             <q-btn
               v-if="!isUpdateAvailable"
+              class="buttons"
               unelevated
-              square
               :ripple="false"
               no-caps
               :label="$t('check-for-updates')"
-              color="primary"
               @click="checkForUpdate"
             />
             <q-btn
               v-else
               unelevated
-              square
+              class="buttons"
               :ripple="false"
               no-caps
               :label="$t('download-updates')"
-              color="primary"
               @click="downloadUpdate"
               :disable="disabled"
             />
@@ -105,8 +103,3 @@ async function downloadUpdate() {
   await installUpdate();
 }
 </script>
-<style scoped>
-.card {
-  background: var(--color-settings-card-bkgd);
-}
-</style>

@@ -14,7 +14,10 @@
           <template #type>{{ $t("project") }}</template>
         </i18n-t>
       </q-tooltip>
-      <q-menu square>
+      <q-menu
+        square
+        class="menu"
+      >
         <q-list dense>
           <q-item
             clickable
@@ -67,8 +70,6 @@
 
     <q-input
       outlined
-      dense
-      square
       class="actionbar-input"
       :placeholder="$t('search', { type: $t('local') })"
       v-model="searchText"
@@ -92,7 +93,6 @@
       size="0.8rem"
       padding="none"
       :ripple="false"
-      toggle-color="primary"
       :options="[{ value: true, icon: 'mdi-format-list-bulleted' }]"
     >
       <q-tooltip>{{ $t("info") }}</q-tooltip>
@@ -175,14 +175,16 @@ function addByID() {
   emit("showIdentifierDialog");
 }
 </script>
-<style lang="scss">
+<stlye lang="scss" scoped>
+//here to prevent conflict with general tabs selector in global scss file
 .actionbar-input {
-  /* for sizing the q-input */
-  .q-field__control {
-    height: min(1.8rem, 36px) !important;
-  }
-  .q-field__marginal {
-    height: min(1.8rem, 36px) !important;
-  }
+  border-radius: 8px;
 }
-</style>
+.q-field__control {
+  height: min(2rem, 36px) !important;
+  border-radius: 8px !important;
+}
+.q-field__marginal {
+  height: min(2rem, 36px) !important;
+}
+</stlye>
