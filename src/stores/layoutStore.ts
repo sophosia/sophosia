@@ -34,9 +34,9 @@ export const useLayoutStore = defineStore("layoutStore", {
     closedItemId: "",
 
     // sizes
+    ribbonToggledBtnUid: "",
     leftMenuSize: 20,
     showLeftMenu: false,
-    showPDFMenuView: false,
     libraryRightMenuSize: 30,
     showLibraryRightMenu: false,
     showWelcomeCarousel: true,
@@ -208,19 +208,6 @@ export const useLayoutStore = defineStore("layoutStore", {
         this.showWelcomeCarousel = !this.showWelcomeCarousel;
       } else {
         this.showWelcomeCarousel = visible;
-      }
-    },
-
-    /**
-     * Toggle left menu
-     * If visible is given, set the state as it is
-     * @param visible
-     */
-    toggleLeftMenu(visible?: boolean) {
-      if (visible === undefined) {
-        this.showLeftMenu = !this.showLeftMenu;
-      } else {
-        this.showLeftMenu = visible;
       }
     },
   },

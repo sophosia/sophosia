@@ -1,6 +1,6 @@
 <template>
   <ProjectNavigator
-    v-if="stateStore.ribbonToggledBtnUid == 'projectNavigator'"
+    v-if="layoutStore.ribbonToggledBtnUid == 'projectNavigator'"
   />
   <PluginView
     v-else-if="!!toggledUid"
@@ -8,16 +8,16 @@
   />
 </template>
 <script setup lang="ts">
-import { useStateStore } from "src/stores/stateStore";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { nextTick, ref, watch } from "vue";
 import PluginView from "./PluginView.vue";
 import ProjectNavigator from "./ProjectNavigator.vue";
 
-const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 // refresh the plugin view whenever the pluginId is changed
 const toggledUid = ref("");
 watch(
-  () => stateStore.ribbonToggledBtnUid,
+  () => layoutStore.ribbonToggledBtnUid,
   async (uid) => {
     toggledUid.value = "";
     await nextTick();

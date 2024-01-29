@@ -19,10 +19,10 @@
         :limits="[0, 60]"
         separator-style="background: var(--q-edge)"
         :separator-class="{
-          'q-splitter-separator': stateStore.showLibraryRightMenu,
-          hidden: !stateStore.showLibraryRightMenu,
+          'q-splitter-separator': layoutStore.showLibraryRightMenu,
+          hidden: !layoutStore.showLibraryRightMenu,
         }"
-        :disable="!stateStore.showLibraryRightMenu"
+        :disable="!layoutStore.showLibraryRightMenu"
         v-model="rightMenuSize"
         emit-immediately
         @update:model-value="(size: number) => resizeRightMenu(size)"
@@ -86,11 +86,13 @@ import {
   identifierDialog,
   importDialog,
 } from "src/components/dialogs/dialogController";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/stateStore";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
+const layoutStore = useLayoutStore();
 
 /*********************************
  * Data
@@ -115,8 +117,8 @@ watch(
 onMounted(async () => {
   projectStore.loadProjects(stateStore.selectedFolderId);
   // rightmenu
-  if (stateStore.showLibraryRightMenu)
-    rightMenuSize.value = stateStore.libraryRightMenuSize;
+  if (layoutStore.showLibraryRightMenu)
+    rightMenuSize.value = layoutStore.libraryRightMenuSize;
 });
 
 /************************************************
@@ -267,14 +269,14 @@ async function exportFolder(
  * MetaInfoTab
  **************************************************/
 watch(
-  () => stateStore.showLibraryRightMenu,
+  () => layoutStore.showLibraryRightMenu,
   (visible: boolean) => {
     if (visible) {
       // if visible, the left menu has at least 10 unit width
-      rightMenuSize.value = Math.max(stateStore.libraryRightMenuSize, 15);
+      rightMenuSize.value = Math.max(layoutStore.libraryRightMenuSize, 15);
     } else {
       // if not visible, record the size and close the menu
-      stateStore.libraryRightMenuSize = rightMenuSize.value;
+      layoutStore.libraryRightMenuSize = rightMenuSize.value;
       rightMenuSize.value = 0;
     }
   }
@@ -287,8 +289,8 @@ watch(
 function resizeRightMenu(size: number) {
   if (size < 20) {
     rightMenuSize.value = 0;
-    stateStore.showLibraryRightMenu = false;
+    layoutStore.showLibraryRightMenu = false;
   }
-  stateStore.libraryRightMenuSize = size > 10 ? size : 30;
+  layoutStore.libraryRightMenuSize = size > 10 ? size : 30;
 }
 </script>

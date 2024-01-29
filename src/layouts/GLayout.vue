@@ -104,7 +104,7 @@ watch(
 );
 
 watch(
-  () => [stateStore.showLeftMenu, stateStore.leftMenuSize],
+  () => [layoutStore.showLeftMenu, layoutStore.leftMenuSize],
   () => {
     resize();
   }
@@ -318,7 +318,7 @@ onMounted(async () => {
 
     glItems.value.set(refId, {
       container: container,
-      glc: (component as any)[0]
+      glc: (component as any)[0],
     });
 
     container.virtualRectingRequiredEvent = (container, width, height) =>
@@ -340,7 +340,7 @@ onMounted(async () => {
 
     return {
       component,
-      virtual: true
+      virtual: true,
     };
   };
 

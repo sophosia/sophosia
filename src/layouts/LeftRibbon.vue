@@ -5,7 +5,7 @@
   >
     <div>
       <q-btn-toggle
-        v-model="stateStore.ribbonToggledBtnUid"
+        v-model="layoutStore.ribbonToggledBtnUid"
         style="position: absolute; height: 36px"
         class="q-mx-xs"
         spread
@@ -157,9 +157,9 @@ watch(
 );
 
 watch(
-  () => stateStore.ribbonToggledBtnUid,
+  () => layoutStore.ribbonToggledBtnUid,
   (id: string | undefined) => {
-    stateStore.showLeftMenu = !!id;
+    layoutStore.showLeftMenu = !!id;
   }
 );
 

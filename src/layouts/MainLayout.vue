@@ -6,7 +6,7 @@
   >
     <template v-slot:before>
       <LeftRibbon
-        v-model:isLeftMenuVisible="stateStore.showLeftMenu"
+        v-model:isLeftMenuVisible="layoutStore.showLeftMenu"
         @openPage="(page: Page) => layoutStore.openPage(page)"
       />
     </template>
@@ -16,9 +16,9 @@
         emit-immediately
         separator-style="background: var(--q-edge)"
         :separator-class="{
-          'q-splitter-separator': stateStore.showLeftMenu,
+          'q-splitter-separator': layoutStore.showLeftMenu,
         }"
-        :disable="!stateStore.showLeftMenu"
+        :disable="!layoutStore.showLeftMenu"
         v-model="leftMenuSize"
         @update:model-value="(size) => resizeLeftMenu(size)"
       >
@@ -75,15 +75,15 @@ const splitterLimits = ref([15, 60]);
  * Watchers
  *******************/
 watch(
-  () => stateStore.showLeftMenu,
+  () => layoutStore.showLeftMenu,
   (visible: boolean) => {
     if (visible) {
       // if visible, the left menu has at least 10 unit width
-      leftMenuSize.value = Math.max(stateStore.leftMenuSize, 15);
+      leftMenuSize.value = Math.max(layoutStore.leftMenuSize, 15);
       splitterLimits.value = [15, 60];
     } else {
       // if not visible, record the size and close the menu
-      stateStore.leftMenuSize = leftMenuSize.value;
+      layoutStore.leftMenuSize = leftMenuSize.value;
       splitterLimits.value = [0, 60];
 
       leftMenuSize.value = 0;
@@ -113,10 +113,10 @@ stateStore.$subscribe((mutation, state) => {
 async function resizeLeftMenu(size: number) {
   if (size < 8) {
     leftMenuSize.value = 0;
-    stateStore.ribbonToggledBtnUid = "";
-    // this will trigger stateStore.showLeftMenu = false;
+    layoutStore.ribbonToggledBtnUid = "";
+    // this will trigger layoutStore.showLeftMenu = false;
   }
-  stateStore.leftMenuSize = size > 10 ? size : 20;
+  layoutStore.leftMenuSize = size > 10 ? size : 20;
   stateStore.saveAppState();
 }
 
@@ -142,7 +142,7 @@ onMounted(async () => {
   pluginManager.init(); // initialize pluginManager after storagePath is set
 
   // apply layout related settings
-  if (stateStore.showLeftMenu) leftMenuSize.value = stateStore.leftMenuSize;
+  if (layoutStore.showLeftMenu) leftMenuSize.value = layoutStore.leftMenuSize;
 
   // the openItemIds are ready
   // we can load the projectTree

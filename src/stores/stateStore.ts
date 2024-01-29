@@ -72,35 +72,6 @@ export const useStateStore = defineStore("stateStore", {
       } as AppState;
     },
 
-    /**
-     * Layout Control
-     */
-    /**
-     * Toggle left menu
-     * If visible is given, set the state as it is
-     * @param visible
-     */
-    toggleLeftMenu(visible?: boolean) {
-      if (visible === undefined) {
-        this.showLeftMenu = !this.showLeftMenu;
-      } else {
-        this.showLeftMenu = visible;
-      }
-    },
-
-    /**
-     * Toggle pdf floating menu
-     * If visible is given, set the state as it is
-     * @param visible
-     */
-    togglePDFMenuView(visible?: boolean) {
-      if (visible === undefined) {
-        this.showPDFMenuView = !this.showPDFMenuView;
-      } else {
-        this.showPDFMenuView = visible;
-      }
-    },
-
     changeTheme(theme: string) {
       // ui
       switch (theme) {

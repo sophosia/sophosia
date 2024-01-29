@@ -84,7 +84,7 @@
     <q-space />
 
     <q-btn-toggle
-      v-model="stateStore.showLibraryRightMenu"
+      v-model="layoutStore.showLibraryRightMenu"
       clearable
       flat
       dense
@@ -104,20 +104,20 @@
 // types
 import { open } from "@tauri-apps/api/dialog";
 import { debounce } from "quasar";
-import { useStateStore } from "src/stores/stateStore";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { computed } from "vue";
 
-const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 
 const props = defineProps({
-  searchString: { type: String, required: true }
+  searchString: { type: String, required: true },
 });
 const emit = defineEmits([
   "update:searchString",
   "addEmptyProject",
   "addByFiles",
   "addByCollection",
-  "showIdentifierDialog"
+  "showIdentifierDialog",
 ]);
 
 const searchText = computed({
@@ -126,7 +126,7 @@ const searchText = computed({
   },
   set: debounce((text: string) => {
     emit("update:searchString", text);
-  }, 500)
+  }, 500),
 });
 
 /**
@@ -140,7 +140,7 @@ async function addByFiles(type: string) {
     case "file":
       filePath = await open({
         multiple: true,
-        filters: [{ name: "*.pdf", extensions: ["pdf"] }]
+        filters: [{ name: "*.pdf", extensions: ["pdf"] }],
       });
 
       if (Array.isArray(filePath)) emit("addByFiles", filePath);
@@ -152,8 +152,8 @@ async function addByFiles(type: string) {
       filePath = await open({
         multiple: false,
         filters: [
-          { name: "*.bib, *.ris, *.json", extensions: ["bib", "ris", "json"] }
-        ]
+          { name: "*.bib, *.ris, *.json", extensions: ["bib", "ris", "json"] },
+        ],
       });
       if (!filePath) return;
       emit("addByCollection", filePath);
