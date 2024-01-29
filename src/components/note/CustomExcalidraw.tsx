@@ -19,7 +19,7 @@ import {
 } from "@tauri-apps/api/fs";
 import { join } from "@tauri-apps/api/path";
 import { debounce } from "quasar";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { db } from "src/backend/database";
 import { loadNote, saveNote } from "src/backend/project/note";
 import "src/css/excalidraw/theme.scss";
