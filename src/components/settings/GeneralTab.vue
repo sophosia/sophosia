@@ -327,3 +327,10 @@ async function updateCiteKeys() {
   $q.notify(t("citation-keys-updated"));
 }
 </script>
+<style>
+/* TODO: this is to fix the weird height issue of q-selection when selecting, remove this later */
+.q-field--dense .q-field__control,
+.q-field--dense .q-field__marginal {
+  height: 40px !important;
+}
+</style>

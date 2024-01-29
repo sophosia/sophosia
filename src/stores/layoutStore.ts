@@ -169,10 +169,6 @@ export const useLayoutStore = defineStore("layoutStore", {
           }
         }
       }
-
-      // when loading layout, the components are supposed to be added by GLayout.loadLayout
-      // if initialized is not false, GLayout.addComponent will take control and is not we want
-      this.initialized = true;
       return config;
     },
 

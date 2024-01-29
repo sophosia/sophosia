@@ -35,7 +35,7 @@ import {
   ResolvedComponentItemConfig,
   RowOrColumn,
   Stack,
-  VirtualLayout
+  VirtualLayout,
 } from "golden-layout";
 import { type GLState, type Page } from "src/backend/database";
 import GLComponent from "src/pages/GLComponent.vue";
@@ -48,7 +48,7 @@ import {
   nextTick,
   onMounted,
   ref,
-  watch
+  watch,
 } from "vue";
 import { useI18n } from "vue-i18n";
 const { t, locale } = useI18n({ useScope: "global" });
@@ -390,9 +390,13 @@ onMounted(async () => {
     });
   });
 
+  // when loading layout, the components are supposed to be added by GLayout.loadLayout
+  // if initialized is not false, GLayout.addComponent will take control and is not we want
+  layoutStore.initialized = false;
   await loadGLLayout();
   translateSpecialPageTitles();
   focusById(layoutStore.currentItemId);
+  layoutStore.initialized = true;
 });
 
 /*************
