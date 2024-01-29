@@ -35,7 +35,7 @@ import {
   ResolvedComponentItemConfig,
   RowOrColumn,
   Stack,
-  VirtualLayout
+  VirtualLayout,
 } from "golden-layout";
 import { type GLState, type Page } from "src/backend/database";
 import GLComponent from "src/pages/GLComponent.vue";
@@ -48,7 +48,7 @@ import {
   nextTick,
   onMounted,
   ref,
-  watch
+  watch,
 } from "vue";
 import { useI18n } from "vue-i18n";
 const { t, locale } = useI18n({ useScope: "global" });
@@ -75,6 +75,7 @@ const layoutStore = useLayoutStore();
 watch(
   () => layoutStore.currentItemId,
   (id) => {
+    console.log("focus on id", id);
     focusById(id);
   }
 );
@@ -105,7 +106,7 @@ watch(
 );
 
 watch(
-  () => [stateStore.showLeftMenu, stateStore.leftMenuSize],
+  () => [layoutStore.showLeftMenu, layoutStore.leftMenuSize],
   () => {
     resize();
   }
@@ -319,7 +320,7 @@ onMounted(async () => {
 
     glItems.value.set(refId, {
       container: container,
-      glc: (component as any)[0]
+      glc: (component as any)[0],
     });
 
     container.virtualRectingRequiredEvent = (container, width, height) =>
@@ -341,7 +342,7 @@ onMounted(async () => {
 
     return {
       component,
-      virtual: true
+      virtual: true,
     };
   };
 
@@ -389,12 +390,12 @@ onMounted(async () => {
     });
   });
 
-  // when loading layout, the components are added by GLayout.loadLayout
+  // when loading layout, the components are supposed to be added by GLayout.loadLayout
   // if initialized is not false, GLayout.addComponent will take control and is not we want
   layoutStore.initialized = false;
   await loadGLLayout();
   translateSpecialPageTitles();
-  focusById(stateStore.currentItemId);
+  focusById(layoutStore.currentItemId);
   layoutStore.initialized = true;
 });
 

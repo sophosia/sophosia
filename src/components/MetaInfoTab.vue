@@ -242,7 +242,7 @@
             @click="
               async () => {
                 await invoke('show_in_folder', {
-                  path: meta!.path as string
+                  path: meta!.path as string,
                 });
               }
             "
@@ -257,7 +257,7 @@
           class="chip"
           :ripple="false"
           clickable
-          @click="stateStore.openItem(meta?._id)"
+          @click="layoutStore.openItem(meta?._id)"
         >
           <q-icon name="img:icons/pdf.png"></q-icon>
           <span class="q-ml-xs ellipsis">{{ file }}</span>
@@ -391,9 +391,9 @@ import { getFolder } from "src/backend/project/folder";
 import { generateCiteKey, getMeta } from "src/backend/project/meta";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
-import { useStateStore } from "src/stores/stateStore";
+import { useSettingStore } from "src/stores/settingStore";
 const projectStore = useProjectStore();
-const stateStore = useStateStore();
+const settingStore = useSettingStore();
 const layoutStore = useLayoutStore();
 
 const props = defineProps({ project: Object as PropType<Project> });
@@ -412,7 +412,7 @@ const title = computed({
     if (!meta.value) return;
     meta.value.title = newTitle;
     meta.value.label = newTitle;
-  }
+  },
 });
 const year = computed({
   get() {
@@ -423,11 +423,11 @@ const year = computed({
     if (!meta.value) return;
     if (!meta.value.issued) {
       meta.value.issued = {
-        "date-parts": [[1, 1]] // initialize it
+        "date-parts": [[1, 1]], // initialize it
       };
     }
     meta.value.issued["date-parts"][0][0] = parseInt(newYear);
-  }
+  },
 });
 const authors = computed(() => {
   let authors = meta.value?.author;
@@ -478,12 +478,12 @@ async function modifyInfo() {
   if (meta.value === undefined) return;
   meta.value["citation-key"] = generateCiteKey(
     meta.value,
-    stateStore.settings.citeKeyRule
+    settingStore.citeKeyRule
   );
   projectStore.updateProject(meta.value._id, meta.value);
   layoutStore.renamePage(meta.value._id, {
     id: meta.value._id,
-    label: meta.value.label
+    label: meta.value.label,
   } as Page);
 }
 
@@ -579,7 +579,7 @@ async function getReferences() {
   for (let [i, ref] of meta.value.reference.entries()) {
     try {
       getMeta([ref.DOI || ref.key], "bibliography", {
-        format: "html"
+        format: "html",
       }).then((text: string | Meta[]) => {
         if (text === null) return;
         let match = (text as string).match(/(https[a-zA-Z0-9:\.\/\-\_]+)/g);

@@ -164,20 +164,20 @@ import { computed, reactive, ref } from "vue";
 import { Config, Meta, db } from "src/backend/database";
 import { generateCiteKey } from "src/backend/project/meta";
 import { getAllProjects } from "src/backend/project/project";
-import { useStateStore } from "src/stores/stateStore";
 // utils
 import { useQuasar } from "quasar";
+import { useSettingStore } from "src/stores/settingStore";
 import { useI18n } from "vue-i18n";
 const $q = useQuasar();
 
-const stateStore = useStateStore();
+const settingStore = useSettingStore();
 const { locale, t } = useI18n({ useScope: "global" });
 
 // options
 const languageOptions = [
   { value: "en_US", label: "English (en)" },
   { value: "zh_CN", label: "中文 (zh)" },
-  { value: "fr_CA", label: "Français (fr)" }
+  { value: "fr_CA", label: "Français (fr)" },
 ];
 
 const translateLabels = [
@@ -201,7 +201,7 @@ const translateLabels = [
   "தமிழ் (ta)",
   "Tiếng Việt (vi)",
   "한국어 (ko)",
-  "فارسی (fa)"
+  "فارسی (fa)",
 ];
 
 const themeOptions = ["dark", "light"];
@@ -213,25 +213,25 @@ const exampleMetas = [
   {
     title: "A Long Title",
     author: [{ family: "Last", given: "First" }],
-    issued: { "date-parts": [[2023]] }
-  },
-  {
-    title: "A Long Title",
-    author: [
-      { family: "Last1", given: "First1" },
-      { family: "Last2", given: "First2" }
-    ],
-    issued: { "date-parts": [[2023]] }
+    issued: { "date-parts": [[2023]] },
   },
   {
     title: "A Long Title",
     author: [
       { family: "Last1", given: "First1" },
       { family: "Last2", given: "First2" },
-      { family: "Last3", given: "First3" }
     ],
-    issued: { "date-parts": [[2023]] }
-  }
+    issued: { "date-parts": [[2023]] },
+  },
+  {
+    title: "A Long Title",
+    author: [
+      { family: "Last1", given: "First1" },
+      { family: "Last2", given: "First2" },
+      { family: "Last3", given: "First3" },
+    ],
+    issued: { "date-parts": [[2023]] },
+  },
 ] as Meta[];
 
 const language = computed({
@@ -247,44 +247,42 @@ const language = computed({
   set(option: { value: string; label: string }) {
     locale.value = option.value;
     db.setConfig({ language: option.value } as Config);
-  }
+  },
 });
 
 const theme = computed({
   get() {
-    return stateStore.settings.theme;
+    return settingStore.theme;
   },
   set(option: string) {
-    stateStore.changeTheme(option);
-  }
+    settingStore.changeTheme(option);
+  },
 });
 
 const fontSize = computed({
   get() {
-    return parseFloat(stateStore.settings.fontSize);
+    return parseFloat(settingStore.fontSize);
   },
   set(size: number) {
-    stateStore.changeFontSize(size);
-  }
+    settingStore.changeFontSize(size);
+  },
 });
 
 const translate = computed({
   get() {
-    return stateStore.settings.translateLanguage;
+    return settingStore.translateLanguage;
   },
   set(language: string) {
-    stateStore.changeTranslate(language);
-  }
+    settingStore.changeTranslate(language);
+  },
 });
 
 // citeKeyRule = "author<connector>title<connector>year"
-// stateStore.settings.citeKeyRule.split(/[^a-z]/) => ["author", "title", "year"]
-const citeKeyPartKeys = reactive(
-  stateStore.settings.citeKeyRule.split(/[^a-z]/)
-);
-// stateStore.settings.citeKeyRule.split(/[a-z]/).filter((s) => s) => [ connector, connector ]
+// settingStore.citeKeyRule.split(/[^a-z]/) => ["author", "title", "year"]
+const citeKeyPartKeys = reactive(settingStore.citeKeyRule.split(/[^a-z]/));
+// settingStore.citeKeyRule.split(/[a-z]/).filter((s) => s) => [ connector, connector ]
 const citeKeyConnector = ref(
-  stateStore.settings.citeKeyRule.split(/[a-z]/).filter((s) => s)[0]
+  settingStore.citeKeyRule.split(/[a-z]/).filter((s) => s)[0]
 );
 
 /*********************
@@ -302,7 +300,7 @@ function citeKeyExample(meta: Meta) {
     (meta.issued as { "date-parts": any })["date-parts"][0][0]
   }, authors: ${meta.author
     .map((name) => name.given + " " + name.family)
-    .join(", ")} => ${generateCiteKey(meta, stateStore.settings.citeKeyRule)}`;
+    .join(", ")} => ${generateCiteKey(meta, settingStore.citeKeyRule)}`;
 }
 
 /**
@@ -310,10 +308,7 @@ function citeKeyExample(meta: Meta) {
  * Saves the updated citation key rule in the application state.
  */
 function updateCiteKeyRule() {
-  stateStore.settings.citeKeyRule = citeKeyPartKeys.join(
-    citeKeyConnector.value
-  );
-  stateStore.saveAppState();
+  settingStore.citeKeyRule = citeKeyPartKeys.join(citeKeyConnector.value);
 }
 
 /**
@@ -326,9 +321,16 @@ async function updateCiteKeys() {
   for (let project of projects)
     project["citation-key"] = generateCiteKey(
       project,
-      stateStore.settings.citeKeyRule
+      settingStore.citeKeyRule
     );
   await db.bulkDocs(projects);
   $q.notify(t("citation-keys-updated"));
 }
 </script>
+<style>
+/* TODO: this is to fix the weird height issue of q-selection when selecting, remove this later */
+.q-field--dense .q-field__control,
+.q-field--dense .q-field__marginal {
+  height: 40px !important;
+}
+</style>

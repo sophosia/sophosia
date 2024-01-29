@@ -19,10 +19,10 @@
         :limits="[0, 60]"
         separator-style="background: var(--q-edge)"
         :separator-class="{
-          'q-splitter-separator': stateStore.showLibraryRightMenu,
-          hidden: !stateStore.showLibraryRightMenu
+          'q-splitter-separator': layoutStore.showLibraryRightMenu,
+          hidden: !layoutStore.showLibraryRightMenu,
         }"
-        :disable="!stateStore.showLibraryRightMenu"
+        :disable="!layoutStore.showLibraryRightMenu"
         v-model="rightMenuSize"
         emit-immediately
         @update:model-value="(size: number) => resizeRightMenu(size)"
@@ -76,18 +76,20 @@ import {
   exportMeta,
   getMeta,
   getMetaFromFile,
-  importMeta
+  importMeta,
 } from "src/backend/project/meta";
 import {
   exportDialog,
   identifierDialog,
-  importDialog
+  importDialog,
 } from "src/components/dialogs/dialogController";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useStateStore } from "src/stores/stateStore";
 
 const stateStore = useStateStore();
 const projectStore = useProjectStore();
+const layoutStore = useLayoutStore();
 
 /*********************************
  * Data
@@ -102,7 +104,7 @@ const treeViewSize = ref(20);
 const rightMenuSize = ref(0);
 
 watch(
-  () => stateStore.selectedFolderId,
+  () => projectStore.selectedFolderId,
   async (folderId: string) => {
     projectStore.selected = [];
     projectStore.loadProjects(folderId);
@@ -110,10 +112,10 @@ watch(
 );
 
 onMounted(async () => {
-  projectStore.loadProjects(stateStore.selectedFolderId);
+  projectStore.loadProjects(projectStore.selectedFolderId);
   // rightmenu
-  if (stateStore.showLibraryRightMenu)
-    rightMenuSize.value = stateStore.libraryRightMenuSize;
+  if (layoutStore.showLibraryRightMenu)
+    rightMenuSize.value = layoutStore.libraryRightMenuSize;
 });
 
 /************************************************
@@ -149,7 +151,7 @@ function showImportDialog(collectionPath: string) {
  */
 async function addEmptyProject() {
   // udpate db and ui
-  let project = projectStore.createProject(stateStore.selectedFolderId);
+  let project = projectStore.createProject(projectStore.selectedFolderId);
   projectStore.addProject(project, true);
 }
 
@@ -160,7 +162,7 @@ async function addEmptyProject() {
 async function addProjectsByFiles(filePaths: string[]) {
   for (let filePath of filePaths) {
     try {
-      let project = projectStore.createProject(stateStore.selectedFolderId);
+      let project = projectStore.createProject(projectStore.selectedFolderId);
       await projectStore.addProject(project, true);
       let filename = (await copyFileToProjectFolder(
         filePath,
@@ -170,7 +172,7 @@ async function addProjectsByFiles(filePaths: string[]) {
       await projectStore.updateProject(project._id, {
         path: filename,
         title: title,
-        label: title
+        label: title,
       } as Project);
       // do not use await since this task takes time
       getMetaFromFile(filePath).then((meta) => {
@@ -210,7 +212,7 @@ async function addProjectsByCollection(
   let metas = await importMeta(collectionPath);
   for (let meta of metas) {
     // add a new project to db and update it with meta
-    let project = projectStore.createProject(stateStore.selectedFolderId);
+    let project = projectStore.createProject(projectStore.selectedFolderId);
     await projectStore.addProject(project, true);
     await projectStore.updateProject(project._id, meta as Project);
   }
@@ -224,7 +226,7 @@ async function addProjectByIdentifier(identifier: string) {
   const metas = await getMeta([identifier], "json");
   const meta = metas[0];
   // add a new project to db and update it with meta
-  const project = projectStore.createProject(stateStore.selectedFolderId);
+  const project = projectStore.createProject(projectStore.selectedFolderId);
   await projectStore.addProject(project, true);
   await projectStore.updateProject(project._id, meta as Project);
 }
@@ -264,14 +266,14 @@ async function exportFolder(
  * MetaInfoTab
  **************************************************/
 watch(
-  () => stateStore.showLibraryRightMenu,
+  () => layoutStore.showLibraryRightMenu,
   (visible: boolean) => {
     if (visible) {
       // if visible, the left menu has at least 10 unit width
-      rightMenuSize.value = Math.max(stateStore.libraryRightMenuSize, 15);
+      rightMenuSize.value = Math.max(layoutStore.libraryRightMenuSize, 15);
     } else {
       // if not visible, record the size and close the menu
-      stateStore.libraryRightMenuSize = rightMenuSize.value;
+      layoutStore.libraryRightMenuSize = rightMenuSize.value;
       rightMenuSize.value = 0;
     }
   }
@@ -284,8 +286,8 @@ watch(
 function resizeRightMenu(size: number) {
   if (size < 20) {
     rightMenuSize.value = 0;
-    stateStore.showLibraryRightMenu = false;
+    layoutStore.showLibraryRightMenu = false;
   }
-  stateStore.libraryRightMenuSize = size > 10 ? size : 30;
+  layoutStore.libraryRightMenuSize = size > 10 ? size : 30;
 }
 </script>

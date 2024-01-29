@@ -1,41 +1,73 @@
 import { defineStore } from "pinia";
-import { Note, NoteType, Project, FolderOrNote } from "src/backend/database";
+import {
+  AppState,
+  FolderOrNote,
+  Note,
+  NoteType,
+  Project,
+  SpecialFolder,
+} from "src/backend/database";
 import {
   addFolder,
-  createFolder,
-  deleteFolder,
-  renameFolder
-} from "src/backend/project/note";
-import {
-  getNote,
   addNote,
+  createFolder,
+  createNote,
+  deleteFolder,
   deleteNote,
+  getNote,
+  renameFolder,
   renameNote,
-  createNote
 } from "src/backend/project/note";
 import {
-  getProjects,
-  getProject,
   addProject,
-  deleteProject,
-  updateProject,
-  renamePDF,
   attachPDF,
-  createProject
+  createProject,
+  deleteProject,
+  getProject,
+  getProjects,
+  renamePDF,
+  updateProject,
 } from "src/backend/project/project";
 import { sortTree } from "src/backend/project/utils";
 
 export const useProjectStore = defineStore("projectStore", {
   state: () => ({
-    ready: false, // is project loaded
+    initialized: false, // is project loaded
     selected: [] as (Project | Note)[], // projectIds selected by checkbox
     projects: [] as Project[], // array of projects
     openedProjects: [] as Project[], // array of opened projects
 
-    updatedProject: {} as Project // for updating window tab name
+    updatedProject: {} as Project, // for updating window tab name
+    selectedFolderId: SpecialFolder.LIBRARY.toString(), // selected category in library page
   }),
 
   actions: {
+    /**
+     * Given the appState, initialize the store
+     * Will load the openedProjects and the projects corresponding to the selectedFolderId
+     * @param {AppState} state
+     */
+    async loadState(state: AppState) {
+      if (this.initialized) return;
+      this.selectedFolderId = state.selectedFolderId;
+      await this.loadOpenedProjects(state.openedProjectIds);
+      await this.loadProjects(state.selectedFolderId);
+      this.initialized = true;
+    },
+
+    /**
+     * Output the data needs to be saved
+     * @returns {AppState} The data needs to be saved
+     */
+    saveState(): AppState {
+      const projectIds = this.openedProjects.map((project) => project._id);
+      const uniqueIds = new Set(projectIds);
+      return {
+        openedProjectIds: [...uniqueIds],
+        selectedFolderId: this.selectedFolderId,
+      } as AppState;
+    },
+
     /**
      * Retrieves a project from the store based on its projectId.
      * @param projectId - The unique identifier of the project.
@@ -53,7 +85,7 @@ export const useProjectStore = defineStore("projectStore", {
     async getProjectFromDB(projectId: string) {
       return await getProject(projectId, {
         includePDF: true,
-        includeNotes: true
+        includeNotes: true,
       });
     },
 
@@ -154,9 +186,8 @@ export const useProjectStore = defineStore("projectStore", {
     async loadProjects(folderId: string) {
       this.projects = await getProjects(folderId, {
         includePDF: true,
-        includeNotes: true
+        includeNotes: true,
       });
-      this.ready = true;
     },
 
     /**
@@ -258,6 +289,6 @@ export const useProjectStore = defineStore("projectStore", {
       let project = (await this.getProjectFromDB(projectId)) as Project;
       sortTree(project);
       this._updateProjectUI(project);
-    }
-  }
+    },
+  },
 });

@@ -18,17 +18,17 @@
 import { sep } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { db } from "src/backend/database";
-import { useStateStore } from "src/stores/stateStore";
+import { useSettingStore } from "src/stores/settingStore";
 import Vditor from "vditor/dist/method.min";
 import { onMounted, PropType, ref, watchEffect } from "vue";
-const stateStore = useStateStore();
+const settingStore = useSettingStore();
 
 const props = defineProps({
   content: { type: String },
   data: {
     type: Object as PropType<{ content: string }>,
-    required: true
-  }
+    required: true,
+  },
 });
 const emit = defineEmits(["clickLink"]);
 const card = ref();
@@ -38,14 +38,14 @@ const supposeToClose = ref(true);
 watchEffect(() => {
   if (props.data.content && mdContentDiv.value)
     Vditor.preview(mdContentDiv.value, props.data.content, {
-      theme: stateStore.settings.theme === "dark" ? "dark" : "classic",
-      mode: stateStore.settings.theme,
+      theme: settingStore.theme === "dark" ? "dark" : "classic",
+      mode: settingStore.theme,
       hljs: {
         lineNumber: true,
-        style: stateStore.settings.theme === "dark" ? "native" : "emacs"
+        style: settingStore.theme === "dark" ? "native" : "emacs",
       },
       after: changeLinks,
-      cdn: "vditor"
+      cdn: "vditor",
     });
 });
 

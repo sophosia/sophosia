@@ -134,7 +134,7 @@
       </q-item>
 
       <q-item
-        v-if="stateStore.selectedFolderId != SpecialFolder.LIBRARY.toString()"
+        v-if="projectStore.selectedFolderId != SpecialFolder.LIBRARY.toString()"
         clickable
         v-close-popup
         @click="showDeleteDialog(false)"
@@ -219,7 +219,7 @@ async function addNote(noteType: NoteType) {
  */
 async function openProject() {
   for (let project of projectStore.selected) {
-    stateStore.openItem(project._id);
+    layoutStore.openItem(project._id);
     await nextTick();
   }
 }
@@ -246,7 +246,7 @@ function showDeleteDialog(deleteFromDB: boolean) {
   deleteDialog.isDeleteFromDB = deleteFromDB;
   deleteDialog.onConfirm(() =>
     deleteProject(
-      stateStore.selectedFolderId,
+      projectStore.selectedFolderId,
       deleteDialog.deleteProjects,
       deleteDialog.isDeleteFromDB
     )

@@ -6,7 +6,7 @@
   >
     <template v-slot:before>
       <LeftRibbon
-        v-model:isLeftMenuVisible="stateStore.showLeftMenu"
+        v-model:isLeftMenuVisible="layoutStore.showLeftMenu"
         @openPage="(page: Page) => layoutStore.openPage(page)"
       />
     </template>
@@ -16,9 +16,9 @@
         emit-immediately
         separator-style="background: var(--q-edge)"
         :separator-class="{
-          'q-splitter-separator': stateStore.showLeftMenu
+          'q-splitter-separator': layoutStore.showLeftMenu,
         }"
-        :disable="!stateStore.showLeftMenu"
+        :disable="!layoutStore.showLeftMenu"
         v-model="leftMenuSize"
         @update:model-value="(size) => resizeLeftMenu(size)"
       >
@@ -51,14 +51,12 @@ import "src/css/goldenlayout/base.scss";
 import "src/css/goldenlayout/theme.scss";
 import GLayout from "./GLayout.vue";
 // db
-import { useStateStore } from "src/stores/stateStore";
 // utils
 import { listen } from "@tauri-apps/api/event";
 import pluginManager from "src/backend/plugin";
 import { useLayoutStore } from "src/stores/layoutStore";
-import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 
-const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
 
 /*************************************************
@@ -75,32 +73,21 @@ const splitterLimits = ref([15, 60]);
  * Watchers
  *******************/
 watch(
-  () => stateStore.showLeftMenu,
+  () => layoutStore.showLeftMenu,
   (visible: boolean) => {
     if (visible) {
       // if visible, the left menu has at least 10 unit width
-      leftMenuSize.value = Math.max(stateStore.leftMenuSize, 15);
+      leftMenuSize.value = Math.max(layoutStore.leftMenuSize, 15);
       splitterLimits.value = [15, 60];
     } else {
       // if not visible, record the size and close the menu
-      stateStore.leftMenuSize = leftMenuSize.value;
+      layoutStore.leftMenuSize = leftMenuSize.value;
       splitterLimits.value = [0, 60];
 
       leftMenuSize.value = 0;
     }
-    nextTick(() => {
-      stateStore.saveAppState();
-    });
   }
 );
-
-// onLayouChanged, appstate and layout will be saved
-layoutStore.$subscribe((_, state) => {
-  if (state.initialized) stateStore.currentItemId = state.currentItemId;
-});
-stateStore.$subscribe((mutation, state) => {
-  stateStore.saveAppState();
-});
 
 /*******************************************************
  * Methods
@@ -113,11 +100,10 @@ stateStore.$subscribe((mutation, state) => {
 async function resizeLeftMenu(size: number) {
   if (size < 8) {
     leftMenuSize.value = 0;
-    stateStore.ribbonToggledBtnUid = "";
-    // this will trigger stateStore.showLeftMenu = false;
+    layoutStore.ribbonToggledBtnUid = "";
+    // this will trigger layoutStore.showLeftMenu = false;
   }
-  stateStore.leftMenuSize = size > 10 ? size : 20;
-  stateStore.saveAppState();
+  layoutStore.leftMenuSize = size > 10 ? size : 20;
 }
 
 /**
@@ -142,7 +128,7 @@ onMounted(async () => {
   pluginManager.init(); // initialize pluginManager after storagePath is set
 
   // apply layout related settings
-  if (stateStore.showLeftMenu) leftMenuSize.value = stateStore.leftMenuSize;
+  if (layoutStore.showLeftMenu) leftMenuSize.value = layoutStore.leftMenuSize;
 
   // the openItemIds are ready
   // we can load the projectTree
@@ -153,12 +139,12 @@ onMounted(async () => {
     (window as Window & typeof globalThis & { urlSchemeRequest: string })
       .urlSchemeRequest
   );
-  await stateStore.openItem(itemId);
+  await layoutStore.openItem(itemId);
 
   // listen to the deep link event
   unlisten = await listen("deep-link", async (e) => {
     const itemId = parseDeepLink(e.payload as string);
-    await stateStore.openItem(itemId);
+    await layoutStore.openItem(itemId);
   });
 });
 

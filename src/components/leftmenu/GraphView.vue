@@ -42,7 +42,7 @@
 import { EdgeUI, NodeUI } from "src/backend/database";
 import { inject, onBeforeUnmount, onMounted, ref, watch } from "vue";
 // db
-import { useStateStore } from "src/stores/stateStore";
+import { useLayoutStore } from "src/stores/layoutStore";
 // cytoscape
 import cytoscape from "cytoscape";
 import cola from "cytoscape-cola";
@@ -52,10 +52,10 @@ cytoscape.use(cola);
 
 const props = defineProps({
   itemId: { type: String, required: true },
-  height: { type: Number, required: true }
+  height: { type: Number, required: true },
 });
 
-const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 const bus = inject("bus") as EventBus;
 
 const specialPages = ref(["library", "settings"]);
@@ -127,26 +127,26 @@ function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
           },
           "background-color": function (el) {
             return el.data("bg");
-          }
+          },
         },
         css: {
           "text-valign": "top",
-          "text-halign": "center"
-        }
+          "text-halign": "center",
+        },
       },
       {
         selector: ":parent",
         css: {
-          "background-color": "grey"
-        }
+          "background-color": "grey",
+        },
       },
       {
         selector: "edge",
         css: {
           "target-arrow-shape": "triangle",
-          "curve-style": "straight"
-        }
-      }
+          "curve-style": "straight",
+        },
+      },
     ] as cytoscape.Stylesheet[],
 
     elements: elements,
@@ -155,15 +155,15 @@ function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
       name: "cola" as any, // cytoscape's type is not good
       animate: false,
       avoidOverlap: true,
-      nodeDimensionsIncludeLabels: true
-    }
+      nodeDimensionsIncludeLabels: true,
+    },
   });
 
   cy.on("tap", "node", function () {
     // MUST use function(){} in order to use this.data
     // this.data is the data of the node
     // we cannot use this to access this.stateStore now
-    stateStore.openItem(this.data("id") as string);
+    layoutStore.openItem(this.data("id") as string);
   });
 }
 

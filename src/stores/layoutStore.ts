@@ -3,29 +3,83 @@ import {
   LayoutConfig,
   ResolvedLayoutConfig,
   RowOrColumnItemConfig,
-  StackItemConfig
+  StackItemConfig,
 } from "golden-layout";
 import { customAlphabet } from "nanoid";
 import { defineStore } from "pinia";
 import { getLayout, updateLayout } from "src/backend/appState";
-import type { GLState, Page } from "src/backend/database";
+import {
+  AppState,
+  NoteType,
+  db,
+  type AnnotationData,
+  type GLState,
+  type Note,
+  type Page,
+  type Project,
+} from "src/backend/database";
+import { getPDF } from "src/backend/project/project";
 import { nextTick } from "vue";
+import { useProjectStore } from "./projectStore";
 const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
 export const useLayoutStore = defineStore("layoutStore", {
   state: () => ({
+    initialized: false,
+    // pages
     currentItemId: "library",
     pages: new Map<string, Page>(), // {refId: Page}
     IdToRef: new Map<string, string>(),
-
-    initialized: false,
-
     addedPage: {} as Page,
     renamedPage: {} as Page,
-    closedItemId: ""
+    closedItemId: "",
+
+    // toggles and sizes
+    ribbonToggledBtnUid: "",
+    leftMenuSize: 20,
+    showLeftMenu: false,
+    libraryRightMenuSize: 30,
+    showLibraryRightMenu: false,
+    showWelcomeCarousel: true,
+    showPDFMenuView: false,
   }),
 
   actions: {
+    /**
+     * Given the appState, initialize the layoutStore
+     * We will set initialized to true after the layout is loaded
+     * @param {AppState} state
+     */
+    async loadState(state: AppState) {
+      if (this.initialized) return;
+      this.currentItemId = state.currentItemId;
+      this.ribbonToggledBtnUid = state.ribbonToggledBtnUid;
+      this.leftMenuSize = state.leftMenuSize;
+      this.showLeftMenu = state.showLeftMenu;
+      this.libraryRightMenuSize = state.libraryRightMenuSize;
+      this.showLibraryRightMenu = state.showLibraryRightMenu;
+      this.showPDFMenuView = state.showPDFMenuView;
+    },
+
+    /**
+     * Output the data needs to be saved
+     * @returns {AppState} The data needs to be saved
+     */
+    saveState(): AppState {
+      return {
+        currentItemId: this.currentItemId,
+        ribbonToggledBtnUid: this.ribbonToggledBtnUid,
+        leftMenuSize: this.leftMenuSize,
+        showLeftMenu: this.showLeftMenu,
+        libraryRightMenuSize: this.libraryRightMenuSize,
+        showLibraryRightMenu: this.showLibraryRightMenu,
+        showPDFMenuView: this.showPDFMenuView,
+      } as AppState;
+    },
+
+    /**********************************
+     * Page Control
+     **********************************/
     /**
      * Opens a page within the application. If the page already exists, it focuses on the page.
      * Otherwise, it adds the page to the store and prepares it for rendering.
@@ -99,7 +153,7 @@ export const useLayoutStore = defineStore("layoutStore", {
               id: state.id,
               label: state.label || itemConfig.title,
               type: state.type || itemConfig.componentType,
-              data: state.data
+              data: state.data,
             } as Page;
             this.openPage(page);
             await nextTick();
@@ -125,6 +179,83 @@ export const useLayoutStore = defineStore("layoutStore", {
      */
     async saveLayout(config: LayoutConfig | ResolvedLayoutConfig) {
       await updateLayout(config);
-    }
-  }
+    },
+
+    /**
+     * Open the associated page for an item and then open the associated project
+     * @param itemId
+     */
+    async openItem(itemId: string) {
+      if (!itemId) return;
+      try {
+        // open associated project
+        const projectStore = useProjectStore();
+        let item: Project | Note | AnnotationData | undefined;
+        item = itemId.includes("/")
+          ? await projectStore.getNoteFromDB(itemId)
+          : await projectStore.getProjectFromDB(itemId);
+        try {
+          if (!item) item = (await db.get(itemId)) as AnnotationData;
+        } catch (error) {
+          console.log(error);
+          return;
+        }
+        await projectStore.openProject(item.projectId || itemId);
+
+        // open associated page
+        const page = {} as Page;
+        if (item.dataType === "project") {
+          page.id = itemId;
+          page.type = "ReaderPage";
+          page.label = item.label;
+          // do not open page if there is no pdf
+          if (!(await getPDF(itemId))) return;
+        } else if (item.dataType === "note") {
+          page.id = itemId;
+          page.type =
+            item.type === NoteType.MARKDOWN ? "NotePage" : "ExcalidrawPage";
+          page.label = item.label;
+        } else if (item.dataType === "pdfAnnotation") {
+          const project = (await db.get(item.projectId)) as Project;
+          page.id = project._id;
+          page.type = "ReaderPage";
+          page.label = project.label;
+          page.data = { focusAnnotId: itemId };
+        }
+        this.openPage(page);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
+    /*****************************************
+     * Layout Control
+     *****************************************/
+
+    /**
+     * Toggle welcome page
+     * If visible is given, set the state as it is
+     * @param visible
+     */
+    toggleWelcome(visible?: boolean) {
+      if (visible === undefined) {
+        this.showWelcomeCarousel = !this.showWelcomeCarousel;
+      } else {
+        this.showWelcomeCarousel = visible;
+      }
+    },
+
+    /**
+     * Toggle pdf floating menu
+     * If visible is given, set the state as it is
+     * @param visible
+     */
+    togglePDFMenuView(visible?: boolean) {
+      if (visible === undefined) {
+        this.showPDFMenuView = !this.showPDFMenuView;
+      } else {
+        this.showPDFMenuView = visible;
+      }
+    },
+  },
 });

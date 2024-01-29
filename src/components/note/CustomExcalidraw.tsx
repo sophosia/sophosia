@@ -23,7 +23,7 @@ import React, { useEffect, useState } from "react";
 import { db } from "src/backend/database";
 import { loadNote, saveNote } from "src/backend/project/note";
 import "src/css/excalidraw/theme.scss";
-import { useStateStore } from "src/stores/stateStore";
+import { useSettingStore } from "src/stores/settingStore";
 
 interface InitialData {
   elements: ExcalidrawElement[];
@@ -32,7 +32,7 @@ interface InitialData {
   libraryItems: LibraryItems;
 }
 
-const stateStore = useStateStore();
+const settingStore = useSettingStore();
 
 export default function CustomExcalidraw(props: { noteId: string }) {
   const [excalidrawAPI, setExcalidrawAPI] =
@@ -54,7 +54,7 @@ export default function CustomExcalidraw(props: { noteId: string }) {
     const jsonString = await loadNote(props.noteId);
     const scene = jsonString
       ? JSON.parse(jsonString)
-      : { appState: { theme: stateStore.settings.theme } };
+      : { appState: { theme: settingStore.theme } };
     return scene as InitialData;
   }
 

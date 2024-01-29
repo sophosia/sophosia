@@ -1,6 +1,6 @@
-import { QTreeNode } from "quasar";
 import { LayoutConfig, ResolvedLayoutConfig } from "golden-layout";
 import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
+import { QTreeNode } from "quasar";
 
 /***********************************
  * Project, Note, Folder and related data types
@@ -54,7 +54,7 @@ export interface Meta {
 
 export enum NoteType {
   MARKDOWN = "markdown",
-  EXCALIDRAW = "excalidraw"
+  EXCALIDRAW = "excalidraw",
 }
 
 /**
@@ -122,7 +122,7 @@ export interface Folder {
 export enum SpecialFolder {
   LIBRARY = "SFlibrary",
   ADDED = "SFadded",
-  FAVORITES = "SFfavorites"
+  FAVORITES = "SFfavorites",
 }
 
 /******************************************
@@ -186,18 +186,18 @@ export enum AnnotationType {
   UNDERLINE = "underline",
   STRIKEOUT = "strikeout",
   INK = "ink",
-  ERASER = "eraser"
+  ERASER = "eraser",
 }
 
 export enum EraserType {
   STROKE = "stroke",
-  PIXEL = "pixel"
+  PIXEL = "pixel",
 }
 
 export enum SpreadMode {
   NO_SPREAD,
   ODD_SPREAD,
-  EVEN_SPREAD
+  EVEN_SPREAD,
 }
 
 /**
@@ -274,6 +274,7 @@ export interface Settings {
 export interface AppState {
   _id: "appState";
   dataType: "appState";
+  // layout
   ribbonToggledBtnUid: string; // which toggleBtn is toggled
   leftMenuSize: number;
   showLeftMenu: boolean; // is leftmenu expanded
@@ -282,11 +283,15 @@ export interface AppState {
   showPDFRightMenu: boolean;
   libraryRightMenuSize: number;
   showLibraryRightMenu: boolean;
-  selectedItemId?: string;
+  // project
   selectedFolderId: string;
-  currentItemId?: string;
+  currentItemId: string;
   openedProjectIds: string[];
-  settings: Settings;
+  // settings
+  theme: string; // dark by default
+  fontSize: string; // 16px by default
+  translateLanguage: string;
+  citeKeyRule: string; // "author_title_year" by default
 }
 
 export interface Layout {
@@ -322,7 +327,7 @@ export enum ComponentName {
   RIBBON = "ribbon",
   LEFT_MENU = "leftMenu",
   PDF_MENU = "pdfMenu",
-  PLUGIN_PAGE = "pluginPage"
+  PLUGIN_PAGE = "pluginPage",
 }
 
 export interface Button {
@@ -410,4 +415,4 @@ export interface PluginStatus {
   updatable: boolean;
 }
 
-export type PluginStatusMap = Map<string, PluginStatus>
+export type PluginStatusMap = Map<string, PluginStatus>;

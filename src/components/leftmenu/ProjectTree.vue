@@ -175,7 +175,6 @@ import { getMeta } from "src/backend/project/meta";
 import { idToPath, oldToNewId } from "src/backend/project/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
-import { useStateStore } from "src/stores/stateStore";
 import { metadata } from "tauri-plugin-fs-extra-api";
 //components
 import { useQuasar } from "quasar";
@@ -188,7 +187,6 @@ import NoteMenu from "./NoteMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
 const { t } = useI18n({ useScope: "global" });
 
-const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 
@@ -241,7 +239,7 @@ function selectItem(nodeId: string) {
   if ((node.children?.length as number) > 0) expanded.value.push(node._id);
   if (node.dataType === "folder") return;
 
-  stateStore.openItem(node._id);
+  layoutStore.openItem(node._id);
 }
 
 /**
@@ -285,8 +283,6 @@ async function closeProject(projectId: string) {
   projectStore.openedProjects = projectStore.openedProjects.filter(
     (p) => p._id !== projectId
   );
-
-  await stateStore.saveAppState();
 }
 
 /**

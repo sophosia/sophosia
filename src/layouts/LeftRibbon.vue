@@ -5,7 +5,7 @@
   >
     <div>
       <q-btn-toggle
-        v-model="stateStore.ribbonToggledBtnUid"
+        v-model="layoutStore.ribbonToggledBtnUid"
         style="position: absolute; height: 36px"
         class="q-mx-xs"
         spread
@@ -52,7 +52,7 @@
           $emit('openPage', {
             id: 'library',
             label: t('library'),
-            type: 'LibraryPage'
+            type: 'LibraryPage',
           })
         "
       >
@@ -65,7 +65,7 @@
         icon="mdi-safe"
         padding="xs"
         :ripple="false"
-        @click="stateStore.toggleWelcome(true)"
+        @click="layoutStore.toggleWelcome(true)"
       >
         <q-tooltip>{{ $t("workspace") }}</q-tooltip>
       </q-btn>
@@ -85,8 +85,8 @@
               data: {
                 path: await resolveResource(
                   `help/help_${db.config.language}.md`
-                )
-              }
+                ),
+              },
             });
           }
         "
@@ -104,7 +104,7 @@
           $emit('openPage', {
             id: 'settings',
             label: t('settings'),
-            type: 'SettingsPage'
+            type: 'SettingsPage',
           })
         "
       >
@@ -124,15 +124,17 @@
 import { resolveResource } from "@tauri-apps/api/path";
 import { Button, ComponentName, db } from "src/backend/database";
 import pluginManager from "src/backend/plugin";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { useStateStore } from "src/stores/stateStore";
 import { onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 const stateStore = useStateStore();
+const layoutStore = useLayoutStore();
 const { t, locale } = useI18n({ useScope: "global" });
 
 const props = defineProps({
-  isLeftMenuVisible: { type: Boolean, required: true }
+  isLeftMenuVisible: { type: Boolean, required: true },
 });
 const emit = defineEmits(["update:isLeftMenuVisible", "openPage"]);
 
@@ -155,9 +157,9 @@ watch(
 );
 
 watch(
-  () => stateStore.ribbonToggledBtnUid,
+  () => layoutStore.ribbonToggledBtnUid,
   (id: string | undefined) => {
-    stateStore.showLeftMenu = !!id;
+    layoutStore.showLeftMenu = !!id;
   }
 );
 
@@ -193,14 +195,14 @@ function mountBtns() {
     icon: "mdi-file-tree",
     value: "projectNavigator",
     tooltip: t("openedProjects"),
-    slot: "projectNavigator"
+    slot: "projectNavigator",
   });
   for (let toggleBtn of buttons.toggleBtns) {
     toggleBtns.value.push({
       icon: toggleBtn.icon,
       value: toggleBtn.uid,
       tooltip: toggleBtn.tooltip,
-      slot: toggleBtn.uid
+      slot: toggleBtn.uid,
     });
   }
 }
