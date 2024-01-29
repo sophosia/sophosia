@@ -45,6 +45,11 @@ export const useLayoutStore = defineStore("layoutStore", {
   }),
 
   actions: {
+    /**
+     * Given the appState, initialize the layoutStore
+     * We will set initialized to true after the layout is loaded
+     * @param {AppState} state
+     */
     async loadState(state: AppState) {
       if (this.initialized) return;
       this.currentItemId = state.currentItemId;
@@ -56,6 +61,10 @@ export const useLayoutStore = defineStore("layoutStore", {
       this.showPDFMenuView = state.showPDFMenuView;
     },
 
+    /**
+     * Output the data needs to be saved
+     * @returns {AppState} The data needs to be saved
+     */
     saveState(): AppState {
       return {
         currentItemId: this.currentItemId,

@@ -12,6 +12,10 @@ export const useSettingStore = defineStore("settingStore", {
   }),
 
   actions: {
+    /**
+     * Given the appState, initialize the store
+     * @param {AppState} state
+     */
     async loadState(state: AppState) {
       if (this.initialized) return;
       this.theme = state.theme;
@@ -24,6 +28,10 @@ export const useSettingStore = defineStore("settingStore", {
       this.initialized = true;
     },
 
+    /**
+     * Output the data needs to be saved
+     * @returns {AppState} The data needs to be saved
+     */
     saveState(): AppState {
       return {
         theme: this.theme,

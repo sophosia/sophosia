@@ -10,6 +10,9 @@ import { useSettingStore } from "./settingStore";
 export const useStateStore = defineStore("stateStore", () => {
   const state = reactive<AppState>({} as AppState);
 
+  /**
+   * Load appState from disk and distribute them to every store
+   */
   async function loadState() {
     Object.assign(state, await getAppState());
     const settingStore = useSettingStore();
@@ -20,6 +23,9 @@ export const useStateStore = defineStore("stateStore", () => {
     await projectStore.loadState(toRaw(state));
   }
 
+  /**
+   * Extract necessary data from each store then update appState on disk
+   */
   async function _updateState() {
     const settingStore = useSettingStore();
     const layoutStore = useLayoutStore();

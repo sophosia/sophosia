@@ -42,6 +42,11 @@ export const useProjectStore = defineStore("projectStore", {
   }),
 
   actions: {
+    /**
+     * Given the appState, initialize the store
+     * Will load the openedProjects and the projects corresponding to the selectedFolderId
+     * @param {AppState} state
+     */
     async loadState(state: AppState) {
       if (this.initialized) return;
       this.selectedFolderId = state.selectedFolderId;
@@ -50,6 +55,10 @@ export const useProjectStore = defineStore("projectStore", {
       this.initialized = true;
     },
 
+    /**
+     * Output the data needs to be saved
+     * @returns {AppState} The data needs to be saved
+     */
     saveState(): AppState {
       const projectIds = this.openedProjects.map((project) => project._id);
       const uniqueIds = new Set(projectIds);
