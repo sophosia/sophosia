@@ -15,6 +15,72 @@ import { TextItem } from "pdfjs-dist/types/src/display/api";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 /**
+ * Get meta - Helper function
+ * Processes the given identifiers to ensure they are in the correct format.
+ *
+ * This function primarily handles the formatting of DOI URLs when the identifiers
+ * are an array of strings. It ensures that DOI URLs start with 'https://doi.org/'
+ * and replaces certain special characters.
+ *
+ * @param {string | string[] | Project[]} identifiers - The identifiers to be processed.
+ *    This can be a single string, an array of strings, or an array of Project objects.
+ *    If it's an array of strings, each string is processed for DOI URL formatting.
+ *
+ * @returns {string | string[] | Project[]} - The processed identifiers.
+ *    If the input is an array of strings, it returns the array with processed DOI URLs.
+ *    For other types of inputs, it returns the input unchanged.
+ */
+function processIdentifiers(
+  identifiers: string | string[] | Project[]
+): string | string[] | Project[] {
+  if (Array.isArray(identifiers) && typeof identifiers[0] === "string") {
+    return identifiers.map((str) => {
+      str = str.replace(/.*doi\.\w\//, "https://doi.org/");
+      if (!str.startsWith("https://doi.org/") && str.includes("/"))
+        str = `https://doi.org/${str}`;
+      return str.replace("⁃", "-"); // Replace special characters
+    });
+  }
+  // Return the identifiers as is if they don't match the condition
+  return identifiers;
+}
+
+/**
+ * Get meta - Helper function
+ * Formats the metadata based on the specified format and options.
+ *
+ * This function takes the raw metadata and formats it either as JSON or using a custom
+ * format specified in the options. If no format is specified, it defaults to JSON.
+ *
+ * @param data - The raw metadata to be formatted.
+ * @param format - The format in which to return the metadata (e.g., 'json').
+ * @param options - Additional formatting options, including the template for custom formatting.
+ *
+ * @returns {Promise<Meta[] | string>} - The formatted metadata.
+ */
+async function formatMetaData(
+  data: Cite,
+  format?: string,
+  options?: { format?: string; template?: string }
+): Promise<Meta[] | string> {
+  if (!format || format === "json") {
+    let metas = data.data;
+    const appState = (await db.get("appState")) as AppState;
+    const citeKeyRule = appState.settings.citeKeyRule;
+    for (let meta of metas) {
+      delete meta._graph;
+      if (!meta["citation-key"])
+        meta["citation-key"] = generateCiteKey(meta, citeKeyRule);
+    }
+    return metas;
+  } else if (!options) {
+    return data.format(format);
+  } else {
+    return data.format(format, options);
+  }
+}
+
+/**
  * Retrieves metadata for given identifiers and formats it based on the specified options.
  *
  * @param {string | string[] | Project[]} identifiers - The identifiers for which metadata is to be retrieved.
@@ -33,34 +99,10 @@ export async function getMeta(
   options?: { format?: string; template?: string }
 ): Promise<Meta[] | string> {
   try {
-    // if identifiers is string, then it must be a collection file like bib, ris
-    if (Array.isArray(identifiers) && typeof identifiers[0] === "string") {
-      for (let [index, str] of identifiers.entries()) {
-        // Tauri is not able to allow http call except using http module ...
-        // instead of doing http://some-special-doi-server/, we do https://doi.org/
-        str = str.replace(/.*doi\.\w\//, "https://doi.org/");
-        if (!str.startsWith("https://doi.org/") && str.includes("/"))
-          str = `https://doi.org/${str}`;
-        identifiers[index] = str.replace("⁃", "-"); // replace some weird characters
-      }
-    }
-    console.log("identifiders", identifiers);
-    console.log("Format", format);
-    console.log("options", options);
-    const data = await Cite.async(identifiers);
+    const processedIdentifiers = processIdentifiers(identifiers);
 
-    if (!format || format === "json") {
-      let metas = data.data;
-      const appState = (await db.get("appState")) as AppState;
-      const citeKeyRule = appState.settings.citeKeyRule;
-      for (let i in metas) {
-        delete metas[i]._graph;
-        if (!metas[i]["citation-key"])
-          metas[i]["citation-key"] = generateCiteKey(metas[i], citeKeyRule);
-      }
-      return metas;
-    } else if (!options) return data.format(format);
-    else return data.format(format, options);
+    const data = await Cite.async(processedIdentifiers);
+    return await formatMetaData(data, format, options);
   } catch (error) {
     console.log(error);
     return [] as Meta[];
