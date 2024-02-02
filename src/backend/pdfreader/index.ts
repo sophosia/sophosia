@@ -422,6 +422,22 @@ export default class PDFApplication {
   }
 
   /**
+   * Restore to cursor position after zoom
+   * @param oldScale - previous zoom scale
+   * @param x - current cursor x-coord, event.clientX
+   * @param x - current cursor y-coord, event.clientY
+   */
+  _centerAtPos(oldScale: number, x: number, y: number) {
+    if (!this.pdfViewer) return;
+    const scaleDiff = this.pdfViewer.currentScale / oldScale - 1;
+    if (scaleDiff !== 0) {
+      const [top, left] = this.pdfViewer.containerTopLeft;
+      this.pdfViewer.container.scrollLeft += (x - left) * scaleDiff;
+      this.pdfViewer.container.scrollTop += (y - top) * scaleDiff;
+    }
+  }
+
+  /**
    * Handles scroll events with control key for zooming in and out.
    * @param {WheelEvent} e - The wheel event triggered by user action.
    */
@@ -431,23 +447,25 @@ export default class PDFApplication {
       // this is not scrolling, so we need to
       // disable the default action avoid the offsetParent not set error
       e.preventDefault();
-      let oldScale = this.pdfViewer.currentScale;
-      if (e.deltaY < 0) {
-        let container = this.container;
-        let newScale = Math.min(oldScale + 0.1, 2);
-        this.pdfViewer.currentScale = newScale;
 
-        let ratio = newScale / oldScale - 1;
-        // shift the scroll bar if cursor is on the right / bottom of the screen
-        // the default zoom-in takes the upper-left conner as scale origin
-        if (e.pageX > window.innerWidth * (6 / 10))
-          container.scrollLeft += ratio * (container.scrollLeft + e.pageX);
-        if (e.pageY > window.innerHeight * (6 / 10))
-          container.scrollTop += ratio * e.pageY;
+      const oldScale = this.pdfViewer.currentScale;
+      let newScale: number;
+      if (e.deltaY < 0) {
+        newScale = oldScale + 0.1;
+        if (newScale > 3) return;
+        this.pdfViewer.increaseScale({
+          drawingDelay: 100,
+          scaleFactor: newScale / oldScale,
+        });
       } else {
-        let newScale = Math.max(oldScale - 0.1, 0.3);
-        this.pdfViewer.currentScale = newScale;
+        newScale = oldScale - 0.1;
+        if (newScale < 0.3) return;
+        this.pdfViewer.decreaseScale({
+          drawingDelay: 100,
+          scaleFactor: newScale / oldScale,
+        });
       }
+      this._centerAtPos(oldScale, e.clientX, e.clientY);
     }
   }
 
