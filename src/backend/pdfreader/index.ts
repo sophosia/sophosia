@@ -3,7 +3,7 @@ import * as pdfjsViewer from "pdfjs-dist/web/pdf_viewer";
 import {
   PDFFindController,
   PDFPageView,
-  PDFViewer
+  PDFViewer,
 } from "pdfjs-dist/web/pdf_viewer";
 import { debounce } from "quasar";
 import { nextTick, reactive, ref } from "vue";
@@ -14,7 +14,7 @@ import {
   PDFState,
   SpreadMode,
   TOCNode,
-  db
+  db,
 } from "../database";
 import { AnnotationFactory, AnnotationStore } from "../pdfannotation";
 import { Annotation } from "../pdfannotation/annotations";
@@ -74,7 +74,7 @@ export default class PDFApplication {
       inkThickness: 5,
       inkOpacity: 1,
       eraserType: EraserType.STROKE,
-      eraserThickness: 20
+      eraserThickness: 20,
     } as PDFState);
   }
 
@@ -85,11 +85,11 @@ export default class PDFApplication {
   init(container: HTMLDivElement) {
     const eventBus = new pdfjsViewer.EventBus();
     const pdfLinkService = new pdfjsViewer.PDFLinkService({
-      eventBus
+      eventBus,
     });
     const pdfFindController = new pdfjsViewer.PDFFindController({
       eventBus,
-      linkService: pdfLinkService
+      linkService: pdfLinkService,
     });
 
     // l10n resource
@@ -106,7 +106,7 @@ export default class PDFApplication {
       linkService: pdfLinkService,
       findController: pdfFindController,
       annotationEditorMode: pdfjsLib.AnnotationEditorType.NONE,
-      l10n: l10n
+      l10n: l10n,
     });
     // must have this otherwise find controller does not work
     pdfLinkService.setViewer(pdfViewer);
@@ -255,7 +255,7 @@ export default class PDFApplication {
       // data: buffer,
       url: url,
       cMapUrl: cMapUrl,
-      cMapPacked: true
+      cMapPacked: true,
     }).promise;
     if (this.pdfLinkService)
       this.pdfLinkService.setDocument(this.pdfDocument, null);
@@ -292,7 +292,7 @@ export default class PDFApplication {
         inkThickness: 5,
         inkOpacity: 100,
         scrollLeft: 0,
-        scrollTop: 0
+        scrollTop: 0,
       } as PDFState;
       // doing this we can make sure if anything missing from db, the default values are there
       Object.assign(state, pdfState);
@@ -431,14 +431,13 @@ export default class PDFApplication {
       // this is not scrolling, so we need to
       // disable the default action avoid the offsetParent not set error
       e.preventDefault();
+      let oldScale = this.pdfViewer.currentScale;
       if (e.deltaY < 0) {
         let container = this.container;
-        let oldScale = this.pdfViewer.currentScale;
-        this.pdfViewer.currentScale += 0.1;
-        let newScale = this.pdfViewer.currentScale;
+        let newScale = Math.min(oldScale + 0.1, 2);
+        this.pdfViewer.currentScale = newScale;
 
         let ratio = newScale / oldScale - 1;
-
         // shift the scroll bar if cursor is on the right / bottom of the screen
         // the default zoom-in takes the upper-left conner as scale origin
         if (e.pageX > window.innerWidth * (6 / 10))
@@ -446,7 +445,8 @@ export default class PDFApplication {
         if (e.pageY > window.innerHeight * (6 / 10))
           container.scrollTop += ratio * e.pageY;
       } else {
-        this.pdfViewer.currentScale -= 0.1;
+        let newScale = Math.max(oldScale - 0.1, 0.3);
+        this.pdfViewer.currentScale = newScale;
       }
     }
   }
@@ -472,7 +472,7 @@ export default class PDFApplication {
       for (let k in oldNodes) {
         let node = {
           label: oldNodes[k].title,
-          children: _dfs(oldNodes[k].items)
+          children: _dfs(oldNodes[k].items),
         } as TOCNode;
         if (typeof oldNodes[k].dest === "string") node.dest = oldNodes[k].dest;
         else {
@@ -571,7 +571,7 @@ export default class PDFApplication {
     this.changePageNumber(pageIdx + 1);
     this.eventBus.dispatch("updatetextlayermatches", {
       source: this.pdfFindController,
-      pageIndex: pageIdx
+      pageIndex: pageIdx,
     });
   }
 
@@ -586,7 +586,7 @@ export default class PDFApplication {
     this.changePageNumber(annot.data.pageNumber);
     annot.doms[0].scrollIntoView({
       block: "center",
-      inline: "center"
+      inline: "center",
     });
     nextTick(() => {
       this.annotStore.setActive(annotId);
