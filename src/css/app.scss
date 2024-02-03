@@ -123,13 +123,29 @@ a {
 
 
 .q-splitter-separator {
-  background-color: transparent !important;
-
+  background-color: var(--q-edge) !important;
+  &:hover {
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
+  }
+  &:active {
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
+  }
 }
 
 .q-splitter-separator-horizontal {
-  background-color: transparent !important;
+  background-color: var(--q-edge) !important;
+  &:hover {
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
+  }
+  &:active {
+    background-color: rgba($primary, 0.5) !important;
+    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
+  }
 }
+
 
 // scrollbar styles
 /* width */
