@@ -13,7 +13,8 @@ body.body--dark {
   --q-reg-text: #D1D1D3;
   --q-special-text: white;
   --q-menu-highlight:#474851;
-  --q-main-highlight: #aab8ff1f;
+  // --q-main-highlight: #aab8ff1f;
+  --q-main-highlight: #aab8ff25;
 }
 
 body {
@@ -28,7 +29,7 @@ body {
   // golden-layout tabs
   --color-layout-active-tab-bkgd:var(--q-menu-highlight); // tab hover mode background
   --color-layout-active-tab-fore: var(--q-reg-text); // tab hover mode text color
-  --color-layout-focused-tab-bkgd: var(--q-main-layout-bkgd); // selected tab background
+  --color-layout-focused-tab-bkgd: var(--q-main-highlight); // selected tab background
   --color-layout-single-tab-container-fore: var(--q-reg-text);  //tab text color
   --color-layout-single-tab-container-bkgd: var(--q-menus-layout-bkgd); //tabs background
   --color-layout-header-bkgd: var(--q-menus-layout-bkgd);  //header background

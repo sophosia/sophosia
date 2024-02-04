@@ -113,8 +113,7 @@
             prop.node.type === NoteType.EXCALIDRAW
           "
           size="1.4rem"
-          name="img:icons/excalidraw.png"
-          :style="$q.dark.isActive ? 'filter: invert(1)' : ''"
+          name="mdi-fountain-pen-tip"
         />
         <!-- markdown note -->
         <q-icon

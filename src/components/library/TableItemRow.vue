@@ -19,8 +19,7 @@
         <q-icon
           v-if="item.type === NoteType.EXCALIDRAW"
           size="xs"
-          name="img:icons/excalidraw.png"
-          :style="$q.dark.isActive ? 'filter: invert(1)' : ''"
+          name="mdi-fountain-pen-tip"
         />
         <q-icon
           v-else
