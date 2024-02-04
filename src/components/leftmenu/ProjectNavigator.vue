@@ -18,7 +18,6 @@
         v-model="isTreeOpened"
         dense
         dense-toggle
-        expand-separator
         default-opened
         hide-expand-icon
         header-class="q-pa-none q-ma-none"
@@ -29,8 +28,12 @@
             side
             class="q-pa-none no-shadow"
           >
-            <q-icon
-              :name="props.expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+            <q-btn
+              flat
+              size="md"
+              padding="none"
+              round
+              :icon="props.expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
             />
           </q-item-section>
           <q-item-section>
@@ -51,7 +54,6 @@
         dense
         dense-toggle
         switch-toggle-side
-        expand-separator
         hide-expand-icon
         header-class="q-pa-none q-ma-none ellipsis"
         :duration="0"
@@ -61,8 +63,12 @@
             side
             class="q-pa-none"
           >
-            <q-icon
-              :name="props.expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+            <q-btn
+              flat
+              size="md"
+              padding="none"
+              round
+              :icon="props.expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
             />
           </q-item-section>
           <q-item-section>

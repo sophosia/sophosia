@@ -47,7 +47,6 @@
         square
         icon="mdi-library-outline"
         padding="xs"
-        :ripple="false"
         @click="
           $emit('openPage', {
             id: 'library',
@@ -64,7 +63,6 @@
         square
         icon="mdi-safe"
         padding="xs"
-        :ripple="false"
         @click="layoutStore.toggleWelcome(true)"
       >
         <q-tooltip>{{ $t("workspace") }}</q-tooltip>
@@ -74,7 +72,6 @@
         flat
         square
         padding="xs"
-        :ripple="false"
         icon="mdi-help-circle-outline"
         @click="
           async () => {
@@ -98,7 +95,6 @@
         flat
         square
         padding="xs"
-        :ripple="false"
         icon="mdi-cog-outline"
         @click="
           $emit('openPage', {

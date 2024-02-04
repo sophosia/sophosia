@@ -1,6 +1,6 @@
 // app global css in SCSS form
 body.body--dark {
-  --q-primary: #D1D1D3;
+  --q-primary: #AAB8FF;
   --q-dark: #16161e;
   --q-dark-page: #1a1b26;
   --q-edge: black;
@@ -13,7 +13,7 @@ body.body--dark {
   --q-reg-text: #D1D1D3;
   --q-special-text: white;
   --q-menu-highlight:#474851;
-  --q-main-highlight: #30313B; 
+  --q-main-highlight: #aab8ff1f;
 }
 
 body {
@@ -121,9 +121,11 @@ a {
   overflow: hidden;
 }
 
+.q-splitter__separator {
+  background-color: var(--q-edge) !important;
+}
 
 .q-splitter-separator {
-  background-color: var(--q-edge) !important;
   &:hover {
     background-color: rgba($primary, 0.5) !important;
     box-shadow: 0 0 0px 2px rgba($primary, 0.5);
@@ -135,7 +137,6 @@ a {
 }
 
 .q-splitter-separator-horizontal {
-  background-color: var(--q-edge) !important;
   &:hover {
     background-color: rgba($primary, 0.5) !important;
     box-shadow: 0 0 0px 2px rgba($primary, 0.5);
