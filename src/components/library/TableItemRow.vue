@@ -20,11 +20,12 @@
           v-if="item.type === NoteType.EXCALIDRAW"
           size="xs"
           name="img:icons/excalidraw.png"
+          :style="$q.dark.isActive ? 'filter: invert(1)' : ''"
         />
         <q-icon
           v-else
           size="xs"
-          name="mdi-language-markdown"
+          name="mdi-language-markdown-outline"
         />
         <div v-if="renaming">
           <input
@@ -77,7 +78,7 @@
         <q-icon
           class="q-mr-xs"
           size="xs"
-          name="mdi-folder"
+          name="mdi-folder-outline"
         />
         <div
           class="col"

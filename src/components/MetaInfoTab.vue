@@ -315,7 +315,7 @@
           :ripple="false"
           dense
           size="1rem"
-          icon="mdi-folder"
+          icon="mdi-folder-outline"
           :label="name"
         />
       </div>

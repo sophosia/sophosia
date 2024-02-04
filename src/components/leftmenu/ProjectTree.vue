@@ -2,6 +2,8 @@
   <q-tree
     ref="tree"
     dense
+    icon="mdi-chevron-right"
+    no-connectors
     no-transition
     no-selection-unset
     :no-nodes-label="$t('empty')"
@@ -22,7 +24,7 @@
           dragover:
             !!dragoverNode &&
             dragoverNode == prop.node &&
-            draggingNode != prop.node
+            draggingNode != prop.node,
         }"
         @click="selectItem(prop.node._id)"
         :draggable="prop.node.dataType !== 'project'"
@@ -86,12 +88,24 @@
         <q-icon
           v-if="prop.node.dataType === 'project'"
           size="1.4rem"
-          name="mdi-book-open-blank-variant"
-        />
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
+            <title>book-open-blank-variant-outline</title>
+            <path
+              d="M12 21.5C10.65 20.65 8.2 20 6.5 20C4.85 20 3.15 20.3 1.75 21.05C1.65 21.1 1.6 21.1 1.5 21.1C1.25 21.1 1 20.85 1 20.6V6C1.6 5.55 2.25 5.25 3 5C4.11 4.65 5.33 4.5 6.5 4.5C8.45 4.5 10.55 4.9 12 6C13.45 4.9 15.55 4.5 17.5 4.5C18.67 4.5 19.89 4.65 21 5C21.75 5.25 22.4 5.55 23 6V20.6C23 20.85 22.75 21.1 22.5 21.1C22.4 21.1 22.35 21.1 22.25 21.05C20.85 20.3 19.15 20 17.5 20C15.8 20 13.35 20.65 12 21.5M11 7.5C9.64 6.9 7.84 6.5 6.5 6.5C5.3 6.5 4.1 6.65 3 7V18.5C4.1 18.15 5.3 18 6.5 18C7.84 18 9.64 18.4 11 19V7.5M13 19C14.36 18.4 16.16 18 17.5 18C18.7 18 19.9 18.15 21 18.5V7C19.9 6.65 18.7 6.5 17.5 6.5C16.16 6.5 14.36 6.9 13 7.5V19Z"
+            />
+          </svg>
+        </q-icon>
+
         <q-icon
           v-else-if="prop.node.dataType === 'folder'"
           size="1.4rem"
-          :name="prop.expanded ? 'mdi-folder-open' : 'mdi-folder'"
+          :name="
+            prop.expanded ? 'mdi-folder-open-outline' : 'mdi-folder-outline'
+          "
         />
         <q-icon
           v-else-if="
@@ -100,12 +114,13 @@
           "
           size="1.4rem"
           name="img:icons/excalidraw.png"
+          :style="$q.dark.isActive ? 'filter: invert(1)' : ''"
         />
         <!-- markdown note -->
         <q-icon
           v-else
           size="1.4rem"
-          name="mdi-language-markdown"
+          name="mdi-language-markdown-outline"
         />
         <!-- note icon has 1rem width -->
         <!-- input must have keypress.space.stop since space is default to expand row rather than space in text -->
@@ -164,7 +179,7 @@ import {
   Note,
   NoteType,
   Page,
-  Project
+  Project,
 } from "src/backend/database";
 import { nextTick, onMounted, ref, watchEffect } from "vue";
 // db
@@ -249,7 +264,7 @@ function selectItem(nodeId: string) {
 async function showInExplorer(node: Project | Note) {
   const path = idToPath(node._id);
   await invoke("show_in_folder", {
-    path: path
+    path: path,
   });
 }
 
@@ -346,7 +361,7 @@ async function renameNode() {
       // update window tab name
       layoutStore.renamePage(oldNodeId, {
         id: newNodeId,
-        label: newLabel
+        label: newLabel,
       } as Page);
       await nextTick(); // wait until itemId changes in the page
     }
@@ -474,13 +489,13 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
       const newNoteId = oldNoteId.replace(dragId, newId);
       layoutStore.renamePage(oldNoteId, {
         id: newNoteId,
-        label: note.label
+        label: note.label,
       } as Page);
     }
   } else {
     layoutStore.renamePage(dragId, {
       id: newId,
-      label: label
+      label: label,
     } as Page);
   }
   await nextTick(); // wait until the itemId is updated

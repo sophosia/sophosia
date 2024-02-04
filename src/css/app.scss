@@ -473,3 +473,8 @@ a {
 .chip {
   background-color: var(--color-rightmenu-tab-panel-bkgd);
 }
+
+.q-icon.q-tree__arrow, 
+.q-icon.q-tree__arrow--rotate {
+  font-size: 1.3rem;
+}

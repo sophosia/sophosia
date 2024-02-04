@@ -25,7 +25,7 @@
       <q-icon
         v-if="!!tableProps.row.path || (tableProps.row.children?.length as typeof NaN) > 0"
         size="sm"
-        :name="tableProps.expand ? 'mdi-menu-down' : 'mdi-menu-right'"
+        :name="tableProps.expand ? 'mdi-chevron-down' : 'mdi-chevron-right'"
         @click="expandRow(!tableProps.expand)"
       />
     </q-td>
@@ -82,8 +82,8 @@ const props = defineProps({
       expand: boolean;
       selected: boolean;
     }>,
-    required: true
-  }
+    required: true,
+  },
 });
 const emit = defineEmits(["expandRow", "setFavorite"]);
 
