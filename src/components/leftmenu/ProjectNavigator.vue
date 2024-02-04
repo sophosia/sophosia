@@ -7,7 +7,7 @@
     unit="px"
     :separator-class="{
       'q-splitter-separator-horizontal': isGraphViewOpened && isTreeOpened,
-      'no-pointer-events': !isGraphViewOpened || !isTreeOpened
+      'no-pointer-events': !isGraphViewOpened || !isTreeOpened,
     }"
     v-model="treeSize"
     ref="root"
@@ -18,7 +18,6 @@
         v-model="isTreeOpened"
         dense
         dense-toggle
-        expand-separator
         default-opened
         hide-expand-icon
         header-class="q-pa-none q-ma-none"
@@ -29,8 +28,12 @@
             side
             class="q-pa-none no-shadow"
           >
-            <q-icon
-              :name="props.expanded ? 'mdi-menu-down' : 'mdi-menu-right'"
+            <q-btn
+              flat
+              size="md"
+              padding="none"
+              round
+              :icon="props.expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
             />
           </q-item-section>
           <q-item-section>
@@ -51,7 +54,6 @@
         dense
         dense-toggle
         switch-toggle-side
-        expand-separator
         hide-expand-icon
         header-class="q-pa-none q-ma-none ellipsis"
         :duration="0"
@@ -61,8 +63,12 @@
             side
             class="q-pa-none"
           >
-            <q-icon
-              :name="props.expanded ? 'mdi-menu-down' : 'mdi-menu-right'"
+            <q-btn
+              flat
+              size="md"
+              padding="none"
+              round
+              :icon="props.expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
             />
           </q-item-section>
           <q-item-section>
@@ -100,8 +106,8 @@
 
 <script setup lang="ts">
 // types
-import { onMounted, ref, watch } from "vue";
 import { QSplitter } from "quasar";
+import { onMounted, ref, watch } from "vue";
 // components
 import GraphView from "./GraphView.vue";
 import ProjectTree from "./ProjectTree.vue";

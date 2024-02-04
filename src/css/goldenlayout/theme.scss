@@ -164,8 +164,7 @@ $headerBkgdColor: var(--color-layout-header-bkgd, #2a2a2a);
       }
 
       &.lm_focused {
-        height: base.$height2 - base.$highlightStripHeight;
-        border-top: base.$highlightStripHeight solid $primary;
+        height: base.$height2;
         background-color: $focusedTabBkgdColor;
       }
     }

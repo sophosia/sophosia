@@ -55,7 +55,7 @@
         :class="{
           'tableview-highlighted-row':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
-            !isClickingPDF
+            !isClickingPDF,
         }"
         draggable="true"
         @dragstart="onDragStart"
@@ -75,7 +75,7 @@
         :class="{
           'bg-primary':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
-            isClickingPDF
+            isClickingPDF,
         }"
         @click="isClickingPDF = true"
       />
@@ -88,7 +88,7 @@
         :class="{
           'bg-primary': projectStore.selected
             .map((item) => item._id)
-            .includes(note._id)
+            .includes(note._id),
         }"
       />
 
@@ -98,7 +98,7 @@
         :class="{
           'bg-primary': projectStore.selected
             .map((item) => item._id)
-            .includes(props.key)
+            .includes(props.key),
         }"
         :width="searchRowWidth"
         :text="expansionText[props.rowIndex]"
@@ -118,7 +118,7 @@ import {
   onMounted,
   provide,
   ref,
-  toRaw
+  toRaw,
 } from "vue";
 // components
 import TableItemRow from "./TableItemRow.vue";
@@ -136,7 +136,7 @@ const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   searchString: { type: String, required: true },
-  projects: { type: Array as PropType<Project[]>, required: true }
+  projects: { type: Array as PropType<Project[]>, required: true },
 });
 
 const emit = defineEmits(["dragProject", "update:projects"]);
@@ -157,15 +157,15 @@ const headers = computed(() => {
       field: "title",
       label: t("title"),
       align: "left",
-      sortable: true
+      sortable: true,
     },
     {
       name: "author",
       field: "author",
       label: t("author"),
       align: "left",
-      sortable: true
-    }
+      sortable: true,
+    },
   ] as QTableColumn[];
 });
 
@@ -343,7 +343,7 @@ function searchProject(
       "publisher",
       "container-title",
       "path",
-      "citation-key"
+      "citation-key",
     ]) {
       if (row[prop] === undefined) continue;
       if (row[prop].search(re) != -1) {

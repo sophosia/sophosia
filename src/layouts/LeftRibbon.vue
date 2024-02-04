@@ -45,9 +45,8 @@
         style="width: 30px"
         flat
         square
-        icon="mdi-bookshelf"
+        icon="mdi-library-outline"
         padding="xs"
-        :ripple="false"
         @click="
           $emit('openPage', {
             id: 'library',
@@ -64,7 +63,6 @@
         square
         icon="mdi-safe"
         padding="xs"
-        :ripple="false"
         @click="layoutStore.toggleWelcome(true)"
       >
         <q-tooltip>{{ $t("workspace") }}</q-tooltip>
@@ -74,8 +72,7 @@
         flat
         square
         padding="xs"
-        :ripple="false"
-        icon="mdi-help"
+        icon="mdi-help-circle-outline"
         @click="
           async () => {
             $emit('openPage', {
@@ -98,8 +95,7 @@
         flat
         square
         padding="xs"
-        :ripple="false"
-        icon="mdi-cog"
+        icon="mdi-cog-outline"
         @click="
           $emit('openPage', {
             id: 'settings',
@@ -192,7 +188,7 @@ function mountBtns() {
   pluginBtns.value = buttons.btns;
   toggleBtns.value = [];
   toggleBtns.value.push({
-    icon: "mdi-file-tree",
+    icon: "mdi-file-tree-outline",
     value: "projectNavigator",
     tooltip: t("openedProjects"),
     slot: "projectNavigator",

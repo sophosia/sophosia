@@ -1,6 +1,6 @@
 // app global css in SCSS form
 body.body--dark {
-  --q-primary: #D1D1D3;
+  --q-primary: #AAB8FF;
   --q-dark: #16161e;
   --q-dark-page: #1a1b26;
   --q-edge: black;
@@ -13,7 +13,8 @@ body.body--dark {
   --q-reg-text: #D1D1D3;
   --q-special-text: white;
   --q-menu-highlight:#474851;
-  --q-main-highlight: #30313B; 
+  // --q-main-highlight: #aab8ff1f;
+  --q-main-highlight: #aab8ff25;
 }
 
 body {
@@ -28,7 +29,7 @@ body {
   // golden-layout tabs
   --color-layout-active-tab-bkgd:var(--q-menu-highlight); // tab hover mode background
   --color-layout-active-tab-fore: var(--q-reg-text); // tab hover mode text color
-  --color-layout-focused-tab-bkgd: var(--q-main-layout-bkgd); // selected tab background
+  --color-layout-focused-tab-bkgd: var(--q-main-highlight); // selected tab background
   --color-layout-single-tab-container-fore: var(--q-reg-text);  //tab text color
   --color-layout-single-tab-container-bkgd: var(--q-menus-layout-bkgd); //tabs background
   --color-layout-header-bkgd: var(--q-menus-layout-bkgd);  //header background
@@ -121,9 +122,11 @@ a {
   overflow: hidden;
 }
 
+.q-splitter__separator {
+  background-color: var(--q-edge) !important;
+}
 
 .q-splitter-separator {
-  background-color: var(--q-edge) !important;
   &:hover {
     background-color: rgba($primary, 0.5) !important;
     box-shadow: 0 0 0px 2px rgba($primary, 0.5);
@@ -135,7 +138,6 @@ a {
 }
 
 .q-splitter-separator-horizontal {
-  background-color: var(--q-edge) !important;
   &:hover {
     background-color: rgba($primary, 0.5) !important;
     box-shadow: 0 0 0px 2px rgba($primary, 0.5);
@@ -472,4 +474,9 @@ a {
 }
 .chip {
   background-color: var(--color-rightmenu-tab-panel-bkgd);
+}
+
+.q-icon.q-tree__arrow, 
+.q-icon.q-tree__arrow--rotate {
+  font-size: 1.3rem;
 }

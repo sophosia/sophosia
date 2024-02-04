@@ -2,7 +2,8 @@
   <q-splitter
     :model-value="30"
     unit="px"
-    separator-style="cursor: default; background: var(--q-dark)"
+    separator-style="cursor: default; background: var(--q-dark)!important;"
+    :limits="[30, 30]"
   >
     <template v-slot:before>
       <LeftRibbon

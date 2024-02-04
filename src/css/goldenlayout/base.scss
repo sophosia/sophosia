@@ -24,7 +24,6 @@ $height3: 10px; // Appears 1 time
 $height4: 19px; // Appears 1 time
 $height5: 18px; // Appears 1 time
 $height6: 15px; // Appears 1 time
-$highlightStripHeight: 3px;
 
 .lm_root {
   position: relative;
@@ -165,15 +164,17 @@ $highlightStripHeight: 3px;
   }
 
   .lm_tabs .lm_tab.lm_active {
-    border-radius: 8px 8px 0 0;    
+    border-radius: 8px 8px 0 0;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Optional: Shadow for active tab */
-    top: 3px;
     z-index: 1;
+    background-color: var(--color-layout-header-bkgd);
   }
 
-  .lm_tabs .lm_tab:not(.lm_active):hover {
-    border-radius: 8px;
 
+  // .lm_tabs .lm_tab:not(.lm_active):hover {
+  .lm_tabs .lm_tab:hover {
+    border-radius: 8px 8px 0 0;
+    background: var(--q-menu-highlight); /* Ensure this CSS variable is defined elsewhere in your styles */
   }
  
 }
