@@ -46,7 +46,11 @@
         style="font-size: 1rem; min-width: 20vw; max-width: 50vw"
         class="ellipsis"
       >
-        {{ col.value }}
+        {{
+          col.name === "title" && !settingStore.showTranslatedTitle
+            ? tableProps.row["original-title"] || col.value
+            : col.value
+        }}
       </div>
     </q-td>
 
@@ -63,12 +67,14 @@
 import { copyToClipboard, useQuasar } from "quasar";
 import { Author, Project } from "src/backend/database";
 import { formatMetaData } from "src/backend/project/meta";
+import { useSettingStore } from "src/stores/settingStore";
 import { PropType, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { exportDialog } from "../dialogs/dialogController";
 import TableProjectMenu from "./TableProjectMenu.vue";
 const { t } = useI18n({ useScope: "global" });
 
+const settingStore = useSettingStore();
 const menu = ref<InstanceType<typeof TableProjectMenu>>();
 const $q = useQuasar();
 

@@ -141,18 +141,18 @@
             {{ $t("duplicate") }}
           </q-tooltip>
         </div>
-        <!-- add item-id and type for access of drag source -->
         <div
           v-else
           style="width: calc(100% - 1.4rem); font-size: 1rem"
           class="ellipsis non-selectable"
-          :item-id="prop.key"
           :type="prop.node.dataType"
         >
           {{
-            prop.node.label === prop.node.projectId + ".md"
-              ? "Overview.md"
-              : prop.node.label
+            prop.node.dataType === "note"
+              ? prop.node.label
+              : settingStore.showTranslatedTitle
+              ? prop.node.title
+              : prop.node["original-title"] || prop.node.title
           }}
           <q-tooltip> ID: {{ prop.key }} </q-tooltip>
         </div>
@@ -189,6 +189,7 @@ import { formatMetaData } from "src/backend/project/meta";
 import { idToPath, oldToNewId } from "src/backend/project/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
+import { useSettingStore } from "src/stores/settingStore";
 import { metadata } from "tauri-plugin-fs-extra-api";
 //components
 import { useQuasar } from "quasar";
@@ -203,6 +204,7 @@ const { t } = useI18n({ useScope: "global" });
 
 const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
+const settingStore = useSettingStore();
 
 const tree = ref<QTree | null>(null);
 const renameInput = ref<HTMLInputElement | null>(null);

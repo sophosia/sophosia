@@ -6,7 +6,7 @@ import { FolderOrNote, Project, SpecialFolder, db } from "../database";
 import {
   copyFileToProjectFolder,
   createProjectFolder,
-  deleteProjectFolder
+  deleteProjectFolder,
 } from "./file";
 import { generateCiteKey } from "./meta";
 import { getNoteTree, getNotes, saveNote } from "./note";
@@ -34,7 +34,7 @@ export function createProject(folderId: string) {
     tags: [] as string[],
     folderIds: [SpecialFolder.LIBRARY.toString()],
     favorite: false,
-    children: [] as FolderOrNote[]
+    children: [] as FolderOrNote[],
   } as Project;
   if (folderId != SpecialFolder.LIBRARY.toString())
     project.folderIds.push(folderId);
@@ -115,12 +115,11 @@ export async function updateProject(
   try {
     const project = (await getProject(projectId, {
       includeNotes: true,
-      includePDF: true
+      includePDF: true,
     })) as Project;
     const notes = project.children;
     const path = project.path;
     Object.assign(project, props);
-    project.label = project.title; // also update label
     project.timestampModified = Date.now();
     delete project._graph; // remomve _graph property if update by meta
     delete project.path; // no need to save path
@@ -274,7 +273,7 @@ export async function attachPDF(
 ): Promise<string | undefined> {
   const filePath = await open({
     multiple: false,
-    filters: [{ name: "*.pdf", extensions: ["pdf"] }]
+    filters: [{ name: "*.pdf", extensions: ["pdf"] }],
   });
 
   if (typeof filePath !== "string") return;

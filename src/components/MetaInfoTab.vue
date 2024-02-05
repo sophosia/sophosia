@@ -410,11 +410,18 @@ const references = ref<{ text: string; link: string }[]>([]);
 const meta = computed(() => props.project);
 const title = computed({
   get() {
-    return meta.value?.title || "";
+    if (settingStore.showTranslatedTitle) return meta.value?.title || "";
+    else return meta.value?.["original-title"] || meta.value?.title || "";
   },
   set(newTitle: string) {
     if (!meta.value) return;
-    meta.value.title = newTitle;
+    if (settingStore.showTranslatedTitle) {
+      meta.value.title = newTitle;
+    } else {
+      if ("original-title" in meta.value)
+        meta.value["original-title"] = newTitle;
+      else meta.value.title = newTitle;
+    }
     meta.value.label = newTitle;
   },
 });

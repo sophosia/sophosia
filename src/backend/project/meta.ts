@@ -221,8 +221,9 @@ export function generateCiteKey(
       }
     }
 
-    // sometimes the last name contains multiple words, remove the space
-    lastNames = familyNames.join(connector).replaceAll(" ", "");
+    // sometimes the last name contains space, ...
+    // change them to connectors
+    lastNames = familyNames.join(connector).replace(/[\s\-\._]/g, connector);
   }
   parts.author = lastNames;
 
@@ -231,19 +232,23 @@ export function generateCiteKey(
   if (meta.issued) year = meta.issued["date-parts"][0][0].toString();
   parts.year = year;
 
+  // default to use untranslated title if it exists
+  const title = meta["original-title"] || meta.title;
   if (longTitle) {
-    parts.title = meta.title
+    parts.title = title
       .toLowerCase()
       .split(" ")
       .join(connector)
-      .replace(/[,.:'"/?!~`\\|]/, ""); // remove all special characters
+      .replace(/[,.:'"/?!~`\\|]/g, "") // remove all special characters
+      .replace(/[\s\-\._]/g, connector);
   } else {
     // title's first word
-    let title = meta.title
+    parts.title = title
       .split(" ")
       .filter((w) => !["a", "an", "the", "on"].includes(w.toLowerCase()))[0]
-      .replace(/[,.:'"/?!~`\\|]/, ""); // remove all special characters;
-    parts.title = title.toLowerCase();
+      .replace(/[,.:'"/?!~`\\|]/g, "") // remove all special characters;
+      .replace(/[\s\-\._]/g, connector)
+      .toLowerCase();
   }
 
   let citeKey = keys
