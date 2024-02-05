@@ -62,7 +62,7 @@
 <script setup lang="ts">
 import { copyToClipboard, useQuasar } from "quasar";
 import { Author, Project } from "src/backend/database";
-import { getMeta } from "src/backend/project/meta";
+import { formatMetaData } from "src/backend/project/meta";
 import { PropType, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { exportDialog } from "../dialogs/dialogController";
@@ -104,7 +104,7 @@ async function showExportCitationDialog(project: Project) {
   exportDialog.onConfirm(async () => {
     const format = exportDialog.format.value;
     const options = { template: exportDialog.template.value };
-    const meta = await getMeta([project], format, options);
+    const meta = await formatMetaData([project], format, options);
     await copyToClipboard(meta as string);
     $q.notify(t("text-copied"));
   });

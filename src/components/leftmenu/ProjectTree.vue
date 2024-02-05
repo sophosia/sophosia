@@ -185,7 +185,7 @@ import { nextTick, onMounted, ref, watchEffect } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
 import { dirname, join } from "@tauri-apps/api/path";
-import { getMeta } from "src/backend/project/meta";
+import { formatMetaData } from "src/backend/project/meta";
 import { idToPath, oldToNewId } from "src/backend/project/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
@@ -235,7 +235,7 @@ async function showExportCitationDialog(project: Project) {
   exportDialog.onConfirm(async () => {
     const format = exportDialog.format.value;
     const options = { template: exportDialog.template.value };
-    const meta = await getMeta([project], format, options);
+    const meta = await formatMetaData([project], format, options);
     await copyToClipboard(meta as string);
     $q.notify(t("text-copied"));
   });

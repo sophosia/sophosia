@@ -223,7 +223,7 @@ async function addProjectsByCollection(
  * @param {string} identifier - The identifier used for creating or updating projects.
  */
 async function addProjectByIdentifier(identifier: string) {
-  const metas = await getMeta([identifier], "json");
+  const metas = await getMeta([identifier]);
   const meta = metas[0];
   // add a new project to db and update it with meta
   const project = projectStore.createProject(projectStore.selectedFolderId);

@@ -2,6 +2,7 @@
 // mock the indexeddb
 import { mockIPC } from "@tauri-apps/api/mocks";
 import "fake-indexeddb/auto";
+import { createPinia, setActivePinia } from "pinia";
 import { afterEach } from "vitest";
 import { db } from "../../src/backend/database";
 
@@ -72,3 +73,6 @@ db.setConfig({
   lastScanTime: 0,
   storagePaths: [storagePath],
 });
+
+// set pinia in vitest
+setActivePinia(createPinia());
