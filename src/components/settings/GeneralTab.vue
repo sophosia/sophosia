@@ -90,7 +90,10 @@
       class="q-my-md card"
     >
       <q-card-section>
-        <div class="text-h6">title of reference</div>
+        <div class="text-h6">{{ $t("display-translated-title") }}</div>
+        <div>
+          {{ $t("display-translated-title-info") }}
+        </div>
       </q-card-section>
       <q-card-section class="q-pt-none">
         <q-select
@@ -223,10 +226,10 @@ const translateLabels = [
   "فارسی (fa)",
 ];
 
-const titleTranslateOptions = ref([
-  { value: false, label: "Display untranslated title" },
-  { value: true, label: "Display translated title" },
-]);
+const titleTranslateOptions = [
+  { value: false, label: "False" },
+  { value: true, label: "True" },
+];
 
 const themeOptions = ["dark", "light"];
 const citeKeyPartKeyOptions = ["author", "title", "year"];
