@@ -7,7 +7,7 @@
     unit="px"
     :separator-class="{
       'q-splitter-separator-horizontal': isGraphViewOpened && isTreeOpened,
-      'no-pointer-events': !isGraphViewOpened || !isTreeOpened,
+      'no-pointer-events': !isGraphViewOpened || !isTreeOpened
     }"
     v-model="treeSize"
     ref="root"
@@ -97,6 +97,7 @@
           "
           :itemId="layoutStore.currentItemId"
           :height="treeSize"
+          :width="treeSize"
           ref="graphview"
         />
       </q-expansion-item>
@@ -136,6 +137,7 @@ onMounted(() => {
 });
 
 watch(isTreeOpened, (opened: boolean) => {
+  console.log("Tree opened? ", opened);
   if (!opened) treeSize.value = 36;
   else if (opened && !isTreeOpened.value) treeSize.value = maxHeight.value;
   else treeSize.value = maxHeight.value / 2;
