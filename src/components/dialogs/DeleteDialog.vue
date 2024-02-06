@@ -26,7 +26,11 @@
         </strong>
         <ul>
           <li v-for="project in deleteDialog.deleteProjects">
-            "{{ project.title }}"
+            "{{
+              settingStore.showTranslatedTitle
+                ? project.title
+                : project["original-title"] || project.title
+            }}"
           </li>
         </ul>
         <strong v-if="deleteDialog.isDeleteFromDB">
@@ -61,5 +65,7 @@
   </q-dialog>
 </template>
 <script setup lang="ts">
+import { useSettingStore } from "src/stores/settingStore";
 import { deleteDialog } from "./dialogController";
+const settingStore = useSettingStore();
 </script>
