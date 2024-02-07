@@ -26,20 +26,26 @@
           size="xs"
           name="mdi-language-markdown-outline"
         />
-        <div v-if="renaming">
-          <input
+        <div
+          v-if="renaming"
+          class="row"
+        >
+          <q-input
             v-model="label"
-            @input="checkDuplicate"
+            @update:model-value="checkDuplicate()"
+            outlined
+            dense
+            :color="pathDuplicate ? 'red' : ''"
             @blur="renameNote"
             @keydown.enter="renameNote"
             ref="renameInput"
-          />
+          ></q-input>
           <q-tooltip
             v-if="pathDuplicate"
             v-model="pathDuplicate"
             class="bg-red"
           >
-            name already exists
+            {{ $t("duplicate") }}
           </q-tooltip>
         </div>
         <div
@@ -201,7 +207,9 @@ function setRenaming() {
 async function renameNote() {
   let note = props.item as Note;
   if (pathDuplicate.value) {
+    console.log("oldname", oldNoteName.value);
     note.label = oldNoteName.value;
+    label.value = oldNoteName.value;
   } else {
     const oldNoteId = note._id;
     const newNoteId = await oldToNewId(oldNoteId, label.value);
@@ -242,7 +250,7 @@ async function checkDuplicate() {
     props.item.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
   const path = await join(
     await dirname(idToPath(props.item._id)),
-    label.value + extension
+    label.value.endsWith(extension) ? label.value : label.value + extension
   );
 
   if ((await exists(path)) && path !== idToPath(props.item._id))

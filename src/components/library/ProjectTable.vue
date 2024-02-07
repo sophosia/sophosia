@@ -73,7 +73,7 @@
         v-if="props.expand && !!props.row.path"
         :item="props.row"
         :class="{
-          'bg-primary':
+          'tableview-highlighted-row':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
             isClickingPDF,
         }"
@@ -86,7 +86,7 @@
         :key="note._id"
         :item="note"
         :class="{
-          'bg-primary': projectStore.selected
+          'tableview-highlighted-row': projectStore.selected
             .map((item) => item._id)
             .includes(note._id),
         }"
