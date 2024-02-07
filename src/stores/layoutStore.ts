@@ -40,7 +40,6 @@ export const useLayoutStore = defineStore("layoutStore", {
     showLeftMenu: false,
     libraryRightMenuSize: 30,
     previousLibraryRightMenuSize: 0,
-    showLibraryRightMenu: false,
     showWelcomeCarousel: true,
     showPDFMenuView: false,
   }),
@@ -58,7 +57,6 @@ export const useLayoutStore = defineStore("layoutStore", {
       this.leftMenuSize = state.leftMenuSize;
       this.showLeftMenu = state.showLeftMenu;
       this.libraryRightMenuSize = state.libraryRightMenuSize;
-      this.showLibraryRightMenu = state.showLibraryRightMenu;
       this.showPDFMenuView = state.showPDFMenuView;
     },
 
@@ -73,7 +71,6 @@ export const useLayoutStore = defineStore("layoutStore", {
         leftMenuSize: this.leftMenuSize,
         showLeftMenu: this.showLeftMenu,
         libraryRightMenuSize: this.libraryRightMenuSize,
-        showLibraryRightMenu: this.showLibraryRightMenu,
         showPDFMenuView: this.showPDFMenuView,
       } as AppState;
     },

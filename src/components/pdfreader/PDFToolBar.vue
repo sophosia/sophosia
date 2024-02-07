@@ -45,41 +45,41 @@
         {
           value: AnnotationType.CURSOR,
           icon: 'mdi-cursor-text',
-          slot: AnnotationType.CURSOR
+          slot: AnnotationType.CURSOR,
         },
         {
           value: AnnotationType.HIGHLIGHT,
           icon: 'mdi-marker',
-          slot: AnnotationType.HIGHLIGHT
+          slot: AnnotationType.HIGHLIGHT,
         },
         {
           value: AnnotationType.UNDERLINE,
           icon: 'mdi-format-underline',
-          slot: AnnotationType.UNDERLINE
+          slot: AnnotationType.UNDERLINE,
         },
         {
           value: AnnotationType.STRIKEOUT,
           icon: 'mdi-format-strikethrough',
-          slot: AnnotationType.STRIKEOUT
+          slot: AnnotationType.STRIKEOUT,
         },
         {
           value: AnnotationType.RECTANGLE,
           icon: 'mdi-rectangle',
-          slot: AnnotationType.RECTANGLE
+          slot: AnnotationType.RECTANGLE,
         },
         {
           value: AnnotationType.COMMENT,
           icon: 'mdi-comment-text',
-          slot: AnnotationType.COMMENT
+          slot: AnnotationType.COMMENT,
         },
         {
           value: AnnotationType.INK,
-          slot: AnnotationType.INK
+          slot: AnnotationType.INK,
         },
         {
           value: AnnotationType.ERASER,
-          slot: AnnotationType.ERASER
-        }
+          slot: AnnotationType.ERASER,
+        },
       ]"
     >
       <template v-slot:cursor>
@@ -149,44 +149,44 @@
       @changeMatch="(delta) => pdfApp.changeMatch(delta)"
     />
     <!-- right menu -->
-    <q-btn-toggle
-      class="toggle"
-      :model-value="showRightMenu"
-      @update:model-value="(visible: boolean) => $emit('update:showRightMenu', visible)"
-      clearable
-      unelevated
+    <q-btn
+      flat
+      dense
+      square
+      icon="mdi-format-list-bulleted"
+      size="0.8rem"
+      padding="none"
       :ripple="false"
-      size="0.7rem"
-      padding="xs"
-      :options="[{ value: true, icon: 'mdi-format-list-bulleted' }]"
+      :color="showRightMenu ? 'primary' : ''"
+      @click="$emit('update:showRightMenu', !showRightMenu)"
     >
-      <template v-slot:default>
-        <q-tooltip>{{ $t("toggle-right-menu") }}</q-tooltip>
-      </template>
-    </q-btn-toggle>
+      <q-tooltip>{{ $t("toggle-right-menu") }}</q-tooltip>
+    </q-btn>
   </q-toolbar>
 </template>
 
 <script setup lang="ts">
 import { useQuasar } from "quasar";
-import { computed, inject, ref } from "vue";
 import { AnnotationType, EraserType, PDFSearch } from "src/backend/database";
-import { KEY_pdfApp } from "./injectKeys";
 import PDFApplication from "src/backend/pdfreader";
+import { useLayoutStore } from "src/stores/layoutStore";
+import { computed, inject, ref } from "vue";
+import { KEY_pdfApp } from "./injectKeys";
 
 import ColorPicker from "./ColorPicker.vue";
-import InkDropdownBtn from "./InkDropdownBtn.vue";
 import EraserDropdownBtn from "./EraserDropdownBtn.vue";
-import ViewDropdownBtn from "./ViewDropdownBtn.vue";
+import InkDropdownBtn from "./InkDropdownBtn.vue";
 import SearchDropdownBtn from "./SearchDropdownBtn.vue";
+import ViewDropdownBtn from "./ViewDropdownBtn.vue";
 
 const $q = useQuasar();
+const layoutStore = useLayoutStore();
 
 /**
  * Props, emits, data
  */
 const props = defineProps({
-  showRightMenu: { type: Boolean, required: true }
+  showRightMenu: { type: Boolean, required: true },
 });
 const emit = defineEmits(["update:showRightMenu"]);
 
