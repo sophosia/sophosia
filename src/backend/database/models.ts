@@ -276,6 +276,7 @@ export interface AppState {
   _id: "appState";
   dataType: "appState";
   // layout
+  ribbonClickedBtnId: string;
   leftMenuSize: number;
   libraryRightMenuSize: number;
   // project

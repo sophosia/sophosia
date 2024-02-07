@@ -35,6 +35,8 @@ export const useLayoutStore = defineStore("layoutStore", {
     closedItemId: "",
 
     // toggles and sizes
+    ribbonClickedBtnId: "",
+    prvRibbonClickedBtnId: "",
     leftMenuSize: 20,
     prvLeftMenuSize: 20,
     libraryRightMenuSize: 30,
@@ -51,6 +53,8 @@ export const useLayoutStore = defineStore("layoutStore", {
     async loadState(state: AppState) {
       if (this.initialized) return;
       this.currentItemId = state.currentItemId;
+      this.ribbonClickedBtnId = state.ribbonClickedBtnId;
+      this.prvRibbonClickedBtnId = state.ribbonClickedBtnId;
       this.leftMenuSize = state.leftMenuSize;
       this.libraryRightMenuSize = state.libraryRightMenuSize;
     },
@@ -62,6 +66,7 @@ export const useLayoutStore = defineStore("layoutStore", {
     saveState(): AppState {
       return {
         currentItemId: this.currentItemId,
+        ribbonClickedBtnId: this.ribbonClickedBtnId,
         leftMenuSize: this.leftMenuSize,
         libraryRightMenuSize: this.libraryRightMenuSize,
       } as AppState;
@@ -254,7 +259,10 @@ export const useLayoutStore = defineStore("layoutStore", {
     },
 
     toggleLeftMenu(visible?: boolean) {
+      const isClickedSameBtn =
+        this.ribbonClickedBtnId === this.prvRibbonClickedBtnId;
       if (visible === undefined) {
+        if (!isClickedSameBtn) return;
         const show = this.leftMenuSize > 0;
         this.leftMenuSize = show ? 0 : Math.max(this.prvLeftMenuSize, 20);
       } else {

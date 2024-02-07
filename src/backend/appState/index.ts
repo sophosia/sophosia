@@ -21,6 +21,7 @@ async function getAppState(): Promise<AppState> {
   const defaultState: AppState = {
     _id: "appState",
     dataType: "appState",
+    ribbonClickedBtnId: "",
     leftMenuSize: 20,
     libraryRightMenuSize: 30,
     selectedFolderId: SpecialFolder.LIBRARY,
