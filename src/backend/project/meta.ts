@@ -13,6 +13,7 @@ import { getProjects } from "./project";
 import * as pdfjsLib from "pdfjs-dist";
 import { TextItem } from "pdfjs-dist/types/src/display/api";
 import { useSettingStore } from "src/stores/settingStore";
+import { getTitle } from "./utils";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 /**
@@ -183,6 +184,7 @@ export function generateCiteKey(
   rule = "author_year_title",
   longTitle = false
 ): string {
+  console.log("meta", meta);
   // parsing the rule
   let connector = "";
   let keys = ["author", "title", "year"];
@@ -233,7 +235,7 @@ export function generateCiteKey(
   parts.year = year;
 
   // default to use untranslated title if it exists
-  const title = meta["original-title"] || meta.title;
+  const title = getTitle(meta, false);
   if (longTitle) {
     parts.title = title
       .toLowerCase()

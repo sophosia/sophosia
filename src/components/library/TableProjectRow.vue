@@ -47,8 +47,8 @@
         class="ellipsis"
       >
         {{
-          col.name === "title" && !settingStore.showTranslatedTitle
-            ? tableProps.row["original-title"] || col.value
+          col.name === "title"
+            ? getTitle(tableProps.row, settingStore.showTranslatedTitle)
             : col.value
         }}
       </div>
@@ -67,6 +67,7 @@
 import { copyToClipboard, useQuasar } from "quasar";
 import { Author, Project } from "src/backend/database";
 import { formatMetaData } from "src/backend/project/meta";
+import { getTitle } from "src/backend/project/utils";
 import { useSettingStore } from "src/stores/settingStore";
 import { PropType, ref } from "vue";
 import { useI18n } from "vue-i18n";

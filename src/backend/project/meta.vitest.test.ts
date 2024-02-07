@@ -54,7 +54,6 @@ describe("meta.ts", () => {
       year: 2023,
     };
     const formatted = await formatMetaData([meta], "bibtex");
-    console.log("formated", formatted);
     expect(formatted).toContain("@article{feng_2023_test");
   });
 
