@@ -24,7 +24,6 @@
         }"
         :disable="!(layoutStore.libraryRightMenuSize > 0)"
         v-model="layoutStore.libraryRightMenuSize"
-        emit-immediately
         @update:model-value="
           (size) => (layoutStore.previousLibraryRightMenuSize = size)
         "
@@ -87,9 +86,7 @@ import {
 } from "src/components/dialogs/dialogController";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
-import { useStateStore } from "src/stores/stateStore";
 
-const stateStore = useStateStore();
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 
