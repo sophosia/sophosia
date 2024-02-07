@@ -29,8 +29,8 @@
         >
           <input
             type="checkbox"
-            style="width: 1.1rem; height: 1.1rem"
             v-model="props.selected"
+            class="checkbox q-ml-md"
           />
         </q-th>
         <q-th auto-width></q-th>

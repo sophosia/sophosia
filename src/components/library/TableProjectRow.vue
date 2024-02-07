@@ -3,11 +3,11 @@
     <q-th auto-width>
       <input
         type="checkbox"
-        class="q-mt-xs"
-        style="width: 0.9rem; height: 0.9rem"
+        class="checkbox"
         v-model="tableProps.selected"
         @mousedown.stop
       />
+      <!-- <q-checkbox v-model="tableProps.selected"> </q-checkbox> -->
     </q-th>
     <q-th auto-width>
       <q-checkbox
@@ -144,3 +144,4 @@ function shortAuthorString(authors: Author[]) {
   }
 }
 </script>
+<style scoped lang="scss"></style>
