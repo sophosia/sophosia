@@ -24,9 +24,7 @@
         }"
         :disable="!(layoutStore.libraryRightMenuSize > 0)"
         v-model="layoutStore.libraryRightMenuSize"
-        @update:model-value="
-          (size) => (layoutStore.previousLibraryRightMenuSize = size)
-        "
+        @update:model-value="(size) => layoutStore.resizeLibraryRightMenu(size)"
       >
         <template v-slot:before>
           <ActionBar

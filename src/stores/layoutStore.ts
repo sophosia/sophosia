@@ -247,17 +247,21 @@ export const useLayoutStore = defineStore("layoutStore", {
     },
 
     toggleLibraryRightMenu(visible?: boolean) {
-      const minSize = 20;
       if (visible === undefined) {
         const show = this.libraryRightMenuSize > 0;
         this.libraryRightMenuSize = show
           ? 0
-          : Math.max(this.previousLibraryRightMenuSize, minSize);
+          : Math.max(this.previousLibraryRightMenuSize, 30);
       } else {
         this.libraryRightMenuSize = visible
-          ? Math.max(this.previousLibraryRightMenuSize, minSize)
+          ? Math.max(this.previousLibraryRightMenuSize, 30)
           : 0;
       }
+    },
+
+    resizeLibraryRightMenu(size: number) {
+      this.libraryRightMenuSize = size < 5 ? 0 : size;
+      this.previousLibraryRightMenuSize = size;
     },
 
     /**
