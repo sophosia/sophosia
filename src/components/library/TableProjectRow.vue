@@ -1,6 +1,7 @@
 <template>
   <q-tr class="table">
     <q-th auto-width>
+      <!-- cannot use q-checkbox here since it doesn't work with selection -->
       <input
         type="checkbox"
         class="checkbox"
