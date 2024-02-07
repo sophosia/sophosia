@@ -4,28 +4,17 @@
     class="column justify-between"
   >
     <div>
-      <q-btn-toggle
-        v-model="layoutStore.ribbonToggledBtnUid"
-        style="position: absolute; height: 36px"
-        class="q-mx-xs"
-        spread
+      <q-btn
+        style="width: 30px"
         flat
         square
-        clearable
-        padding="none"
-        :ripple="false"
-        :options="toggleBtns"
+        icon="mdi-file-tree-outline"
+        padding="xs"
+        :color="layoutStore.leftMenuSize > 0 ? 'primary' : ''"
+        @click="layoutStore.toggleLeftMenu()"
       >
-        <template
-          v-for="toggleBtn in toggleBtns"
-          v-slot:[toggleBtn.slot]
-          class="no-hover"
-        >
-          <q-tooltip>
-            {{ toggleBtn.tooltip }}
-          </q-tooltip>
-        </template>
-      </q-btn-toggle>
+        <q-tooltip>{{ $t("openedProjects") }}</q-tooltip>
+      </q-btn>
     </div>
 
     <div>
@@ -129,10 +118,7 @@ const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
 const { t, locale } = useI18n({ useScope: "global" });
 
-const props = defineProps({
-  isLeftMenuVisible: { type: Boolean, required: true },
-});
-const emit = defineEmits(["update:isLeftMenuVisible", "openPage"]);
+const emit = defineEmits(["openPage"]);
 
 const isUpdateAvailable = ref(false);
 const pluginBtns = ref<Button[]>([]);
@@ -149,13 +135,6 @@ watch(
       (tb) => tb.value == "projectNavigator"
     );
     if (toggleBtn) toggleBtn.tooltip = t("openedProjects");
-  }
-);
-
-watch(
-  () => layoutStore.ribbonToggledBtnUid,
-  (id: string | undefined) => {
-    layoutStore.showLeftMenu = !!id;
   }
 );
 
