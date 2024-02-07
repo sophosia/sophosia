@@ -146,5 +146,8 @@
   "empty": "Vide",
   "identifier": "Identifiant",
   "local": "Local",
-  "export": "Exporter {type}"
+  "export": "Exporter {type}",
+  "display-translated-title": "Afficher le titre traduit",
+  "display-translated-title-info": "Si la référence contient un titre traduit, cela détermine s'il faut ou non l'afficher.",
+  "copy-reference": "Copier la citation"
 }

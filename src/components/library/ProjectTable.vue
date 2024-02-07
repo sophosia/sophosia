@@ -338,6 +338,7 @@ function searchProject(
     for (let prop of [
       "type",
       "title",
+      "original-title",
       "abstract",
       "DOI",
       "publisher",

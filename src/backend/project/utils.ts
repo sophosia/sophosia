@@ -1,5 +1,5 @@
 import { extname, sep } from "@tauri-apps/api/path";
-import { Author, db } from "../database";
+import { Author, Meta, db } from "../database";
 interface TreeNode {
   label: string;
   children?: (string | TreeNode)[];
@@ -39,6 +39,22 @@ export function authorToString(authors: Author[] | undefined) {
   return names.join(", ");
 }
 
+/**
+ * Get the correct title from meta
+ * If meta contains translated title and showTranslatedTitle is True, return translated title
+ * @param meta - meta data
+ * @param showTranslatedTitle - determines whether or not to show translated title
+ * @returns title - the desired title
+ */
+export function getTitle(meta: Meta, showTranslatedTitle: boolean) {
+  if (
+    !showTranslatedTitle &&
+    meta["original-title"] &&
+    !Array.isArray(meta["original-title"])
+  )
+    return meta["original-title"];
+  else return meta.title;
+}
 /**
  * Convert a path to folderId / noteId
  * storagePath/projectId/.../noteName.md -> projectId/.../noteName.md

@@ -35,6 +35,7 @@ async function getAppState(): Promise<AppState> {
     theme: "dark",
     fontSize: "16px",
     translateLanguage: "Français (fr)",
+    showTranslatedTitle: false,
     citeKeyRule: "author_title_year",
   };
   try {

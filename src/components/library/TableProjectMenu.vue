@@ -160,7 +160,7 @@ import {
   NoteType,
   Project,
   SpecialFolder,
-  db
+  db,
 } from "src/backend/database";
 import { Ref, inject, nextTick } from "vue";
 // db
@@ -178,7 +178,7 @@ const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 
 const props = defineProps({
-  projectId: { type: String, required: true }
+  projectId: { type: String, required: true },
 });
 const emit = defineEmits(["expandRow", "exportCitation"]);
 
@@ -231,7 +231,7 @@ async function showInExplorer() {
   for (let project of projectStore.selected) {
     let path = await join(db.config.storagePath, project._id);
     await invoke("show_in_folder", {
-      path: path
+      path: path,
     });
   }
 }
@@ -298,7 +298,7 @@ async function deleteProject(
 function showIdentifierDialog() {
   identifierDialog.show();
   identifierDialog.onConfirm(async () => {
-    const metas = await getMeta([identifierDialog.identifier], "json");
+    const metas = await getMeta([identifierDialog.identifier]);
     const meta = metas[0];
     // update existing project
     await projectStore.updateProject(
@@ -323,7 +323,7 @@ async function onAttachFile() {
  */
 async function setFavorite(isFavorite: boolean) {
   await projectStore.updateProject(props.projectId, {
-    favorite: isFavorite
+    favorite: isFavorite,
   } as Project);
 }
 

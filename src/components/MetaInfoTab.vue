@@ -388,7 +388,12 @@ import { basename } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/shell";
 import { copyToClipboard } from "quasar";
 import { getFolder } from "src/backend/project/folder";
-import { generateCiteKey, getMeta } from "src/backend/project/meta";
+import {
+  formatMetaData,
+  generateCiteKey,
+  getMeta,
+} from "src/backend/project/meta";
+import { getTitle } from "src/backend/project/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
@@ -406,11 +411,18 @@ const references = ref<{ text: string; link: string }[]>([]);
 const meta = computed(() => props.project);
 const title = computed({
   get() {
-    return meta.value?.title || "";
+    if (!meta.value) return "";
+    return getTitle(meta.value, settingStore.showTranslatedTitle);
   },
   set(newTitle: string) {
     if (!meta.value) return;
-    meta.value.title = newTitle;
+    if (
+      !settingStore.showTranslatedTitle &&
+      meta.value["original-title"] &&
+      !Array.isArray(meta.value["original-title"])
+    )
+      meta.value["original-title"] = newTitle;
+    else meta.value.title = newTitle;
     meta.value.label = newTitle;
   },
 });
@@ -578,15 +590,17 @@ async function getReferences() {
 
   for (let [i, ref] of meta.value.reference.entries()) {
     try {
-      getMeta([ref.DOI || ref.key], "bibliography", {
-        format: "html",
-      }).then((text: string | Meta[]) => {
-        if (text === null) return;
-        let match = (text as string).match(/(https[a-zA-Z0-9:\.\/\-\_]+)/g);
-        references.value[i].link = match ? match[0] : "";
-        references.value[i].text = (text as string).replace(
-          /(https[a-zA-Z0-9:\.\/\-\_]+)/g,
-          ""
+      getMeta([ref.DOI || ref.key]).then((metas) => {
+        formatMetaData(metas, "bibliography", { format: "html" }).then(
+          (text: string | Meta[]) => {
+            if (text === null) return;
+            let match = (text as string).match(/(https[a-zA-Z0-9:\.\/\-\_]+)/g);
+            references.value[i].link = match ? match[0] : "";
+            references.value[i].text = (text as string).replace(
+              /(https[a-zA-Z0-9:\.\/\-\_]+)/g,
+              ""
+            );
+          }
         );
       });
     } catch (error) {

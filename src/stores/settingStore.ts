@@ -8,6 +8,7 @@ export const useSettingStore = defineStore("settingStore", {
     theme: "dark",
     fontSize: "16px",
     translateLanguage: "Français (fr)",
+    showTranslatedTitle: false,
     citeKeyRule: "author_title_year",
   }),
 
@@ -21,6 +22,7 @@ export const useSettingStore = defineStore("settingStore", {
       this.theme = state.theme;
       this.fontSize = state.fontSize;
       this.translateLanguage = state.translateLanguage;
+      this.showTranslatedTitle = state.showTranslatedTitle;
       this.citeKeyRule = state.citeKeyRule;
 
       this.changeTheme(state.theme);
@@ -37,6 +39,7 @@ export const useSettingStore = defineStore("settingStore", {
         theme: this.theme,
         fontSize: this.fontSize,
         translateLanguage: this.translateLanguage,
+        showTranslatedTitle: this.showTranslatedTitle,
         citeKeyRule: this.citeKeyRule,
       } as AppState;
     },

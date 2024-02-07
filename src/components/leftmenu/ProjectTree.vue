@@ -141,18 +141,16 @@
             {{ $t("duplicate") }}
           </q-tooltip>
         </div>
-        <!-- add item-id and type for access of drag source -->
         <div
           v-else
           style="width: calc(100% - 1.4rem); font-size: 1rem"
           class="ellipsis non-selectable"
-          :item-id="prop.key"
           :type="prop.node.dataType"
         >
           {{
-            prop.node.label === prop.node.projectId + ".md"
-              ? "Overview.md"
-              : prop.node.label
+            prop.node.dataType === "note"
+              ? prop.node.label
+              : getTitle(prop.node, settingStore.showTranslatedTitle)
           }}
           <q-tooltip> ID: {{ prop.key }} </q-tooltip>
         </div>
@@ -172,7 +170,10 @@
   </q-tree>
 </template>
 <script setup lang="ts">
-import { QTree, copyToClipboard } from "quasar";
+import { invoke } from "@tauri-apps/api";
+import { exists } from "@tauri-apps/api/fs";
+import { dirname, join } from "@tauri-apps/api/path";
+import { QTree, copyToClipboard, useQuasar } from "quasar";
 import {
   FolderOrNote,
   Note,
@@ -180,21 +181,15 @@ import {
   Page,
   Project,
 } from "src/backend/database";
-import { nextTick, onMounted, ref, watchEffect } from "vue";
-// db
-import { invoke } from "@tauri-apps/api";
-import { exists } from "@tauri-apps/api/fs";
-import { dirname, join } from "@tauri-apps/api/path";
-import { getMeta } from "src/backend/project/meta";
-import { idToPath, oldToNewId } from "src/backend/project/utils";
+import { formatMetaData, generateCiteKey } from "src/backend/project/meta";
+import { getNotes } from "src/backend/project/note";
+import { getTitle, idToPath, oldToNewId } from "src/backend/project/utils";
+import { exportDialog } from "src/components/dialogs/dialogController";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
+import { useSettingStore } from "src/stores/settingStore";
 import { metadata } from "tauri-plugin-fs-extra-api";
-//components
-import { useQuasar } from "quasar";
-import { generateCiteKey } from "src/backend/project/meta";
-import { getNotes } from "src/backend/project/note";
-import { exportDialog } from "src/components/dialogs/dialogController";
+import { nextTick, onMounted, ref, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
 import FolderMenu from "./FolderMenu.vue";
 import NoteMenu from "./NoteMenu.vue";
@@ -203,6 +198,7 @@ const { t } = useI18n({ useScope: "global" });
 
 const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
+const settingStore = useSettingStore();
 
 const tree = ref<QTree | null>(null);
 const renameInput = ref<HTMLInputElement | null>(null);
@@ -235,7 +231,7 @@ async function showExportCitationDialog(project: Project) {
   exportDialog.onConfirm(async () => {
     const format = exportDialog.format.value;
     const options = { template: exportDialog.template.value };
-    const meta = await getMeta([project], format, options);
+    const meta = await formatMetaData([project], format, options);
     await copyToClipboard(meta as string);
     $q.notify(t("text-copied"));
   });
