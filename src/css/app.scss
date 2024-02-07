@@ -345,6 +345,35 @@ a {
   background: var(--color-library-tableview-highlighted-row-bkgd);
 }
 
+// table checkbox
+.checkbox {
+  /* Remove most all native input styles */
+  appearance: none;
+
+  margin-top: 0.1rem;
+  color: currentColor;
+  width: 1rem;
+  height: 1rem;
+  border: 0.1rem solid currentColor;
+  border-radius: 0.15rem;
+
+  display: grid;
+  place-content: center;
+}
+.checkbox::before {
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0);
+  transform-origin: bottom left;
+  /* Windows High Contrast Mode */
+  background-color: var(--color-text);
+}
+.checkbox:checked::before {
+  transform: scale(1);
+}
+
 #projectList td {
   padding: 0;
 }

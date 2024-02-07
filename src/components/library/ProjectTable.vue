@@ -29,8 +29,8 @@
         >
           <input
             type="checkbox"
-            style="width: 1.1rem; height: 1.1rem"
             v-model="props.selected"
+            class="checkbox q-ml-md"
           />
         </q-th>
         <q-th auto-width></q-th>
@@ -73,7 +73,7 @@
         v-if="props.expand && !!props.row.path"
         :item="props.row"
         :class="{
-          'bg-primary':
+          'tableview-highlighted-row':
             projectStore.selected.map((item) => item._id).includes(props.key) &&
             isClickingPDF,
         }"
@@ -86,7 +86,7 @@
         :key="note._id"
         :item="note"
         :class="{
-          'bg-primary': projectStore.selected
+          'tableview-highlighted-row': projectStore.selected
             .map((item) => item._id)
             .includes(note._id),
         }"
@@ -346,7 +346,7 @@ function searchProject(
       "path",
       "citation-key",
     ]) {
-      if (row[prop] === undefined) continue;
+      if (row[prop] === undefined || Array.isArray(row[prop])) continue;
       if (row[prop].search(re) != -1) {
         text = row[prop].replace(
           re,

@@ -124,15 +124,17 @@
         <!-- note icon has 1rem width -->
         <!-- input must have keypress.space.stop since space is default to expand row rather than space in text -->
         <div v-if="prop.node._id == renamingNodeId">
-          <input
-            style="width: calc(100% - 1.4rem)"
+          <q-input
             v-model="prop.node.label"
-            @input="checkDuplicate(prop.node)"
-            @keydown.enter="renameNode"
+            @update:model-value="checkDuplicate(prop.node)"
+            outlined
+            dense
+            :color="pathDuplicate ? 'red' : ''"
             @blur="renameNode"
+            @keydown.enter="renameNode"
             @keypress.space.stop
             ref="renameInput"
-          />
+          ></q-input>
           <q-tooltip
             v-if="pathDuplicate"
             v-model="pathDuplicate"

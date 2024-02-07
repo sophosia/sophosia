@@ -272,7 +272,7 @@ export const useLayoutStore = defineStore("layoutStore", {
 
     resizeLeftMenu(size: number) {
       this.prvLeftMenuSize = size;
-      this.leftMenuSize = size < 5 ? 0 : size;
+      this.leftMenuSize = size < 10 ? 0 : size;
     },
   },
 });
