@@ -19,13 +19,15 @@
         :limits="[0, 60]"
         separator-style="background: var(--q-edge)"
         :separator-class="{
-          'q-splitter-separator': layoutStore.showLibraryRightMenu,
-          hidden: !layoutStore.showLibraryRightMenu,
+          'q-splitter-separator': layoutStore.libraryRightMenuSize > 0,
+          hidden: !(layoutStore.libraryRightMenuSize > 0),
         }"
-        :disable="!layoutStore.showLibraryRightMenu"
-        v-model="rightMenuSize"
+        :disable="!(layoutStore.libraryRightMenuSize > 0)"
+        v-model="layoutStore.libraryRightMenuSize"
         emit-immediately
-        @update:model-value="(size: number) => resizeRightMenu(size)"
+        @update:model-value="
+          (size) => (layoutStore.previousLibraryRightMenuSize = size)
+        "
       >
         <template v-slot:before>
           <ActionBar
@@ -101,7 +103,6 @@ const treeview = ref<typeof FolderTree | null>(null);
 const searchString = ref("");
 
 const treeViewSize = ref(20);
-const rightMenuSize = ref(0);
 
 watch(
   () => projectStore.selectedFolderId,
@@ -113,9 +114,6 @@ watch(
 
 onMounted(async () => {
   projectStore.loadProjects(projectStore.selectedFolderId);
-  // rightmenu
-  if (layoutStore.showLibraryRightMenu)
-    rightMenuSize.value = layoutStore.libraryRightMenuSize;
 });
 
 /************************************************
@@ -260,34 +258,5 @@ async function exportFolder(
   options?: { format?: string; template?: string }
 ) {
   await exportMeta(folder, format, options);
-}
-
-/**************************************************
- * MetaInfoTab
- **************************************************/
-watch(
-  () => layoutStore.showLibraryRightMenu,
-  (visible: boolean) => {
-    if (visible) {
-      // if visible, the left menu has at least 10 unit width
-      rightMenuSize.value = Math.max(layoutStore.libraryRightMenuSize, 15);
-    } else {
-      // if not visible, record the size and close the menu
-      layoutStore.libraryRightMenuSize = rightMenuSize.value;
-      rightMenuSize.value = 0;
-    }
-  }
-);
-
-/**
- * Handles resizing of the right menu.
- * @param {number} size - The new size of the right menu.
- */
-function resizeRightMenu(size: number) {
-  if (size < 20) {
-    rightMenuSize.value = 0;
-    layoutStore.showLibraryRightMenu = false;
-  }
-  layoutStore.libraryRightMenuSize = size > 10 ? size : 30;
 }
 </script>

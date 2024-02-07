@@ -39,6 +39,7 @@ export const useLayoutStore = defineStore("layoutStore", {
     leftMenuSize: 20,
     showLeftMenu: false,
     libraryRightMenuSize: 30,
+    previousLibraryRightMenuSize: 0,
     showLibraryRightMenu: false,
     showWelcomeCarousel: true,
     showPDFMenuView: false,
@@ -242,6 +243,20 @@ export const useLayoutStore = defineStore("layoutStore", {
         this.showWelcomeCarousel = !this.showWelcomeCarousel;
       } else {
         this.showWelcomeCarousel = visible;
+      }
+    },
+
+    toggleLibraryRightMenu(visible?: boolean) {
+      const minSize = 20;
+      if (visible === undefined) {
+        const show = this.libraryRightMenuSize > 0;
+        this.libraryRightMenuSize = show
+          ? 0
+          : Math.max(this.previousLibraryRightMenuSize, minSize);
+      } else {
+        this.libraryRightMenuSize = visible
+          ? Math.max(this.previousLibraryRightMenuSize, minSize)
+          : 0;
       }
     },
 
