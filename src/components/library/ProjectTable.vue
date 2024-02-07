@@ -346,7 +346,7 @@ function searchProject(
       "path",
       "citation-key",
     ]) {
-      if (row[prop] === undefined) continue;
+      if (row[prop] === undefined || Array.isArray(row[prop])) continue;
       if (row[prop].search(re) != -1) {
         text = row[prop].replace(
           re,
