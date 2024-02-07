@@ -148,9 +148,9 @@
           :type="prop.node.dataType"
         >
           {{
-            prop.node.dataType === "note"
-              ? prop.node.label
-              : getTitle(prop.node, settingStore.showTranslatedTitle)
+            prop.node.dataType === "project"
+              ? getTitle(prop.node, settingStore.showTranslatedTitle)
+              : prop.node.label
           }}
           <q-tooltip> ID: {{ prop.key }} </q-tooltip>
         </div>
