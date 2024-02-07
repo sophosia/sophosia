@@ -35,13 +35,13 @@ export const useLayoutStore = defineStore("layoutStore", {
     closedItemId: "",
 
     // toggles and sizes
-    ribbonToggledBtnUid: "",
+    ribbonClickedBtnId: "",
+    prvRibbonClickedBtnId: "",
     leftMenuSize: 20,
-    showLeftMenu: false,
+    prvLeftMenuSize: 20,
     libraryRightMenuSize: 30,
-    showLibraryRightMenu: false,
+    prvLibraryRightMenuSize: 0,
     showWelcomeCarousel: true,
-    showPDFMenuView: false,
   }),
 
   actions: {
@@ -53,12 +53,10 @@ export const useLayoutStore = defineStore("layoutStore", {
     async loadState(state: AppState) {
       if (this.initialized) return;
       this.currentItemId = state.currentItemId;
-      this.ribbonToggledBtnUid = state.ribbonToggledBtnUid;
+      this.ribbonClickedBtnId = state.ribbonClickedBtnId;
+      this.prvRibbonClickedBtnId = state.ribbonClickedBtnId;
       this.leftMenuSize = state.leftMenuSize;
-      this.showLeftMenu = state.showLeftMenu;
       this.libraryRightMenuSize = state.libraryRightMenuSize;
-      this.showLibraryRightMenu = state.showLibraryRightMenu;
-      this.showPDFMenuView = state.showPDFMenuView;
     },
 
     /**
@@ -68,12 +66,9 @@ export const useLayoutStore = defineStore("layoutStore", {
     saveState(): AppState {
       return {
         currentItemId: this.currentItemId,
-        ribbonToggledBtnUid: this.ribbonToggledBtnUid,
+        ribbonClickedBtnId: this.ribbonClickedBtnId,
         leftMenuSize: this.leftMenuSize,
-        showLeftMenu: this.showLeftMenu,
         libraryRightMenuSize: this.libraryRightMenuSize,
-        showLibraryRightMenu: this.showLibraryRightMenu,
-        showPDFMenuView: this.showPDFMenuView,
       } as AppState;
     },
 
@@ -245,17 +240,39 @@ export const useLayoutStore = defineStore("layoutStore", {
       }
     },
 
-    /**
-     * Toggle pdf floating menu
-     * If visible is given, set the state as it is
-     * @param visible
-     */
-    togglePDFMenuView(visible?: boolean) {
+    toggleLibraryRightMenu(visible?: boolean) {
       if (visible === undefined) {
-        this.showPDFMenuView = !this.showPDFMenuView;
+        const show = this.libraryRightMenuSize > 0;
+        this.libraryRightMenuSize = show
+          ? 0
+          : Math.max(this.prvLibraryRightMenuSize, 30);
       } else {
-        this.showPDFMenuView = visible;
+        this.libraryRightMenuSize = visible
+          ? Math.max(this.prvLibraryRightMenuSize, 30)
+          : 0;
       }
+    },
+
+    resizeLibraryRightMenu(size: number) {
+      this.prvLibraryRightMenuSize = size;
+      this.libraryRightMenuSize = size < 5 ? 0 : size;
+    },
+
+    toggleLeftMenu(visible?: boolean) {
+      const isClickedSameBtn =
+        this.ribbonClickedBtnId === this.prvRibbonClickedBtnId;
+      if (visible === undefined) {
+        if (!isClickedSameBtn) return;
+        const show = this.leftMenuSize > 0;
+        this.leftMenuSize = show ? 0 : Math.max(this.prvLeftMenuSize, 20);
+      } else {
+        this.leftMenuSize = visible ? Math.max(this.prvLeftMenuSize, 20) : 0;
+      }
+    },
+
+    resizeLeftMenu(size: number) {
+      this.prvLeftMenuSize = size;
+      this.leftMenuSize = size < 5 ? 0 : size;
     },
   },
 });

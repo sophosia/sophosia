@@ -50,13 +50,13 @@ import {
   Button,
   ComponentName,
   ToggleButton,
-  View
+  View,
 } from "src/backend/database";
 import pluginManager from "src/backend/plugin";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useSettingStore } from "src/stores/settingStore";
 import translate from "translate";
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import ColorPicker from "./ColorPicker.vue";
 import FloatingMenuView from "./FloatingMenuView.vue";
 
@@ -91,7 +91,7 @@ const translateOptions = [
   { value: "ta", label: "தமிழ் (ta)" },
   { value: "vi", label: "Tiếng Việt (vi)" },
   { value: "ko", label: "한국어 (ko)" },
-  { value: "fa", label: "فارسی (fa)" }
+  { value: "fa", label: "فارسی (fa)" },
 ];
 
 /**
@@ -142,9 +142,5 @@ onMounted(() => {
   pluginViews.value = pluginManager.getViews(ComponentName.PDF_MENU);
   let buttons = pluginManager.getBtns(ComponentName.PDF_MENU);
   pluginBtns.value = buttons.btns;
-});
-
-onBeforeUnmount(() => {
-  layoutStore.togglePDFMenuView(false);
 });
 </script>
