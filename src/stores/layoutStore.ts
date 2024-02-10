@@ -240,6 +240,12 @@ export const useLayoutStore = defineStore("layoutStore", {
       }
     },
 
+    /**
+     * Toggle library right menu
+     * The size is determined by the minimum size 30 and its previous size
+     * If visible is given, set the state as it is
+     * @param visible
+     */
     toggleLibraryRightMenu(visible?: boolean) {
       if (visible === undefined) {
         const show = this.libraryRightMenuSize > 0;
@@ -253,11 +259,21 @@ export const useLayoutStore = defineStore("layoutStore", {
       }
     },
 
+    /**
+     * After releasing the splitter, record the size and if close right menu if it is too small
+     * @param size
+     */
     resizeLibraryRightMenu(size: number) {
       this.prvLibraryRightMenuSize = size;
       this.libraryRightMenuSize = size < 5 ? 0 : size;
     },
 
+    /**
+     * Toggle left menu
+     * The size is determined by the minimum size 20 and its previous size
+     * If visible is given, set the state as it is
+     * @param visible
+     */
     toggleLeftMenu(visible?: boolean) {
       const isClickedSameBtn =
         this.ribbonClickedBtnId === this.prvRibbonClickedBtnId;
@@ -270,6 +286,10 @@ export const useLayoutStore = defineStore("layoutStore", {
       }
     },
 
+    /**
+     * After releasing the splitter, record the size and if close left menu if it is too small
+     * @param size
+     */
     resizeLeftMenu(size: number) {
       this.prvLeftMenuSize = size;
       this.leftMenuSize = size < 10 ? 0 : size;
