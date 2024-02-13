@@ -147,5 +147,7 @@
   "empty": "Empty",
   "identifier": "Identifier",
   "local": "Local",
-  "export": "Export {type}"
+  "export": "Export {type}",
+  "display-translated-title": "Display Translated Title",
+  "display-translated-title-info": "If reference contains a translated title, this determines whether or not to display it."
 }

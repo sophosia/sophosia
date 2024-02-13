@@ -18,8 +18,11 @@ export const useStateStore = defineStore("stateStore", () => {
     const settingStore = useSettingStore();
     const layoutStore = useLayoutStore();
     const projectStore = useProjectStore();
+    settingStore.initialized = false; // set to false so the state can be overwrite
     await settingStore.loadState(toRaw(state));
+    layoutStore.initialized = false; // set to false so the state can be overwrite
     await layoutStore.loadState(toRaw(state));
+    projectStore.initialized = false; // set to false so the state can be overwrite
     await projectStore.loadState(toRaw(state));
   }
 

@@ -5,13 +5,15 @@ import { save } from "@tauri-apps/api/dialog";
 import {
   readBinaryFile,
   readTextFile,
-  writeTextFile
+  writeTextFile,
 } from "@tauri-apps/api/fs";
-import { AppState, Author, Folder, Meta, Project, db } from "../database";
+import { Author, Folder, Meta, Project } from "../database";
 import { getProjects } from "./project";
 // util (to scan identifier in PDF)
 import * as pdfjsLib from "pdfjs-dist";
 import { TextItem } from "pdfjs-dist/types/src/display/api";
+import { useSettingStore } from "src/stores/settingStore";
+import { getTitle } from "./utils";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 /**
@@ -22,27 +24,19 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the pu
  * are an array of strings. It ensures that DOI URLs start with 'https://doi.org/'
  * and replaces certain special characters.
  *
- * @param {string | string[] | Project[]} identifiers - The identifiers to be processed.
+ * @param {string[]} identifiers - The identifiers to be processed.
  *    This can be a single string, an array of strings, or an array of Project objects.
  *    If it's an array of strings, each string is processed for DOI URL formatting.
  *
- * @returns {string | string[] | Project[]} - The processed identifiers.
+ * @returns {string[]} - The processed identifiers.
  *    If the input is an array of strings, it returns the array with processed DOI URLs.
  *    For other types of inputs, it returns the input unchanged.
  */
-function processIdentifiers(
-  identifiers: string | string[] | Project[]
-): string | string[] | Project[] {
-  if (Array.isArray(identifiers) && typeof identifiers[0] === "string") {
-    return identifiers.map((str) => {
-      str = str.replace(/.*doi\.\w\//, "https://doi.org/");
-      if (!str.startsWith("https://doi.org/") && str.includes("/"))
-        str = `https://doi.org/${str}`;
-      return str.replace("⁃", "-"); // Replace special characters
-    });
-  }
-  // Return the identifiers as is if they don't match the condition
-  return identifiers;
+export function processIdentifiers(identifiers: string[]): string[] {
+  return identifiers.map((str) => {
+    const match = str.match(/10.\d{4,9}\/[-._;()/:A-Z0-9]+/i);
+    return match ? match[0] : "";
+  });
 }
 
 /**
@@ -52,57 +46,52 @@ function processIdentifiers(
  * This function takes the raw metadata and formats it either as JSON or using a custom
  * format specified in the options. If no format is specified, it defaults to JSON.
  *
- * @param data - The raw metadata to be formatted.
+ * @param metas - The raw metadata to be formatted.
  * @param format - The format in which to return the metadata (e.g., 'json').
  * @param options - Additional formatting options, including the template for custom formatting.
  *
  * @returns {Promise<Meta[] | string>} - The formatted metadata.
  */
-async function formatMetaData(
-  data: Cite,
+export async function formatMetaData(
+  metas: Meta[],
   format?: string,
   options?: { format?: string; template?: string }
 ): Promise<Meta[] | string> {
   if (!format || format === "json") {
-    let metas = data.data;
-    const appState = (await db.get("appState")) as AppState;
-    const citeKeyRule = appState.settings.citeKeyRule;
-    for (let meta of metas) {
-      delete meta._graph;
+    const settingStore = useSettingStore();
+    const citeKeyRule = settingStore.citeKeyRule;
+    for (const meta of metas) {
+      delete (meta as Meta & { _graph: any })._graph;
       if (!meta["citation-key"])
         meta["citation-key"] = generateCiteKey(meta, citeKeyRule);
     }
     return metas;
-  } else if (!options) {
-    return data.format(format);
-  } else {
+  } else if (options) {
+    const data = await Cite.async(metas);
     return data.format(format, options);
+  } else {
+    const data = await Cite.async(metas);
+    return data.format(format);
   }
 }
 
 /**
  * Retrieves metadata for given identifiers and formats it based on the specified options.
  *
- * @param {string | string[] | Project[]} identifiers - The identifiers for which metadata is to be retrieved.
- * @param {string} [format] - The format in which to return the metadata (e.g., 'json').
- * @param {Object} [options] - Additional formatting options.
- * @returns {Promise<Meta[] | string>} A promise resolving to the formatted metadata.
+ * @param {string[]} identifiers - The identifiers for which metadata is to be retrieved.
+ * @returns {Promise<Meta[]>} A promise resolving to the formatted metadata.
  *
  * Processes the identifiers, making necessary adjustments for DOI URLs, and retrieves metadata using the Cite library.
  * Returns the metadata in the specified format, handling JSON formatting and citation key generation if needed.
  *
  * @throws Logs an error and returns an empty array if an error occurs during the retrieval process.
  */
-export async function getMeta(
-  identifiers: string | string[] | Project[],
-  format?: string,
-  options?: { format?: string; template?: string }
-): Promise<Meta[] | string> {
+export async function getMeta(identifiers: string[]): Promise<Meta[]> {
   try {
     const processedIdentifiers = processIdentifiers(identifiers);
 
     const data = await Cite.async(processedIdentifiers);
-    return await formatMetaData(data, format, options);
+    return (await formatMetaData(data.data)) as Meta[];
   } catch (error) {
     console.log(error);
     return [] as Meta[];
@@ -132,7 +121,7 @@ export async function exportMeta(
 ) {
   try {
     const projects = await getProjects(folder._id);
-    const metas = await getMeta(projects, format, options);
+    const metas = await formatMetaData(projects, format, options);
 
     if (format === "json") {
       let path = await save();
@@ -149,9 +138,9 @@ export async function exportMeta(
         filters: [
           {
             name: extension,
-            extensions: [extension]
-          }
-        ]
+            extensions: [extension],
+          },
+        ],
       });
       if (path) {
         if (path.slice(-4).indexOf(`.${extension}`) === -1)
@@ -174,8 +163,9 @@ export async function exportMeta(
  * Reads the metadata from the specified file and converts it into an array of Meta objects.
  */
 export async function importMeta(filePath: string): Promise<Meta[]> {
-  let data = await readTextFile(filePath);
-  return (await getMeta(data, "json")) as Meta[];
+  const text = await readTextFile(filePath);
+  const data = await Cite.async(text);
+  return (await formatMetaData(data.data)) as Meta[];
 }
 
 /**
@@ -194,6 +184,7 @@ export function generateCiteKey(
   rule = "author_year_title",
   longTitle = false
 ): string {
+  console.log("meta", meta);
   // parsing the rule
   let connector = "";
   let keys = ["author", "title", "year"];
@@ -232,8 +223,9 @@ export function generateCiteKey(
       }
     }
 
-    // sometimes the last name contains multiple words, remove the space
-    lastNames = familyNames.join(connector).replaceAll(" ", "");
+    // sometimes the last name contains space, ...
+    // change them to connectors
+    lastNames = familyNames.join(connector).replace(/[\s\-\._]/g, connector);
   }
   parts.author = lastNames;
 
@@ -242,19 +234,23 @@ export function generateCiteKey(
   if (meta.issued) year = meta.issued["date-parts"][0][0].toString();
   parts.year = year;
 
+  // default to use untranslated title if it exists
+  const title = getTitle(meta, false);
   if (longTitle) {
-    parts.title = meta.title
+    parts.title = title
       .toLowerCase()
       .split(" ")
       .join(connector)
-      .replace(/[,.:'"/?!~`\\|]/, ""); // remove all special characters
+      .replace(/[,.:'"/?!~`\\|]/g, "") // remove all special characters
+      .replace(/[\s\-\._]/g, connector);
   } else {
     // title's first word
-    let title = meta.title
+    parts.title = title
       .split(" ")
       .filter((w) => !["a", "an", "the", "on"].includes(w.toLowerCase()))[0]
-      .replace(/[,.:'"/?!~`\\|]/, ""); // remove all special characters;
-    parts.title = title.toLowerCase();
+      .replace(/[,.:'"/?!~`\\|]/g, "") // remove all special characters;
+      .replace(/[\s\-\._]/g, connector)
+      .toLowerCase();
   }
 
   let citeKey = keys
@@ -321,7 +317,7 @@ export async function getMetaFromFile(
         // update project meta
         if (!!identifier) {
           console.log(identifier);
-          let metas = await getMeta([identifier], "json");
+          let metas = await getMeta([identifier]);
           return metas[0] as Meta;
         }
       }

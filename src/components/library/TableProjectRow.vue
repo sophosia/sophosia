@@ -1,13 +1,14 @@
 <template>
   <q-tr class="table">
     <q-th auto-width>
+      <!-- cannot use q-checkbox here since it doesn't work with selection -->
       <input
         type="checkbox"
-        class="q-mt-xs"
-        style="width: 0.9rem; height: 0.9rem"
+        class="checkbox"
         v-model="tableProps.selected"
         @mousedown.stop
       />
+      <!-- <q-checkbox v-model="tableProps.selected"> </q-checkbox> -->
     </q-th>
     <q-th auto-width>
       <q-checkbox
@@ -46,7 +47,11 @@
         style="font-size: 1rem; min-width: 20vw; max-width: 50vw"
         class="ellipsis"
       >
-        {{ col.value }}
+        {{
+          col.name === "title"
+            ? getTitle(tableProps.row, settingStore.showTranslatedTitle)
+            : col.value
+        }}
       </div>
     </q-td>
 
@@ -62,13 +67,16 @@
 <script setup lang="ts">
 import { copyToClipboard, useQuasar } from "quasar";
 import { Author, Project } from "src/backend/database";
-import { getMeta } from "src/backend/project/meta";
+import { formatMetaData } from "src/backend/project/meta";
+import { getTitle } from "src/backend/project/utils";
+import { useSettingStore } from "src/stores/settingStore";
 import { PropType, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { exportDialog } from "../dialogs/dialogController";
 import TableProjectMenu from "./TableProjectMenu.vue";
 const { t } = useI18n({ useScope: "global" });
 
+const settingStore = useSettingStore();
 const menu = ref<InstanceType<typeof TableProjectMenu>>();
 const $q = useQuasar();
 
@@ -104,7 +112,7 @@ async function showExportCitationDialog(project: Project) {
   exportDialog.onConfirm(async () => {
     const format = exportDialog.format.value;
     const options = { template: exportDialog.template.value };
-    const meta = await getMeta([project], format, options);
+    const meta = await formatMetaData([project], format, options);
     await copyToClipboard(meta as string);
     $q.notify(t("text-copied"));
   });
@@ -137,3 +145,4 @@ function shortAuthorString(authors: Author[]) {
   }
 }
 </script>
+<style scoped lang="scss"></style>

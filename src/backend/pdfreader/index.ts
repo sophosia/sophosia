@@ -239,6 +239,18 @@ export default class PDFApplication {
         }
       }
     );
+
+    // make selection smooth, not blocked by annotations
+    // see https://github.com/sophosia/sophosia/issues/96
+    document.addEventListener("selectionchange", () => {
+      const selection = window.getSelection();
+      const textLayers = container.querySelectorAll("div.textLayer");
+      for (const textLayer of textLayers) {
+        if (selection && !selection.isCollapsed)
+          (textLayer as HTMLElement).style.zIndex = "100";
+        else (textLayer as HTMLElement).style.zIndex = "2";
+      }
+    });
   }
 
   /**

@@ -32,7 +32,8 @@ export interface Meta {
   "citation-label"?: string; // citatin label
   "citation-key": string; // used to cite for bibtex
   type?: string; // article / book / conference-paper ...
-  title: string; // article / book title
+  "original-title"?: string; // original (untranslated) title
+  title: string; // article / book title (translated)
   author: Author[]; // array of authors [{family: "Feng", given: "Feng"}, {literal: "John"}]
   abstract?: string; // article abstract
   issued?: { "date-parts": Array<any> }; // issued date
@@ -275,14 +276,9 @@ export interface AppState {
   _id: "appState";
   dataType: "appState";
   // layout
-  ribbonToggledBtnUid: string; // which toggleBtn is toggled
+  ribbonClickedBtnId: string;
   leftMenuSize: number;
-  showLeftMenu: boolean; // is leftmenu expanded
-  showPDFMenuView: boolean;
-  pdfRightMenuSize: number;
-  showPDFRightMenu: boolean;
   libraryRightMenuSize: number;
-  showLibraryRightMenu: boolean;
   // project
   selectedFolderId: string;
   currentItemId: string;
@@ -291,6 +287,7 @@ export interface AppState {
   theme: string; // dark by default
   fontSize: string; // 16px by default
   translateLanguage: string;
+  showTranslatedTitle: boolean; // display translated title in project table
   citeKeyRule: string; // "author_title_year" by default
 }
 

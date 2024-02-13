@@ -84,19 +84,19 @@
 
     <q-space />
 
-    <q-btn-toggle
-      v-model="layoutStore.showLibraryRightMenu"
-      clearable
+    <q-btn
       flat
       dense
       square
+      icon="mdi-format-list-bulleted"
       size="0.8rem"
       padding="none"
       :ripple="false"
-      :options="[{ value: true, icon: 'mdi-format-list-bulleted' }]"
+      :color="layoutStore.libraryRightMenuSize > 0 ? 'primary' : ''"
+      @click="layoutStore.toggleLibraryRightMenu()"
     >
       <q-tooltip>{{ $t("info") }}</q-tooltip>
-    </q-btn-toggle>
+    </q-btn>
   </q-toolbar>
 </template>
 

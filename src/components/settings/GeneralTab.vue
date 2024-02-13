@@ -90,6 +90,28 @@
       class="q-my-md card"
     >
       <q-card-section>
+        <div class="text-h6">{{ $t("display-translated-title") }}</div>
+        <div>
+          {{ $t("display-translated-title-info") }}
+        </div>
+      </q-card-section>
+      <q-card-section class="q-pt-none">
+        <q-select
+          dense
+          outlined
+          emit-value
+          map-options
+          v-model="settingStore.showTranslatedTitle"
+          :options="titleTranslateOptions"
+        />
+      </q-card-section>
+    </q-card>
+
+    <q-card
+      flat
+      class="q-my-md card"
+    >
+      <q-card-section>
         <div class="row">
           <div class="text-h6">{{ $t("citation-key") }}</div>
           <q-btn
@@ -202,6 +224,11 @@ const translateLabels = [
   "Tiếng Việt (vi)",
   "한국어 (ko)",
   "فارسی (fa)",
+];
+
+const titleTranslateOptions = [
+  { value: false, label: "False" },
+  { value: true, label: "True" },
 ];
 
 const themeOptions = ["dark", "light"];

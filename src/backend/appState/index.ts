@@ -21,20 +21,16 @@ async function getAppState(): Promise<AppState> {
   const defaultState: AppState = {
     _id: "appState",
     dataType: "appState",
-    ribbonToggledBtnUid: "",
+    ribbonClickedBtnId: "",
     leftMenuSize: 20,
-    showLeftMenu: false,
-    showPDFMenuView: false,
-    pdfRightMenuSize: 30,
-    showPDFRightMenu: false,
     libraryRightMenuSize: 30,
-    showLibraryRightMenu: false,
     selectedFolderId: SpecialFolder.LIBRARY,
     currentItemId: "library",
     openedProjectIds: [],
     theme: "dark",
     fontSize: "16px",
     translateLanguage: "Français (fr)",
+    showTranslatedTitle: false,
     citeKeyRule: "author_title_year",
   };
   try {

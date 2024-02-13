@@ -19,13 +19,12 @@
         :limits="[0, 60]"
         separator-style="background: var(--q-edge)"
         :separator-class="{
-          'q-splitter-separator': layoutStore.showLibraryRightMenu,
-          hidden: !layoutStore.showLibraryRightMenu,
+          'q-splitter-separator': layoutStore.libraryRightMenuSize > 0,
+          hidden: !(layoutStore.libraryRightMenuSize > 0),
         }"
-        :disable="!layoutStore.showLibraryRightMenu"
-        v-model="rightMenuSize"
-        emit-immediately
-        @update:model-value="(size: number) => resizeRightMenu(size)"
+        :disable="!(layoutStore.libraryRightMenuSize > 0)"
+        v-model="layoutStore.libraryRightMenuSize"
+        @update:model-value="(size) => layoutStore.resizeLibraryRightMenu(size)"
       >
         <template v-slot:before>
           <ActionBar
@@ -85,9 +84,7 @@ import {
 } from "src/components/dialogs/dialogController";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
-import { useStateStore } from "src/stores/stateStore";
 
-const stateStore = useStateStore();
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 
@@ -101,7 +98,6 @@ const treeview = ref<typeof FolderTree | null>(null);
 const searchString = ref("");
 
 const treeViewSize = ref(20);
-const rightMenuSize = ref(0);
 
 watch(
   () => projectStore.selectedFolderId,
@@ -113,9 +109,6 @@ watch(
 
 onMounted(async () => {
   projectStore.loadProjects(projectStore.selectedFolderId);
-  // rightmenu
-  if (layoutStore.showLibraryRightMenu)
-    rightMenuSize.value = layoutStore.libraryRightMenuSize;
 });
 
 /************************************************
@@ -223,7 +216,7 @@ async function addProjectsByCollection(
  * @param {string} identifier - The identifier used for creating or updating projects.
  */
 async function addProjectByIdentifier(identifier: string) {
-  const metas = await getMeta([identifier], "json");
+  const metas = await getMeta([identifier]);
   const meta = metas[0];
   // add a new project to db and update it with meta
   const project = projectStore.createProject(projectStore.selectedFolderId);
@@ -260,34 +253,5 @@ async function exportFolder(
   options?: { format?: string; template?: string }
 ) {
   await exportMeta(folder, format, options);
-}
-
-/**************************************************
- * MetaInfoTab
- **************************************************/
-watch(
-  () => layoutStore.showLibraryRightMenu,
-  (visible: boolean) => {
-    if (visible) {
-      // if visible, the left menu has at least 10 unit width
-      rightMenuSize.value = Math.max(layoutStore.libraryRightMenuSize, 15);
-    } else {
-      // if not visible, record the size and close the menu
-      layoutStore.libraryRightMenuSize = rightMenuSize.value;
-      rightMenuSize.value = 0;
-    }
-  }
-);
-
-/**
- * Handles resizing of the right menu.
- * @param {number} size - The new size of the right menu.
- */
-function resizeRightMenu(size: number) {
-  if (size < 20) {
-    rightMenuSize.value = 0;
-    layoutStore.showLibraryRightMenu = false;
-  }
-  layoutStore.libraryRightMenuSize = size > 10 ? size : 30;
 }
 </script>
