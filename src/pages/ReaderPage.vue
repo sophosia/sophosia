@@ -1,6 +1,6 @@
 <template>
   <PDFReader
-    v-if="visible"
+    v-show="visible"
     :projectId="itemId"
     :focusAnnotId="data?.focusAnnotId"
   />

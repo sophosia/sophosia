@@ -1,6 +1,6 @@
 <template>
   <NoteEditor
-    v-if="visible"
+    v-show="visible"
     :has-toolbar="true"
     :noteId="itemId"
     :data="data"

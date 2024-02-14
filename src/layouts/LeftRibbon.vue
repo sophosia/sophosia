@@ -34,7 +34,7 @@
           $emit('openPage', {
             id: 'library',
             label: $t('library'),
-            type: 'LibraryPage',
+            type: PageType.LibraryPage,
           })
         "
       >
@@ -61,7 +61,7 @@
             $emit('openPage', {
               id: 'help',
               label: $t('help'),
-              type: 'HelpPage',
+              type: PageType.HelpPage,
               data: {
                 path: await resolveResource(
                   `help/help_${db.config.language}.md`
@@ -83,7 +83,7 @@
           $emit('openPage', {
             id: 'settings',
             label: $t('settings'),
-            type: 'SettingsPage',
+            type: PageType.SettingsPage,
           })
         "
       >
@@ -94,7 +94,7 @@
 </template>
 <script setup lang="ts">
 import { resolveResource } from "@tauri-apps/api/path";
-import { db } from "src/backend/database";
+import { PageType, db } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
 
 const layoutStore = useLayoutStore();

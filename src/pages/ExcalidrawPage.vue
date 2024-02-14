@@ -1,6 +1,6 @@
 <template>
   <ExcalidrawReact
-    v-if="visible"
+    v-show="visible"
     :noteId="itemId"
   />
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <SettingsMenu v-if="visible" />
+  <SettingsMenu v-show="visible" />
 </template>
 
 <script setup lang="ts">
