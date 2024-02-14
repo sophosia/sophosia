@@ -54,7 +54,7 @@ export const useLayoutStore = defineStore("layoutStore", {
       // load layout from db
       this.layout = await getLayout();
       this.setActive(state.currentItemId);
-      this.refresh();
+      this.initialized = true;
     },
 
     /**
@@ -86,7 +86,6 @@ export const useLayoutStore = defineStore("layoutStore", {
       if (!this.isNodeExist(page.id))
         this.insertNode(page, this.currentItemId, "after");
       this.setActive(page.id);
-      this.refresh();
     },
 
     /**
@@ -98,7 +97,6 @@ export const useLayoutStore = defineStore("layoutStore", {
       this.historyItemId = this.historyItemId.filter((id) => id !== page.id);
       if (this.currentItemId === page.id)
         this.currentItemId = this.historyItemId.pop()!;
-      this.refresh();
     },
 
     /**
@@ -118,7 +116,6 @@ export const useLayoutStore = defineStore("layoutStore", {
       if (id === this.currentItemId) return;
       if (this.currentItemId) this.historyItemId.push(this.currentItemId);
       this.currentItemId = id;
-      this.refresh();
     },
 
     /**
@@ -451,47 +448,6 @@ export const useLayoutStore = defineStore("layoutStore", {
         split: 50,
         children: nodeList,
       } as Row;
-    },
-
-    /**
-     * Set visibility of components after moving them around and trigger refresh of the tree
-     */
-    refresh() {
-      function _setVisible(tree: Layout) {
-        if (tree.type === "stack") {
-          const visibles = tree.children.filter((child) => child.visible);
-          if (visibles.length === 2) {
-            // active component just moved to this stack
-            // we only set the active component visible
-            tree.children.forEach((node) => {
-              node.visible = node.id === currentItemId;
-            });
-          } else if (visibles.length === 1) {
-            // set active tab visible in that stack
-            const hasActiveTab = tree.children
-              .map((child) => child.id)
-              .includes(currentItemId);
-            if (hasActiveTab)
-              tree.children.forEach((node) => {
-                node.visible = node.id === currentItemId;
-              });
-          } else if (visibles.length === 0) {
-            // active component just moved out of this stack
-            const prvTab = tree.children.find(
-              (node) => node.id === previousItemId
-            );
-            if (prvTab) prvTab.visible = true;
-            else tree.children[0].visible = true;
-          }
-        } else if (tree.type === "row" || tree.type === "col") {
-          tree.children.forEach((child) => {
-            _setVisible(child);
-          });
-        }
-      }
-      const currentItemId = this.currentItemId;
-      const previousItemId = this.historyItemId[this.historyItemId.length - 1];
-      _setVisible(this.layout);
     },
   },
 });

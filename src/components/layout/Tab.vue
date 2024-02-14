@@ -7,7 +7,7 @@
       style="width: 4rem"
       class="ellipsis"
     >
-      {{ page.label }}
+      {{ specialPages.includes(page.label) ? $t(page.label) : page.label }}
     </div>
     <q-btn
       @click.stop="$emit('close')"
@@ -27,6 +27,7 @@ const props = defineProps({
   active: { type: Boolean, required: true },
 });
 const emit = defineEmits(["close"]);
+const specialPages = ["library", "help", "settings"];
 </script>
 <style scoped lang="scss">
 .tab {

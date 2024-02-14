@@ -16,18 +16,18 @@ interface LayoutData {
  * the function sets and returns a default layout configuration. The default configuration includes
  */
 export async function getLayout(): Promise<Layout> {
-  // const defaultLayout = {
-  //     id: "stack",
-  //     type: "stack",
-  //     children: [
-  //       {
-  //         id: "library",
-  //         type: PageType.LibraryPage,
-  //         label: "library",
-  //         visible: true,
-  //       },
-  //     ],
-  //   } as Layout;
+  const defaultLayout = {
+    id: "stack",
+    type: "stack",
+    children: [
+      {
+        id: "library",
+        type: PageType.LibraryPage,
+        label: "library",
+        visible: true,
+      },
+    ],
+  } as Layout;
   // const defaultLayout = {
   //   id: "stack",
   //   type: "stack",
@@ -46,37 +46,37 @@ export async function getLayout(): Promise<Layout> {
   //     },
   //   ],
   // } as Layout;
-  const defaultLayout = {
-    id: "splitter",
-    type: "row",
-    split: 50,
-    children: [
-      {
-        id: "stack",
-        type: "stack",
-        children: [
-          {
-            id: "library",
-            type: PageType.LibraryPage,
-            label: "library",
-            visible: true,
-          },
-        ],
-      },
-      {
-        id: "stack2",
-        type: "stack",
-        children: [
-          {
-            id: "settings",
-            type: PageType.SettingsPage,
-            label: "settings",
-            visible: false,
-          },
-        ],
-      },
-    ],
-  } as Layout;
+  // const defaultLayout = {
+  //   id: "splitter",
+  //   type: "row",
+  //   split: 50,
+  //   children: [
+  //     {
+  //       id: "stack",
+  //       type: "stack",
+  //       children: [
+  //         {
+  //           id: "library",
+  //           type: PageType.LibraryPage,
+  //           label: "library",
+  //           visible: true,
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       id: "stack2",
+  //       type: "stack",
+  //       children: [
+  //         {
+  //           id: "settings",
+  //           type: PageType.SettingsPage,
+  //           label: "settings",
+  //           visible: false,
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // } as Layout;
   try {
     const layoutData = (await db.get("layout")) as LayoutData;
     if (!layoutData.layout) return defaultLayout;
@@ -100,7 +100,7 @@ export async function getLayout(): Promise<Layout> {
  * the provided config object, and then saves the updated layout back to the database.
  */
 async function _updateLayout(layout: Layout) {
-  const layoutData: any = await db.get("layout");
+  const layoutData = (await db.get("layout")) as LayoutData;
   layoutData.layout = layout;
   await db.put(layoutData);
 }
