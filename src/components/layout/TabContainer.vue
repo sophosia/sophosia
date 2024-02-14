@@ -48,7 +48,7 @@ function onMouseDown(page: Page) {
 }
 
 function onClose(page: Page) {
-  layoutStore.closePage(page);
+  layoutStore.closePage(page.id);
 }
 
 function onDragStartTab(ev: DragEvent, draggedPageIndex: number) {

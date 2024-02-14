@@ -17,7 +17,6 @@
 <script setup lang="ts">
 import type { Page, Stack } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
-import { useStateStore } from "src/stores/stateStore";
 import { PropType, ref, watchEffect } from "vue";
 import PageContainer from "./PageContainer.vue";
 import TabContainer from "./TabContainer.vue";
@@ -25,7 +24,7 @@ const props = defineProps({
   stack: { type: Object as PropType<Stack>, required: true },
   asyncPages: { type: Object as PropType<Map<string, any>>, required: true },
 });
-const stateStore = useStateStore();
+// const emit = defineEmits(["onUpdate:stack"]);
 const layoutStore = useLayoutStore();
 const draggedPage = ref<Page>();
 
@@ -71,6 +70,7 @@ function moveToStack(
     layoutStore.replaceNode(col, props.stack.id);
   } else {
     // center
+    console.log("into center");
     const pages = props.stack.children;
     const lastPageId = pages[pages.length - 1].id;
     layoutStore.insertNode(page, lastPageId, "after");
@@ -82,33 +82,31 @@ function moveToStack(
  */
 function refresh() {
   const pages = props.stack.children;
-  const pageIds = pages.map((page) => page.id);
-  const numVisibles = pages.filter((page) => page.visible).length;
-  if (numVisibles === 0) {
-    for (let i = layoutStore.historyItemId.length - 1; i >= 0; i--) {
-      const index = pageIds.indexOf(layoutStore.historyItemId[i]);
-      if (index > -1) {
-        pages[index].visible = true;
-        return;
-      }
-    }
-    // if cannot find in history, just make first page visible
-    pages[0].visible = true;
-  } else if (numVisibles === 1) {
-    for (const page of pages) {
-      if (page.id === layoutStore.currentItemId) page.visible = true;
-    }
-  } else if (numVisibles === 2) {
-    for (const page of pages) {
-      if (page.id === layoutStore.currentItemId) page.visible = true;
-      else page.visible = false;
+  let setVisible = false;
+  for (const page of pages) {
+    page.visible = false;
+    if (page.id === layoutStore.currentItemId) {
+      page.visible = true;
+      setVisible = true;
     }
   }
+  if (setVisible) return;
+  for (let i = layoutStore.historyItemId.length - 1; i >= 0; i--) {
+    const index = pages.findIndex(
+      (page) => page.id === layoutStore.historyItemId[i]
+    );
+    if (index > -1) {
+      pages[index].visible = true;
+      return;
+    }
+  }
+  // if cannot find in history, just make first page visible
+  pages[0].visible = true;
 }
 
 watchEffect(() => {
   refresh();
-  // stateStore.updateState();
+  // emit("onUpdate:stack", props.stack);
 });
 </script>
 <style scoped lang="scss">

@@ -1,7 +1,7 @@
 <template>
   <div
     class="tab row justify-between items-center"
-    :class="{ 'tab-active': active }"
+    :class="{ 'tab-active': active, 'tab-visible': page.visible }"
   >
     <div
       style="width: 4rem"
@@ -32,6 +32,7 @@ const specialPages = ["library", "help", "settings"];
 <style scoped lang="scss">
 .tab {
   background: var(--color-layout-base-bkgd);
+  color: grey;
   padding: 0 5px 0 5px;
   margin: 1px;
   min-width: 7rem;
@@ -39,11 +40,13 @@ const specialPages = ["library", "help", "settings"];
   border-radius: 4px 4px 0 0;
 
   &:hover {
-    background: var(--q-menu-highlight);
+    color: var(--color-layout-active-tab-fore);
   }
 }
+.tab-visible {
+  color: var(--color-layout-active-tab-fore);
+}
 .tab-active {
-  background: var(--color-layout-active-tab-bkgd);
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--q-primary);
 }
 </style>

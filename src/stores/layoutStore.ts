@@ -83,8 +83,15 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param page - The page object to be opened, containing necessary properties like id, label, type, etc.
      */
     openPage(page: Page) {
-      if (!this.isNodeExist(page.id))
-        this.insertNode(page, this.currentItemId, "after");
+      if (!this.isNodeExist(page.id)) {
+        // when clicking at the projectTree, the currentItemId will be set the the page.id
+        // we need to find the id of previous active page
+        const targetId =
+          this.currentItemId === page.id
+            ? this.historyItemId[this.historyItemId.length - 1]
+            : this.currentItemId;
+        this.insertNode(page, targetId, "after");
+      }
       this.setActive(page.id);
     },
 
@@ -92,11 +99,12 @@ export const useLayoutStore = defineStore("layoutStore", {
      * closes a page identified by its itemid. the method removes the page from the store and updates the application state.
      * @param itemid - the unique identifier of the page to be closed.
      */
-    closePage(page: Page) {
-      this.removeNode(page.id);
-      this.historyItemId = this.historyItemId.filter((id) => id !== page.id);
-      if (this.currentItemId === page.id)
-        this.currentItemId = this.historyItemId.pop()!;
+    closePage(pageId: string) {
+      console.log("remove", pageId);
+      this.removeNode(pageId);
+      this.historyItemId = this.historyItemId.filter((id) => id !== pageId);
+      if (this.currentItemId === pageId)
+        this.currentItemId = this.historyItemId.pop() || "";
     },
 
     /**
@@ -381,21 +389,6 @@ export const useLayoutStore = defineStore("layoutStore", {
         ) {
           tree.children.forEach((child) => _replaceNode(child, node, id));
         }
-
-        // if (
-        //   tree.type === "row" ||
-        //   tree.type === "col" ||
-        //   tree.type === "stack"
-        // ) {
-        //   const index = tree.children.findIndex((target) => target.id === id);
-        //   if (index !== undefined && index > -1) {
-        //     console.log("replacing node with", node);
-        //     tree.children.splice(index, 1, node);
-        //     return;
-        //   } else {
-        //     tree.children.forEach((child) => _replaceNode(child, node, id));
-        //   }
-        // }
       }
       _replaceNode(this.layout, node, id);
     },

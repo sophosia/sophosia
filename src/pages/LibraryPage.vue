@@ -1,5 +1,5 @@
 <template>
-  <ProjectBrowser v-show="visible" />
+  <ProjectBrowser v-if="visible" />
 </template>
 <script setup lang="ts">
 import ProjectBrowser from "src/components/library/ProjectBrowser.vue";

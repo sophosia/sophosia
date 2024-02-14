@@ -1,4 +1,3 @@
-import { debounce } from "lodash";
 import { defineStore } from "pinia";
 import { getAppState, updateAppState } from "src/backend/appState";
 import { AppState } from "src/backend/database";
@@ -29,7 +28,7 @@ export const useStateStore = defineStore("stateStore", () => {
   /**
    * Extract necessary data from each store then update appState on disk
    */
-  async function _updateState() {
+  async function updateState() {
     const settingStore = useSettingStore();
     const layoutStore = useLayoutStore();
     const projectStore = useProjectStore();
@@ -46,8 +45,6 @@ export const useStateStore = defineStore("stateStore", () => {
     Object.assign(state, projectStore.saveState());
     await updateAppState(state);
   }
-
-  const updateState = debounce(_updateState, 200);
 
   return { state, loadState, updateState };
 });

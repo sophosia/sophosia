@@ -10,8 +10,9 @@
     :nodes="projectStore.openedProjects"
     node-key="_id"
     selected-color="primary"
-    v-model:selected="layoutStore.currentItemId"
     v-model:expanded="expanded"
+    :model-value:selected="layoutStore.currentItemId"
+    @update:selected="(id: string) => layoutStore.setActive(id)"
   >
     <template v-slot:default-header="prop">
       <!-- use full-width so that click trailing empty space
@@ -247,7 +248,6 @@ function selectItem(nodeId: string) {
   if (!tree.value) return;
   const node = tree.value.getNodeByKey(nodeId);
   console.log("node", node);
-  layoutStore.currentItemId = node._id;
   if ((node.children?.length as number) > 0) expanded.value.push(node._id);
   if (node.dataType === "folder") return;
 

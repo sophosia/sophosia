@@ -5,6 +5,7 @@
   >
     <component
       v-for="page in pages"
+      v-show="!!page.visible"
       :key="page.id"
       :is="asyncPages.get(page.type)"
       :visible="!!page.visible"
@@ -57,9 +58,13 @@ function onDragLeave(ev: DragEvent) {
  */
 function onDragOver(ev: DragEvent) {
   ev.preventDefault();
+
   const containerDiv = container.value;
   const highlightDiv = highlight.value;
   if (!containerDiv || !highlightDiv) return;
+
+  console.log("X", ev.offsetX);
+  console.log("width", containerDiv.clientWidth);
   // highlight left, right, top, bottom dropping area
   if (ev.offsetX < 0.3 * containerDiv.clientWidth) {
     highlightDiv.style.top = `${containerDiv.clientTop}px`;
@@ -105,8 +110,6 @@ function onDragOver(ev: DragEvent) {
  * @param ev
  */
 function onDrop(ev: DragEvent) {
-  onDragLeave(ev);
-
   // move page around
   const draggedPage = JSON.parse(ev.dataTransfer!.getData("page"));
   if (!draggedPage) return;
@@ -114,17 +117,17 @@ function onDrop(ev: DragEvent) {
   const containerDiv = container.value;
   if (!containerDiv) return;
 
-  if (ev.clientX < 0.3 * containerDiv.clientWidth) {
+  if (ev.offsetX < 0.3 * containerDiv.clientWidth) {
     // drop into page left
     emit("moveToStack", draggedPage, "left");
-  } else if (ev.clientX > 0.7 * containerDiv.clientWidth) {
+  } else if (ev.offsetX > 0.7 * containerDiv.clientWidth) {
     // drop into page right
     emit("moveToStack", draggedPage, "right");
   } else {
-    if (ev.clientY < 0.3 * containerDiv.clientHeight) {
+    if (ev.offsetY < 0.3 * containerDiv.clientHeight) {
       // drop into page top
       emit("moveToStack", draggedPage, "top");
-    } else if (ev.clientY > 0.7 * containerDiv.clientHeight) {
+    } else if (ev.offsetY > 0.7 * containerDiv.clientHeight) {
       // drop into page bottom
       emit("moveToStack", draggedPage, "bottom");
     } else {
@@ -132,6 +135,9 @@ function onDrop(ev: DragEvent) {
       emit("moveToStack", draggedPage, "center");
     }
   }
+
+  // must put this to the end otherwise drop position is not correct
+  onDragLeave(ev);
 }
 </script>
 <style scoped lang="scss">

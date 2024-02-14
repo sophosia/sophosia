@@ -33,7 +33,10 @@ export default function Layout(
   const node = props.layout;
 
   if (node.type === "stack") {
-    return h(Stack, { stack: node, asyncPages: asyncPages });
+    return h(Stack, {
+      stack: node,
+      asyncPages: asyncPages,
+    });
   } else if (node.type === "row" || node.type === "col") {
     // row or col
     return h(
