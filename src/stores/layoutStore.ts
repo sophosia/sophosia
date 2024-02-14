@@ -14,6 +14,7 @@ import type {
 } from "src/backend/database/models";
 import { getLayout, updateLayout } from "src/backend/layout";
 import { getPDF } from "src/backend/project/project";
+import { toRaw } from "vue";
 import { useProjectStore } from "./projectStore";
 
 export const useLayoutStore = defineStore("layoutStore", {
@@ -362,19 +363,42 @@ export const useLayoutStore = defineStore("layoutStore", {
      */
     replaceNode(node: Layout, id: string) {
       function _replaceNode(tree: Layout, node: Layout, id: string) {
-        if (
+        if (tree.id === id) {
+          tree.id = node.id;
+          tree.type = node.type;
+          if (node.type === "col" || node.type === "row") {
+            (tree as Col | Row).split = node.split;
+            (tree as Col | Row).children = node.children;
+          } else if (node.type === "stack") {
+            (tree as Stack).children = node.children;
+          } else {
+            // page
+            (tree as Page).label = node.label;
+            (tree as Page).visible = node.visible;
+            (tree as Page).data = node.data;
+          }
+        } else if (
           tree.type === "row" ||
           tree.type === "col" ||
           tree.type === "stack"
         ) {
-          const index = tree.children.findIndex((target) => target.id === id);
-          if (index !== undefined && index > -1) {
-            tree.children.splice(index, 1, node);
-            return;
-          } else {
-            tree.children.forEach((child) => _replaceNode(child, node, id));
-          }
+          tree.children.forEach((child) => _replaceNode(child, node, id));
         }
+
+        // if (
+        //   tree.type === "row" ||
+        //   tree.type === "col" ||
+        //   tree.type === "stack"
+        // ) {
+        //   const index = tree.children.findIndex((target) => target.id === id);
+        //   if (index !== undefined && index > -1) {
+        //     console.log("replacing node with", node);
+        //     tree.children.splice(index, 1, node);
+        //     return;
+        //   } else {
+        //     tree.children.forEach((child) => _replaceNode(child, node, id));
+        //   }
+        // }
       }
       _replaceNode(this.layout, node, id);
     },
@@ -389,7 +413,7 @@ export const useLayoutStore = defineStore("layoutStore", {
       return {
         id: nanoid(),
         type: "stack",
-        children: pages,
+        children: pages.map((page) => toRaw(page)),
       } as Stack;
     },
 
@@ -400,11 +424,14 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param nodes - nodes to be wrapped
      */
     wrappedInCol(...nodes: Layout[]) {
+      const nodeList = nodes.map((node) =>
+        Object.assign({ ...toRaw(node) }, { id: nanoid() })
+      );
       return {
         id: nanoid(),
         type: "col",
         split: 50,
-        children: nodes,
+        children: nodeList,
       } as Col;
     },
 
@@ -415,11 +442,14 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param nodes - nodes to be wrapped
      */
     wrappedInRow(...nodes: Layout[]) {
+      const nodeList = nodes.map((node) =>
+        Object.assign({ ...toRaw(node) }, { id: nanoid() })
+      );
       return {
         id: nanoid(),
         type: "row",
         split: 50,
-        children: nodes,
+        children: nodeList,
       } as Row;
     },
 

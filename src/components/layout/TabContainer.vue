@@ -52,23 +52,17 @@ function onClose(page: Page) {
 }
 
 function onDragStartTab(ev: DragEvent, draggedPageIndex: number) {
-  // const draggedPage = props.pages[draggedPageIndex];
-  // console.log("onDragStart", JSON.stringify(draggedPage));
-  // ev.dataTransfer!.setData("page", JSON.stringify(draggedPage));
-  // layoutStore.setActive(draggedPage.id);
   draggedPageRef.value = props.pages[draggedPageIndex];
   ev.dataTransfer!.setData("page", JSON.stringify(draggedPageRef.value));
+  // put the page id into the key
+  // so we can still see it in dragover events
+  ev.dataTransfer!.setData(`${props.pages[draggedPageIndex].id}`, "");
   layoutStore.setActive(draggedPageRef.value.id);
   emit("setDraggedPage", draggedPageRef.value);
 }
 
 function onDragOverTab(ev: DragEvent, overedPageIndex: number) {
   ev.preventDefault();
-  // const rawData = ev.dataTransfer?.getData("page");
-  // console.log("onDragOverTab", rawData);
-  // if (!rawData) return;
-  // const draggedPage = JSON.parse(rawData);
-  // if (!draggedPage.value) return;
   const overedPage = props.pages[overedPageIndex];
   if (draggedPageRef.value && overedPage.id === draggedPageRef.value.id) return;
   tabs.value[overedPageIndex].$el.classList.add("tab-drag-highlight");
@@ -110,10 +104,6 @@ function onDropTab(ev: DragEvent, droppedPageIndex: number) {
 function onDragOverTabContainer(ev: DragEvent) {
   ev.preventDefault();
   if (!container.value) return;
-  console.log("draggedId", draggedPageRef.value);
-  // const draggedPage = JSON.parse(ev.dataTransfer!.getData("page"));
-  // if (!draggedPage.value) return;
-  // console.log("onDragOverTabContainer", draggedPage.value);
   const lastPageId = props.pages[props.pages.length - 1].id;
   // nothing to do if dragging the last tab in the header
   if (draggedPageRef.value && draggedPageRef.value.id === lastPageId) return;
@@ -139,5 +129,8 @@ function onDropTabContainer(ev: DragEvent) {
 <style scoped lang="scss">
 .tab-drag-highlight {
   background: var(--color-layout-focused-tab-bkgd);
+}
+.tab-dragging {
+  pointer-events: none;
 }
 </style>

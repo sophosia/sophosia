@@ -1,15 +1,15 @@
 <template>
-  <div class="stack-container">
-    <TabContainer
-      class="tab-container"
-      :pages="stack.children"
-      @moveNode="(page: Page, id: string, pos: 'before' | 'after') => moveNode(page, id, pos)"
-      @setDraggedPage="(page: Page) => draggedPage = page"
-    />
+  <!-- the class stack is only for searching -->
+  <TabContainer
+    class="tab-container"
+    :pages="stack.children"
+    @moveNode="(page: Page, id: string, pos: 'before' | 'after') => moveNode(page, id, pos)"
+    @setDraggedPage="(page: Page) => draggedPage = page"
+  />
+  <div class="page-container">
     <PageContainer
       :asyncPages="asyncPages"
       :pages="stack.children"
-      :draggedPage="draggedPage"
       @moveToStack="(page: Page, pos: 'center' | 'left' | 'right'| 'top' | 'bottom') => moveToStack(page, pos)"
     />
   </div>
@@ -52,6 +52,7 @@ function moveToStack(
   pos: "center" | "left" | "right" | "top" | "bottom"
 ) {
   layoutStore.removeNode(page.id);
+  console.log("layout", layoutStore.layout);
   if (pos === "left") {
     const stack = layoutStore.wrappedInStack(page);
     const row = layoutStore.wrappedInRow(stack, props.stack);
@@ -78,7 +79,7 @@ function moveToStack(
 }
 </script>
 <style scoped lang="scss">
-.stack-container {
+.page-container {
   position: absolute;
   width: 100%;
   height: calc(100% - 30px);
@@ -90,4 +91,6 @@ function moveToStack(
   background: var(--color-layout-header-bkgd);
   height: 30px;
 }
+// add this class when dragging
+// and remove this class when dragging ends
 </style>

@@ -33,7 +33,7 @@ const emit = defineEmits(["close"]);
   background: var(--color-layout-base-bkgd);
   padding: 0 5px 0 5px;
   margin: 1px;
-  min-width: 6rem;
+  min-width: 7rem;
   height: 100%;
   border-radius: 4px 4px 0 0;
 
