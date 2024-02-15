@@ -12,6 +12,7 @@
           class="selector"
           dense
           outlined
+          dropdown-icon="mdi-chevron-down"
           :options="themeOptions"
           :display-value="theme[0].toUpperCase() + theme.slice(1)"
           v-model="theme"
@@ -62,6 +63,7 @@
         <q-select
           dense
           outlined
+          dropdown-icon="mdi-chevron-down"
           v-model="language"
           :options="languageOptions"
         />
@@ -79,6 +81,7 @@
         <q-select
           dense
           outlined
+          dropdown-icon="mdi-chevron-down"
           v-model="translate"
           :options="translateLabels"
         />
@@ -101,6 +104,7 @@
           outlined
           emit-value
           map-options
+          dropdown-icon="mdi-chevron-down"
           v-model="settingStore.showTranslatedTitle"
           :options="titleTranslateOptions"
         />
@@ -135,6 +139,7 @@
           <q-select
             dense
             outlined
+            dropdown-icon="mdi-chevron-down"
             :options="citeKeyPartKeyOptions"
             :display-value="$t(citeKeyPartKeys[0])"
             :option-label="(opt) => $t(opt)"
@@ -144,6 +149,7 @@
           <q-select
             dense
             outlined
+            dropdown-icon="mdi-chevron-down"
             :options="citeKeyConnectorOptions"
             v-model="citeKeyConnector"
             :option-label="(opt) => opt.trim() || '(None)'"
@@ -152,6 +158,7 @@
           <q-select
             dense
             outlined
+            dropdown-icon="mdi-chevron-down"
             :options="citeKeyPartKeyOptions"
             :display-value="$t(citeKeyPartKeys[1])"
             :option-label="(opt) => $t(opt)"
@@ -169,6 +176,7 @@
           <q-select
             dense
             outlined
+            dropdown-icon="mdi-chevron-down"
             :options="citeKeyPartKeyOptions"
             :display-value="$t(citeKeyPartKeys[2])"
             :option-label="(opt) => $t(opt)"
@@ -354,10 +362,3 @@ async function updateCiteKeys() {
   $q.notify(t("citation-keys-updated"));
 }
 </script>
-<style>
-/* TODO: this is to fix the weird height issue of q-selection when selecting, remove this later */
-.q-field--dense .q-field__control,
-.q-field--dense .q-field__marginal {
-  height: 40px !important;
-}
-</style>
