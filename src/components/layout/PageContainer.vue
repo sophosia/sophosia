@@ -41,6 +41,8 @@ const container = ref<HTMLElement>();
 const mask = ref<HTMLElement>();
 
 function onDragOverPage(ev: DragEvent, page: Page) {
+  // if not dragging a page, don't show the drop mask
+  if (!ev.dataTransfer?.types.includes("page")) return;
   // do nothing when dragging the page to itself
   if (ev.dataTransfer!.types.includes(page.id) && props.pages.length === 1)
     return;
@@ -57,14 +59,13 @@ function onDragLeave(ev: DragEvent) {
  * @param ev
  */
 function onDragOver(ev: DragEvent) {
+  if (!ev.dataTransfer?.types.includes("page")) return;
   ev.preventDefault();
 
   const containerDiv = container.value;
   const highlightDiv = highlight.value;
   if (!containerDiv || !highlightDiv) return;
 
-  console.log("X", ev.offsetX);
-  console.log("width", containerDiv.clientWidth);
   // highlight left, right, top, bottom dropping area
   if (ev.offsetX < 0.3 * containerDiv.clientWidth) {
     highlightDiv.style.top = `${containerDiv.clientTop}px`;

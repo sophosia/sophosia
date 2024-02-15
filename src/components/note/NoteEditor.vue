@@ -1,20 +1,23 @@
 <template>
-  <div
-    v-show="showEditor"
-    ref="vditorDiv"
-    :id="`vditor-${props.noteId}`"
-  ></div>
-  <HoverPane
-    v-show="hoverContent"
-    :content="hoverContent"
-    :data="hoverData"
-    @clickLink="(e:MouseEvent, link:string) => clickLink(e,link)"
-    ref="hoverPane"
-  />
-  <iframe
-    style="display: none"
-    id="vditorExportIframe"
-  ></iframe>
+  <!-- the outmost layer is to make the page drag and drop working -->
+  <div style="height: 100%">
+    <div
+      v-show="showEditor"
+      ref="vditorDiv"
+      :id="`vditor-${props.noteId}`"
+    ></div>
+    <HoverPane
+      v-show="hoverContent"
+      :content="hoverContent"
+      :data="hoverData"
+      @clickLink="(e:MouseEvent, link:string) => clickLink(e,link)"
+      ref="hoverPane"
+    />
+    <iframe
+      style="display: none"
+      id="vditorExportIframe"
+    ></iframe>
+  </div>
 </template>
 <script setup lang="ts">
 // types
@@ -96,17 +99,6 @@ onMounted(async () => {
   showEditor.value = true;
   initEditor();
   await nextTick();
-
-  // Add drag and drop event listeners
-  vditorDiv.value.addEventListener("dragover", (event: DragEvent) => {
-    if (event.dataTransfer) {
-      const droppedContent = event.dataTransfer.getData("text/plain");
-      // Here you can handle the dropped content
-      if (vditor.value) {
-        vditor.value.insertValue(droppedContent);
-      }
-    }
-  });
 });
 
 /************************************************
