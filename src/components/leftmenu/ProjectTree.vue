@@ -28,7 +28,7 @@
             draggingNode != prop.node,
         }"
         @click="selectItem(prop.node._id)"
-        :draggable="prop.node.dataType !== 'project'"
+        draggable="true"
         @dragstart="(e) => onDragStart(e, prop.node)"
         @dragover="(e) => onDragOver(e, prop.node)"
         @dragleave="(e) => onDragLeave(e, prop.node)"
@@ -182,6 +182,7 @@ import {
   Note,
   NoteType,
   Page,
+  PageType,
   Project,
 } from "src/backend/database";
 import { formatMetaData, generateCiteKey } from "src/backend/project/meta";
@@ -211,7 +212,7 @@ const oldNoteName = ref("");
 const pathDuplicate = ref(false);
 const addingNode = ref(false);
 const expanded = ref<string[]>([]);
-const draggingNode = ref<FolderOrNote | null>(null);
+const draggingNode = ref<Project | FolderOrNote | null>(null);
 const dragoverNode = ref<FolderOrNote | null>(null);
 const enterTime = ref(0);
 const $q = useQuasar();
@@ -422,12 +423,25 @@ async function deleteNode(node: FolderOrNote) {
 /**
  * Handles the start of a drag operation.
  * @param {DragEvent} e - The drag event.
- * @param {FolderOrNote} node - The node being dragged.
+ * @param {Project | FolderOrNote} node - The node being dragged.
  */
-function onDragStart(e: DragEvent, node: FolderOrNote) {
+function onDragStart(e: DragEvent, node: Project | FolderOrNote) {
   draggingNode.value = node;
   // need to set transfer data for some browsers to work
   e.dataTransfer?.setData("draggingNode", JSON.stringify(node));
+
+  // drag source for the layout, user can drag this and make it a page
+  let pageType: PageType | undefined;
+  if (node.dataType === "note" && node._id.endsWith(".md"))
+    pageType = PageType.NoteNote;
+  else if (node.dataType === "note" && node._id.endsWith(".excalidraw"))
+    pageType = PageType.ExcalidrawPage;
+  else if (node.dataType === "project") pageType = PageType.ReaderPage;
+  if (pageType)
+    e.dataTransfer?.setData(
+      "page",
+      JSON.stringify({ id: node._id, type: pageType, label: node.label })
+    );
 }
 
 /**
@@ -436,6 +450,7 @@ function onDragStart(e: DragEvent, node: FolderOrNote) {
  * @param {FolderOrNote} node - The node being dragged over.
  */
 function onDragOver(e: DragEvent, node: FolderOrNote) {
+  if (draggingNode.value?.dataType === "project") return;
   // enable drop on the node
   e.preventDefault();
 
