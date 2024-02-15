@@ -149,5 +149,6 @@
   "export": "导出{type}",
   "display-translated-title": "显示翻译标题",
   "display-translated-title-info": "如果引用包含翻译的标题，这将确定是否显示它。",
-  "copy-reference": "复制引用"
+  "copy-reference": "复制引用",
+  "open-page-in-new-window": "在新窗口中打开页面"
 }

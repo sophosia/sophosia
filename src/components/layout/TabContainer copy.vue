@@ -1,5 +1,5 @@
 <template>
-  <div style="overflow-x: auto; overflow-y: hidden">
+  <div>
     <Tab
       v-for="[index, page] in pages.entries()"
       :key="index"
@@ -25,9 +25,7 @@
               v-close-popup
               @click="layoutStore.openWindow(page)"
             >
-              <q-item-section>
-                {{ $t("open-page-in-new-window") }}
-              </q-item-section>
+              <q-item-section>open in another window</q-item-section>
             </q-item>
             <q-item
               clickable

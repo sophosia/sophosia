@@ -440,7 +440,12 @@ function onDragStart(e: DragEvent, node: Project | FolderOrNote) {
   if (pageType)
     e.dataTransfer?.setData(
       "page",
-      JSON.stringify({ id: node._id, type: pageType, label: node.label })
+      JSON.stringify({
+        id: node._id,
+        type: pageType,
+        label: node.label,
+        visible: true,
+      })
     );
 }
 

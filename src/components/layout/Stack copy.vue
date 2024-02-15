@@ -23,6 +23,7 @@ const props = defineProps({
   stack: { type: Object as PropType<Stack>, required: true },
   asyncPages: { type: Object as PropType<Map<string, any>>, required: true },
 });
+const emit = defineEmits(["onUpdate:stack"]);
 const layoutStore = useLayoutStore();
 
 /**
@@ -34,7 +35,6 @@ const layoutStore = useLayoutStore();
 function movePage(page: Page, id: string, pos: "before" | "after") {
   layoutStore.removeNode(page.id);
   layoutStore.insertPage(page, id, pos);
-  layoutStore.setActive(page.id);
 }
 
 /**
@@ -70,7 +70,6 @@ function moveToStack(
     const lastPageId = pages[pages.length - 1].id;
     layoutStore.insertPage(page, lastPageId, "after");
   }
-  layoutStore.setActive(page.id);
 }
 
 /**
@@ -102,7 +101,8 @@ function refresh() {
 
 watchEffect(() => {
   refresh();
-  console.log("layouts", layoutStore.layouts);
+  emit("onUpdate:stack", props.stack);
+  console.log("layout", layoutStore.layout);
 });
 </script>
 <style scoped lang="scss">

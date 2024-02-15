@@ -37,6 +37,7 @@
       flat
       size="sm"
     />
+    <slot name="menu"></slot>
   </div>
 </template>
 <script setup lang="ts">

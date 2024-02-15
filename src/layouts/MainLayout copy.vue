@@ -26,7 +26,9 @@
           />
         </template>
         <template v-slot:after>
-          <LayoutContainer />
+          <div style="width: 100%; height: 100vh">
+            <LayoutContainer v-model:layout="layoutStore.layout" />
+          </div>
         </template>
       </q-splitter>
     </template>
@@ -35,7 +37,7 @@
 
 <script setup lang="ts">
 import type { Page } from "src/backend/database";
-import LayoutContainer from "src/components/layout/LayoutContainer.vue";
+import LayoutContainer from "src/components/layout/LayoutContainer";
 import LeftMenu from "src/components/leftmenu/LeftMenu.vue";
 import LeftRibbon from "./LeftRibbon.vue";
 
