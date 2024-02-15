@@ -24,7 +24,6 @@ const props = defineProps({
   stack: { type: Object as PropType<Stack>, required: true },
   asyncPages: { type: Object as PropType<Map<string, any>>, required: true },
 });
-// const emit = defineEmits(["onUpdate:stack"]);
 const layoutStore = useLayoutStore();
 const draggedPage = ref<Page>();
 

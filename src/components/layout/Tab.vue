@@ -47,6 +47,8 @@ const props = defineProps({
   page: { type: Object as PropType<Page>, required: true },
   active: { type: Boolean, required: true },
 });
+console.log(props.page);
+
 const emit = defineEmits(["close"]);
 const specialPages = ["library", "help", "settings"];
 let iconName = "";

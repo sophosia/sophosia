@@ -33,7 +33,7 @@
         @click="
           $emit('openPage', {
             id: 'library',
-            label: $t('library'),
+            label: 'library',
             type: PageType.LibraryPage,
           })
         "
@@ -60,7 +60,7 @@
           async () => {
             $emit('openPage', {
               id: 'help',
-              label: $t('help'),
+              label: 'help',
               type: PageType.HelpPage,
               data: {
                 path: await resolveResource(
@@ -82,7 +82,7 @@
         @click="
           $emit('openPage', {
             id: 'settings',
-            label: $t('settings'),
+            label: 'settings',
             type: PageType.SettingsPage,
           })
         "
