@@ -11,7 +11,7 @@
     node-key="_id"
     selected-color="primary"
     v-model:expanded="expanded"
-    :model-value:selected="layoutStore.currentItemId"
+    :selected="layoutStore.currentItemId"
     @update:selected="(id: string) => layoutStore.setActive(id)"
   >
     <template v-slot:default-header="prop">

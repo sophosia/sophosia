@@ -38,7 +38,6 @@ export default function Layout(
       asyncPages: asyncPages,
     });
   } else if (node.type === "row" || node.type === "col") {
-    // row or col
     return h(
       QSplitter,
       {

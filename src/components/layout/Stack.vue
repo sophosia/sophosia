@@ -3,7 +3,7 @@
   <TabContainer
     class="tab-container"
     :pages="stack.children"
-    @moveNode="(page: Page, id: string, pos: 'before' | 'after') => moveNode(page, id, pos)"
+    @movePage="(page: Page, id: string, pos: 'before' | 'after') => movePage(page, id, pos)"
     @setDraggedPage="(page: Page) => draggedPage = page"
   />
   <div class="page-container">
@@ -34,11 +34,9 @@ const draggedPage = ref<Page>();
  * @param id - the id of the target node
  * @param pos - position relative to the target node
  */
-function moveNode(node: Page, id: string, pos: "before" | "after") {
-  layoutStore.removeNode(node.id);
-  // add this line here to remove the unwanted property
-  delete (node as Page & { deleted?: boolean }).deleted;
-  layoutStore.insertNode(node, id, pos);
+function movePage(page: Page, id: string, pos: "before" | "after") {
+  layoutStore.removeNode(page.id);
+  layoutStore.insertPage(page, id, pos);
 }
 
 /**
@@ -70,10 +68,9 @@ function moveToStack(
     layoutStore.replaceNode(col, props.stack.id);
   } else {
     // center
-    console.log("into center");
     const pages = props.stack.children;
     const lastPageId = pages[pages.length - 1].id;
-    layoutStore.insertNode(page, lastPageId, "after");
+    layoutStore.insertPage(page, lastPageId, "after");
   }
 }
 
@@ -107,6 +104,7 @@ function refresh() {
 watchEffect(() => {
   refresh();
   // emit("onUpdate:stack", props.stack);
+  console.log("layout", layoutStore.layout);
 });
 </script>
 <style scoped lang="scss">

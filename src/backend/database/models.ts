@@ -344,7 +344,7 @@ export enum PageType {
   SettingsPage = "SettingsPage",
 }
 
-export type Layout = Row | Col | Stack | Page;
+export type Layout = Row | Col | Stack;
 
 /*******************
  * EventBus

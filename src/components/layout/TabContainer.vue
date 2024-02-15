@@ -34,7 +34,7 @@ const layoutStore = useLayoutStore();
 const props = defineProps({
   pages: { type: Object as PropType<Page[]>, required: true },
 });
-const emit = defineEmits(["setDraggedPage", "moveNode"]);
+const emit = defineEmits(["setDraggedPage", "movePage"]);
 const container = ref<HTMLElement>();
 const tabs = ref<(typeof Tab)[]>([]);
 const draggedPageRef = ref<Page>();
@@ -90,14 +90,14 @@ function onDropTab(ev: DragEvent, droppedPageIndex: number) {
     // if tab is dropped in the same header, move it
     if (draggedPageIndex > droppedPageIndex) {
       // insert before dropped page
-      emit("moveNode", draggedPage, droppedPage.id, "before");
+      emit("movePage", draggedPage, droppedPage.id, "before");
     } else {
       // insert after dropped page
-      emit("moveNode", draggedPage, droppedPage.id, "after");
+      emit("movePage", draggedPage, droppedPage.id, "after");
     }
   } else {
     // if tab is dropped in another header, insert it before the dropped Page
-    emit("moveNode", draggedPage, droppedPage.id, "before");
+    emit("movePage", draggedPage, droppedPage.id, "before");
   }
 }
 
@@ -123,7 +123,7 @@ function onDropTabContainer(ev: DragEvent) {
   const lastPageId = props.pages[props.pages.length - 1].id;
   // nothing to do if dragging the last tab in the header
   if (draggedPage.id === lastPageId) return;
-  emit("moveNode", draggedPage, lastPageId, "after");
+  emit("movePage", draggedPage, lastPageId, "after");
 }
 </script>
 <style scoped lang="scss">

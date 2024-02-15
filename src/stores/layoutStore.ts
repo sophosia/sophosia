@@ -52,8 +52,7 @@ export const useLayoutStore = defineStore("layoutStore", {
       this.leftMenuSize = state.leftMenuSize;
       this.libraryRightMenuSize = state.libraryRightMenuSize;
       // load layout from db
-      this.layout = await getLayout();
-      this.setActive(state.currentItemId);
+      await this.loadLayout();
       this.initialized = true;
     },
 
@@ -73,6 +72,20 @@ export const useLayoutStore = defineStore("layoutStore", {
       } as AppState;
     },
 
+    /**
+     * Load the layout from database, then set the correct currentItemId
+     */
+    async loadLayout() {
+      this.layout = await getLayout();
+      if (this.findPage((page) => page.id === this.currentItemId))
+        this.setActive(this.currentItemId);
+      else {
+        // set the first page to active
+        const firstPage = this.findPage((page) => !!page);
+        if (firstPage) this.setActive(firstPage.id);
+      }
+    },
+
     /**********************************
      * Page Control
      **********************************/
@@ -83,14 +96,14 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param page - The page object to be opened, containing necessary properties like id, label, type, etc.
      */
     openPage(page: Page) {
-      if (!this.isNodeExist(page.id)) {
+      if (!this.findPage((p) => p.id === page.id)) {
         // when clicking at the projectTree, the currentItemId will be set the the page.id
         // we need to find the id of previous active page
         const targetId =
           this.currentItemId === page.id
             ? this.historyItemId[this.historyItemId.length - 1]
             : this.currentItemId;
-        this.insertNode(page, targetId, "after");
+        this.insertPage(page, targetId, "after");
       }
       this.setActive(page.id);
     },
@@ -100,11 +113,21 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param itemid - the unique identifier of the page to be closed.
      */
     closePage(pageId: string) {
-      console.log("remove", pageId);
       this.removeNode(pageId);
       this.historyItemId = this.historyItemId.filter((id) => id !== pageId);
       if (this.currentItemId === pageId)
         this.currentItemId = this.historyItemId.pop() || "";
+
+      // insert a library page if layout is empty
+      if (this.layout.type === "stack" && this.layout.children.length === 0) {
+        this.layout.children.push({
+          id: "library",
+          label: "library",
+          type: PageType.LibraryPage,
+          visible: true,
+        });
+        this.setActive("library");
+      }
     },
 
     /**
@@ -250,57 +273,48 @@ export const useLayoutStore = defineStore("layoutStore", {
     /***********************************************
      * Utils
      ***********************************************/
-
     /**
-     * Returns a boolean value to indicate if a node exists
-     * @param nodeId - the node to search
-     * @returns isExist - boolean value
+     * Returns the page with specified id, returns undefined is not found
+     * @param pageId - the id of the page to search
+     * @returns page - the found node, could be undefined
      */
-    isNodeExist(nodeId: string) {
-      function _isNodeExist(tree: Layout, nodeId: string, match: boolean[]) {
-        match.push(tree.id === nodeId);
-        if (
-          tree.type === "row" ||
-          tree.type === "col" ||
-          tree.type === "stack"
-        ) {
-          tree.children.forEach((child) => _isNodeExist(child, nodeId, match));
+    findPage(predicate: (page: Page) => boolean): Page | undefined {
+      if (!this.layout) return undefined;
+      const stack = [this.layout];
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        if (current.type === "stack") {
+          for (const page of current.children) if (predicate(page)) return page;
+        } else {
+          stack.push(...(current.children as Layout[]));
         }
       }
-      const match = [] as boolean[];
-      _isNodeExist(this.layout, nodeId, match);
-      return match.some((truth) => truth);
+      return undefined;
     },
 
     /**
-     * Insert node to pos relative to the node with id
-     * @param node - node to be inserted
-     * @param id - the id of the target node
+     * Insert a page to position relative to the target page
+     * @param page - node to be inserted
+     * @param targetPageId - the id of the target node
      * @param pos - position relative to target node, either before or after
      */
-    insertNode(node: Layout, id: string, pos: "before" | "after") {
-      function _insertNode(
-        tree: Layout,
-        node: Layout,
-        id: string,
-        pos: "before" | "after"
-      ) {
-        if (
-          tree.type === "row" ||
-          tree.type === "col" ||
-          tree.type === "stack"
-        ) {
-          const index = tree.children.findIndex((target) => target.id === id);
-          if (index !== undefined && index > -1) {
+    insertPage(page: Page, targetPageId: string, pos: "before" | "after") {
+      if (!this.layout) return;
+      const stack = [this.layout];
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        if (current.type === "stack") {
+          const index = current.children.findIndex(
+            (child) => child.id === targetPageId
+          );
+          if (index > -1) {
             const idx = pos === "after" ? index + 1 : index;
-            tree.children.splice(idx, 0, node);
-            return;
-          } else {
-            tree.children.forEach((child) => _insertNode(child, node, id, pos));
+            current.children.splice(idx, 0, page);
           }
+        } else {
+          stack.push(...(current.children as Layout[]));
         }
       }
-      _insertNode(this.layout, node, id, pos);
     },
 
     /**
@@ -324,73 +338,62 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param id - id of node to be removed
      */
     removeNode(id: string) {
-      function _removeNode(tree: Layout, id: string) {
+      if (!this.layout) return;
+      const stack = [this.layout];
+      let prvNodeId = "";
+      const maxIter = 10;
+      let iter = 0;
+      while (stack.length > 0 && iter < maxIter) {
+        iter++;
+        let current = stack[stack.length - 1];
         if (
-          tree.type === "row" ||
-          tree.type === "col" ||
-          tree.type === "stack"
+          current.type !== "stack" &&
+          current.children[0].id !== prvNodeId &&
+          current.children[1].id !== prvNodeId
         ) {
-          const children = tree.children;
-          const newChilren = [] as (Layout | null)[];
-          children.forEach((child) => newChilren.push(_removeNode(child, id)));
-          tree.children = newChilren.filter(
-            (tree) => !(tree as Layout & { deleted: boolean }).deleted
-          ) as Layout[];
-        }
-        if (
-          tree.type === "stack" &&
-          tree.children.filter((child) => child).length === 0
-        ) {
-          (tree as Layout & { deleted: boolean }).deleted = true;
-          return tree;
-        } else if (
-          (tree.type === "row" || tree.type === "col") &&
-          tree.children.filter((child) => child).length === 1
-        ) {
-          return tree.children[0];
-          // } else if (tree.type === "page" && tree.id === id) {
-        } else if (tree.id === id) {
-          // tree.type === PageType
-          (tree as Layout & { deleted: boolean }).deleted = true;
-          return tree;
+          stack.push(...(current.children as Layout[]));
         } else {
-          return tree;
+          if (current.type === "stack") {
+            current.children = current.children.filter(
+              (page) => page.id !== id
+            );
+          } else {
+            current.children = current.children.filter(
+              (child) => child.children.length > 0
+            );
+
+            // replace the current node with its child
+            if (current.children.length === 1)
+              Object.assign(current, current.children[0]);
+          }
+          // pop the node from stack after processed
+          prvNodeId = stack.pop()!.id;
         }
       }
-
-      this.layout = _removeNode(this.layout, id);
     },
 
     /**
      * Replace a node with id
-     * @param node - the node being insert
-     * @param id - the id of the target node being replaced
+     * @param node - the node to be inserted
+     * @param targetId - the id of the target node being replaced
      */
-    replaceNode(node: Layout, id: string) {
-      function _replaceNode(tree: Layout, node: Layout, id: string) {
-        if (tree.id === id) {
-          tree.id = node.id;
-          tree.type = node.type;
-          if (node.type === "col" || node.type === "row") {
-            (tree as Col | Row).split = node.split;
-            (tree as Col | Row).children = node.children;
-          } else if (node.type === "stack") {
-            (tree as Stack).children = node.children;
-          } else {
-            // page
-            (tree as Page).label = node.label;
-            (tree as Page).visible = node.visible;
-            (tree as Page).data = node.data;
-          }
-        } else if (
-          tree.type === "row" ||
-          tree.type === "col" ||
-          tree.type === "stack"
-        ) {
-          tree.children.forEach((child) => _replaceNode(child, node, id));
+    replaceNode(node: Layout | Page, targetId: string) {
+      if (!this.layout) return;
+      const stack = [this.layout];
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        // If the current node matches the target node ID, replace it
+        if (current.id === targetId) {
+          Object.assign(current, node);
+          return;
         }
+        if (
+          current.type === "col" ||
+          current.type === "row" ||
+          current.type === "stack"
+        )
+          stack.push(...(current.children as Layout[]));
       }
-      _replaceNode(this.layout, node, id);
     },
 
     /**
