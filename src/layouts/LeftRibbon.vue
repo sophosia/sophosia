@@ -89,14 +89,24 @@
       >
         <q-tooltip>{{ $t("settings") }}</q-tooltip>
       </q-btn>
+      <q-btn
+        @click="onClick"
+        label="te"
+      ></q-btn>
     </div>
   </div>
 </template>
 <script setup lang="ts">
 import { resolveResource } from "@tauri-apps/api/path";
+import { WebviewWindow } from "@tauri-apps/api/window";
 import { PageType, db } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
 
 const layoutStore = useLayoutStore();
 const emit = defineEmits(["openPage"]);
+function onClick() {
+  const webview = new WebviewWindow("external", {
+    url: "#/test/itemId=ddsfdasfsgd",
+  });
+}
 </script>
