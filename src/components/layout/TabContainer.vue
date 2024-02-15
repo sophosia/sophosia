@@ -34,7 +34,7 @@ const layoutStore = useLayoutStore();
 const props = defineProps({
   pages: { type: Object as PropType<Page[]>, required: true },
 });
-const emit = defineEmits(["setDraggedPage", "movePage"]);
+const emit = defineEmits(["movePage"]);
 const container = ref<HTMLElement>();
 const tabs = ref<(typeof Tab)[]>([]);
 const draggedPageRef = ref<Page>();
@@ -58,7 +58,6 @@ function onDragStartTab(ev: DragEvent, draggedPageIndex: number) {
   // so we can still see it in dragover events
   ev.dataTransfer!.setData(`${props.pages[draggedPageIndex].id}`, "");
   layoutStore.setActive(draggedPageRef.value.id);
-  emit("setDraggedPage", draggedPageRef.value);
 }
 
 function onDragOverTab(ev: DragEvent, overedPageIndex: number) {

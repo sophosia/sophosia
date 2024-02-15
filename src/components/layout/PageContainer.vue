@@ -5,7 +5,6 @@
   >
     <component
       v-for="page in pages"
-      v-show="!!page.visible"
       :key="page.id"
       :is="asyncPages.get(page.type)"
       :visible="!!page.visible"

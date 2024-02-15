@@ -4,7 +4,6 @@
     class="tab-container"
     :pages="stack.children"
     @movePage="(page: Page, id: string, pos: 'before' | 'after') => movePage(page, id, pos)"
-    @setDraggedPage="(page: Page) => draggedPage = page"
   />
   <div class="page-container">
     <PageContainer
@@ -15,9 +14,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { Page, Stack } from "src/backend/database";
+import { type Page, type Stack } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
-import { PropType, ref, watchEffect } from "vue";
+import { PropType, watchEffect } from "vue";
 import PageContainer from "./PageContainer.vue";
 import TabContainer from "./TabContainer.vue";
 const props = defineProps({
@@ -25,7 +24,6 @@ const props = defineProps({
   asyncPages: { type: Object as PropType<Map<string, any>>, required: true },
 });
 const layoutStore = useLayoutStore();
-const draggedPage = ref<Page>();
 
 /**
  * Move a node to a position relative to the target node with id
