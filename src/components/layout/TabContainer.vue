@@ -160,8 +160,11 @@ function onDropTab(ev: DragEvent, droppedPageIndex: number) {
   const fromWindowId = ev.dataTransfer!.getData("windowId");
   const draggedPage = JSON.parse(ev.dataTransfer!.getData("page"));
   const droppedPage = props.pages[droppedPageIndex];
+  // TODO: allow library page to be on other windows.
+  // we can transmit data back to main window
   if (!draggedPage || !droppedPage || !fromWindowId) return;
   if (droppedPage.id === draggedPage.id) return;
+  if (layoutStore.windowId !== "main" && draggedPage.id === "library") return;
 
   const draggedPageIndex = props.pages.findIndex(
     (comp) => comp.id === draggedPage!.id
@@ -207,6 +210,9 @@ function onDropTabContainer(ev: DragEvent) {
   const lastPageId = props.pages[props.pages.length - 1].id;
   // nothing to do if dragging the last tab in the header
   if (draggedPage.id === lastPageId) return;
+  // TODO: allow library page to be on other windows.
+  // we can transmit data back to main window
+  if (layoutStore.windowId !== "main" && draggedPage.id === "library") return;
   emit("movePage", draggedPage, lastPageId, "after", fromWindowId);
 }
 
