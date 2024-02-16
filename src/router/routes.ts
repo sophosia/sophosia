@@ -14,7 +14,7 @@ const routes: RouteRecordRaw[] = [
       const pageType = route.query.pageType as PageType;
       const pageLabel = route.query.pageLabel as string;
 
-      return { pageId, pageType, pageLabel };
+      return { id: pageId, type: pageType, label: pageLabel };
     },
   },
 ];

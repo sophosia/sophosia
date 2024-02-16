@@ -112,27 +112,28 @@ function onDragOver(ev: DragEvent) {
 function onDrop(ev: DragEvent) {
   // move page around
   const draggedPage = JSON.parse(ev.dataTransfer!.getData("page"));
-  if (!draggedPage) return;
+  const fromWindowId = ev.dataTransfer!.getData("windowId");
+  if (!draggedPage || !fromWindowId) return;
 
   const containerDiv = container.value;
   if (!containerDiv) return;
 
   if (ev.offsetX < 0.3 * containerDiv.clientWidth) {
     // drop into page left
-    emit("moveToStack", draggedPage, "left");
+    emit("moveToStack", draggedPage, "left", fromWindowId);
   } else if (ev.offsetX > 0.7 * containerDiv.clientWidth) {
     // drop into page right
-    emit("moveToStack", draggedPage, "right");
+    emit("moveToStack", draggedPage, "right", fromWindowId);
   } else {
     if (ev.offsetY < 0.3 * containerDiv.clientHeight) {
       // drop into page top
-      emit("moveToStack", draggedPage, "top");
+      emit("moveToStack", draggedPage, "top", fromWindowId);
     } else if (ev.offsetY > 0.7 * containerDiv.clientHeight) {
       // drop into page bottom
-      emit("moveToStack", draggedPage, "bottom");
+      emit("moveToStack", draggedPage, "bottom", fromWindowId);
     } else {
       // drop into page center
-      emit("moveToStack", draggedPage, "center");
+      emit("moveToStack", draggedPage, "center", fromWindowId);
     }
   }
 

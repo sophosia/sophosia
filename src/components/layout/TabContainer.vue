@@ -134,6 +134,7 @@ function onDragStartTab(ev: DragEvent, draggedPageIndex: number) {
   // put the page id into the key
   // so we can still see it in dragover events
   ev.dataTransfer!.setData(`${props.pages[draggedPageIndex].id}`, "");
+  ev.dataTransfer!.setData("windowId", layoutStore.windowId);
   layoutStore.setActive(draggedPageRef.value.id);
 }
 
@@ -153,9 +154,10 @@ function onDropTab(ev: DragEvent, droppedPageIndex: number) {
   draggedPageRef.value = undefined;
   tabs.value[droppedPageIndex].$el.classList.remove("tab-drag-highlight");
   // getData is accessible in drop event
+  const fromWindowId = ev.dataTransfer!.getData("windowId");
   const draggedPage = JSON.parse(ev.dataTransfer!.getData("page"));
   const droppedPage = props.pages[droppedPageIndex];
-  if (!draggedPage || !droppedPage) return;
+  if (!draggedPage || !droppedPage || !fromWindowId) return;
   if (droppedPage.id === draggedPage.id) return;
 
   const draggedPageIndex = props.pages.findIndex(
@@ -166,14 +168,14 @@ function onDropTab(ev: DragEvent, droppedPageIndex: number) {
     // if tab is dropped in the same header, move it
     if (draggedPageIndex > droppedPageIndex) {
       // insert before dropped page
-      emit("movePage", draggedPage, droppedPage.id, "before");
+      emit("movePage", draggedPage, droppedPage.id, "before", fromWindowId);
     } else {
       // insert after dropped page
-      emit("movePage", draggedPage, droppedPage.id, "after");
+      emit("movePage", draggedPage, droppedPage.id, "after", fromWindowId);
     }
   } else {
     // if tab is dropped in another header, insert it before the dropped Page
-    emit("movePage", draggedPage, droppedPage.id, "before");
+    emit("movePage", draggedPage, droppedPage.id, "before", fromWindowId);
   }
 }
 
@@ -195,11 +197,12 @@ function onDropTabContainer(ev: DragEvent) {
   onDragLeaveTabContainer(ev);
   draggedPageRef.value = undefined;
   const draggedPage = JSON.parse(ev.dataTransfer!.getData("page"));
+  const fromWindowId = ev.dataTransfer!.getData("windowId");
   if (!draggedPage) return;
   const lastPageId = props.pages[props.pages.length - 1].id;
   // nothing to do if dragging the last tab in the header
   if (draggedPage.id === lastPageId) return;
-  emit("movePage", draggedPage, lastPageId, "after");
+  emit("movePage", draggedPage, lastPageId, "after", fromWindowId);
 }
 
 async function showInExplorer(page: Page) {

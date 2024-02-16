@@ -1,22 +1,32 @@
 <template>
   <!-- the class stack is only for searching -->
   <TabContainer
+    v-if="stack.children.length > 0"
     class="tab-container"
     :pages="stack.children"
-    @movePage="(page: Page, id: string, pos: 'before' | 'after') => movePage(page, id, pos)"
+    @movePage="(page: Page, id: string, pos: 'before' | 'after', fromWindow: string) => movePage(page, id, pos, fromWindow)"
   />
   <div class="page-container">
     <PageContainer
+      v-if="stack.children.length > 0"
       :asyncPages="asyncPages"
       :pages="stack.children"
-      @moveToStack="(page: Page, pos: 'center' | 'left' | 'right'| 'top' | 'bottom') => moveToStack(page, pos)"
+      @moveToStack="(page: Page, pos: 'center' | 'left' | 'right'| 'top' | 'bottom', fromWindow: string) => moveToStack(page, pos, fromWindow)"
     />
   </div>
+  <EmptyStack
+    v-if="stack.children.length === 0"
+    @openPage="(page) => layoutStore.openPage(page)"
+    @toggleWelcome="layoutStore.toggleWelcome(true)"
+  />
 </template>
 <script setup lang="ts">
+import { listen } from "@tauri-apps/api/event";
+import { WebviewWindow } from "@tauri-apps/api/window";
 import { type Page, type Stack } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
-import { PropType, watchEffect } from "vue";
+import { PropType, onBeforeUnmount, onMounted, watchEffect } from "vue";
+import EmptyStack from "./EmptyStack.vue";
 import PageContainer from "./PageContainer.vue";
 import TabContainer from "./TabContainer.vue";
 const props = defineProps({
@@ -24,17 +34,42 @@ const props = defineProps({
   asyncPages: { type: Object as PropType<Map<string, any>>, required: true },
 });
 const layoutStore = useLayoutStore();
+let unlisten: () => void;
+onMounted(async () => {
+  unlisten = await listen("closePage", (ev) => {
+    const id = ev.payload as string;
+    layoutStore.closePage(id);
+  });
+});
+
+onBeforeUnmount(() => {
+  unlisten();
+});
+
+watchEffect(() => {
+  refresh();
+  console.log("layouts", layoutStore.layouts);
+});
 
 /**
  * Move a node to a position relative to the target node with id
  * @param node - the node to be moved
  * @param id - the id of the target node
  * @param pos - position relative to the target node
+ * @param fromWindowId - the windowId of the dragged page from
  */
-function movePage(page: Page, id: string, pos: "before" | "after") {
+function movePage(
+  page: Page,
+  id: string,
+  pos: "before" | "after",
+  fromWindowId: string
+) {
   layoutStore.removeNode(page.id);
   layoutStore.insertPage(page, id, pos);
   layoutStore.setActive(page.id);
+  if (fromWindowId === layoutStore.windowId) return;
+  const fromWindow = WebviewWindow.getByLabel(fromWindowId);
+  fromWindow?.emit("closePage", page.id);
 }
 
 /**
@@ -42,10 +77,12 @@ function movePage(page: Page, id: string, pos: "before" | "after") {
  * @param node - the node to be moved
  * @param stackId - the id of the target stack
  * @param pos - position relative to the target node
+ * @param fromWindow - the windowId of the dragged page from
  */
 function moveToStack(
   page: Page,
-  pos: "center" | "left" | "right" | "top" | "bottom"
+  pos: "center" | "left" | "right" | "top" | "bottom",
+  fromWindowId: string
 ) {
   layoutStore.removeNode(page.id);
   if (pos === "left") {
@@ -71,6 +108,11 @@ function moveToStack(
     layoutStore.insertPage(page, lastPageId, "after");
   }
   layoutStore.setActive(page.id);
+
+  // close the page in the original window
+  if (fromWindowId === layoutStore.windowId) return;
+  const fromWindow = WebviewWindow.getByLabel(fromWindowId);
+  fromWindow?.emit("closePage", page.id);
 }
 
 /**
@@ -97,13 +139,8 @@ function refresh() {
     }
   }
   // if cannot find in history, just make first page visible
-  pages[0].visible = true;
+  if (pages.length > 0) pages[0].visible = true;
 }
-
-watchEffect(() => {
-  refresh();
-  console.log("layouts", layoutStore.layouts);
-});
 </script>
 <style scoped lang="scss">
 .page-container {

@@ -454,8 +454,8 @@ function onDragStart(e: DragEvent, node: Project | FolderOrNote) {
   else if (node.dataType === "note" && node._id.endsWith(".excalidraw"))
     pageType = PageType.ExcalidrawPage;
   else if (node.dataType === "project") pageType = PageType.ReaderPage;
-  if (pageType)
-    e.dataTransfer?.setData(
+  if (pageType) {
+    e.dataTransfer!.setData(
       "page",
       JSON.stringify({
         id: node._id,
@@ -464,6 +464,8 @@ function onDragStart(e: DragEvent, node: Project | FolderOrNote) {
         visible: true,
       })
     );
+    e.dataTransfer!.setData("windowId", layoutStore.windowId);
+  }
 }
 
 /**

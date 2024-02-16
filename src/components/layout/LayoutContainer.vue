@@ -4,38 +4,27 @@
   </div>
 </template>
 <script setup lang="ts">
-import { nanoid } from "nanoid";
-import type { Layout, PageType } from "src/backend/database";
+import type { Layout, Page, PageType } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { PropType, computed } from "vue";
 import LayoutComponent from "./LayoutComponent";
 const layoutStore = useLayoutStore();
 const props = defineProps({
-  pageId: { type: String },
-  pageType: { type: String as PropType<PageType> },
-  pageLabel: { type: String },
+  id: { type: String },
+  type: { type: String as PropType<PageType> },
+  label: { type: String },
 });
-console.log("layout container", layoutStore.layout);
 const layout = computed({
   get() {
-    // if not empty, return the layout
-    if (layoutStore.layout) return layoutStore.layout;
-    else {
+    if (layoutStore.layout) {
+      // if not empty, return the layout
+      return layoutStore.layout;
+    } else {
       // if empty, construct the layout first using the page info
-      const _layout = {
-        id: nanoid(),
-        type: "stack",
-        children: [
-          {
-            id: props.pageId,
-            type: props.pageType,
-            label: props.pageLabel,
-          },
-        ],
-      } as Layout;
-      layout.value = _layout;
-      console.log("returning layout", _layout);
-      return _layout;
+      const stack = layoutStore.wrappedInStack(props as Page);
+      console.log("stack", stack);
+      layoutStore.layouts.set(layoutStore.windowId, stack);
+      return stack;
     }
   },
   set(newLayout: Layout) {

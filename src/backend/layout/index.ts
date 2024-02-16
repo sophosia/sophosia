@@ -30,8 +30,9 @@ export async function getLayout(): Promise<Layout> {
   } as Layout;
   try {
     const layoutData = (await db.get("layout")) as LayoutData;
-    if (!layoutData.layout) return defaultLayout;
-    else return layoutData.layout;
+    // if (!layoutData.layout) return defaultLayout;
+    // else return layoutData.layout;
+    return layoutData.layout;
   } catch (error) {
     await db.put({
       _id: "layout",

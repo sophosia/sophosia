@@ -33,7 +33,6 @@ export const useLayoutStore = defineStore("layoutStore", {
     // layout
     currentItemId: "",
     historyItemId: [] as string[],
-    // layout: {} as Layout,
     // store layout for each window, the key is windowId
     layouts: new Map<string, Layout>(),
   }),
@@ -116,7 +115,9 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param page - The page object to be opened, containing necessary properties like id, label, type, etc.
      */
     openPage(page: Page) {
-      if (!this.findPage((p) => p.id === page.id)) {
+      if (this.layout.type === "stack" && this.layout.children.length === 0) {
+        this.layout.children.push(page);
+      } else if (!this.findPage((p) => p.id === page.id)) {
         // when clicking at the projectTree, the currentItemId will be set the the page.id
         // we need to find the id of previous active page
         const targetId =
@@ -138,20 +139,13 @@ export const useLayoutStore = defineStore("layoutStore", {
       if (this.currentItemId === pageId)
         this.currentItemId = this.historyItemId.pop() || "";
 
-      if (this.layout.type === "stack" && this.layout.children.length === 0) {
-        // insert a library page if layout is empty in main window
-        if (this.windowId === "main") {
-          this.layout.children.push({
-            id: "library",
-            label: "library",
-            type: PageType.LibraryPage,
-            visible: true,
-          });
-          this.setActive("library");
-        } else {
-          // otherwise close the window if the layout is empty
-          getCurrent().close();
-        }
+      if (
+        this.layout.type === "stack" &&
+        this.layout.children.length === 0 &&
+        this.windowId !== "main"
+      ) {
+        // otherwise close the window if the layout is empty
+        getCurrent().close();
       }
     },
 
@@ -228,17 +222,18 @@ export const useLayoutStore = defineStore("layoutStore", {
      **************************************/
 
     /**
-     * Open another Tauri window for the page
+     * Open another Tauri window for the page, and close the page in the mainWindow
      * Only enable this function in main window
      * @param page - page to be opened in another window
      * @returns
      */
     showInNewWindow(page: Page) {
-      if (this.windowId !== "main") return;
+      console.log("show page", page);
       const windowId = nanoid();
       new WebviewWindow(windowId, {
         url: `#/layout/?pageId=${page.id}&pageType=${page.type}&pageLabel=${page.label}`,
       });
+      this.closePage(page.id);
     },
 
     /*****************************************
