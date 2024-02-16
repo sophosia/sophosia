@@ -1,42 +1,17 @@
 <template>
-  <DialogContainer />
-  <WelcomeCarousel
-    v-if="layoutStore.showWelcomeCarousel"
-    v-model="layoutStore.showWelcomeCarousel"
-  />
-  <div
-    v-else-if="!isScanned"
-    style="margin-top: 50vh"
-    class="q-px-xl row justify-center"
-  >
-    <div class="text-h6">{{ $t("scaning") + "..." }}</div>
-    <q-linear-progress
-      v-if="loading"
-      size="md"
-      color="primary"
-      indeterminate
-    >
-    </q-linear-progress>
-  </div>
-  <router-view v-else />
+  <router-view />
 </template>
-
 <script setup lang="ts">
-import { db } from "src/backend/database";
-import { isScanned, scanAndUpdateDB } from "src/backend/project/scan";
-import WelcomeCarousel from "src/components/welcome/WelcomeCarousel.vue";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { useStateStore } from "src/stores/stateStore";
-import { onMounted, ref, watch } from "vue";
+import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-import DialogContainer from "./components/dialogs/DialogContainer.vue";
+import { db } from "./backend/database";
 const { locale } = useI18n({ useScope: "global" });
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
 const settingStore = useSettingStore();
-// must determine the existence of storagePath before heading to MainLayout
-const loading = ref(false);
 
 onMounted(async () => {
   console.log("onmounted");
@@ -54,24 +29,7 @@ onMounted(async () => {
   // we need to apply settings: fontSize, theme, etc...
   // if no storage path default state will be used
   await stateStore.loadState();
-
-  // if there is no path, show welcome carousel
-  layoutStore.toggleWelcome(!db.config.storagePath);
 });
-
-watch(
-  () => layoutStore.showWelcomeCarousel,
-  async () => {
-    // once the welcome page is gone
-    // we need to load the app state
-    // so the app doesn't overwrite the already existing app state
-    // then we can start to scan the storage path and build indexeddb (for faster data retrieval)
-    if (!layoutStore.showWelcomeCarousel) {
-      await stateStore.loadState();
-      scanAndUpdateDB();
-    }
-  }
-);
 
 settingStore.$subscribe(() => {
   stateStore.updateState();

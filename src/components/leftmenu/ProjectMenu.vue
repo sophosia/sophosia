@@ -85,6 +85,15 @@
       <q-item
         clickable
         v-close-popup
+        @click="$emit('showInNewWindow')"
+      >
+        <q-item-section>
+          {{ $t("open-page-in-new-window") }}
+        </q-item-section>
+      </q-item>
+      <q-item
+        clickable
+        v-close-popup
         @click="$emit('closeProject')"
       >
         <q-item-section>
@@ -100,7 +109,7 @@
 import { NoteType } from "src/backend/database";
 
 const props = defineProps({
-  projectId: { type: String, required: true }
+  projectId: { type: String, required: true },
 });
 
 const emit = defineEmits([
@@ -109,7 +118,8 @@ const emit = defineEmits([
   "showInExplorer",
   "addNote",
   "addFolder",
+  "showInNewWindow",
   "closeProject",
-  "exportCitation"
+  "exportCitation",
 ]);
 </script>

@@ -62,7 +62,7 @@ switch (props.page.type) {
   case PageType.SettingsPage:
     iconName = "mdi-cog-outline";
     break;
-  case PageType.NoteNote:
+  case PageType.NotePage:
     iconName = "mdi-language-markdown-outline";
     break;
   case PageType.ExcalidrawPage:

@@ -38,6 +38,7 @@
           v-if="prop.node.dataType === 'project'"
           :projectId="prop.node._id"
           @showInExplorer="showInExplorer(prop.node)"
+          @showInNewWindow="showInNewWindow(prop.node)"
           @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
           @addFolder="addNode(prop.node._id, 'folder')"
           @exportCitation="showExportCitationDialog(prop.node)"
@@ -62,6 +63,7 @@
         <NoteMenu
           v-else-if="prop.node.dataType === 'note'"
           @showInExplorer="showInExplorer(prop.node)"
+          @showInNewWindow="showInNewWindow(prop.node)"
           @rename="setRenameNode(prop.node)"
           @delete="deleteNode(prop.node)"
           @copyId="
@@ -277,6 +279,21 @@ function showInTree(nodeId: string) {
 }
 
 /**
+ * Show its corresponding page in a new window
+ */
+function showInNewWindow(node: Project | Note) {
+  const page = { id: node._id, label: node.label } as Page;
+  if (node._id.includes("/") && node._id.endsWith(".md")) {
+    page.type = PageType.NotePage;
+  } else if (node._id.includes("/") && node._id.endsWith(".excalidraw")) {
+    page.type = PageType.ExcalidrawPage;
+  } else {
+    page.type = PageType.ReaderPage;
+  }
+  layoutStore.showInNewWindow(page);
+}
+
+/**
  * Closes the specified project and all its associated notes.
  * @param {string} projectId - The ID of the project to close.
  */
@@ -433,7 +450,7 @@ function onDragStart(e: DragEvent, node: Project | FolderOrNote) {
   // drag source for the layout, user can drag this and make it a page
   let pageType: PageType | undefined;
   if (node.dataType === "note" && node._id.endsWith(".md"))
-    pageType = PageType.NoteNote;
+    pageType = PageType.NotePage;
   else if (node.dataType === "note" && node._id.endsWith(".excalidraw"))
     pageType = PageType.ExcalidrawPage;
   else if (node.dataType === "project") pageType = PageType.ReaderPage;

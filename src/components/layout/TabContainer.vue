@@ -20,10 +20,53 @@
           context-menu
         >
           <q-list dense>
+            <div
+              v-if="
+                page.type === PageType.ReaderPage ||
+                page.type === PageType.NotePage ||
+                page.type === PageType.ExcalidrawPage
+              "
+            >
+              <q-item
+                clickable
+                v-close-popup
+                dense
+                @click="copyId(page)"
+              >
+                <q-item-section>
+                  <i18n-t keypath="copy-id">
+                    <template #type>{{ $t("project") }}</template>
+                  </i18n-t>
+                </q-item-section>
+              </q-item>
+              <q-item
+                clickable
+                v-close-popup
+                dense
+                @click="copyAsLink(page)"
+              >
+                <q-item-section>
+                  <i18n-t keypath="copy-as-link">
+                    <template #type>{{ $t("project") }}</template>
+                  </i18n-t>
+                </q-item-section>
+              </q-item>
+              <q-separator></q-separator>
+              <q-item
+                clickable
+                v-close-popup
+                dense
+                @click="showInExplorer(page)"
+              >
+                <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
+              </q-item>
+            </div>
+            <q-separator></q-separator>
             <q-item
               clickable
               v-close-popup
-              @click="layoutStore.openWindow(page)"
+              dense
+              @click="layoutStore.showInNewWindow(page)"
             >
               <q-item-section>
                 {{ $t("open-page-in-new-window") }}
@@ -32,6 +75,8 @@
             <q-item
               clickable
               v-close-popup
+              dense
+              @click="layoutStore.closePage(page.id)"
             >
               <q-item-section>{{ $t("close") }}</q-item-section>
             </q-item>
@@ -50,10 +95,17 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { Page } from "src/backend/database";
+import { invoke } from "@tauri-apps/api";
+import { copyToClipboard, useQuasar } from "quasar";
+import { PageType, type Page, type Project } from "src/backend/database";
+import { generateCiteKey } from "src/backend/project/meta";
+import { getProject } from "src/backend/project/project";
+import { idToPath } from "src/backend/project/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { PropType, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import Tab from "./Tab.vue";
+const { t } = useI18n({ useScope: "global" });
 const layoutStore = useLayoutStore();
 const props = defineProps({
   pages: { type: Object as PropType<Page[]>, required: true },
@@ -62,6 +114,7 @@ const emit = defineEmits(["movePage"]);
 const container = ref<HTMLElement>();
 const tabs = ref<(typeof Tab)[]>([]);
 const draggedPageRef = ref<Page>();
+const $q = useQuasar();
 
 /**
  * As soon as mouse down, set the clicked page to active
@@ -147,6 +200,30 @@ function onDropTabContainer(ev: DragEvent) {
   // nothing to do if dragging the last tab in the header
   if (draggedPage.id === lastPageId) return;
   emit("movePage", draggedPage, lastPageId, "after");
+}
+
+async function showInExplorer(page: Page) {
+  const path = idToPath(page.id);
+  await invoke("show_in_folder", {
+    path: path,
+  });
+}
+
+function copyId(page: Page) {
+  $q.notify(t("text-copied"));
+  copyToClipboard(page.id);
+}
+
+async function copyAsLink(page: Page) {
+  $q.notify(t("text-copied"));
+  if (page.id.includes("/")) {
+    copyToClipboard(`[${page.id}](${page.id})`);
+  } else {
+    const project = (await getProject(page.id)) as Project;
+    copyToClipboard(
+      `[${generateCiteKey(project)}](sophosia://open-item/${page.id})`
+    );
+  }
 }
 </script>
 <style scoped lang="scss">

@@ -57,12 +57,21 @@
       </q-item>
       <q-separator />
       <q-item
-        v-if="projectStore.selected.length <= 1"
         clickable
         v-close-popup
         @click="showInExplorer"
       >
         <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
+      </q-item>
+      <q-item
+        v-if="projectStore.selected.length === 1"
+        clickable
+        v-close-popup
+        @click="showInNewWindow()"
+      >
+        <q-item-section>
+          {{ $t("open-page-in-new-window") }}
+        </q-item-section>
       </q-item>
 
       <q-separator v-if="projectStore.selected.length == 1" />
@@ -158,6 +167,7 @@ import {
   Meta,
   Note,
   NoteType,
+  PageType,
   Project,
   SpecialFolder,
   db,
@@ -234,6 +244,15 @@ async function showInExplorer() {
       path: path,
     });
   }
+}
+
+function showInNewWindow() {
+  const project = projectStore.selected[0];
+  layoutStore.showInNewWindow({
+    id: project._id,
+    type: PageType.ReaderPage,
+    label: project.label,
+  });
 }
 
 /**

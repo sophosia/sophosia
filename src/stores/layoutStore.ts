@@ -207,7 +207,7 @@ export const useLayoutStore = defineStore("layoutStore", {
           page.id = itemId;
           page.type =
             item.type === NoteType.MARKDOWN
-              ? PageType.NoteNote
+              ? PageType.NotePage
               : PageType.ExcalidrawPage;
           page.label = item.label;
         } else if (item.dataType === "pdfAnnotation") {
@@ -233,7 +233,7 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param page - page to be opened in another window
      * @returns
      */
-    openWindow(page: Page) {
+    showInNewWindow(page: Page) {
       if (this.windowId !== "main") return;
       const windowId = nanoid();
       new WebviewWindow(windowId, {

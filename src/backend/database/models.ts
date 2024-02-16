@@ -338,7 +338,7 @@ export interface Page {
 export enum PageType {
   LibraryPage = "LibraryPage",
   ReaderPage = "ReaderPage",
-  NoteNote = "NotePage",
+  NotePage = "NotePage",
   ExcalidrawPage = "ExcalidrawPage",
   HelpPage = "HelpPage",
   SettingsPage = "SettingsPage",
