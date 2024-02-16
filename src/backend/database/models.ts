@@ -138,6 +138,7 @@ export interface Node {
   id: string; // id of the node
   label: string; // label of the node
   type: "project" | "note" | "annotation";
+  groupid: number | null; // id of the group
 }
 
 export interface NodeUI {

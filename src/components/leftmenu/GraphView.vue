@@ -90,7 +90,26 @@ async function reload(): Promise<void> {
   if (!!!props.itemId || specialPages.value.includes(props.itemId)) return;
   const elements = await getGraph(props.itemId);
   console.log("Current",props.itemId);
+  
+
+  // Create a mapping of project IDs to groupIds
+  const projectToGroupId = new Map();
+  elements.nodes.forEach((node, index) => {
+    if (node.data.type === 'project') {
+      projectToGroupId.set(node.data.id, index); // Use the index as a simple groupId
+      node.data.groupid = index; // Assign groupId to the project node
+    }
+  });
+
+  // Assign groupId to notes based on their linked project
+  elements.nodes.forEach(node => {
+    if (node.data.type === 'note') {
+        node.data.groupid = projectToGroupId.get(node.data.parent);
+    }
+  });
+
   console.log("elments", elements);
+
 
   const chart = ForceGraph(
     { nodes: elements.nodes, links: elements.edges },
@@ -99,7 +118,7 @@ async function reload(): Promise<void> {
       nodeId: (d: { data: { id: any } }) => d.data.id,
       nodeTitle: (d: { data: { label: any; type: any } }) =>
         `${d.data.label}`,
-      nodeGroup: (d: { data: { type: any } }) => {
+      nodeType: (d: { data: { type: any } }) => {
           if (d.data.type === "project") {
               return 0; // Group 0 for projects
           } else if (d.data.type === "note") {
@@ -108,7 +127,8 @@ async function reload(): Promise<void> {
               return 2; // Default group for others, if any
           }
       },
-      nodeGroups: [], // Add nodeGroups property
+      nodeGroup: (d: { data: { groupid: any } }) => d.data.groupid,
+      nodeTypes: [], // Add nodeTypes property
       nodeStrength: 1, // Add nodeStrength property
       linkStrength: 1, // Add linkStrength property
       height: props.height,
@@ -138,8 +158,10 @@ function ForceGraph(
     current, // the currently open project/node id
     nodeId = (d: { data: { id: any } }) => d.data.id, // given d in nodes, returns a unique identifier (string)
     // Remove the duplicate declaration of 'any' type
-    nodeGroup, // given d in nodes, returns an (ordinal) value for color
-    nodeGroups, // an array of ordinal values representing the node groups
+    nodeType, // sort nodes by type
+    nodeTypes, // an array of ordinal values representing the node types
+    nodeGroup, // given d in nodes, returns a node group identifier number
+    nodeGroups=[], // node groups defined by project
     nodeTitle, // given d in nodes, a title string
     nodeFill = "currentColor", // node stroke fill (if not using a group color encoding)
     nodeStroke = "#fff", // node stroke color
@@ -166,7 +188,9 @@ function ForceGraph(
   const LT = d3.map(links, linkTarget).map(intern);
   if (nodeTitle === undefined) nodeTitle = (_: any, i: string | number) => N[i];
   const T = nodeTitle == null ? null : d3.map(nodes, nodeTitle);
+  const TY = nodeType == null ? null : d3.map(nodes, nodeType).map(intern);
   const G = nodeGroup == null ? null : d3.map(nodes, nodeGroup).map(intern);
+
   const W =
     typeof linkStrokeWidth !== "function"
       ? null
@@ -174,14 +198,16 @@ function ForceGraph(
   const L = typeof linkStroke !== "function" ? null : d3.map(links, linkStroke);
 
   // Replace the input nodes and links with mutable objects for the simulation.
-  nodes = d3.map(nodes, (_: any, i: string | number) => ({ id: N[i] ,group: G[i], label:T[i]} ));
+  nodes = d3.map(nodes, (_: any, i: string | number) => ({ id: N[i] ,type: TY[i], label:T[i], group:G[i]} ));
   links = d3.map(links, (_: any, i: string | number) => ({
     source: LS[i],
     target: LT[i]
   }));
 
   // Compute default domains.
+  if (TY && nodeTypes === undefined) nodeTypes = d3.sort(TY);
   if (G && nodeGroups === undefined) nodeGroups = d3.sort(G);
+
 
   // Construct the forces.
   const forceNode = d3.forceManyBody();
@@ -238,16 +264,16 @@ function ForceGraph(
 
   node.each(function (d: any) {
     console.log("check",d);
-    if (d.group === 0) {
+    if (d.type === 0) {
         d3.select(this)
-            .append("rect") // Add a square for group 0 (project)
+            .append("rect") // Add a square for type 0 (project)
             .attr("width", 2 * nodeRadius)
             .attr("height", 2 * nodeRadius)
             .attr("x", -nodeRadius) // Center the square on the node's position
             .attr("y", -nodeRadius);
-    } else if (d.group === 1) {
+    } else if (d.type === 1) {
         d3.select(this)
-            .append("circle") // Add a circle for group 1 (note)
+            .append("circle") // Add a circle for type 1 (note)
             .attr("r", nodeRadius);
     } 
 });
@@ -267,12 +293,12 @@ function ForceGraph(
 
   if (W) link.attr("stroke-width", ({ index: i }: { index: number }) => W[i]);
   if (L) link.attr("stroke", ({ index: i }: { index: number }) => L[i]);
-  if (G) {
+  if (TY) {
   node.attr("fill", (d: any, i: number) => {
     if (d.id === current) {
       return colors[1]; // Use last color in colors for current node
     } else {
-      return colors[0]; // Use the original color based on the group
+      return colors[0]; // Use the original color based on the type
     }
     });
   }
