@@ -97,6 +97,7 @@
     <TableItemMenu
       :menuType="item.dataType"
       @showInExplorer="showInExplorer"
+      @showInNewWindow="showInNewWindow"
       @openItem="openItem"
       @setRenaming="setRenaming"
       @deleteItem="deleteItem"
@@ -118,7 +119,7 @@
 </template>
 <script setup lang="ts">
 // types
-import { Note, NoteType, Page, Project } from "src/backend/database";
+import { Note, NoteType, Page, PageType, Project } from "src/backend/database";
 import { PropType, Ref, inject, nextTick, ref, watchEffect } from "vue";
 // db
 import { invoke } from "@tauri-apps/api";
@@ -164,6 +165,17 @@ async function showInExplorer() {
       : idToPath(props.item._id);
   if (!path) return;
   await invoke("show_in_folder", { path: path });
+}
+
+function showInNewWindow() {
+  const type = props.item._id.endsWith(".md")
+    ? PageType.NotePage
+    : PageType.ExcalidrawPage;
+  layoutStore.showInNewWindow({
+    id: props.item._id,
+    type: type,
+    label: props.item.label,
+  });
 }
 
 /**

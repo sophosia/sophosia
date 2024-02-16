@@ -69,8 +69,8 @@
     <q-space />
 
     <q-input
-      outlined
       class="actionbar-input"
+      outlined
       :placeholder="$t('search', { type: $t('local') })"
       v-model="searchText"
     >
@@ -178,13 +178,14 @@ function addByID() {
 <stlye lang="scss" scoped>
 //here to prevent conflict with general tabs selector in global scss file
 .actionbar-input {
-  border-radius: 8px;
-}
-.q-field__control {
-  height: min(2rem, 36px) !important;
-  border-radius: 8px !important;
-}
-.q-field__marginal {
-  height: min(2rem, 36px) !important;
+  .q-field__control {
+    height: min(2rem, 36px);
+  }
+  .q-field__control-container {
+    height: min(2rem, 36px);
+  }
+  .q-field__marginal {
+    height: min(2rem, 36px);
+  }
 }
 </stlye>

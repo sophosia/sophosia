@@ -40,6 +40,15 @@
       >
         <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
       </q-item>
+      <q-item
+        clickable
+        v-close-popup
+        @click="$emit('showInNewWindow')"
+      >
+        <q-item-section>
+          {{ $t("open-page-in-new-window") }}
+        </q-item-section>
+      </q-item>
 
       <q-separator />
 
@@ -120,15 +129,16 @@
 </template>
 <script setup lang="ts">
 const props = defineProps({
-  menuType: { type: String, required: true }
+  menuType: { type: String, required: true },
 });
 const emit = defineEmits([
   "copyId",
   "copyAsLink",
   "showInExplorer",
+  "showInNewWindow",
   "openItem",
   "deleteItem",
   "setRenaming",
-  "renamePDF"
+  "renamePDF",
 ]);
 </script>

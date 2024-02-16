@@ -152,7 +152,7 @@ export default function CustomExcalidraw(props: { noteId: string }) {
     onMounted();
   }, []);
 
-  return ready ? (
+  return ready ? 
     <Excalidraw
       ref={(api: ExcalidrawImperativeAPI) => {
         setExcalidrawAPI(api);
@@ -170,5 +170,5 @@ export default function CustomExcalidraw(props: { noteId: string }) {
         <MainMenu.DefaultItems.Help />
       </MainMenu>
     </Excalidraw>
-  ) : undefined;
+   : <div></div>;
 }

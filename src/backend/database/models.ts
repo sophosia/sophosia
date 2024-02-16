@@ -1,4 +1,3 @@
-import { LayoutConfig, ResolvedLayoutConfig } from "golden-layout";
 import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
 import { QTreeNode } from "quasar";
 
@@ -291,22 +290,61 @@ export interface AppState {
   citeKeyRule: string; // "author_title_year" by default
 }
 
-export interface Layout {
-  _id: "layout";
-  dataType: "layout";
-  config: LayoutConfig | ResolvedLayoutConfig;
+// export interface Layout {
+//   _id: "layout";
+//   dataType: "layout";
+//   config: LayoutConfig | ResolvedLayoutConfig;
+// }
+
+// export interface Page {
+//   id: string;
+//   type: string;
+//   label: string;
+//   data?: { path?: string; focusAnnotId?: string };
+// }
+
+// export interface GLState extends Page {
+//   refId: string;
+// }
+
+export interface Row {
+  id: string;
+  type: "row";
+  split: number;
+  children: Layout[];
+}
+
+export interface Col {
+  id: string;
+  type: "col";
+  split: number;
+  children: Layout[];
+}
+
+export interface Stack {
+  id: string;
+  type: "stack";
+  children: Page[];
 }
 
 export interface Page {
   id: string;
-  type: string;
+  type: PageType;
   label: string;
+  visible?: boolean; // if visible not exists, then it's not visible
   data?: { path?: string; focusAnnotId?: string };
 }
 
-export interface GLState extends Page {
-  refId: string;
+export enum PageType {
+  LibraryPage = "LibraryPage",
+  ReaderPage = "ReaderPage",
+  NotePage = "NotePage",
+  ExcalidrawPage = "ExcalidrawPage",
+  HelpPage = "HelpPage",
+  SettingsPage = "SettingsPage",
 }
+
+export type Layout = Row | Col | Stack;
 
 /*******************
  * EventBus

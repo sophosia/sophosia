@@ -11,7 +11,6 @@
     <template v-slot:after>
       <q-splitter
         :limits="[0, 60]"
-        emit-immediately
         separator-style="background: var(--q-edge)"
         :separator-class="{
           'q-splitter-separator': layoutStore.leftMenuSize > 0,
@@ -27,10 +26,7 @@
           />
         </template>
         <template v-slot:after>
-          <GLayout
-            style="width: 100%; height: 100vh"
-            ref="layout"
-          ></GLayout>
+          <LayoutContainer />
         </template>
       </q-splitter>
     </template>
@@ -38,17 +34,11 @@
 </template>
 
 <script setup lang="ts">
-// types
-import { Page } from "src/backend/database";
-// components
+import type { Page } from "src/backend/database";
+import LayoutContainer from "src/components/layout/LayoutContainer.vue";
 import LeftMenu from "src/components/leftmenu/LeftMenu.vue";
 import LeftRibbon from "./LeftRibbon.vue";
-// GoldenLayout
-import "src/css/goldenlayout/base.scss";
-import "src/css/goldenlayout/theme.scss";
-import GLayout from "./GLayout.vue";
-// db
-// utils
+
 import { listen } from "@tauri-apps/api/event";
 import pluginManager from "src/backend/plugin";
 import { useLayoutStore } from "src/stores/layoutStore";

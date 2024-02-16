@@ -1,90 +1,33 @@
 import { WebviewWindow, getCurrent } from "@tauri-apps/api/window";
 import { nanoid } from "nanoid";
 import { defineStore } from "pinia";
-import { NoteType, PageType, db } from "src/backend/database";
-import type {
-  AnnotationData,
-  AppState,
-  Col,
-  Layout,
-  Note,
-  Page,
-  Project,
-  Row,
-  Stack,
-} from "src/backend/database/models";
+import { Col, Layout, Page, PageType, Row, Stack } from "src/backend/database";
 import { getLayout, updateLayout } from "src/backend/layout";
-import { getPDF } from "src/backend/project/project";
 import { toRaw } from "vue";
-import { useProjectStore } from "./projectStore";
-
-export const useLayoutStore = defineStore("layoutStore", {
+export const useWindowStore = defineStore("windowStore", {
   state: () => ({
-    initialized: false,
-    // toggles and sizes
-    ribbonClickedBtnId: "",
-    prvRibbonClickedBtnId: "",
-    leftMenuSize: 20,
-    prvLeftMenuSize: 20,
-    libraryRightMenuSize: 30,
-    prvLibraryRightMenuSize: 0,
-    showWelcomeCarousel: true,
-
-    // layout
-    currentItemId: "",
-    historyItemId: [] as string[],
-    // store layout for each window, the key is windowId
+    // layout of each window, the key is windowId
     layouts: new Map<string, Layout>(),
+    currentItemId: "library",
+    historyItemId: [] as string[],
   }),
 
   getters: {
-    windowId: (state) => getCurrent().label,
+    layout: (state) => {
+      const window = getCurrent();
+      return state.layouts.get(window.label) as Layout;
+    },
 
-    layout: (state) => state.layouts.get(getCurrent().label) as Layout,
+    windowId: (state) => getCurrent().label,
   },
 
   actions: {
-    /************************************
-     * Database
-     ************************************/
-    /**
-     * Given the appState, initialize the layoutStore
-     * We will set initialized to true after the layout is loaded
-     * @param {AppState} state
-     */
-    async loadState(state: AppState) {
-      if (this.initialized) return;
-      this.currentItemId = state.currentItemId;
-      this.ribbonClickedBtnId = state.ribbonClickedBtnId;
-      this.prvRibbonClickedBtnId = state.ribbonClickedBtnId;
-      this.leftMenuSize = state.leftMenuSize;
-      this.libraryRightMenuSize = state.libraryRightMenuSize;
-      // load layout from db
-      await this.loadLayout();
-      this.initialized = true;
-    },
-
-    /**
-     * Output the data needs to be saved
-     * @returns {AppState} The data needs to be saved
-     */
-    saveState(): AppState {
-      // save layout to db
-      this.saveLayout();
-      // returns other states to stateStore for saving
-      return {
-        currentItemId: this.currentItemId,
-        ribbonClickedBtnId: this.ribbonClickedBtnId,
-        leftMenuSize: this.leftMenuSize,
-        libraryRightMenuSize: this.libraryRightMenuSize,
-      } as AppState;
-    },
-
     /**
      * Load the layout from database, then set the correct currentItemId
-     * Only load layout in main window
      */
     async loadLayout() {
+      console.log("windowId = ", this.windowId);
+      console.log("loading layout", this.layout);
       if (this.windowId !== "main") return;
       this.layouts.set(this.windowId, await getLayout());
       if (this.findPage((page) => page.id === this.currentItemId))
@@ -96,13 +39,28 @@ export const useLayoutStore = defineStore("layoutStore", {
       }
     },
 
-    /**
-     * Save the layout to database
-     * Only save layout in main window
-     */
     async saveLayout() {
       if (this.windowId !== "main") return;
       await updateLayout(this.layout);
+    },
+
+    /**************************************
+     * Window Control
+     **************************************/
+    openWindow(page: Page) {
+      if (this.windowId !== "main") return;
+      const windowId = nanoid();
+      console.log("create a window ", windowId);
+      page.visible = true;
+      this.layouts.set(windowId, {
+        id: "stack",
+        type: "stack",
+        children: [page],
+      });
+      console.log("with layout", this.layout);
+      new WebviewWindow(windowId, {
+        url: `#/layout/?pageId=${page.id}&pageType=${page.type}&pageLabel=${page.label}`,
+      });
     },
 
     /**********************************
@@ -115,9 +73,7 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param page - The page object to be opened, containing necessary properties like id, label, type, etc.
      */
     openPage(page: Page) {
-      if (this.layout.type === "stack" && this.layout.children.length === 0) {
-        this.layout.children.push(page);
-      } else if (!this.findPage((p) => p.id === page.id)) {
+      if (!this.findPage((p) => p.id === page.id)) {
         // when clicking at the projectTree, the currentItemId will be set the the page.id
         // we need to find the id of previous active page
         const targetId =
@@ -139,13 +95,15 @@ export const useLayoutStore = defineStore("layoutStore", {
       if (this.currentItemId === pageId)
         this.currentItemId = this.historyItemId.pop() || "";
 
-      if (
-        this.layout.type === "stack" &&
-        this.layout.children.length === 0 &&
-        this.windowId !== "main"
-      ) {
-        // otherwise close the window if the layout is empty
-        getCurrent().close();
+      // insert a library page if layout is empty
+      if (this.layout.type === "stack" && this.layout.children.length === 0) {
+        this.layout.children.push({
+          id: "library",
+          label: "library",
+          type: PageType.LibraryPage,
+          visible: true,
+        });
+        this.setActive("library");
       }
     },
 
@@ -166,147 +124,6 @@ export const useLayoutStore = defineStore("layoutStore", {
       if (id === this.currentItemId) return;
       if (this.currentItemId) this.historyItemId.push(this.currentItemId);
       this.currentItemId = id;
-    },
-
-    /**
-     * Open the associated page for an item and then open the associated project
-     * @param itemId
-     */
-    async openItem(itemId: string) {
-      if (!itemId) return;
-      try {
-        // open associated project
-        const projectStore = useProjectStore();
-        let item: Project | Note | AnnotationData | undefined;
-        item = itemId.includes("/")
-          ? await projectStore.getNoteFromDB(itemId)
-          : await projectStore.getProjectFromDB(itemId);
-        try {
-          if (!item) item = (await db.get(itemId)) as AnnotationData;
-        } catch (error) {
-          console.log(error);
-          return;
-        }
-        await projectStore.openProject(item.projectId || itemId);
-
-        // open associated page
-        const page = {} as Page;
-        if (item.dataType === "project") {
-          page.id = itemId;
-          page.type = PageType.ReaderPage;
-          page.label = item.label;
-          // do not open page if there is no pdf
-          if (!(await getPDF(itemId))) return;
-        } else if (item.dataType === "note") {
-          page.id = itemId;
-          page.type =
-            item.type === NoteType.MARKDOWN
-              ? PageType.NotePage
-              : PageType.ExcalidrawPage;
-          page.label = item.label;
-        } else if (item.dataType === "pdfAnnotation") {
-          const project = (await db.get(item.projectId)) as Project;
-          page.id = project._id;
-          page.type = PageType.ReaderPage;
-          page.label = project.label;
-          page.data = { focusAnnotId: itemId };
-        }
-        this.openPage(page);
-      } catch (error) {
-        console.log(error);
-      }
-    },
-
-    /**************************************
-     * Window Control
-     **************************************/
-
-    /**
-     * Open another Tauri window for the page, and close the page in the mainWindow
-     * Only enable this function in main window
-     * @param page - page to be opened in another window
-     * @returns
-     */
-    showInNewWindow(page: Page) {
-      // keep library page in main to make things simpler
-      if (page.id === "library") return;
-      const windowId = nanoid();
-      new WebviewWindow(windowId, {
-        url: `#/layout/?pageId=${page.id}&pageType=${page.type}&pageLabel=${page.label}`,
-      });
-      this.closePage(page.id);
-    },
-
-    /*****************************************
-     * Layout Control
-     *****************************************/
-
-    /**
-     * Toggle welcome page
-     * If visible is given, set the state as it is
-     * @param visible
-     */
-    toggleWelcome(visible?: boolean) {
-      if (visible === undefined) {
-        this.showWelcomeCarousel = !this.showWelcomeCarousel;
-      } else {
-        this.showWelcomeCarousel = visible;
-      }
-    },
-
-    /**
-     * Toggle library right menu
-     * The size is determined by the minimum size 30 and its previous size
-     * If visible is given, set the state as it is
-     * @param visible
-     */
-    toggleLibraryRightMenu(visible?: boolean) {
-      if (visible === undefined) {
-        const show = this.libraryRightMenuSize > 0;
-        this.libraryRightMenuSize = show
-          ? 0
-          : Math.max(this.prvLibraryRightMenuSize, 30);
-      } else {
-        this.libraryRightMenuSize = visible
-          ? Math.max(this.prvLibraryRightMenuSize, 30)
-          : 0;
-      }
-    },
-
-    /**
-     * After releasing the splitter, record the size and if close right menu if it is too small
-     * @param size
-     */
-    resizeLibraryRightMenu(size: number) {
-      this.prvLibraryRightMenuSize = size;
-      this.libraryRightMenuSize = size < 5 ? 0 : size;
-    },
-
-    /**
-     * Toggle left menu
-     * The size is determined by the minimum size 20 and its previous size
-     * If visible is given, set the state as it is
-     * @param visible
-     */
-    toggleLeftMenu(visible?: boolean) {
-      const isClickedSameBtn =
-        this.ribbonClickedBtnId === this.prvRibbonClickedBtnId;
-      if (visible === undefined) {
-        if (!isClickedSameBtn) return;
-        const show = this.leftMenuSize > 0;
-        this.leftMenuSize = show ? 0 : Math.max(this.prvLeftMenuSize, 20);
-      } else {
-        this.leftMenuSize = visible ? Math.max(this.prvLeftMenuSize, 20) : 0;
-      }
-    },
-
-    /**
-     * After releasing the splitter, record the size and if close left menu if it is too small
-     * @param size
-     */
-    resizeLeftMenu(size: number) {
-      this.prvLeftMenuSize = size;
-      this.leftMenuSize = size < 10 ? 0 : size;
     },
 
     /***********************************************

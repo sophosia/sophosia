@@ -149,5 +149,6 @@
   "export": "Exporter {type}",
   "display-translated-title": "Afficher le titre traduit",
   "display-translated-title-info": "Si la référence contient un titre traduit, cela détermine s'il faut ou non l'afficher.",
-  "copy-reference": "Copier la citation"
+  "copy-reference": "Copier la citation",
+  "open-page-in-new-window": "Ouvrir la page dans une nouvelle fenêtre"
 }

@@ -184,7 +184,6 @@ export function generateCiteKey(
   rule = "author_year_title",
   longTitle = false
 ): string {
-  console.log("meta", meta);
   // parsing the rule
   let connector = "";
   let keys = ["author", "title", "year"];

@@ -60,6 +60,15 @@
       >
         <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
       </q-item>
+      <q-item
+        clickable
+        v-close-popup
+        @click="$emit('showInNewWindow')"
+      >
+        <q-item-section>
+          {{ $t("open-page-in-new-window") }}
+        </q-item-section>
+      </q-item>
     </q-list>
   </q-menu>
 </template>
@@ -68,7 +77,8 @@ const emit = defineEmits([
   "copyId",
   "copyAsLink",
   "showInExplorer",
+  "showInNewWindow",
   "rename",
-  "delete"
+  "delete",
 ]);
 </script>

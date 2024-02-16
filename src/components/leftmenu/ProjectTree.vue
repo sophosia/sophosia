@@ -10,8 +10,9 @@
     :nodes="projectStore.openedProjects"
     node-key="_id"
     selected-color="primary"
-    v-model:selected="layoutStore.currentItemId"
     v-model:expanded="expanded"
+    :selected="layoutStore.currentItemId"
+    @update:selected="(id: string) => layoutStore.setActive(id)"
   >
     <template v-slot:default-header="prop">
       <!-- use full-width so that click trailing empty space
@@ -27,7 +28,7 @@
             draggingNode != prop.node,
         }"
         @click="selectItem(prop.node._id)"
-        :draggable="prop.node.dataType !== 'project'"
+        draggable="true"
         @dragstart="(e) => onDragStart(e, prop.node)"
         @dragover="(e) => onDragOver(e, prop.node)"
         @dragleave="(e) => onDragLeave(e, prop.node)"
@@ -37,6 +38,7 @@
           v-if="prop.node.dataType === 'project'"
           :projectId="prop.node._id"
           @showInExplorer="showInExplorer(prop.node)"
+          @showInNewWindow="showInNewWindow(prop.node)"
           @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
           @addFolder="addNode(prop.node._id, 'folder')"
           @exportCitation="showExportCitationDialog(prop.node)"
@@ -61,6 +63,7 @@
         <NoteMenu
           v-else-if="prop.node.dataType === 'note'"
           @showInExplorer="showInExplorer(prop.node)"
+          @showInNewWindow="showInNewWindow(prop.node)"
           @rename="setRenameNode(prop.node)"
           @delete="deleteNode(prop.node)"
           @copyId="
@@ -181,6 +184,7 @@ import {
   Note,
   NoteType,
   Page,
+  PageType,
   Project,
 } from "src/backend/database";
 import { formatMetaData, generateCiteKey } from "src/backend/project/meta";
@@ -210,7 +214,7 @@ const oldNoteName = ref("");
 const pathDuplicate = ref(false);
 const addingNode = ref(false);
 const expanded = ref<string[]>([]);
-const draggingNode = ref<FolderOrNote | null>(null);
+const draggingNode = ref<Project | FolderOrNote | null>(null);
 const dragoverNode = ref<FolderOrNote | null>(null);
 const enterTime = ref(0);
 const $q = useQuasar();
@@ -247,7 +251,6 @@ function selectItem(nodeId: string) {
   if (!tree.value) return;
   const node = tree.value.getNodeByKey(nodeId);
   console.log("node", node);
-  layoutStore.currentItemId = node._id;
   if ((node.children?.length as number) > 0) expanded.value.push(node._id);
   if (node.dataType === "folder") return;
 
@@ -273,6 +276,21 @@ function showInTree(nodeId: string) {
     folderId += `/${splits[i]}`;
     if (!expanded.value.includes(folderId)) expanded.value.push(folderId);
   }
+}
+
+/**
+ * Show its corresponding page in a new window
+ */
+function showInNewWindow(node: Project | Note) {
+  const page = { id: node._id, label: node.label } as Page;
+  if (node._id.includes("/") && node._id.endsWith(".md")) {
+    page.type = PageType.NotePage;
+  } else if (node._id.includes("/") && node._id.endsWith(".excalidraw")) {
+    page.type = PageType.ExcalidrawPage;
+  } else {
+    page.type = PageType.ReaderPage;
+  }
+  layoutStore.showInNewWindow(page);
 }
 
 /**
@@ -422,12 +440,32 @@ async function deleteNode(node: FolderOrNote) {
 /**
  * Handles the start of a drag operation.
  * @param {DragEvent} e - The drag event.
- * @param {FolderOrNote} node - The node being dragged.
+ * @param {Project | FolderOrNote} node - The node being dragged.
  */
-function onDragStart(e: DragEvent, node: FolderOrNote) {
+function onDragStart(e: DragEvent, node: Project | FolderOrNote) {
   draggingNode.value = node;
   // need to set transfer data for some browsers to work
   e.dataTransfer?.setData("draggingNode", JSON.stringify(node));
+
+  // drag source for the layout, user can drag this and make it a page
+  let pageType: PageType | undefined;
+  if (node.dataType === "note" && node._id.endsWith(".md"))
+    pageType = PageType.NotePage;
+  else if (node.dataType === "note" && node._id.endsWith(".excalidraw"))
+    pageType = PageType.ExcalidrawPage;
+  else if (node.dataType === "project") pageType = PageType.ReaderPage;
+  if (pageType) {
+    e.dataTransfer!.setData(
+      "page",
+      JSON.stringify({
+        id: node._id,
+        type: pageType,
+        label: node.label,
+        visible: true,
+      })
+    );
+    e.dataTransfer!.setData("windowId", layoutStore.windowId);
+  }
 }
 
 /**
@@ -436,6 +474,7 @@ function onDragStart(e: DragEvent, node: FolderOrNote) {
  * @param {FolderOrNote} node - The node being dragged over.
  */
 function onDragOver(e: DragEvent, node: FolderOrNote) {
+  if (draggingNode.value?.dataType === "project") return;
   // enable drop on the node
   e.preventDefault();
 

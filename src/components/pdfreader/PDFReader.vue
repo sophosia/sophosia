@@ -65,6 +65,7 @@ import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
 import {
   AnnotationData,
   AnnotationType,
+  PageType,
   Project,
   Rect,
 } from "src/backend/database";
@@ -430,7 +431,7 @@ onMounted(async () => {
           if (project.value) {
             layoutStore.openPage({
               id: project.value._id,
-              type: "ReaderPage",
+              type: PageType.ReaderPage,
               label: project.value.label,
             });
           }

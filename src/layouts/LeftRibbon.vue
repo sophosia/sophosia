@@ -33,8 +33,8 @@
         @click="
           $emit('openPage', {
             id: 'library',
-            label: $t('library'),
-            type: 'LibraryPage',
+            label: 'library',
+            type: PageType.LibraryPage,
           })
         "
       >
@@ -60,8 +60,8 @@
           async () => {
             $emit('openPage', {
               id: 'help',
-              label: $t('help'),
-              type: 'HelpPage',
+              label: 'help',
+              type: PageType.HelpPage,
               data: {
                 path: await resolveResource(
                   `help/help_${db.config.language}.md`
@@ -82,8 +82,8 @@
         @click="
           $emit('openPage', {
             id: 'settings',
-            label: $t('settings'),
-            type: 'SettingsPage',
+            label: 'settings',
+            type: PageType.SettingsPage,
           })
         "
       >
@@ -94,7 +94,7 @@
 </template>
 <script setup lang="ts">
 import { resolveResource } from "@tauri-apps/api/path";
-import { db } from "src/backend/database";
+import { PageType, db } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
 
 const layoutStore = useLayoutStore();

@@ -1,8 +1,11 @@
 <template>
-  <ExcalidrawReact
-    v-if="visible"
-    :noteId="itemId"
-  />
+  <!-- the outer most layer is to make the page drag and drop working  -->
+  <div style="width: 100%; height: 100%">
+    <ExcalidrawReact
+      v-if="visible"
+      :noteId="itemId"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
