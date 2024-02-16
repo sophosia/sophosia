@@ -63,6 +63,7 @@
             </div>
             <q-separator></q-separator>
             <q-item
+              v-if="page.id !== 'library'"
               clickable
               v-close-popup
               dense
