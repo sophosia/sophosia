@@ -3,6 +3,7 @@
   <TabContainer
     v-if="stack.children.length > 0"
     class="tab-container"
+    :enableCrossWindowDragAndDrop="enableCrossWindowDragAndDrop"
     :pages="stack.children"
     @movePage="(page: Page, id: string, pos: 'before' | 'after', fromWindow: string) => movePage(page, id, pos, fromWindow)"
   />
@@ -11,6 +12,7 @@
       v-if="stack.children.length > 0"
       :asyncPages="asyncPages"
       :pages="stack.children"
+      :enableCrossWindowDragAndDrop="enableCrossWindowDragAndDrop"
       @moveToStack="(page: Page, pos: 'center' | 'left' | 'right'| 'top' | 'bottom', fromWindow: string) => moveToStack(page, pos, fromWindow)"
     />
   </div>
@@ -22,10 +24,11 @@
 </template>
 <script setup lang="ts">
 import { listen } from "@tauri-apps/api/event";
+import { type } from "@tauri-apps/api/os";
 import { WebviewWindow } from "@tauri-apps/api/window";
 import { type Page, type Stack } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
-import { PropType, onBeforeUnmount, onMounted, watchEffect } from "vue";
+import { PropType, onBeforeUnmount, onMounted, ref, watchEffect } from "vue";
 import EmptyStack from "./EmptyStack.vue";
 import PageContainer from "./PageContainer.vue";
 import TabContainer from "./TabContainer.vue";
@@ -34,12 +37,14 @@ const props = defineProps({
   asyncPages: { type: Object as PropType<Map<string, any>>, required: true },
 });
 const layoutStore = useLayoutStore();
+const enableCrossWindowDragAndDrop = ref(false);
 let unlisten: () => void;
 onMounted(async () => {
   unlisten = await listen("closePage", (ev) => {
     const id = ev.payload as string;
     layoutStore.closePage(id);
   });
+  enableCrossWindowDragAndDrop.value = "Linux" === (await type());
 });
 
 onBeforeUnmount(() => {

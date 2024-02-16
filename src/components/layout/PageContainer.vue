@@ -27,11 +27,14 @@
 </template>
 <script setup lang="ts">
 import { type Page } from "src/backend/database";
+import { useLayoutStore } from "src/stores/layoutStore";
 import { PropType, ref } from "vue";
+const layoutStore = useLayoutStore();
 
 const props = defineProps({
   pages: { type: Object as PropType<Page[]>, required: true },
   asyncPages: { type: Object as PropType<Map<string, any>>, required: true },
+  enableCrossWindowDragAndDrop: { type: Boolean, required: true },
 });
 const emit = defineEmits(["moveToStack"]);
 
@@ -40,6 +43,8 @@ const container = ref<HTMLElement>();
 const mask = ref<HTMLElement>();
 
 function onDragOverPage(ev: DragEvent, page: Page) {
+  if (!props.enableCrossWindowDragAndDrop && layoutStore.windowId !== "main")
+    return;
   // if not dragging a page, don't show the drop mask
   if (!ev.dataTransfer?.types.includes("page")) return;
   // do nothing when dragging the page to itself

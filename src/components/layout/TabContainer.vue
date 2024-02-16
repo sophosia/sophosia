@@ -110,6 +110,7 @@ const { t } = useI18n({ useScope: "global" });
 const layoutStore = useLayoutStore();
 const props = defineProps({
   pages: { type: Object as PropType<Page[]>, required: true },
+  enableCrossWindowDragAndDrop: { type: Boolean, required: true },
 });
 const emit = defineEmits(["movePage"]);
 const container = ref<HTMLElement>();
@@ -140,6 +141,8 @@ function onDragStartTab(ev: DragEvent, draggedPageIndex: number) {
 }
 
 function onDragOverTab(ev: DragEvent, overedPageIndex: number) {
+  if (!props.enableCrossWindowDragAndDrop && layoutStore.windowId !== "main")
+    return;
   ev.preventDefault();
   const overedPage = props.pages[overedPageIndex];
   if (draggedPageRef.value && overedPage.id === draggedPageRef.value.id) return;
@@ -151,7 +154,6 @@ function onDragLeaveTab(ev: DragEvent, leavedPageIndex: number) {
 }
 
 function onDropTab(ev: DragEvent, droppedPageIndex: number) {
-  ev.preventDefault();
   draggedPageRef.value = undefined;
   tabs.value[droppedPageIndex].$el.classList.remove("tab-drag-highlight");
   // getData is accessible in drop event
@@ -181,6 +183,8 @@ function onDropTab(ev: DragEvent, droppedPageIndex: number) {
 }
 
 function onDragOverTabContainer(ev: DragEvent) {
+  if (!props.enableCrossWindowDragAndDrop && layoutStore.windowId !== "main")
+    return;
   ev.preventDefault();
   if (!container.value) return;
   const lastPageId = props.pages[props.pages.length - 1].id;
