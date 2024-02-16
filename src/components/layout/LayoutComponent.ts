@@ -13,12 +13,7 @@ const asyncPages = new Map<string, any>();
 for (const pageType of Object.values(PageType)) {
   asyncPages.set(
     pageType,
-    markRaw(
-      defineAsyncComponent(() => {
-        const page = `../../pages/${pageType}.vue`;
-        return import(page);
-      })
-    )
+    markRaw(defineAsyncComponent(() => import(`../../pages/${pageType}.vue`)))
   );
 }
 

@@ -22,7 +22,6 @@ const layout = computed({
     } else {
       // if empty, construct the layout first using the page info
       const stack = layoutStore.wrappedInStack(props as Page);
-      console.log("stack", stack);
       layoutStore.layouts.set(layoutStore.windowId, stack);
       return stack;
     }
