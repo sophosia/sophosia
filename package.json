@@ -30,7 +30,6 @@
     "citation-js": "^0.7.5",
     "cytoscape": "^3.26.0",
     "cytoscape-cola": "^2.5.1",
-    "golden-layout": "^2.6.0",
     "idb": "^7.1.1",
     "katex": "^0.16.9",
     "konva": "^9.2.0",
