@@ -1,7 +1,7 @@
 <template>
   <div
     class="menu"
-    style="z-index: 100; max-width: 20vw"
+    style="z-index: 100"
   >
     <div class="row items-center q-px-sm q-py-xs">
       <ColorPicker
