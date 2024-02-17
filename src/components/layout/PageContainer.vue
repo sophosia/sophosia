@@ -118,7 +118,16 @@ function onDrop(ev: DragEvent) {
   // move page around
   const draggedPage = JSON.parse(ev.dataTransfer!.getData("page"));
   const fromWindowId = ev.dataTransfer!.getData("windowId");
-  if (!draggedPage || !fromWindowId) return;
+  if (!draggedPage || !fromWindowId) {
+    onDragLeave(ev);
+    return;
+  }
+  // TODO: allow library page to be on other windows.
+  // we can transmit data back to main window
+  if (layoutStore.windowId !== "main" && draggedPage.id === "library") {
+    onDragLeave(ev);
+    return;
+  }
 
   const containerDiv = container.value;
   if (!containerDiv) return;

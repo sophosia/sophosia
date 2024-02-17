@@ -228,8 +228,6 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @returns
      */
     showInNewWindow(page: Page) {
-      // keep library page in main to make things simpler
-      if (page.id === "library") return;
       const windowId = nanoid();
       new WebviewWindow(windowId, {
         url: `#/layout/?pageId=${page.id}&pageType=${page.type}&pageLabel=${page.label}`,
