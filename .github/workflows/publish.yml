@@ -23,8 +23,8 @@ jobs:
         
       - name: get version
         run: |
-        ref=${{github.ref}}
-        echo VERSION=${ref#refs/tags/v} >> $GITHUB_ENV
+          ref=${{github.ref}}
+          echo VERSION=${ref#refs/tags/v} >> $GITHUB_ENV
 
       - name: create release
         id: create-release
@@ -43,12 +43,10 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            ref=${{github.ref}}
-            version=${ref#refs/tags/v}
             const { data } = await github.rest.repos.generateReleaseNotes({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: `v${version}`,
+              tag_name: `v${process.env.VERSION}`,
             })
 
   publish-tauri:
