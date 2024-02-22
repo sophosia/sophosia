@@ -154,10 +154,12 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    - name: get all artifacts
-      uses: actions/download-artifact@v4
-    
-    - name: upload assets to release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: ./*/[Ss]ophosia*
+
+    steps:
+      - name: get all artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: upload assets to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./*/[Ss]ophosia*
