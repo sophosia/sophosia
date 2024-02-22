@@ -6,7 +6,50 @@ on:
       - v*
 
 jobs:
+  create-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-20.04
+    outputs:
+      release_id: ${{ steps.create-release.outputs.result }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: create release
+        id: create-release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            ref=${{github.ref}}
+            version=${ref#refs/tags/v}
+            const { data } = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${version}`,
+              name: `Sophosia v${version}`,
+            })
+            return data.id
+
+      - name: generate release notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            ref=${{github.ref}}
+            version=${ref#refs/tags/v}
+            const { data } = await github.rest.repos.generateReleaseNotes({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${version}`,
+            })
+
   publish-tauri:
+    needs: create-release
     permissions:
       contents: write
     strategy:
@@ -16,28 +59,58 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - name: checkout
+        uses: actions/checkout@v4
+
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
+
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+
       - name: install frontend dependencies
         run: yarn install # change this to npm or pnpm depending on which one you use
-      - uses: tauri-apps/tauri-action@v0
+
+      - name: build sophosia (and do macos code sign)
+        id: build-sophosia
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        # with:
+        #   releaseId: ${{ needs.create-release.outputs.release_id }}
+
+      - name: sign artifact with CodeSignTool (windows code signing for installer)
+        if: matrix.platform == 'windows-latest'
+        uses: sslcom/actions-codesigner@develop
         with:
-          tagName: "v__VERSION__"
-          releaseName: "Sophosia v__VERSION__"
+          command: sign
+          username: ${{ secrets.ES_USERNAME }}
+          password: ${{ secrets.ES_PASSWORD }}
+          credential_id: ${{ secrets.CREDENTIAL_ID }}
+          totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
+          file_path: src-tauri/target/release/bundle/msi/Sophosia*.msi
+
+      - name: sign artifact with CodeSignTool (windows code signing for portable exe)
+        if: matrix.platform == 'windows-latest'
+        uses: sslcom/actions-codesigner@develop
+        with:
+          command: sign
+          username: ${{ secrets.ES_USERNAME }}
+          password: ${{ secrets.ES_PASSWORD }}
+          credential_id: ${{ secrets.CREDENTIAL_ID }}
+          totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
+          file_path: src-tauri/target/release/Sophosia.exe
+
       - name: rename .exe file
         id: rename
         if: matrix.platform == 'windows-latest'
@@ -48,8 +121,14 @@ jobs:
           echo "name=$name" >> $GITHUB_OUTPUT
           mv "src-tauri/target/release/Sophosia.exe" $name
         shell: bash
+
       - name: upload .exe as windows portable build
         if: matrix.platform == 'windows-latest'
         uses: softprops/action-gh-release@v1
         with:
           files: ${{ steps.rename.outputs.name }}
+
+      - name: upload assets to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.build-sophosia.outputs.artifactPaths }}
