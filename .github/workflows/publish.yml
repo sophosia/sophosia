@@ -91,27 +91,26 @@ jobs:
       - name: rename and move portable .exe file
         if: matrix.platform == 'windows-latest'
         run: |
-          name=Sophosia_${{env.VERSION}}_portable.exe
+          ref=${{github.ref}}
+          version=${ref#refs/tags/v}
+          name=Sophosia_${{version}}_portable.exe
           mkdir src-tauri/target/release/bundle/portable
           mv "src-tauri/target/release/Sophosia.exe" "src-tauri/target/release/bundle/portable/$name"
         shell: bash
 
       - name: upload windows artifacts
-        if: matrix.platform == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: windows-artifacts
+          name: artifacts-${{ matrix.platform }}
           path: src-tauri/target/release/bundle/*/Sophosia*
 
-      - name: upload assets to release
-        if: matrix.platform != 'windows-latest'
+      - name: upload latest.json to release
+        if: matrix.platform == 'ubuntu-latest'
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            src-tauri/target/release/bundle/*/[Ss]ophosia*
-            latest.json
+          files: latest.json
 
-  windows-code-sign-and-publish:
+  windows-code-sign:
     needs: publish-sophosia
     permissions:
       contents: write
@@ -123,11 +122,7 @@ jobs:
         with:
           name: windows-artifacts
 
-      - name: display structure
-        run: ls -R
-
       - name: sign artifact with CodeSignTool (windows code signing for installer)
-        if: matrix.platform == 'windows-latest'
         uses: sslcom/actions-codesigner@develop
         with:
           command: sign
@@ -135,10 +130,9 @@ jobs:
           password: ${{ secrets.ES_PASSWORD }}
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
-          file_path: msi/Sophosia*.msi
+          file_path: msi/Sophosia*
 
       - name: sign artifact with CodeSignTool (windows code signing for portable exe)
-        if: matrix.platform == 'windows-latest'
         uses: sslcom/actions-codesigner@develop
         with:
           command: sign
@@ -146,9 +140,24 @@ jobs:
           password: ${{ secrets.ES_PASSWORD }}
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
-          file_path: portable/Sophosia.exe
+          file_path: portable/Sophosia*
       
-      - name: upload assets to release
-        uses: softprops/action-gh-release@v1
+      - name: update windows artifacts
+        uses: actions/upload-artifact@v4
         with:
-          files: ./*/Sophosia*
+          name: artifacts-windows-latest
+          path: ./*/Sophosia*
+          overwrite: true
+
+  upload-artifacts:
+    needs: windows-code-sign
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    - name: get all artifacts
+      uses: actions/download-artifact@v4
+    
+    - name: upload assets to release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./*/[Ss]ophosia*
