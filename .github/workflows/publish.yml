@@ -101,14 +101,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-artifacts
-          path: src-tauri/target/release/*/Sophosia*
+          path: src-tauri/target/release/bundle/*/Sophosia*
 
       - name: upload assets to release
         if: matrix.platform != 'windows-latest'
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            src-tauri/target/release/*/[Ss]ophosia*
+            src-tauri/target/release/bundle/*/[Ss]ophosia*
             latest.json
 
   windows-code-sign-and-publish:
