@@ -93,7 +93,7 @@ jobs:
         run: |
           ref=${{github.ref}}
           version=${ref#refs/tags/v}
-          name=Sophosia_${{version}}_portable.exe
+          name=Sophosia_${version}_portable.exe
           mkdir src-tauri/target/release/bundle/portable
           mv "src-tauri/target/release/Sophosia.exe" "src-tauri/target/release/bundle/portable/$name"
         shell: bash
