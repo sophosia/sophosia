@@ -50,7 +50,9 @@
       "fs": {
         "all": true,
         "scope": {
-          "allow": ["**"],
+          "allow": [
+            "**"
+          ],
           "deny": [],
           "requireLiteralLeadingDot": false
         }
@@ -58,13 +60,15 @@
       "shell": {
         "open": ".+"
       },
-
       "path": {
         "all": true
       },
       "protocol": {
         "asset": true,
-        "assetScope": ["**", "**/.sophosia/**"]
+        "assetScope": [
+          "**",
+          "**/.sophosia/**"
+        ]
       },
       "dialog": {
         "open": true,
@@ -87,11 +91,18 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "targets": ["appimage", "msi", "app", "dmg", "updater"],
+      "targets": [
+        "appimage",
+        "msi",
+        "app",
+        "dmg"
+      ],
       "windows": {
         "digestAlgorithm": "sha256"
       },
-      "resources": ["help/*"]
+      "resources": [
+        "help/*"
+      ]
     },
     "updater": {
       "active": true,
