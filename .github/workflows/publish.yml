@@ -131,6 +131,7 @@ jobs:
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
           file_path: msi/Sophosia* # common parents in the path are gone due to upload-artifact
+          output_path: msi
 
       - name: sign artifact with CodeSignTool (windows code signing for portable exe)
         uses: sslcom/actions-codesigner@develop
@@ -141,6 +142,7 @@ jobs:
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
           file_path: portable/Sophosia* # common parents in the path are gone due to upload-artifact
+          output_path: portable
       
       - name: update windows artifacts
         uses: actions/upload-artifact@v4
