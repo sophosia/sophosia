@@ -9,7 +9,7 @@ jobs:
   create-release:
     permissions:
       contents: write
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.create-release.outputs.result }}
 
@@ -49,7 +49,7 @@ jobs:
               tag_name: `v${process.env.VERSION}`,
             })
 
-  publish-sophosia:
+  build-sophosia:
     needs: create-release
     permissions:
       contents: write
@@ -157,7 +157,7 @@ jobs:
           path: signed-artifacts/*/Sophosia*
           overwrite: true
 
-  upload-artifacts:
+  upload-artifacts-to-release:
     needs: windows-code-sign
     permissions:
       contents: write
