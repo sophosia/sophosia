@@ -1,4 +1,4 @@
-name: Release
+name: Publish
 
 on:
   push:
@@ -6,51 +6,7 @@ on:
       - v*
 
 jobs:
-  create-release:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    outputs:
-      release_id: ${{ steps.create-release.outputs.result }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-        
-      - name: get version
-        run: |
-          ref=${{github.ref}}
-          echo VERSION=${ref#refs/tags/v} >> $GITHUB_ENV
-
-      - name: create release
-        id: create-release
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data } = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `v${process.env.VERSION}`,
-              name: `Sophosia v${process.env.VERSION}`,
-            })
-            return data.id
-
-      - name: generate release notes
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data } = await github.rest.repos.generateReleaseNotes({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `v${process.env.VERSION}`,
-            })
-
   build-sophosia:
-    needs: create-release
     permissions:
       contents: write
     strategy:
@@ -85,8 +41,16 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # to sign updater
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          # to sign macos build
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: rename and move portable .exe file
         if: matrix.platform == 'windows-latest'
@@ -102,6 +66,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ matrix.platform }}
+          # once uploaded, the common path src-tauri/target/release/bundle will be ignored
+          # the structure of files will be */[Ss]ophosia*
           path: src-tauri/target/release/bundle/*/[Ss]ophosia*
 
       - name: upload latest.json to release
@@ -136,7 +102,7 @@ jobs:
           password: ${{ secrets.ES_PASSWORD }}
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
-          file_path: msi/Sophosia* # common parents in the path are gone due to upload-artifact
+          file_path: msi/Sophosia* 
           output_path: signed-artifacts/msi
 
       - name: sign artifact with CodeSignTool (windows code signing for portable exe)
@@ -147,23 +113,57 @@ jobs:
           password: ${{ secrets.ES_PASSWORD }}
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
-          file_path: portable/Sophosia* # common parents in the path are gone due to upload-artifact
+          file_path: portable/Sophosia* 
           output_path: signed-artifacts/portable
       
       - name: update windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-windows-latest
-          path: signed-artifacts/*/Sophosia*
+          path: signed-artifacts/*/Sophosia*  
           overwrite: true
 
-  upload-artifacts-to-release:
+  create-release:
     needs: windows-code-sign
     permissions:
       contents: write
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+        
+      - name: get version
+        run: |
+          ref=${{github.ref}}
+          echo VERSION=${ref#refs/tags/v} >> $GITHUB_ENV
+
+      - name: create release
+        id: create-release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${process.env.VERSION}`,
+              name: `Sophosia v${process.env.VERSION}`,
+            })
+
+      - name: generate release notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.generateReleaseNotes({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${process.env.VERSION}`,
+            })
+      
       - name: get all artifacts
         uses: actions/download-artifact@v4
       
