@@ -122,6 +122,12 @@ jobs:
         with:
           name: artifacts-windows-latest
 
+      - name: create directory
+        run: |
+          mkdir signed-artifacts
+          mkdir signed-artifacts/msi
+          mkdir signed-artifacts/portable
+
       - name: sign artifact with CodeSignTool (windows code signing for installer)
         uses: sslcom/actions-codesigner@develop
         with:
@@ -131,7 +137,7 @@ jobs:
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
           file_path: msi/Sophosia* # common parents in the path are gone due to upload-artifact
-          output_path: msi
+          output_path: signed-artifacts/msi
 
       - name: sign artifact with CodeSignTool (windows code signing for portable exe)
         uses: sslcom/actions-codesigner@develop
@@ -142,13 +148,13 @@ jobs:
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
           file_path: portable/Sophosia* # common parents in the path are gone due to upload-artifact
-          output_path: portable
+          output_path: signed-artifacts/portable
       
       - name: update windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-windows-latest
-          path: ./*/Sophosia*
+          path: signed-artifacts/*/Sophosia*
           overwrite: true
 
   upload-artifacts:
