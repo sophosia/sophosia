@@ -111,7 +111,7 @@ jobs:
           files: latest.json
 
   windows-code-sign:
-    needs: publish-sophosia
+    needs: build-sophosia
     permissions:
       contents: write
     runs-on: ubuntu-latest
