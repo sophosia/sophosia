@@ -170,4 +170,4 @@ jobs:
       - name: upload assets to release
         uses: softprops/action-gh-release@v1
         with:
-          files: ./*/[Ss]ophosia*
+          files: artifacts-*/*/[Ss]ophosia*
