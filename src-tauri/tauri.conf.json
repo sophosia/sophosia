@@ -95,7 +95,8 @@
         "appimage",
         "msi",
         "app",
-        "dmg"
+        "dmg",
+        "updater"
       ],
       "windows": {
         "digestAlgorithm": "sha256"
