@@ -66,8 +66,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ matrix.platform }}
-          # once uploaded, the common path src-tauri/target/release/bundle will be ignored
-          # the structure of files will be */[Ss]ophosia*
           path: |
             src-tauri/target/release/bundle/*/[Ss]ophosia*
             latest.json
@@ -84,13 +82,12 @@ jobs:
         with:
           name: artifacts-windows-latest
 
-      - name: create directory
+      - name: create temporary directory
         run: |
-          mkdir signed-artifacts
-          mkdir signed-artifacts/msi
-          mkdir signed-artifacts/portable
-          cp msi/* signed-artifacts/msi
-          cp portable/* signed-artifacts/portable
+          mkdir msi
+          mkdir portable
+          mv src-tauri/target/release/bundle/msi/Sophosia*.msi msi/
+          mv src-tauri/target/release/bundle/portable/Sophosia*.exe portable/
 
       - name: sign artifact with CodeSignTool (windows code signing for installer)
         uses: sslcom/actions-codesigner@develop
@@ -101,7 +98,7 @@ jobs:
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
           file_path: msi/Sophosia*.msi
-          output_path: signed-artifacts/msi
+          output_path: src-tauri/target/release/bundle/msi
 
       - name: sign artifact with CodeSignTool (windows code signing for portable exe)
         uses: sslcom/actions-codesigner@develop
@@ -112,20 +109,15 @@ jobs:
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
           file_path: portable/Sophosia*.exe
-          output_path: signed-artifacts/portable
+          output_path: src-tauri/target/release/bundle/portable
       
       - name: update windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-windows-latest
-          path: signed-artifacts/*/Sophosia*  
-          overwrite: true
-
-      - name: update windows artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows-latest
-          path: signed-artifacts/*/Sophosia*  
+          path: |
+            src-tauri/target/release/bundle/*/Sophosia*
+            latest.json
           overwrite: true
 
   upload-assets-and-generate-release-note:
@@ -164,5 +156,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts-*/*/[Ss]ophosia*
+            artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia*
             artifacts-*/latest.json
