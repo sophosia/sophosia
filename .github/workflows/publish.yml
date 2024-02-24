@@ -68,7 +68,9 @@ jobs:
           name: artifacts-${{ matrix.platform }}
           # once uploaded, the common path src-tauri/target/release/bundle will be ignored
           # the structure of files will be */[Ss]ophosia*
-          path: src-tauri/target/release/bundle/*/[Ss]ophosia*
+          path: |
+            src-tauri/target/release/bundle/*/[Ss]ophosia*
+            latest.json
 
   windows-code-sign:
     needs: publish-sophosia
@@ -161,4 +163,6 @@ jobs:
       - name: upload assets to release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts-*/*/[Ss]ophosia*
+          files: |
+            artifacts-*/*/[Ss]ophosia*
+            artifacts-*/latest.json
