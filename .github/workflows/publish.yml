@@ -155,6 +155,7 @@ jobs:
       - name: upload assets to release
         uses: softprops/action-gh-release@v1
         with:
+          # only need to upload 1 latest.json
           files: |
             artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia*
-            artifacts-*/latest.json
+            artifacts-ubuntu-latest/latest.json
