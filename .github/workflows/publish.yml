@@ -6,7 +6,7 @@ on:
       - v*
 
 jobs:
-  build-sophosia:
+  publish-sophosia:
     permissions:
       contents: write
     strategy:
@@ -36,8 +36,8 @@ jobs:
       - name: install frontend dependencies
         run: yarn install
 
-      - name: build sophosia (and do macos code sign)
-        id: build-sophosia
+      - name: publish sophosia
+        id: publish-sophosia
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,6 +48,9 @@ jobs:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+        with:
+          tagName: "v__VERSION__"
+          releaseName: "Sophosia __VERSION__"
 
       - name: rename and move portable .exe file
         if: matrix.platform == 'windows-latest'
@@ -59,7 +62,8 @@ jobs:
           mv "src-tauri/target/release/Sophosia.exe" "src-tauri/target/release/bundle/portable/$name"
         shell: bash
 
-      - name: upload artifacts
+      - name: save windows artifacts for code signing
+        if: matrix.platform == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ matrix.platform }}
@@ -67,14 +71,8 @@ jobs:
           # the structure of files will be */[Ss]ophosia*
           path: src-tauri/target/release/bundle/*/[Ss]ophosia*
 
-      - name: upload latest.json to release
-        if: matrix.platform == 'ubuntu-latest'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: latest.json
-
   windows-code-sign:
-    needs: build-sophosia
+    needs: publish-sophosia
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -90,6 +88,8 @@ jobs:
           mkdir signed-artifacts
           mkdir signed-artifacts/msi
           mkdir signed-artifacts/portable
+          cp msi/* signed-artifacts/msi
+          cp portable/* signed-artifacts/portable
 
       - name: sign artifact with CodeSignTool (windows code signing for installer)
         uses: sslcom/actions-codesigner@develop
@@ -99,7 +99,7 @@ jobs:
           password: ${{ secrets.ES_PASSWORD }}
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
-          file_path: msi/Sophosia* 
+          file_path: msi/Sophosia*.msi
           output_path: signed-artifacts/msi
 
       - name: sign artifact with CodeSignTool (windows code signing for portable exe)
@@ -110,7 +110,7 @@ jobs:
           password: ${{ secrets.ES_PASSWORD }}
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
-          file_path: portable/Sophosia* 
+          file_path: portable/Sophosia*.exe
           output_path: signed-artifacts/portable
       
       - name: update windows artifacts
@@ -120,8 +120,13 @@ jobs:
           path: signed-artifacts/*/Sophosia*  
           overwrite: true
 
-  create-release:
-    needs: windows-code-sign
+      - name: upload windows artifact to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: signed-artifacts/*/Sophosia*
+
+  generate-release-note:
+    needs: publish-sophosia 
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -139,18 +144,6 @@ jobs:
           ref=${{github.ref}}
           echo VERSION=${ref#refs/tags/v} >> $GITHUB_ENV
 
-      - name: create release
-        id: create-release
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data } = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `v${process.env.VERSION}`,
-              name: `Sophosia v${process.env.VERSION}`,
-            })
-
       - name: generate release notes
         uses: actions/github-script@v7
         with:
@@ -161,10 +154,4 @@ jobs:
               tag_name: `v${process.env.VERSION}`,
             })
       
-      - name: get all artifacts
-        uses: actions/download-artifact@v4
-      
-      - name: upload assets to release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: artifacts-*/*/[Ss]ophosia*
+ 
