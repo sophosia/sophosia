@@ -62,8 +62,7 @@ jobs:
           mv "src-tauri/target/release/Sophosia.exe" "src-tauri/target/release/bundle/portable/$name"
         shell: bash
 
-      - name: save windows artifacts for code signing
-        if: matrix.platform == 'windows-latest'
+      - name: save artifacts 
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ matrix.platform }}
@@ -120,13 +119,15 @@ jobs:
           path: signed-artifacts/*/Sophosia*  
           overwrite: true
 
-      - name: upload windows artifact to release
-        uses: softprops/action-gh-release@v1
+      - name: update windows artifacts
+        uses: actions/upload-artifact@v4
         with:
-          files: signed-artifacts/*/Sophosia*
+          name: artifacts-windows-latest
+          path: signed-artifacts/*/Sophosia*  
+          overwrite: true
 
-  generate-release-note:
-    needs: publish-sophosia 
+  upload-assets-and-generate-release-note:
+    needs: windows-code-sign
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -154,4 +155,10 @@ jobs:
               tag_name: `v${process.env.VERSION}`,
             })
       
- 
+      - name: get all artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: upload assets to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts-*/*/[Ss]ophosia*
