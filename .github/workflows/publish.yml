@@ -48,6 +48,10 @@ jobs:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # to notarize apple's app
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: "v__VERSION__"
           releaseName: "Sophosia __VERSION__"
@@ -62,7 +66,7 @@ jobs:
           mv "src-tauri/target/release/Sophosia.exe" "src-tauri/target/release/bundle/portable/$name"
         shell: bash
 
-      - name: save artifacts 
+      - name: save artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ matrix.platform }}
@@ -110,7 +114,7 @@ jobs:
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
           file_path: portable/Sophosia*.exe
           output_path: src-tauri/target/release/bundle/portable
-      
+
       - name: update windows artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -133,7 +137,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-        
+
       - name: get version
         run: |
           ref=${{github.ref}}
@@ -148,10 +152,10 @@ jobs:
               repo: context.repo.repo,
               tag_name: `v${process.env.VERSION}`,
             })
-      
+
       - name: get all artifacts
         uses: actions/download-artifact@v4
-      
+
       - name: upload assets to release
         uses: softprops/action-gh-release@v1
         with:
