@@ -37,3 +37,5 @@ yarn-error.log*
 coverage/
 storage*/
 todo.md
+.nyc_output
+coverage/
