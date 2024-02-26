@@ -94,7 +94,6 @@ export const useProjectStore = defineStore("projectStore", {
      * @param openedProjectIds - An array or set of project IDs to be loaded.
      */
     async loadOpenedProjects(openedProjectIds: string[]) {
-      console.log("openedProjectIds", openedProjectIds);
       const openedProjects = [];
       const uniqueIds = new Set(openedProjectIds);
       for (let projectId of uniqueIds) {
@@ -102,7 +101,6 @@ export const useProjectStore = defineStore("projectStore", {
         sortTree(project); // sort notes by alphabet
         openedProjects.push(project);
       }
-      console.log("openedProjects", openedProjects);
       // only change the this.openedProjects in the final step
       // this is to avoid the confusing of proxy object update
       this.openedProjects = openedProjects;
