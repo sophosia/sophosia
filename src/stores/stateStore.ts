@@ -37,7 +37,7 @@ export const useStateStore = defineStore("stateStore", () => {
       )
     )
       return;
-    const state = {} as AppState;
+    const state = { _id: "appState", dataType: "appState" } as AppState;
     Object.assign(state, settingStore.saveState());
     Object.assign(state, layoutStore.saveState());
     Object.assign(state, projectStore.saveState());
