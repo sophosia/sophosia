@@ -144,6 +144,7 @@ jobs:
           echo VERSION=${ref#refs/tags/v} >> $GITHUB_ENV
 
       - name: generate release notes
+        id: generate-release-notes
         uses: actions/github-script@v7
         with:
           script: |
@@ -152,6 +153,7 @@ jobs:
               repo: context.repo.repo,
               tag_name: `v${process.env.VERSION}`,
             })
+            return data.body
 
       - name: get all artifacts
         uses: actions/download-artifact@v4
@@ -159,6 +161,7 @@ jobs:
       - name: upload assets to release
         uses: softprops/action-gh-release@v1
         with:
+          body: ${{ steps.generate-release-notes.outputs.result }}
           # only need to upload 1 latest.json
           files: |
             artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia*
