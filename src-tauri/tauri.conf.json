@@ -92,11 +92,7 @@
         "icons/icon.ico"
       ],
       "targets": [
-        "appimage",
-        "msi",
-        "app",
-        "dmg",
-        "updater"
+        "appimage"
       ],
       "windows": {
         "digestAlgorithm": "sha256"
