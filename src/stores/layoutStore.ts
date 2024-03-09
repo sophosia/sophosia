@@ -24,9 +24,9 @@ export const useLayoutStore = defineStore("layoutStore", {
     // toggles and sizes
     ribbonClickedBtnId: "",
     prvRibbonClickedBtnId: "",
-    leftMenuSize: 20,
-    prvLeftMenuSize: 20,
-    libraryRightMenuSize: 30,
+    leftMenuSize: 0,
+    prvLeftMenuSize: 0,
+    libraryRightMenuSize: 0,
     prvLibraryRightMenuSize: 0,
     showWelcomeCarousel: true,
 
@@ -290,7 +290,7 @@ export const useLayoutStore = defineStore("layoutStore", {
       const isClickedSameBtn =
         this.ribbonClickedBtnId === this.prvRibbonClickedBtnId;
       if (visible === undefined) {
-        if (!isClickedSameBtn) return;
+        if (!isClickedSameBtn && this.prvRibbonClickedBtnId !== "") return;
         const show = this.leftMenuSize > 0;
         this.leftMenuSize = show ? 0 : Math.max(this.prvLeftMenuSize, 20);
       } else {
