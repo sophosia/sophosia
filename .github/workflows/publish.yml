@@ -51,6 +51,10 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          # need this to upload latest.json
+          tagName: "v__VERSION__"
+          releaseName: "Sophosia __VERSION__"
 
       - name: rename and move portable .exe file
         if: matrix.platform == 'windows-latest'
@@ -66,9 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ matrix.platform }}
-          path: |
-            src-tauri/target/release/bundle/*/[Ss]ophosia*
-            latest.json
+          path: src-tauri/target/release/bundle/*/[Ss]ophosia*
 
   windows-code-sign:
     needs: build-sophosia
@@ -82,12 +84,10 @@ jobs:
         with:
           name: artifacts-windows-latest
 
-      - name: create temporary directory
+      - name: create new directories to hold signed artifacts
         run: |
-          mkdir msi
-          mkdir portable
-          mv src-tauri/target/release/bundle/msi/Sophosia*.msi msi/
-          mv src-tauri/target/release/bundle/portable/Sophosia*.exe portable/
+          mkdir signed-msi
+          mkdir signed-portable
 
       - name: sign artifact with CodeSignTool (windows code signing for installer)
         uses: sslcom/actions-codesigner@develop
@@ -98,7 +98,7 @@ jobs:
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
           file_path: msi/Sophosia*.msi
-          output_path: src-tauri/target/release/bundle/msi
+          output_path: signed-msi
 
       - name: sign artifact with CodeSignTool (windows code signing for portable exe)
         uses: sslcom/actions-codesigner@develop
@@ -109,15 +109,13 @@ jobs:
           credential_id: ${{ secrets.CREDENTIAL_ID }}
           totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
           file_path: portable/Sophosia*.exe
-          output_path: src-tauri/target/release/bundle/portable
+          output_path: signed-portable
 
       - name: update windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-windows-latest
-          path: |
-            src-tauri/target/release/bundle/*/Sophosia*
-            latest.json
+          path: signed-*/Sophosia*
           overwrite: true
 
   upload-assets-and-generate-release-note:
@@ -129,19 +127,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: get version
-        run: |
-          ref=${{github.ref}}
-          echo VERSION=${ref#refs/tags/v} >> $GITHUB_ENV
-
       - name: get all artifacts
         uses: actions/download-artifact@v4
 
       - name: create release and upload assets
+        # remove the temporary release and create a new one
         run: |
+          ref=${{ github.ref }}
+          tag=${ref#refs/tags/}
           mkdir assets
-          mv artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia* assets/
-          mv artifacts-ubuntu-latest/latest.json assets/
-          gh release create "v$VERSION" assets/* --title "Sophosia $VERSION" --generate-notes
+          mv artifacts-*/*/[Ss]ophosia* assets/
+          gh release download $tag --pattern latest.json --dir assets
+          gh release delete $tag --yes
+          gh release create $tag assets/* --title "Sophosia $tag" --generate-notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
