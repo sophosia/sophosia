@@ -57,3 +57,5 @@ jobs:
           --generate-notes \
           artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia* \
           artifacts-ubuntu-latest/latest.json
+        env:
+          GH_TOKEN: ${{ github.token }}
