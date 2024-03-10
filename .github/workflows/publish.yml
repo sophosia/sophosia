@@ -52,8 +52,11 @@ jobs:
 
       - name: create release
         run: |
+          mkdir assets
+          mv artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia* assets/
+          mv artifacts-ubuntu-latest/latest.json assets/
           gh release create "v$VERSION" \
-          "artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia*" \
+          assets/* \
           --title "Sophosia $VERSION" \
           --generate-notes
         env:
