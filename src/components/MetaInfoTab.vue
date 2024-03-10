@@ -356,7 +356,7 @@
 
     <q-tab-panel
       name="reference"
-      class="tab-panel"
+      class="tab-panel text-selectable"
     >
       <div
         v-for="(ref, ind) of references"
@@ -643,3 +643,11 @@ function openURL(url: string | undefined) {
   open(url);
 }
 </script>
+<style scoped>
+.text-selectable {
+  user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  -webkit-user-select: text;
+}
+</style>
