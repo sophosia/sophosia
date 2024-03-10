@@ -301,14 +301,14 @@ async function saveLinks() {
   let html = parser.parseFromString(vditor.value.getHTML(), "text/html");
   let linkNodes = html.querySelectorAll("a");
   for (let node of linkNodes) {
-    let link = (node as HTMLAnchorElement).getAttribute("href") as string;
-    link = link.replace("sophosia://", "");
+    const link = (node as HTMLAnchorElement).getAttribute("href") as string;
+    const targetId = linkToId(link);
     try {
-      new URL(link);
+      new URL(targetId);
       // this is a valid url, do nothing
     } catch (error) {
       // this is an invalid url, might be an id
-      newLinks.push({ source: props.noteId, target: linkToId(link) });
+      newLinks.push({ source: props.noteId, target: targetId });
     }
   }
 
@@ -367,13 +367,13 @@ async function clickLink(e: MouseEvent, link: string) {
   e.stopImmediatePropagation(); // stop propagating the click event
   vditor.value.blur(); // save the content before jumping
 
-  link = link.replace("sophosia://open-item/", ""); // ignore the deep link action
+  const targetId = linkToId(link);
   try {
     // valid external url, open it externally
-    new URL(link);
-    await open(link);
+    new URL(targetId);
+    await open(targetId);
   } catch (error) {
-    layoutStore.openItem(linkToId(link));
+    layoutStore.openItem(targetId);
   }
 }
 
@@ -393,16 +393,15 @@ async function hoverLink(linkNode: HTMLElement) {
   let link = (
     linkNode.querySelector("span.vditor-ir__marker--link") as HTMLElement
   ).innerHTML;
-  link = link.replace("sophosia://open-item/", ""); // ignore the deep link action
+  const targetId = linkToId(link);
   try {
     // valid external url, open it externally
-    new URL(link);
+    new URL(targetId);
   } catch (error) {
-    const itemId = linkToId(link);
     try {
       let item = null;
-      if (itemId.includes("/")) item = (await getNote(itemId)) as Note;
-      else item = (await db.get(itemId)) as Project | AnnotationData;
+      if (targetId.includes("/")) item = (await getNote(targetId)) as Note;
+      else item = (await db.get(targetId)) as Project | AnnotationData;
       if (item.dataType === "project") {
         let lines = [
           `#### ${item.title}`,
