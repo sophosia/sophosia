@@ -55,9 +55,6 @@ jobs:
           mkdir assets
           mv artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia* assets/
           mv artifacts-ubuntu-latest/latest.json assets/
-          gh release create "v$VERSION" \
-          assets/* \
-          --title "Sophosia $VERSION" \
-          --generate-notes
+          gh release create "v$VERSION" assets/* --title "Sophosia $VERSION" --generate-notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
