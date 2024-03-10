@@ -1,5 +1,8 @@
 <template>
-  <q-toolbar class="toolbar">
+  <q-toolbar
+    style="white-space: nowrap"
+    class="toolbar"
+  >
     <!-- navigation -->
     <div data-cy="page-control">
       <input
