@@ -137,6 +137,8 @@ jobs:
           tag=${ref#refs/tags/}
           mkdir assets
           mv artifacts-*/*/[Ss]ophosia* assets/
+          # remove all directories in assets
+          find assets -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
           gh release download $tag --pattern latest.json --dir assets
           gh release delete $tag --yes
           gh release create $tag assets/* --title "Sophosia $tag" --generate-notes
