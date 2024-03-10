@@ -6,6 +6,7 @@ import {
   Edge,
   EdgeUI,
   NodeUI,
+  Note,
   Project,
   db,
   idb,
@@ -92,6 +93,19 @@ async function getCurrentAndOrParentNodes(
     parent = undefined;
     label = item.label;
     type = "project";
+
+    // grab its notes even if its notes have no connections
+    const notes = (await getNotes(itemId)) as Note[];
+    for (const note of notes) {
+      nodes.push({
+        data: {
+          id: note._id,
+          label: note.label,
+          type: note.dataType,
+          parent: note.projectId,
+        },
+      });
+    }
   }
   nodes.push({
     data: {
