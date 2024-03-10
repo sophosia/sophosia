@@ -6,7 +6,7 @@ on:
       - v*
 
 jobs:
-  publish-sophosia:
+  build-sophosia:
     permissions:
       contents: write
     strategy:
@@ -36,8 +36,7 @@ jobs:
       - name: install frontend dependencies
         run: yarn install
 
-      - name: publish sophosia
-        id: publish-sophosia
+      - name: build sophosia
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,9 +51,6 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        with:
-          tagName: "v__VERSION__"
-          releaseName: "Sophosia __VERSION__"
 
       - name: rename and move portable .exe file
         if: matrix.platform == 'windows-latest'
@@ -75,7 +71,7 @@ jobs:
             latest.json
 
   windows-code-sign:
-    needs: publish-sophosia
+    needs: build-sophosia
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -133,36 +129,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: get version
         run: |
           ref=${{github.ref}}
           echo VERSION=${ref#refs/tags/v} >> $GITHUB_ENV
 
-      - name: generate release notes
-        id: generate-release-notes
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data } = await github.rest.repos.generateReleaseNotes({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `v${process.env.VERSION}`,
-            })
-            return data.body
-
       - name: get all artifacts
         uses: actions/download-artifact@v4
 
-      - name: upload assets to release
-        uses: softprops/action-gh-release@v1
-        with:
-          body: ${{ steps.generate-release-notes.outputs.result }}
-          # only need to upload 1 latest.json
-          files: |
-            artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia*
-            artifacts-ubuntu-latest/latest.json
+      - name: create release and upload assets
+        run: |
+          mkdir assets
+          mv artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia* assets/
+          mv artifacts-ubuntu-latest/latest.json assets/
+          gh release create "v$VERSION" assets/* --title "Sophosia $VERSION" --generate-notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
