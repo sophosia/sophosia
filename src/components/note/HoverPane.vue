@@ -53,7 +53,6 @@ onMounted(async () => {
   if (!card.value) return;
   card.value.$el.onmouseenter = () => {
     supposeToClose.value = false;
-    console.log("supposeToclose", supposeToClose.value);
   };
   card.value.$el.onmouseleave = close;
 });
