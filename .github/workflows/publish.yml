@@ -53,7 +53,7 @@ jobs:
       - name: create release
         run: |
           gh release create "v$VERSION" \
-          artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia* \
+          "artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia*" \
           --title "Sophosia $VERSION" \
           --generate-notes
         env:
