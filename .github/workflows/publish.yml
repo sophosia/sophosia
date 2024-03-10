@@ -53,9 +53,9 @@ jobs:
       - name: create release
         run: |
           gh release create "v$VERSION" \
-          --title "Sophosia $VERSION" \
-          --generate-notes \
           artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia* \
-          artifacts-ubuntu-latest/latest.txt
+          artifacts-ubuntu-latest/latest.txt \
+          --title "Sophosia $VERSION" \
+          --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
