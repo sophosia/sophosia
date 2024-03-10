@@ -22,8 +22,8 @@ jobs:
       - name: create artifacts
         run: |
           mkdir -p src-tauri/target/release/bundle/${{matrix.platform}}
-          touch src-tauri/target/release/bundle/${{matrix.platform}}/sophosia.${{matrix.platform}}.txt
-          touch latest.json
+          echo "${{matrix.platform}}" > src-tauri/target/release/bundle/${{matrix.platform}}/sophosia.${{matrix.platform}}.txt
+          echo "latest" > latest.json
 
       - name: save artifacts
         uses: actions/upload-artifact@v4
