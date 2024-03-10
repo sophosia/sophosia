@@ -1,0 +1,147 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  publish-sophosia:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: install frontend dependencies
+        run: yarn install
+
+      - name: build sophosia
+        id: build-sophosia
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # to sign updater
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          # to sign macos build
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # to notarize apple's app
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - name: rename and move portable .exe file
+        if: matrix.platform == 'windows-latest'
+        run: |
+          ref=${{github.ref}}
+          version=${ref#refs/tags/v}
+          name=Sophosia_${version}_portable.exe
+          mkdir src-tauri/target/release/bundle/portable
+          mv "src-tauri/target/release/Sophosia.exe" "src-tauri/target/release/bundle/portable/$name"
+        shell: bash
+
+      - name: save artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.platform }}
+          path: |
+            src-tauri/target/release/bundle/*/[Ss]ophosia*
+            latest.json
+
+  windows-code-sign:
+    needs: build-sophosia
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: get artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-windows-latest
+
+      - name: create temporary directory
+        run: |
+          mkdir msi
+          mkdir portable
+          mv src-tauri/target/release/bundle/msi/Sophosia*.msi msi/
+          mv src-tauri/target/release/bundle/portable/Sophosia*.exe portable/
+
+      - name: sign artifact with CodeSignTool (windows code signing for installer)
+        uses: sslcom/actions-codesigner@develop
+        with:
+          command: sign
+          username: ${{ secrets.ES_USERNAME }}
+          password: ${{ secrets.ES_PASSWORD }}
+          credential_id: ${{ secrets.CREDENTIAL_ID }}
+          totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
+          file_path: msi/Sophosia*.msi
+          output_path: src-tauri/target/release/bundle/msi
+
+      - name: sign artifact with CodeSignTool (windows code signing for portable exe)
+        uses: sslcom/actions-codesigner@develop
+        with:
+          command: sign
+          username: ${{ secrets.ES_USERNAME }}
+          password: ${{ secrets.ES_PASSWORD }}
+          credential_id: ${{ secrets.CREDENTIAL_ID }}
+          totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
+          file_path: portable/Sophosia*.exe
+          output_path: src-tauri/target/release/bundle/portable
+
+      - name: update windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows-latest
+          path: |
+            src-tauri/target/release/bundle/*/Sophosia*
+            latest.json
+          overwrite: true
+
+  upload-assets-and-generate-release-note:
+    needs: windows-code-sign
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: get version
+        run: |
+          ref=${{github.ref}}
+          echo VERSION=${ref#refs/tags/v} >> $GITHUB_ENV
+
+      - name: get all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: create release
+        run: |
+          gh release create "v$VERSION" \
+          --title "Sophosia $VERSION" \
+          --generate-notes \
+          artifacts-*/src-tauri/target/release/bundle/*/[Ss]ophosia* \
+          artifacts-ubuntu-latest/latest.json
