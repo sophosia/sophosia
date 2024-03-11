@@ -3,11 +3,11 @@
 <br>
 <h2 align="center">Sophosia: Your Research Helper</h2>
 <br>
-<a title="Build Status" target="_blank" href="https://github.com/sophosia/sophosia/actions"><img src="https://img.shields.io/github/actions/workflow/status/sophosia/sophosia/publish.yml?style=flat-square"></a>
-<a title="Release" target="_blank" href="https://github.com/sophosia/sophosia/releases"><img src="https://img.shields.io/github/v/release/sophosia/sophosia?style=flat-square"></a>
-<a title="Downloads" target="_blank" href="https://github.com/sophosia/sophosia/releases"><img src="https://img.shields.io/github/downloads/sophosia/sophosia/total?style=flat-square"></a>
-<a title="Stars" target="_blank" href="https://github.com/sophosia/sophosia"><img src="https://img.shields.io/github/stars/sophosia/sophosia?style=flat-square"></a>
-<a title="Commits" target="_blank" href="https://github.com/sophosia/sophosia/commits/main"><img src="https://img.shields.io/github/commit-activity/m/sophosia/sophosia?style=flat-square"></a>
+<a title="Build Status" target="_blank" href="https://github.com/sophosia/sophosia-releases/actions"><img src="https://img.shields.io/github/actions/workflow/status/sophosia/sophosia/publish.yml?style=flat-square"></a>
+<a title="Release" target="_blank" href="https://github.com/sophosia/sophosia-releases/releases"><img src="https://img.shields.io/github/v/release/sophosia/sophosia?style=flat-square"></a>
+<a title="Downloads" target="_blank" href="https://github.com/sophosia/sophosia-releases/releases"><img src="https://img.shields.io/github/downloads/sophosia/sophosia/total?style=flat-square"></a>
+<a title="Stars" target="_blank" href="https://github.com/sophosia/sophosia-releases"><img src="https://img.shields.io/github/stars/sophosia/sophosia-releases?style=flat-square"></a>
+<a title="Commits" target="_blank" href="https://github.com/sophosia/sophosia-releases/commits/main"><img src="https://img.shields.io/github/commit-activity/m/sophosia/sophosia-releases?style=flat-square"></a>
 <br>
 <a title="Twitter" target="_blank" href="https://twitter.com/sophosia_app"><img alt="Twitter Follow" src="https://img.shields.io/badge/@sophosia_app-1976d2?logo=twitter&style=social"></a>
 <a title="QQ" target="_blank" href=""><img alt="QQ Group" src="https://img.shields.io/badge/QQ:808198109-1976d2?logo=tencentqq&style=social"></a>
@@ -15,9 +15,9 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/sophosia/sophosia/blob/main/README.md">English</a>
+<a href="https://github.com/sophosia/sophosia-releases/blob/main/README.md">English</a>
 |
-<a href="https://github.com/sophosia/sophosia/blob/main/README.zh_CN.md">中文</a>
+<a href="https://github.com/sophosia/sophosia-releases/blob/main/README.zh_CN.md">中文</a>
 </p>
 
 # Sophosia
