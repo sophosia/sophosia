@@ -1,5 +1,5 @@
 <p align="center">
-<img src="public/icons//logo.svg"
+<img src="images/logo.svg"
 style="width: 100px; vertical-align:middle">
 <br>
 <h2 align="center">Sophosia: 你的研究小助手</h2>
@@ -28,22 +28,22 @@ style="width: 100px; vertical-align:middle">
 ## 管理文献及笔记
 
 创建笔记、删除笔记、收藏文献、修改文献信息、搜索文献、管理标签……所有基本功能都在这里。
-![library-page.png](./galleries/library-page.png)
+![library-page.png](./images/library-page.png)
 
 ## 阅读和注释 PDF
 
 PDF 阅读器带有内部链接查看器，无需来回翻页即可阅读数字、表格和公式。当然，PDF 阅读器支持注释，且注释支持 LaTeX 输入。非常适合理工研究人员。
-![reader-page.png](./galleries/reader-page.png)
+![reader-page.png](./images/reader-page.png)
 
 ## 用 Markdown 做笔记
 
 所见及所得的 Markdown 是最优雅的记笔记方式。借助双链的力量，您可以构建属于自己的知识网络。
-![note-page.png](./galleries/note-page.png)
+![note-page.png](./images/note-page.png)
 
 ## 使用 Excalidraw 画图
 
 利用无边框的画布释放您的思维。非常适合喜欢用笔书写和画图的人。
-![excalidraw-page.png](./galleries/excalidraw-page.png)
+![excalidraw-page.png](./images/excalidraw-page.png)
 
 # 为研究小助手作贡献
 

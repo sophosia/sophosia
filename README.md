@@ -1,5 +1,5 @@
 <p align="center">
-<img src="public/icons/logo.svg" style="width: 100px; vertical-align:middle">
+<img src="images/logo.svg" style="width: 100px; vertical-align:middle">
 <br>
 <h2 align="center">Sophosia: Your Research Helper</h2>
 <br>
@@ -27,22 +27,22 @@ Sophosia is a paper/book/note management tool. It is a reference management tool
 ## Manage References and Notes
 
 You can manage your references and corresponding notes in one place. Setting favourites, modifying meta information of a reference, managing tags, searching for references... All essential functionalities are here.
-![library-page.png](./galleries/library-page.png)
+![library-page.png](./images/library-page.png)
 
 ## Read and Annotate PDFs
 
 PDF reader comes with an internal link peeker, no need to flip back and forward to read figures, tables and formulas now. Of course, PDF reader supports annotations, and LaTeX is supported in the annotation. Perfect for STEM researchers.
-![reader-page.png](./galleries/reader-page.png)
+![reader-page.png](./images/reader-page.png)
 
 ## Take Notes with Markdown
 
 WYSIWYG Markdown is the most elegant way to take notes. Together with the power of internal links, you can build your knowledge network.
-![note-page.png](./galleries/note-page.png)
+![note-page.png](./images/note-page.png)
 
 ## Draft with Excalidraw
 
 Free your mind using the canvas without borders. Perfect for people who like to write or draw things with a pen.
-![excalidraw-page.png](./galleries/excalidraw-page.png)
+![excalidraw-page.png](./images/excalidraw-page.png)
 
 # Contribute to Sophosia
 
