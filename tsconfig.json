@@ -1,0 +1,18 @@
+{
+  "extends": "@quasar/app-vite/tsconfig-preset",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "ES2022",
+      "ES2019.Object",
+      "DOM.Iterable"
+    ],
+    "jsx": "react"
+  },
+  "include": [
+    "src",
+    "./cypress.d.ts",
+    "test/cypress/**/*.ts"
+  ]
+}

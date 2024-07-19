@@ -1,0 +1,131 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build-sophosia:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: install frontend dependencies
+        run: yarn install
+
+      - name: build sophosia
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # to sign updater
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          # to sign macos build
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # to notarize apple's app
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          # need this to upload latest.json
+          tagName: "v__VERSION__"
+          releaseName: "Sophosia __VERSION__"
+
+      - name: rename and upload portable .exe file
+        if: matrix.platform == 'windows-latest'
+        run: |
+          ref=${{ github.ref }}
+          version=${ref#refs/tags/v}
+          name=Sophosia_${version}_portable.exe
+          mv "src-tauri/target/release/Sophosia.exe" $name
+          gh release upload v$version $name
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows-code-sign:
+    needs: build-sophosia
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: get windows artifact
+        run: |
+          ref=${{ github.ref }}
+          tag=${ref#refs/tags/}
+          mkdir unsigned
+          mkdir signed
+          gh release download $tag --pattern *.exe --dir unsigned
+          gh release download $tag --pattern *.msi --dir unsigned
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: sign artifact with CodeSignTool
+        uses: sslcom/esigner-codesign@develop
+        with:
+          command: batch_sign
+          username: ${{ secrets.ES_USERNAME }}
+          password: ${{ secrets.ES_PASSWORD }}
+          credential_id: ${{ secrets.CREDENTIAL_ID }}
+          totp_secret: ${{ secrets.ES_TOTP_SECRET }} # 2FA
+          dir_path: unsigned
+          output_path: signed
+          malware_block: true
+
+      - name: update windows artifacts
+        run: |
+          ref=${{ github.ref }}
+          tag=${ref#refs/tags/}
+          gh release upload $tag signed/* --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-new-release:
+    needs: windows-code-sign
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: create release and upload assets
+        # remove the temporary release and create a new one
+        run: |
+          ref=${{ github.ref }}
+          tag=${ref#refs/tags/}
+          gh release download $tag --dir assets
+          gh release delete $tag --yes
+          gh release create $tag assets/* --title "Sophosia $tag" --generate-notes
+          gh release view $tag --json body --jq .body >> release-note
+          gh release create $tag assets/* --title "Sophosia $tag" --notes-file release-note --repo sophosia/sophosia-releases
+        env: # need to create release in another repo, need to use PAT
+          GITHUB_TOKEN: ${{ secrets.PAT_CLASSIC }}

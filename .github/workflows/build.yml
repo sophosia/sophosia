@@ -1,0 +1,63 @@
+name: Build
+
+on: workflow_dispatch
+
+jobs:
+  build-sophosia:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: install frontend dependencies
+        run: yarn install
+
+      - name: build sophosia
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # to sign updater
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+
+      - name: rename and upload portable .exe file
+        if: matrix.platform == 'windows-latest'
+        run: |
+          name=Sophosia_portable.exe
+          mkdir src-tauri/target/release/portable
+          mv "src-tauri/target/release/Sophosia.exe" "src-tauri/target/release/portable/$name"
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.platform }}
+          path: |
+            latest.json
+            src-tauri/target/release/bundle/*/[Ss]ophosia*.AppImage
+            src-tauri/target/release/bundle/*/[Ss]ophosia*.exe
+            src-tauri/target/release/bundle/*/[Ss]ophosia*.dmg
+            src-tauri/target/release/bundle/*/[Ss]ophosia*.msi

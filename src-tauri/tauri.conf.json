@@ -1,0 +1,122 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "build": {
+    "beforeBuildCommand": "yarn quasar build",
+    "beforeDevCommand": "yarn quasar dev",
+    "devPath": "http://localhost:9000",
+    "distDir": "../dist/spa"
+  },
+  "package": {
+    "productName": "Sophosia"
+  },
+  "tauri": {
+    "allowlist": {
+      "window": {
+        "all": true,
+        "create": true,
+        "center": true,
+        "requestUserAttention": true,
+        "setResizable": true,
+        "setMaximizable": true,
+        "setMinimizable": true,
+        "setClosable": true,
+        "setTitle": true,
+        "maximize": true,
+        "unmaximize": true,
+        "minimize": true,
+        "unminimize": true,
+        "show": true,
+        "hide": true,
+        "close": true,
+        "setDecorations": true,
+        "setAlwaysOnTop": true,
+        "setContentProtected": true,
+        "setSize": true,
+        "setMinSize": true,
+        "setMaxSize": true,
+        "setPosition": true,
+        "setFullscreen": true,
+        "setFocus": true,
+        "setIcon": true,
+        "setSkipTaskbar": true,
+        "setCursorGrab": true,
+        "setCursorVisible": true,
+        "setCursorIcon": true,
+        "setCursorPosition": true,
+        "setIgnoreCursorEvents": true,
+        "startDragging": true,
+        "print": true
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": ["https://*"]
+      },
+      "fs": {
+        "all": true,
+        "scope": {
+          "allow": ["**"],
+          "deny": [],
+          "requireLiteralLeadingDot": false
+        }
+      },
+      "shell": {
+        "open": ".+"
+      },
+      "path": {
+        "all": true
+      },
+      "protocol": {
+        "asset": true,
+        "assetScope": ["**", "**/.sophosia/**"]
+      },
+      "dialog": {
+        "open": true,
+        "save": true
+      },
+      "os": {
+        "all": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "identifier": "sophosia",
+      "category": "Productivity",
+      "shortDescription": "A research paper / textbook / note management tool",
+      "longDescription": "THE reference manager with features including PDF reading/annotating, Markdown/Excalidraw note-taking, project/note linking, and more...",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "targets": ["appimage", "msi", "app", "dmg", "updater"],
+      "windows": {
+        "digestAlgorithm": "sha256"
+      },
+      "resources": ["help/*"]
+    },
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://sophosia-update-server.uc.r.appspot.com/{{target}}/{{current_version}}"
+      ],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI2REIzMjc5Q0ZGRDkxRDUKUldUVmtmM1BlVExidHZSVS9QMkgyZHRoSmZVOTl1bzFkTCswWDlYdng5N29XVTAyN1M3MXRNalkK"
+    },
+    "security": {
+      "csp": "default-src 'self' https: asset: https://asset.localhost data:; style-src 'self' 'unsafe-inline' asset:; script-src asset:"
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 900,
+        "width": 1200,
+        "resizable": true,
+        "title": "Sophosia",
+        "fileDropEnabled": false
+      }
+    ]
+  }
+}
