@@ -4,19 +4,23 @@ style="width: 100px; vertical-align:middle">
 <br>
 <h2 align="center">Sophosia: 你的研究小助手</h2>
 <br>
-<a title="Release" target="_blank" href="https://github.com/sophosia/sophosia-releases/releases"><img src="https://img.shields.io/github/v/release/sophosia/sophosia-releases?style=flat-square"></a>
-<a title="Downloads" target="_blank" href="https://github.com/sophosia/sophosia-releases/releases"><img src="https://img.shields.io/github/downloads/sophosia/sophosia-releases/total?style=flat-square"></a>
+<a title="Release" target="_blank" href="https://github.com/sophosia/sophosia/releases"><img src="https://img.shields.io/github/v/release/sophosia/sophosia?style=flat-square"></a>
+<a title="Downloads" target="_blank" href="https://github.com/sophosia/sophosia/releases"><img src="https://img.shields.io/github/downloads/sophosia/sophosia/total?style=flat-square"></a>
 <br>
-<a title="Twitter" target="_blank" href="https://twitter.com/sophosia_app"><img alt="Twitter Follow" src="https://img.shields.io/badge/@sophosia_app-1976d2?logo=twitter&style=social"></a>
+<a title="X" target="_blank" href="https://x.com/sophosia_app"><img alt="X Follow" src="https://img.shields.io/badge/@sophosia_app-1976d2?logo=x&style=social"></a>
 <a title="QQ" target="_blank" href=""><img alt="QQ Group" src="https://img.shields.io/badge/QQ:808198109-1976d2?logo=tencentqq&style=social"></a>
 <a title="Discord" target="_blank" href="https://discord.gg/8RDZE85tBj"><img alt="Join Discord" src="https://img.shields.io/badge/Sophosia-1976d2?logo=discord&style=social"></a>
 </p>
 
 <p align="center">
-<a href="https://github.com/sophosia/sophosia-releases/blob/main/README.md">English</a>
+<a href="https://github.com/sophosia/sophosia/blob/main/README.md">English</a>
 |
-<a href="https://github.com/sophosia/sophosia-releases/blob/main/README.zh_CN.md">中文</a>
+<a href="https://github.com/sophosia/sophosia/blob/main/README.zh_CN.md">中文</a>
 </p>
+
+> [!NOTE]
+> ## 普通用户请在[最新发布](https://github.com/sophosia/sophosia/releases/latest)下载Sophosia即可使用
+> ## 若要贡献此项目，在根据README结尾处的说明进行操作。
 
 # 研究小助手
 
