@@ -57,7 +57,7 @@ async function parseDeepLink(url: string | undefined) {
   if (!url || !url.startsWith("sophosia://")) return;
   // URL object has different properties on windows, and linux-like system
   // don't parse url by URL(), parse the string directly
-  const [action, params] = url.split("/");
+  const [action, params] = url.replace("sophosia://", "").split("/");
   switch (action) {
     case "open-item":
       const itemId = decodeURI(params);
@@ -87,9 +87,10 @@ onMounted(async () => {
   );
 
   // listen to the deep link event
-  unlisten = await listen("deep-link", (e) =>
-    parseDeepLink(e.payload as string)
-  );
+  unlisten = await listen("deep-link", (e) => {
+    console.log("deeplink event", e);
+    parseDeepLink(e.payload as string);
+  });
 });
 
 onUnmounted(() => {
