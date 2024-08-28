@@ -92,25 +92,10 @@ export interface Project extends Meta {
   children: FolderOrNote[];
   path: undefined | string; // attached pdf file path
   tags: string[]; // user defined keywords for easier search
-  folderIds: string[]; // array of folderIDs containing this project
+  categories: string[]; // array of categories (in form of paths) containing this project
   favorite?: boolean;
   // index signature, so we can access property like this project[key]
   [k: string]: any;
-}
-
-/**
- * Folder is for both database and UI display use
- * when saving to database, children: string[] is a list of subfolder ids
- * when displaying on UI, children: Folder[] is a list of Folder objects
- */
-export interface Folder {
-  _id: string; // uid managed by db
-  timestampAdded: number; // timestamp when data is saved
-  timestampModified: number; // timestamp when data is updated
-  dataType: "folder"; // for database search
-  label: string; // folder name
-  icon: string; // folder icon in treeview
-  children: (string | Folder)[]; // folderId list or Folder object list
 }
 
 export enum SpecialFolder {

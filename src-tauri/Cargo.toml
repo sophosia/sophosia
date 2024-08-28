@@ -19,6 +19,9 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.6.0", features = [ "http-all", "os-all", "updater", "dialog-save", "dialog-open", "shell-open", "protocol-asset", "window-all", "path-all", "fs-all", "devtools", "linux-protocol-headers"] }
 tauri-plugin-fs-extra = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 tauri-plugin-deep-link="0.1.2"
+tauri-plugin-sql = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1", features = ["sqlite"] }
+# lopdf = { version = "0.30.0", features = ["pom", "pom_parser"] }
+# rusqlite = { version = "0.32.0", features = ["bundled"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

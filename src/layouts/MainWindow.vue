@@ -22,9 +22,9 @@
 </template>
 
 <script setup lang="ts">
-import { db } from "src/backend/database";
+import { Config, db } from "src/backend/database";
 import { migrate } from "src/backend/database/migration";
-import { isScanned, scanAndUpdateDB } from "src/backend/project/scan";
+import { indexFiles } from "src/backend/project/scan";
 import DialogContainer from "src/components/dialogs/DialogContainer.vue";
 import WelcomeCarousel from "src/components/welcome/WelcomeCarousel.vue";
 import { useLayoutStore } from "src/stores/layoutStore";
@@ -35,6 +35,7 @@ const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
 // must determine the existence of storagePath before heading to MainLayout
 const loading = ref(false);
+const isScanned = ref(false);
 
 onMounted(async () => {
   // if there is no path, show welcome carousel
@@ -52,7 +53,10 @@ watch(
       await migrate();
       await db.createHiddenFolders();
       await stateStore.loadState();
-      scanAndUpdateDB();
+      indexFiles().then(() => {
+        isScanned.value = true;
+        db.setConfig({ lastScanTime: Date.now() } as Config);
+      });
     }
   }
 );

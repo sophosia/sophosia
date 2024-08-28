@@ -123,3 +123,23 @@ export function getDataType(id: string): string {
   else if (id.startsWith("SA")) return "pdfAnnotation";
   else return "project";
 }
+
+/**
+ * A simple, *insecure* 32-bit hash that's short, fast, and has no dependencies.
+ * Useful to generate unique id.
+ * Output is always 7 characters.
+ * Loosely based on the Java version; see
+ * https://stackoverflow.com/questions/6122571/simple-non-secure-hash-function-for-javascript
+ *
+ * @param {string} msg - The messeage to be hashed
+ * @returns {string} hash - The hash value with only 0-9A-Z and with length 7
+ */
+export function simpleHash(msg: string): string {
+  let hash = 0;
+  for (let i = 0; i < msg.length; i++) {
+    const char = msg.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+  }
+  // Convert to 32bit unsigned integer in base 36 and pad with "0" to ensure length is 7.
+  return (hash >>> 0).toString(36).padStart(7, "0").toUpperCase();
+}

@@ -47,14 +47,13 @@ export class JsonDB {
     const code2Folder = {
       SA: "pdfAnnotation",
       SS: "pdfState",
-      SF: "folder",
     };
     let path = "";
     if (id.slice(0, 2) in code2Folder)
       path = await join(
         this.config.storagePath,
         ".sophosia",
-        code2Folder[id.slice(0, 2) as "SA" | "SS" | "SF"],
+        code2Folder[id.slice(0, 2) as "SA" | "SS"],
         `${id}.json`
       );
     else if (id === "notebook")
@@ -230,7 +229,6 @@ export class JsonDB {
       for (let folder of [
         "appState",
         "layout",
-        "folder",
         "pdfAnnotation",
         "pdfState",
         "image",

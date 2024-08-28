@@ -27,6 +27,8 @@ import {
   saveNote,
 } from "./note";
 import { authorToString } from "./utils";
+import * as pdfjsLib from "pdfjs-dist";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 const { t } = i18n.global;
 
 /**
@@ -42,9 +44,11 @@ const { t } = i18n.global;
  */
 async function createProjectFolder(project: Project) {
   try {
+    // create project folder
     const projectPath = await join(db.config.storagePath, project._id);
     if (!(await exists(projectPath))) await createDir(projectPath);
 
+    // create project note to store meta data
     const content = `
 ${t("note-is-auto-manged")}
 # ${project.label}
@@ -117,7 +121,8 @@ export function createProject(folderId: string): Project {
     title: t("new", { type: t("project") }),
     path: undefined,
     tags: [] as string[],
-    folderIds: [SpecialFolder.LIBRARY.toString()],
+    // folderIds: [SpecialFolder.LIBRARY.toString()],
+    categories: ["library"],
     favorite: false,
     children: [] as FolderOrNote[],
   } as Project;
@@ -199,6 +204,7 @@ export async function updateProject(
     Object.assign(project, props);
     project.timestampModified = Date.now();
     delete project._graph; // remomve _graph property if update by meta
+    delete project.folderIds; // this property is removed since v0.17.0
 
     // project._id is the new id
     // projectId is the old id

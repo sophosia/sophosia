@@ -46,6 +46,7 @@
     "react-dom": "^18.2.0",
     "sophosia": "^0.1.4-alpha",
     "tauri-plugin-fs-extra-api": "https://github.com/tauri-apps/tauri-plugin-fs-extra#v1",
+    "tauri-plugin-sql-api": "https://github.com/tauri-apps/tauri-plugin-sql#v1",
     "translate": "^3.0.0",
     "vditor": "^3.9.8",
     "veaury": "^2.3.16",

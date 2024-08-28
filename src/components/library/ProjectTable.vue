@@ -9,16 +9,13 @@
     table-header-style="white-space: nowarp"
     :rows-per-page-options="[0]"
     :columns="headers"
-    :rows="projects"
+    :rows="computedRows"
     row-key="_id"
-    :filter="searchString"
-    :filter-method="(searchProject as any)"
     :loading="loading"
     selection="multiple"
     v-model:selected="projectStore.selected"
-    @selection="
-      (details) => handleSelection(details.rows as Project[], details.added, details.evt as KeyboardEvent)
-    "
+    @selection="(details) => handleSelection(details.rows as Project[], details.added, details.evt as KeyboardEvent)
+      "
     ref="table"
   >
     <template v-slot:header="props">
@@ -36,7 +33,7 @@
         <q-th auto-width></q-th>
         <q-th auto-width></q-th>
         <q-th
-          v-for="col in (props.cols as Array<{name: string, label:string}>)"
+          v-for="col in (props.cols as Array<{ name: string, label: string }>)"
           :key="col.name"
           :props="props"
           style="padding: 0"
@@ -60,11 +57,11 @@
         draggable="true"
         @dragstart="onDragStart"
         @dragend="onDragEnd"
-        @expandRow="(isExpand: boolean) => props.expand=isExpand"
+        @expandRow="(isExpand: boolean) => props.expand = isExpand"
         @mousedown="(e: PointerEvent) => clickProject(props, e)"
         @mouseup="(e: PointerEvent) => clickProject(props, e)"
         @dblclick="dblclickProject(props.row)"
-        @contextmenu="(e:PointerEvent) => toggleContextMenu(props, e)"
+        @contextmenu="(e: PointerEvent) => toggleContextMenu(props, e)"
       />
       <!-- Expanded Rows -->
 
@@ -111,6 +108,7 @@
 // types
 import { QTable, QTableColumn, QTr } from "quasar";
 import { Note, Project } from "src/backend/database";
+import { queryData } from "src/backend/project/indexer";
 import {
   PropType,
   computed,
@@ -119,6 +117,7 @@ import {
   provide,
   ref,
   toRaw,
+  watch,
 } from "vue";
 // components
 import TableItemRow from "./TableItemRow.vue";
@@ -130,9 +129,7 @@ import { useProjectStore } from "src/stores/projectStore";
 const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 // utils
-import Fuse from "fuse.js";
 import { useI18n } from "vue-i18n";
-import { watchEffect } from "vue";
 const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
@@ -141,38 +138,10 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["dragProject", "update:projects"]);
-let fuse: Fuse<Project>;
-watchEffect(() => {
-  fuse = new Fuse(props.projects, {
-    includeMatches: true,
-    threshold: 0.6,
-    keys: [
-      "_id",
-      "type",
-      "title",
-      "author.family",
-      "author.given",
-      "author.literal",
-      "original-title",
-      "abstract",
-      "DOI",
-      "ISBN",
-      "ISSN",
-      "publisher",
-      "container-title",
-      "path",
-      "citation-key",
-      "issued.data-parts",
-      "tags",
-      "children.label",
-    ],
-  });
-});
 let storedSelectedRow = {};
 const renamingNoteId = ref("");
 provide("renamingNoteId", renamingNoteId);
 const isClickingPDF = ref(false);
-const showExpansion = ref(false);
 const expansionText = ref<string[]>([]);
 const loading = ref(false); // is table filtering data
 const table = ref();
@@ -195,6 +164,9 @@ const headers = computed(() => {
     },
   ] as QTableColumn[];
 });
+
+const computedRows = ref(props.projects);
+watch(() => props.searchString, filterRows);
 
 onMounted(() => {
   searchRowWidth.value = table.value.$el.getBoundingClientRect().width * 0.8;
@@ -343,43 +315,43 @@ function onDragEnd() {
 }
 
 /**
- * Custom filter method for the table.
- * @param {Project[]} rows - The array of projects to filter.
- * @param {string} terms - The search terms to filter with.
- * @param {QTableColumn[]} cols - The array of table columns.
- * @param {Function} getCellValue - Optional function to get a cell value.
- * @returns {Project[]} - The filtered projects.
+ * filter rows in table using full text search
  */
-function searchProject(
-  rows: Project[],
-  terms: string,
-  cols: QTableColumn[],
-  getCellValue: (col: QTableColumn, row: Project) => any
-): Project[] {
-  loading.value = true;
+async function filterRows() {
+  if (!props.searchString) {
+    computedRows.value = props.projects;
+    return;
+  }
+  computedRows.value = [];
   expansionText.value = [];
-  const filtered = [];
-  const results = fuse.search(terms);
-  for (const result of results) {
-    filtered.push(result.item);
+  const results = (await queryData(props.searchString)) as Array<{
+    id: string;
+    pages: string;
+    extracts: string;
+  }>;
+  for (let result of results) {
+    let [projectId, noteName] = result.id.split("/");
+    let row = props.projects.find((row) => row._id == projectId);
+    if (!row) continue;
+    computedRows.value.push(row);
+
+    // expansion text
     let text = "";
-    for (const match of result.matches!) {
-      let key = match.key!;
-      if (key.includes("author")) key = "author";
-      else if (key.includes("children")) key = "notes";
-      const highlighted = match.indices
-        .reduce((str, [start, end]) => {
-          str[start] = `<span class="tableview-highlighted-row">${str[start]}`;
-          str[end] = `${str[end]}</span>`;
-          return str;
-        }, match.value!.split(""))
-        .join("");
-      text += `<div>${key}: ${highlighted}</div>`;
+    let matches = result.extracts.split("</br>");
+    let pages = result.pages.split(",");
+    for (let [ind, match] of matches.entries()) {
+      let highlightedRow = match
+        .trim()
+        .replaceAll(
+          "highlight-class-place-holder",
+          "tableview-highlighted-row"
+        );
+      let indicator = noteName
+        ? `<b>${noteName}:</b>`
+        : `<b>PDF Page${pages[ind]}:</b>`;
+      text += `<div>${indicator} ${highlightedRow}</div>`;
     }
     expansionText.value.push(text);
   }
-  loading.value = false;
-  showExpansion.value = true;
-  return filtered;
 }
 </script>
