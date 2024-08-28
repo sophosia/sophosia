@@ -1,5 +1,5 @@
 import { debounce } from "lodash";
-import { AppState, SpecialFolder, db } from "../database";
+import { AppState, SpecialCategory, db } from "../database";
 
 /**
  * Asynchronously retrieves the current state of the application from the database.
@@ -19,7 +19,7 @@ export async function getAppState(): Promise<AppState> {
     ribbonClickedBtnId: "",
     leftMenuSize: 0,
     libraryRightMenuSize: 0,
-    selectedFolderId: SpecialFolder.LIBRARY,
+    selectedCategory: SpecialCategory.LIBRARY,
     currentItemId: "library",
     historyItemIds: [],
     openedProjectIds: [],

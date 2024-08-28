@@ -1,147 +1,104 @@
-import { i18n } from "src/boot/i18n";
-import { db, Folder, Project, SpecialFolder } from "../database";
-import { updateProject } from "./project";
+import { Project, CategoryNode, SpecialCategory } from "../database";
+import { getAllProjects, updateProject } from "./project";
 import { sortTree } from "./utils";
-const { t } = i18n.global;
-
-async function getFolder(folderId: string): Promise<Folder | undefined> {
-  try {
-    return (await db.get(folderId)) as Folder;
-  } catch (error) {
-    console.log(error);
-  }
-}
 
 /**
- * Get the folder tree
- * @returns tree
+ * Get the category tree
+ *
+ * @returns {CategoryNode[]} categoryTree - The category tree
+ *
+ * @example
+ * Given a category tree,
+ * library
+ *    |-- a
+ *    |-- b
+ *        |- c
+ *
+ * the returned data is
+ * [
+ *  {
+ *    id: "library",
+ *    children:
+ *      [
+ *        {
+ *          id:"a"
+ *        },
+ *        {
+ *          id: "b",
+ *          children:
+ *            [
+ *              {
+ *                id: "c"
+ *              }
+ *            ]
+ *        }
+ *      ]
+ *   }
+ * ]
+ *
  */
-async function getFolderTree(): Promise<Folder[] | undefined> {
+export async function getCategoryTree(): Promise<CategoryNode[]> {
   try {
-    const docs = await db.getDocs("folder");
+    const projects = (await getAllProjects()) as Project[];
+    // get unique category paths
+    const categories = [
+      ...new Set(projects.flatMap((project) => project.categories)),
+    ];
 
-    // no folders in db yet
-    if (docs.length == 0) {
-      // create library folder for user if there is none
-      const library = {
-        _id: SpecialFolder.LIBRARY,
-        timestampAdded: Date.now(),
-        timestampModified: Date.now(),
-        label: "Library",
-        icon: "mdi-bookshelf",
-        children: [],
-        dataType: "folder",
-      } as Folder;
-      await db.put(library);
-      return [library];
-    }
-
-    // create a dict for later use
-    const folders: { [k: string]: Folder } = {};
-    for (const folder of docs as Folder[]) {
-      folders[folder._id] = folder;
-    }
-    // create tree using depth first search
-    function _dfs(root: Folder, folderTreeRoot: Folder) {
-      Object.assign(folderTreeRoot, root);
-      folderTreeRoot.children = [];
-      for (const [i, childId] of root.children.entries()) {
-        folderTreeRoot.children.push({} as Folder);
-        _dfs(folders[childId as string], folderTreeRoot.children[i] as Folder);
+    const root = { _id: "root", children: [] } as CategoryNode;
+    for (const category of categories) {
+      const parts = category.split("/");
+      let currentNode = root;
+      for (const part of parts) {
+        let childNode = currentNode.children.find(
+          (child) => child._id.split("/").at(-1) === part
+        );
+        if (!childNode) {
+          childNode = { _id: category, children: [] as CategoryNode[] };
+          currentNode.children.push(childNode);
+        }
+        currentNode = childNode;
       }
     }
-
-    const library = {} as Folder;
-    _dfs(folders[SpecialFolder.LIBRARY], library);
-    sortTree(library);
-
-    return [library];
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-/**
- * Add a subfolder to parent folder
- * @param parentId - parent folder id
- */
-async function addFolder(parentId: string) {
-  try {
-    // add to database
-    const folder = {
-      _id: `SF${db.nanoid}`,
-      timestampAdded: Date.now(),
-      timestampModified: Date.now(),
-      label: t("new", { type: t("folder") }),
-      icon: "mdi-folder",
-      children: [],
-      dataType: "folder",
-    } as Folder;
-    await db.put(folder);
-
-    // push to children of parent Node
-    const parentNode = (await db.get(parentId)) as Folder;
-    parentNode.children.push(folder._id);
-    await updateFolder(parentId, { children: parentNode.children } as Folder);
-
-    return folder;
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-/**
- * Update folder properties
- * @param folderId
- * @param props - Folder
- */
-async function updateFolder(folderId: string, props: Folder) {
-  try {
-    const folder = (await db.get(folderId)) as Folder;
-    props.timestampModified = Date.now();
-    Object.assign(folder, props);
-    await db.put(folder);
-    return folder;
+    sortTree(root);
+    return root.children;
   } catch (error) {
     console.log(error);
+    return [{ _id: SpecialCategory.LIBRARY, children: [] }];
   }
 }
 
 /**
- * Delete a folder and also remove the folderId from associated projects
- * @param folderId
+ * Update categories in projects
+ * @param {string} oldCategory
+ * @param {string} newCategory
  */
-async function deleteFolder(folderId: string) {
+export async function updateCategory(oldCategory: string, newCategory: string) {
   try {
-    const parentNode = (await getParentFolder(folderId)) as Folder;
-    parentNode.children = parentNode.children.filter((id) => id != folderId);
-    await db.put(parentNode);
-
-    const docs = await db.getDocs("folder");
-
-    // create a dict for later use
-    const folders: { [key: string]: Folder } = {};
-    for (const doc of docs) folders[doc._id] = doc as Folder;
-
-    function _dfs(root: Folder) {
-      const removedFolderIds = [] as string[];
-      db.remove(root);
-      removedFolderIds.push(root._id);
-      for (const childId of root.children) {
-        removedFolderIds.push(..._dfs(folders[childId as string]));
-      }
-      return removedFolderIds;
-    }
-
-    const removedFolderIds = _dfs(folders[folderId]);
-
-    // update associated projects
-    const projects = (await db.getDocs("project")) as Project[];
+    const projects = (await getAllProjects()) as Project[];
     for (const project of projects) {
-      const folderIds = project.folderIds.filter(
-        (id) => !removedFolderIds.includes(id)
+      project.categories = project.categories.map((category) =>
+        category === oldCategory ? newCategory : category
       );
-      updateProject(project._id, { folderIds } as Project);
+      updateProject(project._id, project);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+/**
+ * Delete a category (and its subcategories) from associated projects
+ * @param {string} category
+ */
+export async function deleteCategory(category: string) {
+  try {
+    const projects = (await getAllProjects()) as Project[];
+    for (const project of projects) {
+      project.categories = project.categories.filter(
+        (cat) => !cat.startsWith(category)
+      );
+      updateProject(project._id, project);
     }
   } catch (err) {
     console.log(err);
@@ -149,52 +106,47 @@ async function deleteFolder(folderId: string) {
 }
 
 /**
- * Get the parent folder of a given folder
- * @param folderId
- * @returns parentFolder
+ * Extract the label of a category path
+ *
+ * @example
+ * library/plasma physics -> plasma physics
+ *
+ * @param {string} category
+ * @returns {string} label
  */
-async function getParentFolder(folderId: string): Promise<Folder | undefined> {
-  try {
-    let folders = (await db.getDocs("folder")) as Folder[];
-    return folders.filter((folder) => folder.children.includes(folderId))[0];
-  } catch (error) {
-    console.log(error);
-  }
+export function getCategoryLabel(category: string): string {
+  return category.split("/").at(-1)!;
+}
+
+/**
+ * Get the parent category of a given category
+ * @param {string} category
+ * @returns parentCategory
+ */
+export function getParentCategory(category: string): string {
+  return category.split("/").slice(0, -1).join("/");
 }
 
 /**
  * Move the dragFolder into the dropFolder
- * @param dragFolderId
- * @param dropFolderId
+ * @param {string} dragCategory
+ * @param {string} dropCategory
  */
-async function moveFolderInto(dragFolderId: string, dropFolderId: string) {
+export async function moveCategoryInto(
+  dragCategory: string,
+  dropCategory: string
+) {
   try {
-    // remove from dragFolder's parent folder first
-    const dragParentFolder = (await getParentFolder(dragFolderId)) as Folder;
-    dragParentFolder.children = dragParentFolder.children.filter(
-      (id) => id != dragFolderId
-    );
-    await updateFolder(dragParentFolder._id, {
-      children: dragParentFolder.children,
-    } as Folder);
-
-    // add to dropFolder after the dragParentFolder is modified
-    const dropFolder = (await db.get(dropFolderId)) as Folder;
-    dropFolder.children.push(dragFolderId);
-    await updateFolder(dropFolderId, {
-      children: dropFolder.children,
-    } as Folder);
+    const projects = await getAllProjects();
+    for (const project of projects) {
+      project.categories = project.categories.map((category) => {
+        return category.startsWith(dragCategory)
+          ? category.replace(getParentCategory(category), dropCategory)
+          : category;
+      });
+      updateProject(project._id, project);
+    }
   } catch (error) {
     console.log(error);
   }
 }
-
-export {
-  addFolder,
-  deleteFolder,
-  getFolder,
-  getFolderTree,
-  getParentFolder,
-  moveFolderInto,
-  updateFolder,
-};

@@ -1,25 +1,16 @@
 import { extname, sep } from "@tauri-apps/api/path";
-import { Author, Meta, db } from "../database";
-interface TreeNode {
-  label: string;
-  children?: (string | TreeNode)[];
-}
-/**
- * Sort children of a tree node by labels
- * @param root - the root treenode
- */
-export function sortTree(root: TreeNode) {
-  if (root.children === undefined) return;
+import { Author, Meta, CategoryNode, db } from "../database";
 
+/**
+ * Sort children of a tree node by their category path
+ * @param {CategoryNode} root - the root treenode
+ */
+export function sortTree(root: CategoryNode) {
   if (root.children.length > 1) {
     root.children = root.children.sort((a, b) =>
-      (a as TreeNode).label > (b as TreeNode).label
-        ? 1
-        : (b as TreeNode).label > (a as TreeNode).label
-        ? -1
-        : 0
+      a._id > b._id ? 1 : b._id > a._id ? -1 : 0
     );
-    for (let child of root.children) sortTree(child as TreeNode);
+    for (let child of root.children) sortTree(child);
   }
 }
 

@@ -15,6 +15,7 @@ import {
   FolderOrNote,
   PDFState,
   Project,
+  SpecialCategory,
   SpecialFolder,
   db,
 } from "../database";
@@ -105,12 +106,12 @@ export async function copyFileToProjectFolder(
 /**
  * Initializes a new project in a specified folder.
  *
- * @param folderId - The folder ID where the project is created.
+ * @param {string} category - The category path where the project is created.
  * @returns The newly created project object.
  *
  * Generates a project with a unique ID and default properties.
  */
-export function createProject(folderId: string): Project {
+export function createProject(category: string): Project {
   // create empty project entry
   const project = {
     _id: `SP${db.nanoid}`,
@@ -121,13 +122,11 @@ export function createProject(folderId: string): Project {
     title: t("new", { type: t("project") }),
     path: undefined,
     tags: [] as string[],
-    // folderIds: [SpecialFolder.LIBRARY.toString()],
     categories: ["library"],
     favorite: false,
     children: [] as FolderOrNote[],
   } as Project;
-  if (folderId != SpecialFolder.LIBRARY.toString())
-    project.folderIds.push(folderId);
+  if (category != "library") project.categories.push(category);
   return project;
 }
 
@@ -159,12 +158,12 @@ export async function addProject(
  * and remove the actual folder containing the project files in storage path
  * @param {string} projectId
  * @param {boolean} deleteFromDB
- * @param {string} folderId - if deleteFromDB === false, then we need folderId
+ * @param {string} category - if deleteFromDB === false, then we need category
  */
 export async function deleteProject(
   projectId: string,
   deleteFromDB: boolean,
-  folderId?: string
+  category?: string
 ) {
   try {
     const project = (await getProject(projectId)) as Project;
@@ -178,8 +177,8 @@ export async function deleteProject(
       // remove the acutual files
       await deleteProjectFolder(projectId);
     } else {
-      if (folderId === undefined) throw new Error("folderId is needed");
-      project.folderIds = project.folderIds.filter((id) => id != folderId);
+      if (category === undefined) throw new Error("category is needed");
+      project.categories = project.categories.filter((id) => id != category);
       await updateProject(project._id, project);
     }
   } catch (err) {
@@ -327,7 +326,7 @@ export async function getAllProjects(options?: {
 /**
  * Retrieves projects from a specific folder, with options to include related PDFs and notes.
  *
- * @param {string} folderId - The ID of the folder to filter projects by.
+ * @param {string} category - The ID of the folder to filter projects by.
  * @param {Object} [options] - Options to include associated PDFs and/or notes for each project.
  * @returns {Promise<Project[]>} A promise resolving to an array of Project objects filtered by the folder ID.
  *
@@ -335,15 +334,15 @@ export async function getAllProjects(options?: {
  * Optionally attaches associated PDF paths and note trees for each project based on provided options.
  */
 export async function getProjects(
-  folderId: string,
+  category: string,
   options?: { includePDF?: boolean; includeNotes?: boolean }
 ): Promise<Project[]> {
   try {
     let projects = await getAllProjects();
-    switch (folderId) {
-      case SpecialFolder.LIBRARY:
+    switch (category) {
+      case SpecialCategory.LIBRARY:
         break;
-      case SpecialFolder.ADDED:
+      case SpecialCategory.ADDED:
         const date = new Date();
         // get recently added project in the last 30 days
         const timestamp = date.setDate(date.getDate() - 30);
@@ -353,12 +352,12 @@ export async function getProjects(
         // sort projects in descending order
         projects.sort((a, b) => b.timestampAdded - a.timestampAdded);
         break;
-      case SpecialFolder.FAVORITES:
+      case SpecialCategory.FAVORITES:
         projects = projects.filter((project) => project.favorite);
         break;
       default:
         projects = projects.filter((project) =>
-          project.folderIds.includes(folderId)
+          project.categories.includes(category)
         );
         break;
     }

@@ -7,7 +7,7 @@ import {
   NoteType,
   PageType,
   Project,
-  SpecialCategory,
+  SpecialFolder,
 } from "src/backend/database";
 import {
   addFolder,
@@ -43,7 +43,7 @@ export const useProjectStore = defineStore("projectStore", {
     openedProjects: [] as Project[], // array of opened projects
 
     updatedProject: {} as Project, // for updating window tab name
-    selectedCategory: SpecialCategory.LIBRARY.toString(), // selected category in library page
+    selectedFolderId: SpecialFolder.LIBRARY.toString(), // selected category in library page
   }),
 
   actions: {
@@ -54,9 +54,9 @@ export const useProjectStore = defineStore("projectStore", {
      */
     async loadState(state: AppState) {
       if (this.initialized) return;
-      this.selectedCategory = state.selectedCategory;
+      this.selectedFolderId = state.selectedFolderId;
       await this.loadOpenedProjects(state.openedProjectIds);
-      await this.loadProjects(state.selectedCategory);
+      await this.loadProjects(state.selectedFolderId);
       this.initialized = true;
     },
 
@@ -69,7 +69,7 @@ export const useProjectStore = defineStore("projectStore", {
       const uniqueIds = new Set(projectIds);
       return {
         openedProjectIds: [...uniqueIds],
-        selectedCategory: this.selectedCategory,
+        selectedFolderId: this.selectedFolderId,
       } as AppState;
     },
 

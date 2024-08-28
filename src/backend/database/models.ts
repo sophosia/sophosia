@@ -69,6 +69,8 @@ export interface Note {
   type: NoteType;
 }
 
+export type CategoryNode = QTreeNode<{ _id: string; children: CategoryNode[] }>;
+
 /**
  * Multilevel note and folder support
  */
@@ -98,10 +100,10 @@ export interface Project extends Meta {
   [k: string]: any;
 }
 
-export enum SpecialFolder {
-  LIBRARY = "SFlibrary",
-  ADDED = "SFadded",
-  FAVORITES = "SFfavorites",
+export enum SpecialCategory {
+  LIBRARY = "library",
+  ADDED = "added",
+  FAVORITES = "favorites",
 }
 
 /******************************************
@@ -259,7 +261,7 @@ export interface AppState {
   leftMenuSize: number;
   libraryRightMenuSize: number;
   // project
-  selectedFolderId: string;
+  selectedCategory: string;
   currentItemId: string;
   historyItemIds: string[];
   openedProjectIds: string[];
