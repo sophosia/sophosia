@@ -11,7 +11,7 @@
       :nodes="folders"
       node-key="_id"
       v-model:expanded="expandedKeys"
-      v-model:selected="projectStore.selectedFolderId"
+      v-model:selected="projectStore.selectedCategory"
       :no-selection-unset="true"
       icon="mdi-chevron-right"
       selected-color="primary"
@@ -41,7 +41,7 @@
               <q-item
                 clickable
                 v-close-popup
-                @click="addFolder(prop.node)"
+                @click="addCategoryNode(prop.node)"
               >
                 <q-item-section>
                   <i18n-t keypath="add">
@@ -50,25 +50,25 @@
                 </q-item-section>
               </q-item>
               <q-item
-                v-if="!Object.values(SpecialFolder).includes(prop.node._id)"
+                v-if="!Object.values(SpecialCategory).includes(prop.node._id)"
                 clickable
                 v-close-popup
-                @click="setRenameFolder(prop.node)"
+                @click="setRenameCategoryNode(prop.node)"
               >
                 <q-item-section>{{ $t("rename") }}</q-item-section>
               </q-item>
               <q-item
                 clickable
                 v-close-popup
-                @click="exportFolder(prop.node)"
+                @click="exportCategory(prop.node)"
               >
                 <q-item-section>{{ $t("export-references") }}</q-item-section>
               </q-item>
               <q-item
-                v-if="!Object.values(SpecialFolder).includes(prop.node._id)"
+                v-if="!Object.values(SpecialCategory).includes(prop.node._id)"
                 clickable
                 v-close-popup
-                @click="deleteFolder(prop.node)"
+                @click="deleteCategoryNode(prop.node)"
               >
                 <q-item-section>{{ $t("delete") }}</q-item-section>
               </q-item>
@@ -79,23 +79,26 @@
           <q-icon
             size="1.5rem"
             :name="
-                Object.values(SpecialFolder).includes(prop.node._id)
+                Object.values(SpecialCategory).includes(prop.node._id)
                   ? prop.node.icon as string
                   : (
-                    (prop.node._id === projectStore.selectedFolderId || prop.expanded)
+                    (prop.node._id === projectStore.selectedCategory || prop.expanded)
                     ? 'mdi-folder-open-outline'
                     : 'mdi-folder-outline'
                   )
             "
           />
           <!-- input must have keypress.space.stop since space is default to expand row rather than space in text -->
+          <!-- v-model="prop.node.label" -->
           <input
-            v-if="renamingFolderId === prop.node._id"
+            v-if="renamingCategory === prop.node._id"
             style="width: calc(100% - 1.5rem)"
             ref="renameInput"
-            v-model="prop.node.label"
-            @blur="renameFolder"
-            @keydown.enter="renameFolder"
+            :text="getCategoryLabel(prop.node._id)"
+            @blur="(e) => renameCategoryNode(prop.node._id, e.target!.value)"
+            @keydown.enter="
+              (e) => renameCategoryNode(prop.node._id, e.target!.value)
+            "
             @keypress.space.stop
           />
           <div
@@ -104,7 +107,7 @@
             class="ellipsis"
           >
             {{
-              Object.values(SpecialFolder).includes(prop.node._id)
+              Object.values(SpecialCategory).includes(prop.node._id)
                 ? $t(prop.node.label)
                 : prop.node.label
             }}
@@ -119,19 +122,20 @@
 // types
 
 import { QTree, QTreeNode } from "quasar";
-import { Folder, SpecialFolder } from "src/backend/database";
+import { SpecialCategory, db } from "src/backend/database";
 import { onMounted, ref } from "vue";
 //db
 import {
-  addFolder as addFolderDB,
-  deleteFolder as deleteFolderDB,
-  getFolderTree,
-  getParentFolder,
-  moveFolderInto,
-  updateFolder,
+  getCategoryTree,
+  getCategoryLabel,
+  getParentCategory,
+  updateCategory,
+  deleteCategory,
+  moveCategoryInto,
 } from "src/backend/project/folder";
 import { sortTree } from "src/backend/project/utils";
 import { useProjectStore } from "src/stores/projectStore";
+import { CategoryNode } from "src/backend/database";
 
 const projectStore = useProjectStore();
 
@@ -140,28 +144,28 @@ const emit = defineEmits(["exportFolder"]);
 const renameInput = ref<HTMLInputElement | null>(null);
 const tree = ref<QTree | null>(null);
 
-const folders = ref<QTreeNode[]>([]);
-const expandedKeys = ref([SpecialFolder.LIBRARY.toString()]);
-const renamingFolderId = ref("");
-const draggingNode = ref<Folder | null>(null);
-const dragoverNode = ref<Folder | null>(null);
+const folders = ref<CategoryNode[]>([]);
+const expandedKeys = ref([SpecialCategory.LIBRARY.toString()]);
+const renamingCategory = ref("");
+const draggingNode = ref<CategoryNode | null>(null);
+const dragoverNode = ref<CategoryNode | null>(null);
 const enterTime = ref(0);
 
 onMounted(async () => {
-  folders.value = (await getFolderTree()) as QTreeNode[];
-  folders.value[0].label = "library";
-  folders.value[0].icon = "mdi-library-outline";
+  folders.value = (await getCategoryTree()) as CategoryNode[];
 
   // add other special folders
   folders.value.push({
-    _id: SpecialFolder.ADDED,
-    label: "added",
-    icon: "mdi-history",
+    _id: SpecialCategory.ADDED,
+    // label: "added",
+    // icon: "mdi-history",
+    children: [],
   });
   folders.value.push({
-    _id: SpecialFolder.FAVORITES,
-    label: "favorite",
-    icon: "mdi-star-outline",
+    _id: SpecialCategory.FAVORITES,
+    // label: "favorite",
+    // icon: "mdi-star-outline",
+    children: [],
   });
 });
 
@@ -171,74 +175,70 @@ onMounted(async () => {
 
 /**
  * Adds a new folder as a child of the specified parent folder.
- * @param {Folder} parentNode - The parent folder under which the new folder is added.
+ * @param {CategoryNode} parentNode - The parent folder under which the new folder is added.
  * @param {string} [label] - Optional label for the new folder.
  * @param {boolean} [focus] - If true, sets the focus on the newly added folder.
  */
-async function addFolder(parentNode: Folder, label?: string, focus?: boolean) {
-  // add to database
-  let node = (await addFolderDB(parentNode._id)) as Folder;
-
-  // set node label if we specify one
-  if (!!label) {
-    node.label = label;
-    node = (await updateFolder(node._id, {
-      label: node.label,
-    } as Folder)) as Folder;
-  }
+async function addCategoryNode(
+  parentNode: CategoryNode,
+  label?: string,
+  focus?: boolean
+) {
+  const node = {
+    _id: `${parentNode._id}/${db.nanoid}`,
+    children: [],
+  };
 
   // add to UI and expand the parent folder
   parentNode.children.push(node);
   expandedKeys.value.push(parentNode._id);
 
   // focus on it
-  if (focus) projectStore.selectedFolderId = node._id;
+  if (focus) projectStore.selectedCategory = node._id;
 
   // rename it if label is empty
-  if (!!!label) setRenameFolder(node);
+  if (!!!label) setRenameCategoryNode(node);
 }
 
 /**
  * Deletes the specified folder from the tree and database.
- * @param {Folder} node - The folder to be deleted.
+ * @param {CategoryNode} node - The folder to be deleted.
  */
-function deleteFolder(node: Folder) {
-  if ((Object.values(SpecialFolder) as string[]).includes(node._id)) return;
+function deleteCategoryNode(node: CategoryNode) {
+  if ((Object.values(SpecialCategory) as string[]).includes(node._id)) return;
 
   // remove from ui
-  function _dfs(oldNode: Folder): Folder[] {
-    var newNode = [] as Folder[];
+  function _dfs(oldNode: CategoryNode): CategoryNode[] {
+    var newNode = [] as CategoryNode[];
     for (let n of oldNode.children) {
-      if ((n as Folder)._id !== node._id) {
+      if (n._id !== node._id) {
         newNode.push({
-          _id: (n as Folder)._id,
-          icon: (n as Folder).icon,
-          label: (n as Folder).label,
-          children: _dfs(n as Folder),
-        } as Folder);
+          _id: n._id,
+          children: _dfs(n),
+        });
       }
     }
     return newNode;
   }
-  folders.value[0].children = _dfs(folders.value[0] as Folder) as QTreeNode[];
+  folders.value[0].children = _dfs(folders.value[0]);
 
   // remove from db
-  deleteFolderDB(node._id);
+  deleteCategory(node._id);
 
   // select another folder after this to refresh the table
   // if user is delete folder that are not currently selected, table won't refresh
   // but that's fine becase the database has been updated and the frontend is working as expected
   // it's just one line saying id=SFxxxx not found in console
-  if (projectStore.selectedFolderId === node._id)
-    projectStore.selectedFolderId = SpecialFolder.LIBRARY;
+  if (projectStore.selectedCategory === node._id)
+    projectStore.selectedCategory = SpecialCategory.LIBRARY;
 }
 
 /**
  * Initiates the renaming process for a given folder.
- * @param {Folder} node - The folder to be renamed.
+ * @param {CategoryNode} node - The folder to be renamed.
  */
-function setRenameFolder(node: Folder) {
-  renamingFolderId.value = node._id;
+function setRenameCategoryNode(node: CategoryNode) {
+  renamingCategory.value = node._id;
 
   setTimeout(() => {
     // wait till input appears
@@ -253,27 +253,29 @@ function setRenameFolder(node: Folder) {
 /**
  * Finalizes the renaming of a folder and updates it in the database.
  */
-function renameFolder() {
-  if (!!!renamingFolderId.value) return;
-  if (!tree.value) return;
+function renameCategoryNode(node: CategoryNode, newCategoryLabel: string) {
+  if (!renamingCategory.value || !tree.value) return;
   // update db
-  let node = tree.value.getNodeByKey(renamingFolderId.value);
-  updateFolder(node._id, { label: node.label } as Folder);
+  const components = node._id.split("/");
+  components[components.length - 1] = newCategoryLabel;
+  const newCategory = components.join("/");
+  updateCategory(node._id, newCategory);
 
   // update ui
-  renamingFolderId.value = "";
+  node._id = newCategory;
+  renamingCategory.value = "";
 
   // sort the tree
-  sortTree(folders.value[0] as Folder);
+  sortTree(folders.value[0]);
 }
 
 /**
  * Triggers the export process for the specified folder's references.
- * @param {Folder} folder - The folder whose references are to be exported.
+ * @param {CategoryNode} node - The folder whose references are to be exported.
  */
-function exportFolder(folder: Folder) {
-  console.log(folder);
-  emit("exportFolder", folder);
+function exportCategory(node: CategoryNode) {
+  console.log(node);
+  emit("exportFolder", node);
 }
 
 /****************
@@ -285,7 +287,7 @@ function exportFolder(folder: Folder) {
  * @param e - dragevent
  * @param node - the folder user is dragging
  */
-function onDragStart(e: DragEvent, node: Folder) {
+function onDragStart(e: DragEvent, node: CategoryNode) {
   draggingNode.value = node;
   // need to set transfer data for some browsers to work
   e.dataTransfer?.setData("draggingNode", JSON.stringify(node));
@@ -296,7 +298,7 @@ function onDragStart(e: DragEvent, node: Folder) {
  * @param e - dragevent
  * @param node - the folder user is dragging
  */
-function onDragOver(e: DragEvent, node: Folder) {
+function onDragOver(e: DragEvent, node: CategoryNode) {
   // enable drop on the node
   e.preventDefault();
 
@@ -316,7 +318,7 @@ function onDragOver(e: DragEvent, node: Folder) {
  * @param e
  * @param node
  */
-function onDragLeave(e: DragEvent, node: Folder) {
+function onDragLeave(e: DragEvent, node: CategoryNode) {
   enterTime.value = 0;
   dragoverNode.value = null; // dehighlight the folder
 }
@@ -327,10 +329,10 @@ function onDragLeave(e: DragEvent, node: Folder) {
  * @param e - dragevent
  * @param node - the folder / project user is dragging over
  */
-async function onDrop(e: DragEvent, node: Folder) {
+async function onDrop(e: DragEvent, node: CategoryNode) {
   // record this first otherwise dragend events makes it null
-  let _dragoverNode = dragoverNode.value as Folder;
-  let _draggingNode = draggingNode.value as Folder;
+  let _dragoverNode = dragoverNode.value as CategoryNode;
+  let _draggingNode = draggingNode.value as CategoryNode;
   let draggedProjectsRaw = e.dataTransfer?.getData("draggedProjects");
 
   if (draggedProjectsRaw) {
@@ -347,12 +349,15 @@ async function onDrop(e: DragEvent, node: Folder) {
     // if no dragging folder or droping a folder "into" itself, exit
     if (_draggingNode === null || draggingNode.value == node) return;
     if (!tree.value) return;
-    let dragParentFolder = (await getParentFolder(_draggingNode._id)) as Folder;
+    let dragParentFolder = (await getParentFolder(
+      _draggingNode._id
+    )) as CategoryNode;
     let dragParentNode = tree.value.getNodeByKey(
       dragParentFolder._id
-    ) as Folder;
+    ) as CategoryNode;
     dragParentNode.children = dragParentNode.children.filter(
-      (folder) => (folder as Folder)._id != (_draggingNode as Folder)._id
+      (folder) =>
+        (folder as CategoryNode)._id != (_draggingNode as CategoryNode)._id
     );
     node.children.push(_draggingNode);
 
@@ -379,7 +384,7 @@ function getLibraryNode() {
 
 defineExpose({
   getLibraryNode,
-  addFolder,
+  addFolder: addCategory,
   onDragEnd,
 });
 </script>

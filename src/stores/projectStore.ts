@@ -49,7 +49,7 @@ export const useProjectStore = defineStore("projectStore", {
   actions: {
     /**
      * Given the appState, initialize the store
-     * Will load the openedProjects and the projects corresponding to the selectedFolderId
+     * Will load the openedProjects and the projects corresponding to the selectedCategory
      * @param {AppState} state
      */
     async loadState(state: AppState) {
