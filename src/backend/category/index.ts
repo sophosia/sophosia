@@ -139,6 +139,7 @@ export async function moveCategoryInto(
   dropCategory: string
 ) {
   try {
+    console.log("move category into");
     const projects = await getAllProjects();
     for (const project of projects) {
       project.categories = project.categories.map((category) => {

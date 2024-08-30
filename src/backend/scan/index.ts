@@ -1,14 +1,7 @@
 import { FileEntry, exists, readDir, readTextFile } from "@tauri-apps/api/fs";
 import { extname } from "@tauri-apps/api/path";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import {
-  AnnotationData,
-  Edge,
-  NoteType,
-  Project,
-  db,
-  sqldb,
-} from "../database";
+import { AnnotationData, NoteType, Project, db, sqldb } from "../database";
 import { idToPath, linkToId, pathToId } from "../utils";
 import * as pdfjsLib from "pdfjs-dist";
 import { getProject, extractPDFContent } from "../project";
@@ -18,6 +11,7 @@ import {
   insertAuthors,
   insertMeta,
 } from "../project/sqliteOps";
+import { insertLink } from "../graph";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 /**
@@ -39,7 +33,6 @@ export async function indexFiles() {
           `${file.name!.slice(0, -3)}/${file.name!.slice(0, -3)}.md`
         ) {
           // folder note
-          console.log("processing folder note", file.path);
           extractMetaFromMarkdown(file.path);
         } else {
           // normal note
@@ -154,7 +147,7 @@ async function extractMarkdownContent(filePath: string) {
 async function extractMarkdownLinks(filePath: string) {
   const source = pathToId(filePath);
   const content = await readTextFile(filePath);
-  const regex = /\[.*\]\((?!www\.)(?!http:)(?!https:).*\)/gm;
+  const regex = /\[[\w\/\:\-]*\]\((?!www\.)(?!http:)(?!https:)[\w\/\:\-]*\)/g;
   const matches = content.match(regex) || [];
   for (const match of matches) {
     const submatch = match.match(/\(.*\)/)![0];
@@ -200,18 +193,6 @@ async function extractExcalidrawContent(filePath: string) {
 async function extractAnnotContent(filePath: string) {
   const annot = JSON.parse(await readTextFile(filePath)) as AnnotationData;
   insertAnnot(annot);
-}
-
-/**
- * Insert link into links table
- *
- * @param {Edge} link - an markdown link pointing to some other item
- */
-async function insertLink(link: Edge) {
-  await sqldb.execute(
-    "INSERT INTO links (source, target) SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM links WHERE source = $1 AND target = $2)",
-    [link.source, link.target]
-  );
 }
 
 /**

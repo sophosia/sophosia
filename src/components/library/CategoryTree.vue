@@ -146,6 +146,8 @@ import {
 import { sortTree } from "src/backend/utils";
 import { useProjectStore } from "src/stores/projectStore";
 import { CategoryNode } from "src/backend/database";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n({ useScope: "global" });
 
 const projectStore = useProjectStore();
 
@@ -195,10 +197,19 @@ async function addCategoryNode(
   label?: string,
   focus?: boolean
 ) {
-  const node = {
-    _id: `${parentNode._id}/${label || db.nanoid}`,
-    children: [],
-  };
+  if (!tree.value) return;
+
+  let node = { _id: "", children: [] };
+  if (label) {
+    node._id = `${parentNode._id}/${label || db.nanoid}`;
+  } else {
+    node._id = `${parentNode._id}/${t("new", { type: t("category") })}`;
+    let i = 1;
+    while (tree.value.getNodeByKey(node._id)) {
+      node._id += `${parentNode._id}/${t("new", { type: t("category") })} ${i}`;
+      i++;
+    }
+  }
 
   // add to UI and expand the parent category
   parentNode.children.push(node);

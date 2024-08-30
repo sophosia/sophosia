@@ -56,7 +56,7 @@ import { useI18n } from "vue-i18n";
 import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import Fuse from "fuse.js";
-import { getForwardLinks, updateLinks } from "src/backend/graph";
+import { getForwardLinks, updateForwardLinks } from "src/backend/graph";
 import HoverPane from "./HoverPane.vue";
 
 const projectStore = useProjectStore();
@@ -341,7 +341,7 @@ async function saveLinks() {
   let newLinkIds = Array.from(new Set(newLinks.map((link) => link.target)));
   if (!_.isEqual(linkIds, newLinkIds)) {
     // update indexeddb
-    await updateLinks(props.noteId, newLinks);
+    await updateForwardLinks(props.noteId, newLinkIds);
     links.value = newLinks;
     // notify graphview to update
     bus.emit("updateGraph");

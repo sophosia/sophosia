@@ -421,7 +421,6 @@ import { getTitle } from "src/backend/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
-import { onMounted } from "vue";
 const projectStore = useProjectStore();
 const settingStore = useSettingStore();
 const layoutStore = useLayoutStore();
@@ -489,10 +488,6 @@ watchEffect(async () => {
 
 watch(tab, () => {
   if (tab.value === "reference") getReferences();
-});
-
-onMounted(() => {
-  console.log("metainfotab mounted");
 });
 
 /**********************************************

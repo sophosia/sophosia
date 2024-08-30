@@ -9,71 +9,123 @@ import {
   Note,
   Project,
   db,
-  idb,
+  sqldb,
 } from "../database";
-import { getNote, getNotes } from "../note";
+import { getNotes } from "../note";
 import { getProject } from "../project";
 import { getDataType } from "../utils";
 
 /**
- * Update links of a note
- * @param noteId
- * @param links new links of a note
+ * Insert link into links table
+ *
+ * @param {Edge} link - an markdown link pointing to some other item
  */
-export async function updateLinks(noteId: string, links: Edge[]) {
-  try {
-    const keys = await idb.getAllKeysFromIndex("links", "source", noteId);
-    const tx = idb.transaction("links", "readwrite");
-    const promises = [] as Promise<void | IDBValidKey>[];
-    // delete all old links
-    if (keys.length > 0)
-      promises.push(...keys.map((key) => tx.store.delete(key)));
-    // add all new links
-    promises.push(...links.map((link) => tx.store.put(link)));
-    promises.push(tx.done);
-    await Promise.all(promises);
-  } catch (error) {
-    console.log(error);
-  }
+export async function insertLink(link: Edge) {
+  await sqldb.execute(
+    "INSERT INTO links (source, target) SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM links WHERE source = $1 AND target = $2)",
+    [link.source, link.target]
+  );
 }
 
 /**
- * Get forward links of an item
- * @param itemId
- * @returns links
+ * Update outward links from a note
+ *
+ * @async
+ * @param {string} noteId - The source
+ * @param {string[]} targetIds - the outward links from noteId
  */
-export async function getForwardLinks(itemId: string): Promise<Edge[]> {
-  const links = [] as Edge[];
+export async function updateForwardLinks(noteId: string, targetIds: string[]) {
+  await sqldb.execute("DELETE FROM links WHERE source = $1", [noteId]);
+  for (const target of targetIds)
+    await sqldb.execute("INSERT INTO links (source, target) VALUES ($1, $2)", [
+      noteId,
+      target,
+    ]);
+}
 
-  // get the current Item
-  const dataType = getDataType(itemId);
-  const item =
-    dataType === "note" ? await getNote(itemId) : await getProject(itemId);
+/**
+ * Get forward links from a note
+ *
+ * @param {string} noteId
+ * @returns {Promise<Edge[]>} forwardLinks
+ */
+export async function getForwardLinks(noteId: string): Promise<Edge[]> {
+  return (
+    (await sqldb.select<Edge[]>("SELECT * FROM links WHERE source = $1", [
+      noteId,
+    ])) || []
+  );
+}
 
-  if (!item) return links;
+/**
+ * Given a Project or a Note, create a graph with nodes connected with it
+ * @param {string} itemId - The id of a project or a note
+ * @returns {Promise<{nodes: Node[], edges: Edge[]}>} graph - Has nodes and edges
+ */
+export async function getGraph(
+  itemId: string
+): Promise<{ nodes: NodeUI[]; edges: EdgeUI[] }> {
+  const nodes = [] as NodeUI[];
+  const edges = [] as EdgeUI[];
 
-  if (item.dataType === "note") {
-    // forward links from the note
-    links.push(...(await idb.getAllFromIndex("links", "source", item._id)));
-  } else {
-    // forward links of a project is the collection of forward links of its notes
-    const notes = await getNotes(item._id);
-    for (const note of notes) {
-      links.push(...(await idb.getAllFromIndex("links", "source", note._id)));
+  // create graph
+  const uniqueIds = [] as string[];
+  // add current node and / or its parent
+  const currentCluter = await getNodeCluster(itemId);
+  for (const node of currentCluter) {
+    if (!uniqueIds.includes(node.data.id)) {
+      nodes.push(node);
+      uniqueIds.push(node.data.id);
     }
   }
 
-  return links;
+  const edgeDatas =
+    (await sqldb.select<Edge[]>(
+      "SELECT * FROM links WHERE source = $1 OR target = $1",
+      [itemId]
+    )) || [];
+
+  for (const data of edgeDatas) {
+    // create edge
+    edges.push({ data });
+    // add nodes and /or their parent nodes connected the edge
+    let sourceCluster = await getNodeCluster(data.source);
+    let targetCluster = await getNodeCluster(data.target);
+    for (const node of sourceCluster.concat(targetCluster)) {
+      if (!uniqueIds.includes(node.data.id)) {
+        nodes.push(node);
+        uniqueIds.push(node.data.id);
+      }
+    }
+  }
+
+  // also get the parent nodes (projects) of notes
+  return { nodes, edges };
 }
 
 /**
- * Given an itemId, return the node with this id and/or the parent of this item
- * @param itemId
- * @returns NodeUI[]
+ * Given an itemId, return the cluster of nodes consists of the item itself, project and notes associated with item.
+ *
+ * @param {string} itemId
+ * @returns {Promise<NodeUI[]>} nodes
+ *
+ * @example
+ * project
+ *    |-- notes
+ *    |     |-- note1
+ *    |     |-- note2
+ *    |
+ *    |-- annots
+ *          |-- annot1
+ *          |-- annot2
+ *
+ * getClusterNodes(project) -> [project, note1, note2]
+ * getClusterNodes(note1) -> [project, note1, note2]
+ * getClusterNodes(note2) -> [project, note1, note2]
+ * getClusterNodes(annot1) -> [project, note1, note2, annot1]
+ * getClusterNodes(annot2) -> [project, note1, note2, annot2]
  */
-async function getCurrentAndOrParentNodes(
-  itemId: string | undefined
-): Promise<NodeUI[]> {
+async function getNodeCluster(itemId: string | undefined): Promise<NodeUI[]> {
   const nodes = [] as NodeUI[];
   if (!itemId) return nodes;
   let parent: string | undefined;
@@ -117,51 +169,6 @@ async function getCurrentAndOrParentNodes(
       parent: parent,
     },
   });
-  nodes.push(...(await getCurrentAndOrParentNodes(parent)));
+  nodes.push(...(await getNodeCluster(parent)));
   return nodes;
-}
-
-/**
- * Given a Project or a Note, create a graph with nodes connected with it
- * @param item A project or a note
- * @returns returns {nodes, edges}
- */
-export async function getGraph(itemId: string) {
-  const nodes = [] as NodeUI[];
-  const edges = [] as EdgeUI[];
-
-  const links = [] as Edge[];
-  links.push(...(await getForwardLinks(itemId)));
-  // backward links
-  links.push(...(await idb.getAllFromIndex("links", "target", itemId)));
-
-  // create graph
-  const uniqueIds = [] as string[];
-  // add current node and / or its parent
-  const currentAndOrParentNodes = await getCurrentAndOrParentNodes(itemId);
-  for (const node of currentAndOrParentNodes) {
-    if (!uniqueIds.includes(node.data.id)) {
-      nodes.push(node);
-      uniqueIds.push(node.data.id);
-    }
-  }
-  for (const link of links) {
-    // create edge
-    edges.push({
-      data: {
-        source: link.source,
-        target: link.target,
-      },
-    });
-    // add nodes and /or their parent nodes connected the edge
-    let sourceAndOrParentNodes = await getCurrentAndOrParentNodes(link.source);
-    let targetAndOrParentNodes = await getCurrentAndOrParentNodes(link.target);
-    for (const node of sourceAndOrParentNodes.concat(targetAndOrParentNodes)) {
-      if (!uniqueIds.includes(node.data.id)) {
-        nodes.push(node);
-        uniqueIds.push(node.data.id);
-      }
-    }
-  }
-  return { nodes, edges };
 }

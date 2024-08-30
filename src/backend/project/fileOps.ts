@@ -27,7 +27,7 @@ ${project.dataType === "project" && t("abstract")}: ${project.abstract || ""}
 ${JSON.stringify(project, null, 2)}
 \`\`\`
 `;
-    await writeTextFile(idToPath(project._id), meta);
+    await writeTextFile(idToPath(`${project._id}/${project._id}.md`), meta);
   } catch (error) {
     console.log(error);
   }

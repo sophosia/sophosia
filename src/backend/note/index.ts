@@ -14,7 +14,7 @@ import {
 import { join, extname, basename } from "@tauri-apps/api/path";
 import type { FileEntry } from "@tauri-apps/api/fs";
 import { processEntries } from "../scan";
-import { updateLinks } from "../graph";
+import { updateForwardLinks } from "../graph";
 import { metadata } from "tauri-plugin-fs-extra-api";
 import { idToLink, idToPath, pathToId } from "../utils";
 import { i18n } from "src/boot/i18n";
@@ -483,7 +483,7 @@ export async function deleteFolder(folderId: string) {
     const notes = await getNotes(folderId);
     for (const note of notes) {
       await idb.delete("notes", note._id);
-      await updateLinks(note._id, []); // delete all links starting from this note
+      await updateForwardLinks(note._id, []); // delete all links starting from this note
     }
 
     // remove the actual folder

@@ -3,6 +3,7 @@ import { exists, readDir, removeFile, renameFile } from "@tauri-apps/api/fs";
 import { extname, join } from "@tauri-apps/api/path";
 import {
   AnnotationData,
+  Author,
   FolderOrNote,
   PDFState,
   Project,
@@ -47,6 +48,7 @@ export function createProject(category: string): Project {
     path: undefined,
     tags: [] as string[],
     categories: ["library"],
+    author: [] as Author[],
     favorite: false,
     children: [] as FolderOrNote[],
   } as Project;
