@@ -16,7 +16,6 @@ import {
   PDFState,
   Project,
   SpecialCategory,
-  SpecialFolder,
   db,
 } from "../database";
 import { generateCiteKey } from "./meta";
@@ -104,7 +103,7 @@ export async function copyFileToProjectFolder(
 }
 
 /**
- * Initializes a new project in a specified folder.
+ * Initializes a new project in a specified category.
  *
  * @param {string} category - The category path where the project is created.
  * @returns The newly created project object.
@@ -153,8 +152,8 @@ export async function addProject(
 }
 
 /**
- * Delete project from a folder.
- * If deleteFromDB is true, delete the project from all folders
+ * Delete project from a category.
+ * If deleteFromDB is true, delete the project from all categories
  * and remove the actual folder containing the project files in storage path
  * @param {string} projectId
  * @param {boolean} deleteFromDB

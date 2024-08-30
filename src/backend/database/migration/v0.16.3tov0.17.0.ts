@@ -121,7 +121,6 @@ function buildIdToPathMap(folders: Folder[]): Record<string, string> {
     // for library folder, keep it to library instead of Library or 项目库
     const path = folder._id === "SFlibrary" ? "library" : folder.label;
     idToPathMap[folderId] = path;
-    console.log("path = ", path);
 
     folder.children.forEach((subfolderId) => {
       idToPathMap[subfolderId as string] = `${path}/${getPath(

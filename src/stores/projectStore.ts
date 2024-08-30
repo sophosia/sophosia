@@ -44,6 +44,8 @@ export const useProjectStore = defineStore("projectStore", {
 
     updatedProject: {} as Project, // for updating window tab name
     selectedCategory: SpecialCategory.LIBRARY.toString(), // selected category in library page
+    // fire after a rename of note/folder, batchReplaceLink will change contents of markdowns containing the link to old note/folder
+    isNotesUpdated: false,
   }),
 
   actions: {
@@ -189,10 +191,10 @@ export const useProjectStore = defineStore("projectStore", {
     /**
      * Loads all projects under a specific folder from the database.
      * Filters out necessary items based on showReferences and showNotebooks
-     * @param folderId - The unique identifier of the folder whose projects are to be loaded.
+     * @param category - The unique identifier of the folder whose projects are to be loaded.
      */
-    async loadProjects(folderId: string) {
-      this.projects = await getProjects(folderId, {
+    async loadProjects(category: string) {
+      this.projects = await getProjects(category, {
         includePDF: true,
         includeNotes: true,
       });

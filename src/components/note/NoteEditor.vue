@@ -36,6 +36,8 @@ import {
   uploadImage,
 } from "src/backend/project/note";
 import { useLayoutStore } from "src/stores/layoutStore";
+import { useProjectStore } from "src/stores/projectStore";
+import { useSettingStore } from "src/stores/settingStore";
 
 import { getAllProjects, getProject } from "src/backend/project/project";
 // util
@@ -55,10 +57,9 @@ import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import Fuse from "fuse.js";
 import { getForwardLinks, updateLinks } from "src/backend/project/graph";
-import { isLinkUpdated } from "src/backend/project/scan";
-import { useSettingStore } from "src/stores/settingStore";
 import HoverPane from "./HoverPane.vue";
 
+const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 const settingStore = useSettingStore();
 const { t } = useI18n({ useScope: "global" });
@@ -89,15 +90,18 @@ watch(
   }
 );
 
-watch(isLinkUpdated, async () => {
-  if (!isLinkUpdated.value) return;
-  // load note again
-  await setContent();
-  changeLinks();
-  handleImage();
-  // set this to false and wait for next update
-  isLinkUpdated.value = false;
-});
+watch(
+  () => projectStore.isNotesUpdated,
+  async () => {
+    if (!projectStore.isNotesUpdated) return;
+    // load note again
+    await setContent();
+    changeLinks();
+    handleImage();
+    // set this to false and wait for next update
+    projectStore.isNotesUpdated = false;
+  }
+);
 
 onMounted(async () => {
   if (!vditorDiv.value) return;

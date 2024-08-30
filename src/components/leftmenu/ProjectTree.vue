@@ -179,7 +179,7 @@
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
 import { dirname, join } from "@tauri-apps/api/path";
-import { QTree, copyToClipboard, useQuasar } from "quasar";
+import { Notify, QTree, copyToClipboard, useQuasar } from "quasar";
 import {
   FolderOrNote,
   Note,
@@ -376,7 +376,7 @@ async function renameNode() {
   const oldNodeId = renamingNodeId.value;
   const newNodeId = await oldToNewId(oldNodeId, node.label);
   const newLabel = newNodeId.split("/").at(-1) as string;
-  if (pathDuplicate.value) {
+  if (pathDuplicate.value || !node.label) {
     node.label = oldNoteName.value;
   } else {
     if (renamingNodeType.value === "note") {
@@ -399,6 +399,8 @@ async function renameNode() {
   addingNode.value = false;
   renamingNodeId.value = "";
   oldNoteName.value = "";
+
+  Notify.create(t("updated", { type: t("link") }));
 }
 
 /**

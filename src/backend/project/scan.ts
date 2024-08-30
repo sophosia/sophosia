@@ -1,16 +1,6 @@
-import {
-  BaseDirectory,
-  FileEntry,
-  exists,
-  readDir,
-  readTextFile,
-  writeTextFile,
-} from "@tauri-apps/api/fs";
+import { FileEntry, exists, readDir, readTextFile } from "@tauri-apps/api/fs";
 import { extname } from "@tauri-apps/api/path";
-import { Notify } from "quasar";
-import { i18n } from "src/boot/i18n";
-import { Metadata, metadata } from "tauri-plugin-fs-extra-api";
-import { ref } from "vue";
+import { metadata } from "tauri-plugin-fs-extra-api";
 import {
   AnnotationData,
   Author,
@@ -19,16 +9,17 @@ import {
   Project,
   db,
 } from "../database";
-import { idToLink, idToPath, linkToId, pathToId, simpleHash } from "./utils";
-const { t } = i18n.global;
+import { idToPath, linkToId, pathToId, simpleHash } from "./utils";
 import * as pdfjsLib from "pdfjs-dist";
 import { TextItem } from "pdfjs-dist/types/src/display/api";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
-import { createDBTables, getSqlDatabase } from "../database/sqlite";
+import {
+  createDBTables,
+  getSqlDatabase,
+  sqlReadyForRead,
+} from "../database/sqlite";
 import { getProject } from "./project";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
-
-export const isLinkUpdated = ref(false); // to notify the reloading of note editor
 
 /**
  * Scan all notes and update the links in database
@@ -40,7 +31,37 @@ export async function indexFiles() {
   await removeDanglingData();
 
   const entries = await readDir(db.config.storagePath, { recursive: true });
-  await processEntries(entries);
+  await processEntries(entries, async (file: FileEntry) => {
+    const ext = await extname(file.path);
+    switch (ext) {
+      case "md":
+        if (
+          pathToId(file.path) ==
+          `${file.name!.slice(0, -3)}/${file.name!.slice(0, -3)}.md`
+        ) {
+          // folder note
+          console.log("processing folder note", file.path);
+          extractMetaFromMarkdown(file.path);
+        } else {
+          // normal note
+          extractMarkdownContent(file.path);
+          extractMarkdownLinks(file.path);
+        }
+        break;
+      case "excalidraw":
+        extractExcalidrawContent(file.path);
+        break;
+      case "pdf":
+        extractPDFContent(file.path);
+        break;
+      case "json":
+        if (file.name!.startsWith("SA")) extractAnnotContent(file.path);
+        break;
+      default:
+        break;
+    }
+  });
+  sqlReadyForRead.value = true;
   const end = performance.now();
   console.log(`files scan took ${end - start} ms`);
 }
@@ -78,45 +99,17 @@ async function removeDanglingData() {
  * Process each FileEntry with callback functions
  * @param entries [FileEntry] - FileEntries to process
  */
-async function processEntries(entries: FileEntry[]) {
+export async function processEntries(
+  entries: FileEntry[],
+  processFile: (entry: FileEntry) => Promise<void>
+) {
   for (const entry of entries) {
     const meta = await metadata(entry.path);
     if (meta.isFile && meta.modifiedAt.getTime() > db.config.lastScanTime) {
       await processFile(entry);
     } else if (entry.children) {
-      await processEntries(entry.children);
+      await processEntries(entry.children, processFile);
     }
-  }
-}
-
-async function processFile(file: FileEntry) {
-  const ext = await extname(file.path);
-  switch (ext) {
-    case "md":
-      if (
-        pathToId(file.path) ==
-        `${file.name!.slice(0, -3)}/${file.name!.slice(0, -3)}.md`
-      ) {
-        // folder note
-        console.log("processing folder note", file.path);
-        extractMetaFromMarkdown(file.path);
-      } else {
-        // normal note
-        extractMarkdownContent(file.path);
-        extractMarkdownLinks(file.path);
-      }
-      break;
-    case "excalidraw":
-      extractExcalidrawContent(file.path);
-      break;
-    case "pdf":
-      extractPDFContent(file.path);
-      break;
-    case "json":
-      if (file.name!.startsWith("SA")) extractAnnotContent(file.path);
-      break;
-    default:
-      break;
   }
 }
 
@@ -273,7 +266,14 @@ async function insertAnnot(annot: AnnotationData) {
 /**
  * Insert a note into notes table
  *
- * @param {[TODO:type]} note - note to be inserted
+ * @param {{
+  id: string;
+  projectId: string;
+  type: NoteType;
+  content: string;
+  timestampAdded: number;
+  timestampModified: number;
+}} note - note to be inserted
  */
 async function insertNote(note: {
   id: string;
@@ -420,78 +420,4 @@ WHERE NOT EXISTS (SELECT 1 FROM categories WHERE meta_id = $1 AND category = $2)
       [projectId, category]
     );
   }
-}
-
-/**
- * Replace all associated links in all markdown notes if a note is renamed
- * @param oldNoteId
- * @param newNoteId
- */
-export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
-  // need to update links from the oldNote
-
-  // no need to scan anything if user is using it the first time
-  if (!(await exists("workspace.json", { dir: BaseDirectory.AppConfig })))
-    return;
-
-  // path in jsondb is not ready yet, must use this
-  const workspace = JSON.parse(
-    await readTextFile("workspace.json", {
-      dir: BaseDirectory.AppConfig,
-    })
-  );
-  const { storagePath, lastScanTime } = workspace;
-
-  const processFile = async (file: FileEntry, meta: Metadata) => {
-    // only process markdown file
-    if ((await extname(file.path)) !== "md") return;
-
-    let content = await readTextFile(file.path);
-    const regex = new RegExp(
-      `\\[${oldNoteId}\\#?\\w*\\]\\(${idToLink(oldNoteId)}\\#?\\w*\\)`,
-      "gm"
-    );
-    const localRegex = new RegExp(
-      `\\[${oldNoteId}\\#?\\w*\\]\\(${idToLink(oldNoteId)}\\#?\\w*\\)`,
-      "m"
-    ); // remove g modifier to make match return after first found
-    const matches = content.match(localRegex);
-    if (matches) {
-      const oldIdAndHashtag = matches[0].match(/\[.*\]/)![0].slice(1, -1); // remove bracket using slice
-      const oldLinkAndHashtag = matches[0].match(/\(.*\)/)![0].slice(1, -1);
-      const newIdAndHashtag = oldIdAndHashtag.replace(oldNoteId, newNoteId);
-      const newLinkAndHashtag = oldLinkAndHashtag.replace(
-        idToLink(oldNoteId),
-        idToLink(newNoteId)
-      );
-      const newContent = content.replaceAll(
-        regex,
-        `[${newIdAndHashtag}](${newLinkAndHashtag})`
-      );
-      await writeTextFile(file.path, newContent);
-    }
-
-    const currentNoteId = pathToId(file.path);
-    // replace to links in indexeddb pointing to the old note
-    const key1 = await idb.getKeyFromIndex("links", "sourceAndTarget", [
-      currentNoteId,
-      oldNoteId,
-    ]);
-    if (key1)
-      idb.put("links", { source: currentNoteId, target: newNoteId }, key1);
-
-    // replace to links in indexeddb from the old note
-    const key2 = await idb.getKeyFromIndex("links", "sourceAndTarget", [
-      oldNoteId,
-      currentNoteId,
-    ]);
-    if (key2)
-      idb.put("links", { source: newNoteId, target: currentNoteId }, key2);
-  };
-
-  const entries = await readDir(storagePath, { recursive: true });
-  await processEntries(entries, processFile);
-
-  Notify.create(t("updated", { type: t("link") }));
-  isLinkUpdated.value = true;
 }

@@ -1,12 +1,13 @@
 import { extname, sep } from "@tauri-apps/api/path";
 import { Author, Meta, CategoryNode, db } from "../database";
+import { QTreeNode } from "quasar";
 
 /**
  * Sort children of a tree node by their category path
  * @param {CategoryNode} root - the root treenode
  */
-export function sortTree(root: CategoryNode) {
-  if (root.children.length > 1) {
+export function sortTree(root: QTreeNode) {
+  if (root.children && root.children.length > 1) {
     root.children = root.children.sort((a, b) =>
       a._id > b._id ? 1 : b._id > a._id ? -1 : 0
     );

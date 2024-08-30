@@ -6,9 +6,9 @@
     v-model="treeViewSize"
   >
     <template v-slot:before>
-      <FolderTree
+      <CategoryTree
         style="background: var(--color-library-treeview-bkgd)"
-        @exportFolder="(folder: Folder) => showExportReferenceDialog(folder)"
+        @exportCategory="(node: CategoryNode) => showExportReferenceDialog(node)"
         ref="treeview"
       />
     </template>
@@ -64,15 +64,14 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref, watch } from "vue";
 // types
-import { Folder, Project } from "src/backend/database";
+import { CategoryNode, Project } from "src/backend/database";
 // components
 import ActionBar from "src/components/library/ActionBar.vue";
-import FolderTree from "src/components/library/FolderTree.vue";
+import CategoryTree from "src/components/library/CategoryTree.vue";
 import ProjectTable from "src/components/library/ProjectTable.vue";
 import RightMenu from "src/components/library/RightMenu.vue";
 // db
 import { basename, extname } from "@tauri-apps/api/path";
-import { template } from "lodash";
 import {
   exportMeta,
   generateCiteKey,
@@ -98,7 +97,7 @@ const settingStore = useSettingStore();
  * Data
  *********************************/
 // component refs
-const treeview = ref<typeof FolderTree | null>(null);
+const treeview = ref<typeof CategoryTree | null>(null);
 
 // data
 const searchString = ref("");
@@ -107,19 +106,19 @@ const treeViewSize = ref(20);
 
 watch(
   () => [
-    projectStore.selectedFolderId,
+    projectStore.selectedCategory,
     projectStore.showNotebooks,
     projectStore.showReferences,
   ],
   async () => {
     projectStore.selected = [];
-    projectStore.loadProjects(projectStore.selectedFolderId);
+    projectStore.loadProjects(projectStore.selectedCategory);
   },
   { deep: true }
 );
 
 onMounted(async () => {
-  projectStore.loadProjects(projectStore.selectedFolderId);
+  projectStore.loadProjects(projectStore.selectedCategory);
 });
 
 /************************************************
@@ -155,7 +154,7 @@ function showImportDialog(collectionPath: string) {
  */
 async function addEmptyProject() {
   // udpate db and ui
-  const project = projectStore.createProject(projectStore.selectedFolderId);
+  const project = projectStore.createProject(projectStore.selectedCategory);
   projectStore.addProject(project, true);
 }
 
@@ -163,7 +162,7 @@ async function addEmptyProject() {
  * Add a notebook project
  */
 async function addNotebook() {
-  const project = projectStore.createProject(projectStore.selectedFolderId);
+  const project = projectStore.createProject(projectStore.selectedCategory);
   project.type = "notebook";
   projectStore.addProject(project, true);
 }
@@ -175,7 +174,7 @@ async function addNotebook() {
 async function addProjectsByFiles(filePaths: string[]) {
   for (let filePath of filePaths) {
     try {
-      let project = projectStore.createProject(projectStore.selectedFolderId);
+      let project = projectStore.createProject(projectStore.selectedCategory);
       await projectStore.addProject(project, true);
       let filename = (await copyFileToProjectFolder(
         filePath,
@@ -205,25 +204,25 @@ async function addProjectsByFiles(filePaths: string[]) {
 
 /**
  * Adds projects by importing projects from a collection file (.bib, ris, etc...)
- * @param {boolean} isCreateFolder - Indicates whether to create a new folder.
+ * @param {boolean} isCreateCategory - Indicates whether to create a new category.
  */
 async function addProjectsByCollection(
   collectionPath: string,
-  isCreateFolder: boolean
+  isCreateCategory: boolean
 ) {
   if (collectionPath === "") return;
-  // create folder if user wants to
-  if (isCreateFolder) {
+  // create category if user wants to
+  if (isCreateCategory) {
     if (!treeview.value) return;
     let rootNode = treeview.value.getLibraryNode();
     if (!rootNode) return;
-    let folderName = await basename(
+    let categoryLabel = await basename(
       collectionPath,
       `.${await extname(collectionPath)}`
     );
 
     let focus = true;
-    await treeview.value.addFolder(rootNode, folderName, focus);
+    await treeview.value.addCategoryNode(rootNode, categoryLabel, focus);
   }
 
   await nextTick(); //wait until ui actions settled
@@ -231,7 +230,7 @@ async function addProjectsByCollection(
   let metas = await importMeta(collectionPath);
   for (let meta of metas) {
     // add a new project to db and update it with meta
-    let project = projectStore.createProject(projectStore.selectedFolderId);
+    let project = projectStore.createProject(projectStore.selectedCategory);
     await projectStore.addProject(project, true);
     (meta as Project)._id = generateCiteKey(meta, settingStore.projectIdRule);
     await projectStore.updateProject(project._id, meta as Project);
@@ -246,7 +245,7 @@ async function addProjectByIdentifier(identifier: string) {
   const metas = await getMeta([identifier]);
   const meta = metas[0];
   // add a new project to db and update it with meta
-  const project = projectStore.createProject(projectStore.selectedFolderId);
+  const project = projectStore.createProject(projectStore.selectedCategory);
   await projectStore.addProject(project, true);
   (meta as Project)._id = generateCiteKey(meta, settingStore.projectIdRule);
   await projectStore.updateProject(project._id, meta as Project);
@@ -254,32 +253,32 @@ async function addProjectByIdentifier(identifier: string) {
 
 /**
  * Open export dialog for citation export
- * @param {Folder} folder - The folder which needs to be exported
+ * @param {CategoryNode} node - The category which needs to be exported
  */
-function showExportReferenceDialog(folder: Folder) {
+function showExportReferenceDialog(node: CategoryNode) {
   exportDialog.show();
   exportDialog.onConfirm(async () => {
     let options = undefined;
     const format = exportDialog.format.value;
     if (format === "bibliography")
       options = { template: exportDialog.template.value };
-    await exportFolder(format, folder, options);
+    await exportCategory(format, node, options);
   });
 }
 /**********************************************************
- * FolderTree
+ * CategoryTree
  **********************************************************/
 
 /**
- * Exports a folder as a collection of references in a specified format.
+ * Exports a category as a collection of references in a specified format.
  * @param {string} format - The citation.js supported format.
  * @param {object} options - Extra export options.
  */
-async function exportFolder(
+async function exportCategory(
   format: string,
-  folder: Folder,
+  categoryNode: CategoryNode,
   options?: { format?: string; template?: string }
 ) {
-  await exportMeta(folder, format, options);
+  await exportMeta(categoryNode, format, options);
 }
 </script>

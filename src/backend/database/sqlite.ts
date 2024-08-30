@@ -8,6 +8,7 @@ import Database from "tauri-plugin-sql-api";
 import { simpleHash } from "../project/utils";
 import { BaseDirectory, readTextFile } from "@tauri-apps/api/fs";
 import { db } from "./jsondb";
+import { ref } from "vue";
 
 export async function getSqlDatabase() {
   try {
@@ -23,6 +24,7 @@ export async function getSqlDatabase() {
     return;
   }
 }
+window.getSqlDatabase = getSqlDatabase;
 
 /**
  * Creates virtual tables if they do not exist, do nothing if they exist.
@@ -74,3 +76,5 @@ export async function deleteDBTable(tableName: string) {
   const sqldb = await Database.load(`sqlite:${databaseId}.db`);
   await sqldb.execute(`DELETE FROM ${tableName}`);
 }
+
+export const sqlReadyForRead = ref(false);

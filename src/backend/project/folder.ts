@@ -49,12 +49,13 @@ export async function getCategoryTree(): Promise<CategoryNode[]> {
     for (const category of categories) {
       const parts = category.split("/");
       let currentNode = root;
-      for (const part of parts) {
+      for (const [index, part] of parts.entries()) {
+        const currentCategory = parts.slice(0, index + 1).join("/");
         let childNode = currentNode.children.find(
-          (child) => child._id.split("/").at(-1) === part
+          (child) => child._id === part
         );
         if (!childNode) {
-          childNode = { _id: category, children: [] as CategoryNode[] };
+          childNode = { _id: currentCategory, children: [] as CategoryNode[] };
           currentNode.children.push(childNode);
         }
         currentNode = childNode;

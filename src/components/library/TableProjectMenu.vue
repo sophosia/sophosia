@@ -143,7 +143,9 @@
       </q-item>
 
       <q-item
-        v-if="projectStore.selectedFolderId != SpecialFolder.LIBRARY.toString()"
+        v-if="
+          projectStore.selectedCategory != SpecialCategory.LIBRARY.toString()
+        "
         clickable
         v-close-popup
         @click="showDeleteDialog(false)"
@@ -169,7 +171,7 @@ import {
   NoteType,
   PageType,
   Project,
-  SpecialFolder,
+  SpecialCategory,
   db,
 } from "src/backend/database";
 import { Ref, inject, nextTick, ref } from "vue";
@@ -272,7 +274,7 @@ function showDeleteDialog(deleteFromDB: boolean) {
   deleteDialog.isDeleteFromDB = deleteFromDB;
   deleteDialog.onConfirm(() =>
     deleteProject(
-      projectStore.selectedFolderId,
+      projectStore.selectedCategory,
       deleteDialog.deleteProjects,
       deleteDialog.isDeleteFromDB
     )

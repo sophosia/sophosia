@@ -166,6 +166,12 @@ const headers = computed(() => {
 });
 
 const computedRows = ref(props.projects);
+watch(
+  () => props.projects,
+  () => {
+    computedRows.value = props.projects;
+  }
+);
 watch(() => props.searchString, filterRows);
 
 onMounted(() => {

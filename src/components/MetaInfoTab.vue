@@ -338,7 +338,7 @@
       </div>
       <div class="q-pb-sm">
         <q-chip
-          v-for="(name, index) in categories"
+          v-for="(name, index) in meta.categories"
           class="chip"
           :key="index"
           :ripple="false"
@@ -407,7 +407,7 @@
 
 <script setup lang="ts">
 // types
-import { Author, Folder, Meta, Page, Project } from "src/backend/database";
+import { Author, Meta, Page, Project } from "src/backend/database";
 import type { PropType } from "vue";
 import { computed, ref, watch, watchEffect } from "vue";
 // backend stuff
@@ -415,7 +415,6 @@ import { invoke } from "@tauri-apps/api";
 import { basename } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/shell";
 import { copyToClipboard } from "quasar";
-import { getFolder } from "src/backend/project/folder";
 import {
   formatMetaData,
   generateCiteKey,
@@ -426,6 +425,7 @@ import { getTitle } from "src/backend/project/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
+import { onMounted } from "vue";
 const projectStore = useProjectStore();
 const settingStore = useSettingStore();
 const layoutStore = useLayoutStore();
@@ -434,7 +434,6 @@ const props = defineProps({ project: Object as PropType<Project> });
 const tab = ref("meta");
 const name = ref(""); // author name
 const tag = ref(""); // project tag
-const categories = ref<string[]>([]);
 const references = ref<{ text: string; link: string }[]>([]);
 
 const meta = computed(() => props.project);
@@ -496,15 +495,8 @@ watch(tab, () => {
   if (tab.value === "reference") getReferences();
 });
 
-watchEffect(async () => {
-  // get parentFolder labels of a projects
-  let ids = props.project?.folderIds;
-  if (!ids) return;
-  categories.value = [];
-  for (let id of ids) {
-    let folder = (await getFolder(id)) as Folder | undefined;
-    if (folder) categories.value.push(folder.label);
-  }
+onMounted(() => {
+  console.log("metainfotab mounted");
 });
 
 /**********************************************
@@ -616,7 +608,7 @@ async function removeTag(tag: string) {
 async function getReferences() {
   if (!!!meta.value?.reference || meta.value.reference.length === 0) return;
 
-  for (let i in meta.value.reference) {
+  for (let _ in meta.value.reference) {
     references.value.push({ text: "", link: "" });
   }
 

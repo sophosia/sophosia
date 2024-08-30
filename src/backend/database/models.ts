@@ -103,7 +103,7 @@ export interface Project extends Meta {
 export enum SpecialCategory {
   LIBRARY = "library",
   ADDED = "added",
-  FAVORITES = "favorites",
+  FAVORITES = "favorite",
 }
 
 /******************************************
