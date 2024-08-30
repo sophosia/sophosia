@@ -24,7 +24,7 @@ import { join } from "@tauri-apps/api/path";
 import { db } from "../jsondb";
 import { exists, readDir, readTextFile, removeDir } from "@tauri-apps/api/fs";
 import { Project } from "../models";
-import { getAllProjects, updateProject } from "src/backend/project/project";
+import { getAllProjects, updateProject } from "src/backend/project";
 
 /**
  * Folder is for both database and UI display use

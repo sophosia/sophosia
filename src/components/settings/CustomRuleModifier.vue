@@ -74,7 +74,7 @@ import {
   citeKeyKeywords,
   formatMetaData,
   generateCiteKey,
-} from "src/backend/project/meta";
+} from "src/backend/meta";
 import { onMounted } from "vue";
 import { PropType, computed, ref } from "vue";
 

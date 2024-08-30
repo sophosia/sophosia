@@ -82,7 +82,7 @@ import { QSplitter, throttle } from "quasar";
 import { db } from "src/backend/database";
 import { Annotation, Ink } from "src/backend/pdfannotation/annotations";
 import PDFApplication from "src/backend/pdfreader";
-import { getProject } from "src/backend/project/project";
+import { getProject } from "src/backend/project";
 import { useLayoutStore } from "src/stores/layoutStore";
 const layoutStore = useLayoutStore();
 

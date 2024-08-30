@@ -15,10 +15,10 @@ import type {
   Stack,
 } from "src/backend/database/models";
 import { getLayout, updateLayout } from "src/backend/layout";
-import { getPDF, getProject } from "src/backend/project/project";
+import { getPDF, getProject } from "src/backend/project";
 import { toRaw } from "vue";
 import { useProjectStore } from "./projectStore";
-import { getDataType } from "src/backend/project/utils";
+import { getDataType } from "src/backend/utils";
 
 export const useLayoutStore = defineStore("layoutStore", {
   state: () => ({

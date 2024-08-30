@@ -142,8 +142,8 @@ import {
   updateCategory,
   deleteCategory,
   moveCategoryInto,
-} from "src/backend/project/folder";
-import { sortTree } from "src/backend/project/utils";
+} from "src/backend/category";
+import { sortTree } from "src/backend/utils";
 import { useProjectStore } from "src/stores/projectStore";
 import { CategoryNode } from "src/backend/database";
 

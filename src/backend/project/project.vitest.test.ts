@@ -5,7 +5,7 @@ import {
   getProject,
   getProjects,
   updateProject,
-} from "src/backend/project/project";
+} from "src/backend/project";
 import { mockFS } from "test/vitest/setup-file";
 import { afterEach, describe, expect, it } from "vitest";
 import { Project, db } from "../database";

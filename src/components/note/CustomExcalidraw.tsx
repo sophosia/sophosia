@@ -2,26 +2,26 @@ import {
   Excalidraw,
   MainMenu,
   serializeAsJSON,
-  serializeLibraryAsJSON
+  serializeLibraryAsJSON,
 } from "@excalidraw/excalidraw";
 import { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
 import {
   BinaryFiles,
   ExcalidrawImperativeAPI,
   AppState as ExcalidrawState,
-  LibraryItems
+  LibraryItems,
 } from "@excalidraw/excalidraw/types/types";
 import {
   createDir,
   exists,
   readTextFile,
-  writeTextFile
+  writeTextFile,
 } from "@tauri-apps/api/fs";
 import { join } from "@tauri-apps/api/path";
 import { debounce } from "quasar";
 import React, { useEffect, useState } from "react";
 import { db } from "src/backend/database";
-import { loadNote, saveNote } from "src/backend/project/note";
+import { loadNote, saveNote } from "src/backend/note";
 import "src/css/excalidraw/theme.scss";
 import { useSettingStore } from "src/stores/settingStore";
 
@@ -152,7 +152,7 @@ export default function CustomExcalidraw(props: { noteId: string }) {
     onMounted();
   }, []);
 
-  return ready ? 
+  return ready ? (
     <Excalidraw
       ref={(api: ExcalidrawImperativeAPI) => {
         setExcalidrawAPI(api);
@@ -170,5 +170,7 @@ export default function CustomExcalidraw(props: { noteId: string }) {
         <MainMenu.DefaultItems.Help />
       </MainMenu>
     </Excalidraw>
-   : <div></div>;
+  ) : (
+    <div></div>
+  );
 }

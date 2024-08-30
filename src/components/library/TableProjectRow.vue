@@ -67,8 +67,8 @@
 <script setup lang="ts">
 import { copyToClipboard, useQuasar } from "quasar";
 import { Author, Project } from "src/backend/database";
-import { formatMetaData } from "src/backend/project/meta";
-import { getTitle } from "src/backend/project/utils";
+import { formatMetaData } from "src/backend/meta";
+import { getTitle } from "src/backend/utils";
 import { useSettingStore } from "src/stores/settingStore";
 import { PropType, ref } from "vue";
 import { useI18n } from "vue-i18n";

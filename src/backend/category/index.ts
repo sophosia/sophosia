@@ -1,6 +1,7 @@
+import { QTreeNode } from "quasar";
 import { Project, CategoryNode, SpecialCategory } from "../database";
-import { getAllProjects, updateProject } from "./project";
-import { sortTree } from "./utils";
+import { getAllProjects, updateProject } from "../project";
+import { sortTree } from "../utils";
 
 /**
  * Get the category tree
@@ -61,7 +62,7 @@ export async function getCategoryTree(): Promise<CategoryNode[]> {
         currentNode = childNode;
       }
     }
-    sortTree(root);
+    sortTree(root as QTreeNode);
     return root.children;
   } catch (error) {
     console.log(error);

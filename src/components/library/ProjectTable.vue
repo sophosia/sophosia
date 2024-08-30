@@ -107,8 +107,7 @@
 <script setup lang="ts">
 // types
 import { QTable, QTableColumn, QTr } from "quasar";
-import { Note, Project } from "src/backend/database";
-import { queryData } from "src/backend/project/indexer";
+import { Note, Project, sqldb } from "src/backend/database";
 import {
   PropType,
   computed,
@@ -330,7 +329,7 @@ async function filterRows() {
   }
   computedRows.value = [];
   expansionText.value = [];
-  const results = (await queryData(props.searchString)) as Array<{
+  const results = (await sqldb.queryData(props.searchString)) as Array<{
     id: string;
     pages: string;
     extracts: string;

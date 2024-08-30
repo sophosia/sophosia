@@ -179,13 +179,13 @@ import { Ref, inject, nextTick, ref } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { join } from "@tauri-apps/api/path";
 import { copyToClipboard } from "quasar";
-import { generateCiteKey, getMeta } from "src/backend/project/meta";
+import { generateCiteKey, getMeta } from "src/backend/meta";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { deleteDialog, identifierDialog } from "../dialogs/dialogController";
 import { watchEffect } from "vue";
-import { getProject } from "src/backend/project/project";
+import { getProject } from "src/backend/project";
 
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();

@@ -1,5 +1,5 @@
 import { extname, sep } from "@tauri-apps/api/path";
-import { Author, Meta, CategoryNode, db } from "../database";
+import { Author, Meta, db } from "./database";
 import { QTreeNode } from "quasar";
 
 /**

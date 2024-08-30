@@ -47,7 +47,7 @@ import { useLayoutStore } from "src/stores/layoutStore";
 import cytoscape from "cytoscape";
 import cola from "cytoscape-cola";
 import { EventBus } from "quasar";
-import { getGraph } from "src/backend/project/graph";
+import { getGraph } from "src/backend/graph";
 cytoscape.use(cola);
 
 const props = defineProps({

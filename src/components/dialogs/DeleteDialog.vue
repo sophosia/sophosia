@@ -61,7 +61,7 @@
   </q-dialog>
 </template>
 <script setup lang="ts">
-import { getTitle } from "src/backend/project/utils";
+import { getTitle } from "src/backend/utils";
 import { useSettingStore } from "src/stores/settingStore";
 import { deleteDialog } from "./dialogController";
 const settingStore = useSettingStore();

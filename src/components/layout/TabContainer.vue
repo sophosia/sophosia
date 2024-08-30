@@ -99,9 +99,9 @@
 import { invoke } from "@tauri-apps/api";
 import { copyToClipboard, useQuasar } from "quasar";
 import { PageType, type Page, type Project } from "src/backend/database";
-import { generateCiteKey } from "src/backend/project/meta";
-import { getProject } from "src/backend/project/project";
-import { getDataType, idToPath } from "src/backend/project/utils";
+import { generateCiteKey } from "src/backend/meta";
+import { getProject } from "src/backend/project";
+import { getDataType, idToPath } from "src/backend/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { PropType, ref } from "vue";

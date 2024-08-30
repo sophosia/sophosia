@@ -1,4 +1,4 @@
-import { db, FolderOrNote, idb, Note, NoteType } from "../database";
+import { sqldb, db, FolderOrNote, idb, Note, NoteType } from "../database";
 import { Buffer } from "buffer";
 import {
   exists,
@@ -13,12 +13,15 @@ import {
 } from "@tauri-apps/api/fs";
 import { join, extname, basename } from "@tauri-apps/api/path";
 import type { FileEntry } from "@tauri-apps/api/fs";
-import { batchReplaceLink } from "./scan";
-import { updateLinks } from "./graph";
+import { processEntries } from "../scan";
+import { updateLinks } from "../graph";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import { idToPath, pathToId } from "./utils";
+import { idToLink, idToPath, pathToId } from "../utils";
 import { i18n } from "src/boot/i18n";
+import { ref } from "vue";
 const { t } = i18n.global;
+
+export const isLinkUpdated = ref(false); // to notify the reloading of note editor
 
 /**
  * Creates a new note with a unique name in the specified folder.
@@ -72,11 +75,51 @@ export async function addNote(note: Note): Promise<Note | undefined> {
     await writeTextFile(idToPath(note._id), "");
 
     // add to db
-    await idb.put("notes", { noteId: note._id });
+    const meta = await metadata(idToPath(note._id));
+    const props = Object.assign(note, {
+      timestampAdded: meta.createdAt.getTime(),
+      timestampModified: meta.modifiedAt.getTime(),
+      content: "",
+    });
+    insertOrUpdateNote(note._id, props);
     return note;
   } catch (error) {
     console.log(error);
   }
+}
+
+/**
+ * Insert or update a note in notes table
+ *
+ * @async
+ * @param {string} noteId - the original noteId
+ * @param {Note & {
+    content: string;
+    timestampAdded: number;
+    timestampModified: number;
+  }} props - new properties of the note
+ */
+async function insertOrUpdateNote(
+  noteId: string,
+  props: Note & {
+    content: string;
+    timestampAdded: number;
+    timestampModified: number;
+  }
+) {
+  await sqldb.execute("DELETE FROM notes WHERE note_id = $1", [noteId]);
+  await sqldb.execute(
+    `INSERT INTO notes (meta_id, note_id, type, content, timestamp_added, timestamp_modified)
+VALUES ($1, $2, $3, $4, $5, $6)`,
+    [
+      props.projectId,
+      props._id,
+      props.type,
+      props.content,
+      props.timestampAdded,
+      props.timestampModified,
+    ]
+  );
 }
 
 /**
@@ -93,11 +136,17 @@ export async function deleteNote(noteId: string) {
     await removeFile(idToPath(noteId));
 
     // update db
-    await idb.delete("notes", noteId);
-    await updateLinks(noteId, []); // delete all links starting from this note
+    removeNoteAndLinks(noteId);
   } catch (error) {
     console.log(error);
   }
+}
+
+async function removeNoteAndLinks(noteId: string) {
+  await sqldb.execute("DELETE FROM notes WHERE note_id = $1", [noteId]);
+  await sqldb.execute("DELETE FROM links WHERE source = $1 OR target = $1", [
+    noteId,
+  ]);
 }
 
 /**
@@ -112,25 +161,37 @@ export async function deleteNote(noteId: string) {
  *
  * @throws Logs an error if the renaming process fails.
  */
-export async function renameNote(oldNoteId: string, newNoteId: string) {
+export async function renameNote(
+  oldNoteId: string,
+  newNoteId: string
+): Promise<Note | undefined> {
   try {
     const oldPath = idToPath(oldNoteId);
     const ext = await extname(oldPath);
-    try {
-      await extname(newNoteId); // if the label has extension, do nothing
-    } catch (error) {
-      newNoteId += `.${ext}`; // if not, add extension to the end
-    }
+    if (!newNoteId.endsWith(`.${ext}`)) newNoteId += `.${ext}`;
     const newPath = idToPath(newNoteId);
 
     await renameFile(oldPath, newPath);
 
-    // update db
-    // update note in notes store
-    await idb.delete("notes", oldNoteId);
-    await idb.put("notes", { noteId: newNoteId });
-    // replace all related links in other markdown files and update indexeddb
+    // replace all related links in other markdown files
+    // and update related rows in sqldb
     await batchReplaceLink(oldNoteId, newNoteId);
+    // udpate links in links table
+    await sqldb.execute(
+      `
+UPDATE links
+SET source = CASE
+  WHEN source = $1 THEN $2
+  ELSE source
+END,
+SET target = CASE
+  WHEN target = $1 THEN $2
+  ELSE target
+END
+WHERE source = $1 OR target = $2
+`,
+      [oldNoteId, newNoteId]
+    );
 
     return {
       _id: newNoteId,
@@ -191,6 +252,18 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
 export async function getNotes(folderId: string): Promise<Note[]> {
   try {
     const notes = [] as Note[];
+    let results =
+      (await sqldb.select<{ note_id: string }[]>(
+        "SELECT note_id FROM notes WHERE note_id LIKE '$1%'",
+        [folderId]
+      )) || [];
+
+    if (results.length > 0) {
+      for (const result of results)
+        notes.push((await getNote(result.note_id)) as Note);
+      return notes;
+    }
+
     async function processEntries(entries: FileEntry[]) {
       for (const entry of entries) {
         const meta = await metadata(entry.path);
@@ -236,7 +309,7 @@ export async function getNotes(folderId: string): Promise<Note[]> {
  * Recursively traverses through folders and notes, constructing a hierarchical tree structure.
  * Skips non-note files and the project's main note.
  */
-export async function getNoteTree(projectId: string) {
+export async function getNoteTree(projectId: string): Promise<FolderOrNote[]> {
   async function _dfs(entries: FileEntry[], children: FolderOrNote[]) {
     for (const entry of entries) {
       const meta = await metadata(entry.path);
@@ -284,8 +357,13 @@ export async function loadNote(
   notePath?: string
 ): Promise<string> {
   try {
-    const note = (await getNote(noteId)) as Note;
-    return await readTextFile(notePath || idToPath(note._id));
+    const result =
+      (await sqldb.select<{ content: string }[]>(
+        "SELECT content FROM notes WHERE note_id = $1",
+        [noteId]
+      )) || [];
+    if (result.length > 0) return result[0].content;
+    else return await readTextFile(notePath || idToPath(noteId));
   } catch (error) {
     return "";
   }
@@ -303,6 +381,10 @@ export async function saveNote(
 ) {
   try {
     await writeTextFile(notePath || idToPath(noteId), content);
+    sqldb.execute("UPDATE notes SET content = $1 WHERE note_id = $2", [
+      content,
+      noteId,
+    ]);
   } catch (error) {
     console.log(error);
   }
@@ -440,4 +522,52 @@ export async function renameFolder(oldFolderId: string, newFolderId: string) {
   } catch (error) {
     console.log(error);
   }
+}
+
+/**
+ * Replace all associated links in all markdown notes if a note is renamed
+ * @param oldNoteId
+ * @param newNoteId
+ */
+export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
+  await sqldb.execute("UPDATE notes SET note_id = $1 WHERE note_id = $2", [
+    newNoteId,
+    oldNoteId,
+  ]);
+  const entries = await readDir(db.config.storagePath, { recursive: true });
+  await processEntries(entries, async (file: FileEntry) => {
+    // only process markdown file
+    if ((await extname(file.path)) !== "md") return;
+
+    let content = await readTextFile(file.path);
+    const regex = new RegExp(
+      `\\[${oldNoteId}\\#?\\w*\\]\\(${idToLink(oldNoteId)}\\#?\\w*\\)`,
+      "gm"
+    );
+    const localRegex = new RegExp(
+      `\\[${oldNoteId}\\#?\\w*\\]\\(${idToLink(oldNoteId)}\\#?\\w*\\)`,
+      "m"
+    ); // remove g modifier to make match return after first found
+    const matches = content.match(localRegex);
+    if (matches) {
+      const oldIdAndHashtag = matches[0].match(/\[.*\]/)![0].slice(1, -1); // remove bracket using slice
+      const oldLinkAndHashtag = matches[0].match(/\(.*\)/)![0].slice(1, -1);
+      const newIdAndHashtag = oldIdAndHashtag.replace(oldNoteId, newNoteId);
+      const newLinkAndHashtag = oldLinkAndHashtag.replace(
+        idToLink(oldNoteId),
+        idToLink(newNoteId)
+      );
+      const newContent = content.replaceAll(
+        regex,
+        `[${newIdAndHashtag}](${newLinkAndHashtag})`
+      );
+      await writeTextFile(file.path, newContent);
+
+      sqldb &&
+        (await sqldb.execute(
+          "UPDATE notes SET content = $1 WHERE note_id = $2",
+          [newContent, pathToId(file.path)]
+        ));
+    }
+  });
 }

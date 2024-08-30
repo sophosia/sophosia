@@ -415,13 +415,9 @@ import { invoke } from "@tauri-apps/api";
 import { basename } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/shell";
 import { copyToClipboard } from "quasar";
-import {
-  formatMetaData,
-  generateCiteKey,
-  getMeta,
-} from "src/backend/project/meta";
+import { formatMetaData, generateCiteKey, getMeta } from "src/backend/meta";
 import { types } from "src/backend/project/types";
-import { getTitle } from "src/backend/project/utils";
+import { getTitle } from "src/backend/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";

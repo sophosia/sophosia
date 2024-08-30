@@ -188,14 +188,9 @@ import {
   PageType,
   Project,
 } from "src/backend/database";
-import { formatMetaData, generateCiteKey } from "src/backend/project/meta";
-import { getNotes } from "src/backend/project/note";
-import {
-  getDataType,
-  getTitle,
-  idToPath,
-  oldToNewId,
-} from "src/backend/project/utils";
+import { formatMetaData, generateCiteKey } from "src/backend/meta";
+import { getNotes } from "src/backend/note";
+import { getDataType, getTitle, idToPath, oldToNewId } from "src/backend/utils";
 import { exportDialog } from "src/components/dialogs/dialogController";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";

@@ -11,9 +11,9 @@ import {
   db,
   idb,
 } from "../database";
-import { getNote, getNotes } from "./note";
-import { getProject } from "./project";
-import { getDataType } from "./utils";
+import { getNote, getNotes } from "../note";
+import { getProject } from "../project";
+import { getDataType } from "../utils";
 
 /**
  * Update links of a note

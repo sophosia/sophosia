@@ -19,7 +19,7 @@ import {
   getNote,
   renameFolder,
   renameNote,
-} from "src/backend/project/note";
+} from "src/backend/note";
 import {
   addProject,
   attachPDF,
@@ -29,8 +29,8 @@ import {
   getProjects,
   renamePDF,
   updateProject,
-} from "src/backend/project/project";
-import { sortTree } from "src/backend/project/utils";
+} from "src/backend/project";
+import { sortTree } from "src/backend/utils";
 import { useLayoutStore } from "./layoutStore";
 
 export const useProjectStore = defineStore("projectStore", {

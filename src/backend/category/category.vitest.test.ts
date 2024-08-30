@@ -1,24 +1,16 @@
-import {
-  addFolder,
-  deleteFolder,
-  getFolder,
-  getFolderTree,
-  getParentFolder,
-  moveFolderInto,
-  updateFolder,
-} from "src/backend/project/folder";
+import "src/backend/category";
 import { beforeEach, describe, expect, it } from "vitest";
-import { Folder, SpecialFolder, db } from "../database";
+import { CategoryNode, SpecialCategory, db } from "../database";
 
 const library = {
-  _id: SpecialFolder.LIBRARY,
+  _id: SpecialCategory.LIBRARY,
   timestampAdded: Date.now(),
   timestampModified: Date.now(),
   label: "Library",
   icon: "mdi-bookshelf",
   children: [],
   dataType: "folder",
-} as Folder;
+} as CategoryNode;
 
 describe("folder.ts", () => {
   beforeEach(async () => {

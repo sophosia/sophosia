@@ -9,7 +9,7 @@ import {
   getAllNotes,
   loadNote,
   saveNote,
-} from "src/backend/project/note";
+} from "src/backend/note";
 import { mockFS } from "app/test/vitest/setup-file";
 
 describe("note.ts", () => {

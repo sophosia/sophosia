@@ -189,10 +189,10 @@
 import { computed } from "vue";
 // db
 import { Config, Page, Project, db } from "src/backend/database";
-import { getAllProjects } from "src/backend/project/project";
+import { getAllProjects } from "src/backend/project";
 // utils
 import { useQuasar } from "quasar";
-import { generateCiteKey } from "src/backend/project/meta";
+import { generateCiteKey } from "src/backend/meta";
 import { useAccountStore } from "src/stores/accountStore";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";

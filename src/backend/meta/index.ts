@@ -7,13 +7,13 @@ import {
   readTextFile,
   writeTextFile,
 } from "@tauri-apps/api/fs";
-import { Author, Folder, Meta, Project, db } from "../database";
-import { getProjects } from "./project";
+import { Author, CategoryNode, Meta, db } from "../database";
+import { getProjects } from "../project";
 // util (to scan identifier in PDF)
 import * as pdfjsLib from "pdfjs-dist";
 import { TextItem } from "pdfjs-dist/types/src/display/api";
 import { useSettingStore } from "src/stores/settingStore";
-import { getTitle } from "./utils";
+import { getTitle } from "../utils";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 /**
@@ -103,7 +103,7 @@ export async function getMeta(identifiers: string[]): Promise<Meta[]> {
  *
  * @param {string} format - The format for the metadata export (e.g., 'json', 'bibtex').
  * @param {Object} options - Formatting options.
- * @param {Folder} [folder] - The folder containing projects to export metadata for.
+ * @param {CategoryNode} [categoryNode] - The folder containing projects to export metadata for.
  * @param {Project} [project] - A single project for which to export metadata.
  *
  * Depending on the provided parameters, this function either exports metadata for a single project,
@@ -113,12 +113,12 @@ export async function getMeta(identifiers: string[]): Promise<Meta[]> {
  * @throws Throws and logs an error if the export process encounters any issues.
  */
 export async function exportMeta(
-  folder: Folder,
+  categoryNode: CategoryNode,
   format: string,
   options?: { format?: string; template?: string }
 ) {
   try {
-    const projects = await getProjects(folder._id);
+    const projects = await getProjects(categoryNode._id);
     const metas = await formatMetaData(projects, format, options);
 
     if (format === "json") {

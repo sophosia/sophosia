@@ -126,7 +126,7 @@ import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
 import { basename, dirname, join } from "@tauri-apps/api/path";
 import { copyToClipboard } from "quasar";
-import { idToPath, oldToNewId } from "src/backend/project/utils";
+import { idToPath, oldToNewId } from "src/backend/utils";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";

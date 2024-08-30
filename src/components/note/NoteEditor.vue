@@ -34,29 +34,29 @@ import {
   loadNote,
   saveNote,
   uploadImage,
-} from "src/backend/project/note";
+} from "src/backend/note";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 
-import { getAllProjects, getProject } from "src/backend/project/project";
+import { getAllProjects, getProject } from "src/backend/project";
 // util
 import { sep } from "@tauri-apps/api/path";
 import _ from "lodash";
 import { EventBus, debounce } from "quasar";
-import { generateCiteKey } from "src/backend/project/meta";
+import { generateCiteKey } from "src/backend/meta";
 import {
   authorToString,
   getDataType,
   idToLink,
   linkToId,
-} from "src/backend/project/utils";
+} from "src/backend/utils";
 import { useI18n } from "vue-i18n";
 
 import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import Fuse from "fuse.js";
-import { getForwardLinks, updateLinks } from "src/backend/project/graph";
+import { getForwardLinks, updateLinks } from "src/backend/graph";
 import HoverPane from "./HoverPane.vue";
 
 const projectStore = useProjectStore();

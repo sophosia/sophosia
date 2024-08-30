@@ -3,7 +3,7 @@ import {
   generateCiteKey,
   getMeta,
   processIdentifiers,
-} from "src/backend/project/meta";
+} from "src/backend/meta";
 import { useSettingStore } from "src/stores/settingStore";
 import { beforeAll, describe, expect, it } from "vitest";
 

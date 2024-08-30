@@ -78,8 +78,8 @@ import {
   getMeta,
   getMetaFromFile,
   importMeta,
-} from "src/backend/project/meta";
-import { copyFileToProjectFolder } from "src/backend/project/project";
+} from "src/backend/meta";
+import { copyFileToProjectFolder } from "src/backend/project/fileOps";
 import {
   exportDialog,
   identifierDialog,

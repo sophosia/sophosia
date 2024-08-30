@@ -1,8 +1,8 @@
 import { exists, readDir, readTextFile, removeDir } from "@tauri-apps/api/fs";
 import { join } from "@tauri-apps/api/path";
 import { i18n } from "src/boot/i18n";
-import { saveNote } from "src/backend/project/note";
-import { authorToString } from "src/backend/project/utils";
+import { saveNote } from "src/backend/note";
+import { authorToString } from "src/backend/utils";
 import { db } from "../jsondb";
 import { Project } from "../models";
 const { t } = i18n.global;
