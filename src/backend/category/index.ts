@@ -1,7 +1,8 @@
 import { QTreeNode } from "quasar";
-import { Project, CategoryNode, SpecialCategory } from "../database";
-import { getAllProjects, updateProject } from "../project";
+import { CategoryNode } from "../database";
 import { sortTree } from "../utils";
+import { categoryFileAGUD } from "./fileOps";
+import { categorySQLAGUD } from "./sqliteOps";
 
 /**
  * Get the category tree
@@ -9,43 +10,25 @@ import { sortTree } from "../utils";
  * @returns {CategoryNode[]} categoryTree - The category tree
  *
  * @example
- * Given a category tree,
- * library
- *    |-- a
- *    |-- b
- *        |- c
- *
- * the returned data is
- * [
- *  {
- *    id: "library",
- *    children:
- *      [
- *        {
- *          id:"a"
- *        },
- *        {
- *          id: "b",
- *          children:
- *            [
- *              {
- *                id: "c"
- *              }
- *            ]
- *        }
- *      ]
- *   }
- * ]
- *
+ * unique categories in db: ["a", "a/b", "a/c/d"]
+ * Return:
+ * [{_id:"a", children: [
+ *  {_id: "a/b", children: []}
+ *  {_id: "a/c", children: [
+ *    {_id: "a/c/d", children: []}
+ *    ]}
+ *  ]}]
+ * Note that "a/c" is not in db, but it is cleared it exists because "a/c/d" exists.
  */
 export async function getCategoryTree(): Promise<CategoryNode[]> {
   try {
-    const projects = (await getAllProjects()) as Project[];
-    // get unique category paths
-    const categories = [
-      ...new Set(projects.flatMap((project) => project.categories)),
-    ];
+    // use sqldb first
+    let categories = await categorySQLAGUD.getCategories();
+    // fallback to filedb
+    if (categories.length == 0)
+      categories = await categoryFileAGUD.getCategories();
 
+    // build tree
     const root = { _id: "root", children: [] } as CategoryNode;
     for (const category of categories) {
       const parts = category.split("/");
@@ -56,17 +39,21 @@ export async function getCategoryTree(): Promise<CategoryNode[]> {
           (child) => child._id === part
         );
         if (!childNode) {
-          childNode = { _id: currentCategory, children: [] as CategoryNode[] };
+          childNode = {
+            _id: currentCategory,
+            children: [] as CategoryNode[],
+          };
           currentNode.children.push(childNode);
         }
         currentNode = childNode;
       }
     }
+    // sort tree
     sortTree(root as QTreeNode);
     return root.children;
   } catch (error) {
     console.log(error);
-    return [{ _id: SpecialCategory.LIBRARY, children: [] }];
+    return [];
   }
 }
 
@@ -76,17 +63,8 @@ export async function getCategoryTree(): Promise<CategoryNode[]> {
  * @param {string} newCategory
  */
 export async function updateCategory(oldCategory: string, newCategory: string) {
-  try {
-    const projects = (await getAllProjects()) as Project[];
-    for (const project of projects) {
-      project.categories = project.categories.map((category) =>
-        category === oldCategory ? newCategory : category
-      );
-      updateProject(project._id, project);
-    }
-  } catch (error) {
-    console.log(error);
-  }
+  categoryFileAGUD.update(oldCategory, newCategory);
+  categorySQLAGUD.update(oldCategory, newCategory);
 }
 
 /**
@@ -94,39 +72,8 @@ export async function updateCategory(oldCategory: string, newCategory: string) {
  * @param {string} category
  */
 export async function deleteCategory(category: string) {
-  try {
-    const projects = (await getAllProjects()) as Project[];
-    for (const project of projects) {
-      project.categories = project.categories.filter(
-        (cat) => !cat.startsWith(category)
-      );
-      updateProject(project._id, project);
-    }
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-/**
- * Extract the label of a category path
- *
- * @example
- * library/plasma physics -> plasma physics
- *
- * @param {string} category
- * @returns {string} label
- */
-export function getCategoryLabel(category: string): string {
-  return category.split("/").at(-1)!;
-}
-
-/**
- * Get the parent category of a given category
- * @param {string} category
- * @returns parentCategory
- */
-export function getParentCategory(category: string): string {
-  return category.split("/").slice(0, -1).join("/");
+  categoryFileAGUD.delete(category);
+  categorySQLAGUD.delete(category);
 }
 
 /**
@@ -138,18 +85,6 @@ export async function moveCategoryInto(
   dragCategory: string,
   dropCategory: string
 ) {
-  try {
-    console.log("move category into");
-    const projects = await getAllProjects();
-    for (const project of projects) {
-      project.categories = project.categories.map((category) => {
-        return category.startsWith(dragCategory)
-          ? category.replace(getParentCategory(category), dropCategory)
-          : category;
-      });
-      updateProject(project._id, project);
-    }
-  } catch (error) {
-    console.log(error);
-  }
+  categoryFileAGUD.moveInto(dragCategory, dropCategory);
+  categorySQLAGUD.moveInto(dragCategory, dropCategory);
 }

@@ -1,7 +1,11 @@
 import { Author, Project, sqldb } from "src/backend/database";
 
+/**********************************
+ * Insert / Update project
+ **********************************/
+
 /**
- * Insert a project into sqlite database
+ * Insert/replace a project into sqlite database
  *
  * @param {Project} project
  * @returns {Promise<void>}
@@ -14,34 +18,30 @@ export async function insertProject(project: Project): Promise<void> {
 }
 
 /**
- * Insert meta of a project into metas table
+ * Insert/replace meta of a project into metas table
  *
  * @param {Project} meta - meta to be inserted
  */
 export async function insertMeta(meta: Project) {
-  if (meta["original-title"] && !Array.isArray(meta["original-title"])) {
-    meta["translated-title"] = meta["title"];
-    meta["title"] = meta["original-title"];
-  }
-  await sqldb.execute("DELETE FROM metas WHERE meta_id = $1", [meta._id]);
+  await sqldb.execute("DELETE FROM metas WHERE _id = $1", [meta._id]);
   await sqldb.execute(
-    `INSERT INTO metas (meta_id, type, citation_key, title, translated_title, abstract, year, publisher, journal, volume, doi, isbn, url, favorite, timestamp_added, timestamp_modified)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+    `INSERT INTO metas (_id, type, citationKey, originalTitle, title, abstract, issued, publisher, containerTitle, volume, DOI, ISBN, ISSN, URL, favorite, timestampAdded, timestampModified)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
     [
       meta._id,
-      meta.type || "",
+      meta.type,
       meta["citation-key"],
       meta.title,
-      meta["translated-title"] || "",
-      meta.abstract || "",
-      meta.issued?.["date-parts"][0][0] || "",
-      meta.publisher || "",
-      meta["container-title"] || "",
-      meta.volume || "",
-      meta.DOI || "",
-      meta.ISBN || "",
-      meta.URL || "",
-      !!meta.favorite,
+      meta["original-title"],
+      meta.abstract,
+      meta.issued,
+      meta.publisher,
+      meta["container-title"],
+      meta.volume,
+      meta.DOI,
+      meta.ISBN,
+      meta.URL,
+      meta.favorite,
       meta.timestampAdded,
       meta.timestampModified,
     ]
@@ -49,12 +49,13 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
 }
 
 /**
- * Insert authors into authors table and insert relations of authors to a project
+ * Insert/replace authors into authors table and insert relations of authors to a project
  *
  * @param {string} projectId - id to the meta
  * @param {Author[]} authors - list of authors to be inserted
  */
 export async function insertAuthors(projectId: string, authors: Author[]) {
+  await sqldb.execute("DELETE FROM authors WHERE projectId = $1", [projectId]);
   for (const author of authors) {
     const given = author.given || "";
     const family = author.family || "";
@@ -62,50 +63,54 @@ export async function insertAuthors(projectId: string, authors: Author[]) {
     const affiliation = author.literal || "";
     // insert the meta-author relation into authors table
     sqldb.execute(
-      `INSERT INTO authors (meta_id, given, family, literal, affiliation)
+      `INSERT INTO authors (projectId, given, family, literal, affiliation)
 SELECT $1, $2, $3, $4, $5
-WHERE NOT EXISTS (SELECT 1 FROM authors WHERE meta_id = $1)`,
+WHERE NOT EXISTS (SELECT 1 FROM authors WHERE projectId = $1)`,
       [projectId, given, family, literal, affiliation]
     );
   }
 }
 
 /**
- * Insert tags of a project into the tags table
+ * Insert/replace tags of a project into the tags table
  *
  * @param {string} projectId - id of the meta
  * @param {string[]} tags - keywords of the proejcts
  */
 export async function insertTags(projectId: string, tags: string[]) {
+  await sqldb.execute("DELETE FROM tags WHERE projectId = $1", [projectId]);
   for (const tag of tags) {
     sqldb.execute(
-      `INSERT INTO tags (meta_id, tag)
+      `INSERT INTO tags (projectId, tag)
 SELECT $1, $2
-WHERE NOT EXISTS (SELECT 1 FROM tags WHERE meta_id = $1 AND tag = $2)`,
+WHERE NOT EXISTS (SELECT 1 FROM tags WHERE projectId = $1 AND tag = $2)`,
       [projectId, tag]
     );
   }
 }
 
 /**
- * Insert categories of a project into the categories table
+ * Insert/replace categories of a project into the categories table
  *
  * @param {string} projectId - id of the project
  * @param {any} categories - the categories the project belongs to
  */
 export async function insertCategories(projectId: string, categories: any) {
+  await sqldb.execute("DELETE FROM categories WHERE projectId = $1", [
+    projectId,
+  ]);
   for (const category of categories) {
     sqldb.execute(
-      `INSERT INTO categories (meta_id, category)
+      `INSERT INTO categories (projectId, category)
 SELECT $1, $2
-WHERE NOT EXISTS (SELECT 1 FROM categories WHERE meta_id = $1 AND category = $2)`,
+WHERE NOT EXISTS (SELECT 1 FROM categories WHERE projectId = $1 AND category = $2)`,
       [projectId, category]
     );
   }
 }
 
 /**
- * Insert text of PDF into contents table
+ * Insert/replac text of PDF into contents table
  *
  * @param {string} projectId - id of the meta
  * @param {string} page - page number of the content
@@ -116,21 +121,59 @@ export async function insertContent(
   page: string,
   content: string
 ) {
-  await sqldb.execute("DELETE FROM contents WHERE meta_id = $1", [projectId]);
+  await sqldb.execute("DELETE FROM contents WHERE projectId = $1", [projectId]);
   await sqldb.execute(
-    "INSERT INTO contents (meta_id, page, content) VALUES ($1, $2, $3)",
+    "INSERT INTO contents (projectId, page, content) VALUES ($1, $2, $3)",
     [projectId, page, content]
   );
 }
 
 /**********************************
- * update project
- **********************************/
-
-/**********************************
- * get project(s)
- **********************************/
-
-/**********************************
  * delete project(s)
  **********************************/
+/**
+ * Delete all associated datas of a project from sqlite database
+ *
+ * @param {string} projectId
+ */
+export async function deleteProject(projectId: string) {
+  sqldb.execute("DELETE FROM metas WHERE projectId = $1", [projectId]);
+  sqldb.execute("DELETE FROM authors WHERE projectId = $1", [projectId]);
+  sqldb.execute("DELETE FROM categories WHERE projectId = $1", [projectId]);
+  sqldb.execute("DELETE FROM tags WHERE projectId = $1", [projectId]);
+  sqldb.execute("DELETE FROM contents WHERE projectId = $1", [projectId]);
+  sqldb.execute("DELETE FROM annotations WHERE projectId = $1", [projectId]);
+  sqldb.execute("DELETE FROM notes WHERE projectId = $1", [projectId]);
+  sqldb.execute("DELETE FROM links WHERE source = $1 OR target = $1", [
+    projectId,
+  ]);
+}
+
+/**********************************
+ * Get project(s)
+ **********************************/
+export async function getProject(projectId: string) {
+  const projects = await sqldb.select<Project[]>(
+    "SELECT * FROM metas WHERE projectId = $1",
+    [projectId]
+  );
+  if (!projects) return;
+  const authors =
+    (await sqldb.select<Author[]>(
+      "SELECT * FROM authors WHERE projectId = $1",
+      [projectId]
+    )) || [];
+  const categories =
+    (await sqldb.select<string[]>(
+      "SELECT * FROM categories WHERE projectId = $1",
+      [projectId]
+    )) || [];
+  const tags =
+    (await sqldb.select<string[]>("SELECT * FROM tags WHERE projectId = $1", [
+      projectId,
+    ])) || [];
+
+  const project = projects[0];
+}
+
+export async function getProjects(category: string) {}

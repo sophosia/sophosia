@@ -59,28 +59,25 @@ export async function indexFiles() {
 }
 
 async function removeDanglingData() {
-  // check if the meta_id still has physical folders
+  // check if the projectId still has physical folders
   const results =
-    (await sqldb.select<{ meta_id: string | null }[]>(
-      "SELECT meta_id FROM metas"
-    )) || [];
+    (await sqldb.select<{ _id: string }[]>("SELECT _id FROM metas")) || [];
   const removedItemIds = [] as string[];
   for (const result of results) {
-    if (result.meta_id && !(await exists(idToPath(result.meta_id))))
-      removedItemIds.push(result.meta_id);
+    if (!(await exists(idToPath(result._id)))) removedItemIds.push(result._id);
   }
 
-  // remove the rows with meta_id if that meta has been removed from user's storagePath
+  // remove the rows with projectId if that meta has been removed from user's storagePath
   const placeholders = removedItemIds
     .map((_, index) => `$${index + 1}`)
     .join(", ");
   const queries = [
-    `DELETE FROM metas WHERE meta_id IN (${placeholders})`,
-    `DELETE FROM authors WHERE meta_id IN (${placeholders})`,
-    `DELETE FROM contents WHERE meta_id IN (${placeholders})`,
-    `DELETE FROM notes WHERE meta_id IN (${placeholders})`,
-    `DELETE FROM annotations WHERE meta_id IN (${placeholders})`,
-    `DELETE FROM tags WHERE meta_id IN (${placeholders})`,
+    `DELETE FROM metas WHERE _id IN (${placeholders})`,
+    `DELETE FROM authors WHERE projectId IN (${placeholders})`,
+    `DELETE FROM contents WHERE projectId IN (${placeholders})`,
+    `DELETE FROM notes WHERE projectId IN (${placeholders})`,
+    `DELETE FROM annotations WHERE projectId IN (${placeholders})`,
+    `DELETE FROM tags WHERE projectId IN (${placeholders})`,
     `DELETE FROM links WHERE source IN (${placeholders}) OR target IN (${placeholders})`,
   ];
   for (const query of queries) await sqldb.execute(query, removedItemIds);
@@ -175,7 +172,7 @@ async function extractExcalidrawContent(filePath: string) {
   const projectId = noteId.split("/")[0];
   const content = texts.join("\n");
   const note = {
-    id: noteId,
+    _id: noteId,
     projectId: projectId,
     type: NoteType.EXCALIDRAW,
     timestampAdded: meta.createdAt.getTime(),
@@ -201,16 +198,15 @@ async function extractAnnotContent(filePath: string) {
  * @param {AnnotationData} annot - a PDF annotaiton
  */
 async function insertAnnot(annot: AnnotationData) {
-  await sqldb.execute("DELETE FROM annotations WHERE annot_id = $1", [
-    annot._id,
-  ]);
+  await sqldb.execute("DELETE FROM annotations WHERE _id = $1", [annot._id]);
   await sqldb.execute(
-    `INSERT INTO annotations (meta_id, annot_id, type, rects, color, page_number, content, timestamp_added, timestamp_modified) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    `INSERT INTO annotations (projectId, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
     [
       annot.projectId,
       annot._id,
       annot.type,
-      JSON.stringify(annot.rects),
+      annot.rects,
       annot.color,
       annot.pageNumber,
       annot.content,
@@ -233,20 +229,20 @@ async function insertAnnot(annot: AnnotationData) {
 }} note - note to be inserted
  */
 async function insertNote(note: {
-  id: string;
+  _id: string;
   projectId: string;
   type: NoteType;
   content: string;
   timestampAdded: number;
   timestampModified: number;
 }) {
-  await sqldb.execute("DELETE FROM notes WHERE note_id = $1", [note.id]);
+  await sqldb.execute("DELETE FROM notes WHERE _id = $1", [note._id]);
   await sqldb.execute(
-    `INSERT INTO notes (meta_id, note_id, type, content, timestamp_added, timestamp_modified)
+    `INSERT INTO notes (projectId, _id, type, content, timestampAdded, timestampModified)
 VALUES ($1, $2, $3, $4, $5, $6)`,
     [
       note.projectId,
-      note.id,
+      note._id,
       note.type,
       note.content,
       note.timestampAdded,

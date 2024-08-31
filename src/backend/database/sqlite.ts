@@ -38,33 +38,33 @@ class SQLDatabase {
   async createTables() {
     const _sqldb = await this.load();
     if (!_sqldb) return;
-    // store a meta
+    // store a meta, _id is understood as projectId
     await _sqldb.execute(
-      "CREATE VIRTUAL TABLE IF NOT EXISTS metas USING fts5 (meta_id, type, citation_key, title, translated_title, abstract, year, publisher, journal, volume, doi, isbn, arxivid, url, favorite, timestamp_added, timestamp_modified)"
+      "CREATE VIRTUAL TABLE IF NOT EXISTS metas USING fts5 (_id, type, citationKey, originalTitle, title, abstract, issued, publisher, containerTitle, volume, DOI, ISBN, ISSN, URL, favorite, timestampAdded, timestampModified)"
     );
     // store the contents of pdf/epub of each meta
     await _sqldb.execute(
-      "CREATE VIRTUAL TABLE IF NOT EXISTS contents USING fts5 (meta_id, page, content)"
+      "CREATE VIRTUAL TABLE IF NOT EXISTS contents USING fts5 (projectId, page, content)"
     );
     // store the category of each meta
     await _sqldb.execute(
-      "CREATE VIRTUAL TABLE IF NOT EXISTS categories USING fts5 (meta_id, category)"
+      "CREATE VIRTUAL TABLE IF NOT EXISTS categories USING fts5 (projectId, category)"
     );
     // store the authors of each meta
     await _sqldb.execute(
-      "CREATE VIRTUAL TABLE IF NOT EXISTS authors USING fts5 (meta_id, given, family, literal, affiliation)"
+      "CREATE VIRTUAL TABLE IF NOT EXISTS authors USING fts5 (projectId, given, family, literal, affiliation)"
     );
-    // store the notes of each meta
+    // store the notes of each meta, _id is noteId
     await _sqldb.execute(
-      "CREATE VIRTUAL TABLE IF NOT EXISTS notes USING fts5 (meta_id, note_id, type, content, timestamp_added, timestamp_modified)"
+      "CREATE VIRTUAL TABLE IF NOT EXISTS notes USING fts5 (projectId, _id, type, content, timestampAdded, timestampModified)"
     );
-    // store the annotations of each meta
+    // store the annotations of each meta, _id is annotId
     await _sqldb.execute(
-      "CREATE VIRTUAL TABLE IF NOT EXISTS annotations USING fts5 (meta_id, annot_id, type, rects, color, page_number, content, timestamp_added, timestamp_modified)"
+      "CREATE VIRTUAL TABLE IF NOT EXISTS annotations USING fts5 (projectId, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)"
     );
     // store the tags of each meta
     await _sqldb.execute(
-      "CREATE VIRTUAL TABLE IF NOT EXISTS tags USING fts5 (meta_id, tag)"
+      "CREATE VIRTUAL TABLE IF NOT EXISTS tags USING fts5 (projectId, tag)"
     );
     // store the links
     await _sqldb.execute(

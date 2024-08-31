@@ -97,7 +97,7 @@
               ref="renameInput"
               v-model="newCategoryLabel"
               :style="pathDuplicate ? 'border-color: red' : ''"
-              @focus="newCategoryLabel = getCategoryLabel(prop.node._id)"
+              @focus="newCategoryLabel = getIdLabel(prop.node._id)"
               @input="checkDuplicate(prop.node)"
               @blur="renameCategoryNode(prop.node)"
               @keydown.enter="renameCategoryNode(prop.node)"
@@ -119,7 +119,7 @@
             {{
               Object.values(SpecialCategory).includes(prop.node._id)
                 ? $t(prop.node._id)
-                : getCategoryLabel(prop.node._id)
+                : getIdLabel(prop.node._id)
             }}
           </div>
         </div>
@@ -137,13 +137,11 @@ import { onMounted, ref } from "vue";
 //db
 import {
   getCategoryTree,
-  getCategoryLabel,
-  getParentCategory,
   updateCategory,
   deleteCategory,
   moveCategoryInto,
 } from "src/backend/category";
-import { sortTree } from "src/backend/utils";
+import { sortTree, getIdLabel, getParentId } from "src/backend/utils";
 import { useProjectStore } from "src/stores/projectStore";
 import { CategoryNode } from "src/backend/database";
 import { useI18n } from "vue-i18n";
@@ -206,7 +204,7 @@ async function addCategoryNode(
     node._id = `${parentNode._id}/${t("new", { type: t("category") })}`;
     let i = 1;
     while (tree.value.getNodeByKey(node._id)) {
-      node._id += `${parentNode._id}/${t("new", { type: t("category") })} ${i}`;
+      node._id = `${parentNode._id}/${t("new", { type: t("category") })} ${i}`;
       i++;
     }
   }
@@ -305,7 +303,7 @@ function renameCategoryNode(node: CategoryNode) {
 
   // update ui
   renamingCategory.value = "";
-  sortTree(categoryNodes.value[0]);
+  sortTree(categoryNodes.value[0] as QTreeNode);
 }
 
 /**
@@ -370,35 +368,47 @@ function onDragLeave(e: DragEvent, node: CategoryNode) {
  */
 async function onDrop(e: DragEvent, node: CategoryNode) {
   // record this first otherwise dragend events makes it null
-  let _dragoverNode = dragoverNode.value as CategoryNode;
-  let _draggingNode = draggingNode.value as CategoryNode;
+  if (!draggingNode.value) return;
+  const dragId = draggingNode.value._id;
+  const dropId = node._id;
+  // no dropping into itself
+  if (dragId === dropId) return;
   let draggedProjectsRaw = e.dataTransfer?.getData("draggedProjects");
 
   if (draggedProjectsRaw) {
     // drag and drop project into category
     for (let project of JSON.parse(draggedProjectsRaw) as Project[]) {
-      if (!project.categories.includes(_dragoverNode._id)) {
-        project.categories.push(_dragoverNode._id);
+      if (!project.categories.includes(dragId)) {
+        project.categories.push(dragId);
         await projectStore.updateProject(project._id, project);
       }
     }
   } else {
     // drag category into another category
-    // update ui (do this first since parentcategory will change)
-    // if no dragging category or droping a category "into" itself, exit
-    if (_draggingNode === null || draggingNode.value == node) return;
-    if (!tree.value) return;
-    let dragParentNode = tree.value.getNodeByKey(
-      getParentCategory(_draggingNode._id)
-    ) as CategoryNode;
-    dragParentNode.children = dragParentNode.children.filter(
-      (node) =>
-        (node as CategoryNode)._id != (_draggingNode as CategoryNode)._id
-    );
-    node.children.push(_draggingNode);
+    // check duplicate
+    let newId = `${dropId}/${getIdLabel(dragId)}`;
+    let i = 1;
+    while (tree.value!.getNodeByKey(newId)) {
+      newId = `${dropId}/${getIdLabel(dragId)} ${i}`;
+      i++;
+    }
+
+    // move ui nodes
+    function moveNodes(root: CategoryNode) {
+      if (root._id === dropId) {
+        root.children.push({
+          _id: newId,
+          children: draggingNode.value!.children,
+        });
+      }
+      root.children = root.children.filter((n) => n._id !== dragId);
+      if (root._id.startsWith(dragId!)) root._id.replace(dragId!, newId);
+      for (let child of root.children) moveNodes(child);
+    }
+    moveNodes(categoryNodes.value[0]);
 
     // update db
-    await moveCategoryInto(_draggingNode._id, node._id);
+    await moveCategoryInto(dragId, dropId);
   }
 
   onDragEnd(e);

@@ -15,6 +15,18 @@ export function sortTree(root: QTreeNode) {
   }
 }
 
+export function traverseTree(
+  root: QTreeNode,
+  processNode: (node: QTreeNode) => void
+) {
+  if (root.children && root.children.length > 1) {
+    for (let child of root.children) {
+      processNode(child);
+      traverseTree(child, processNode);
+    }
+  }
+}
+
 /**
  * Convert array of author objects to string
  * @param authors
@@ -134,4 +146,33 @@ export function simpleHash(msg: string): string {
   }
   // Convert to 32bit unsigned integer in base 36 and pad with "0" to ensure length is 7.
   return (hash >>> 0).toString(36).padStart(7, "0").toUpperCase();
+}
+
+/**
+ * Extract the label of an id
+ *
+ * @param {string} id
+ * @returns {string} label
+ *
+ * @example
+ * library/plasma physics -> plasma physics
+ * projectId/noteId.md -> noteId.md
+ */
+export function getIdLabel(id: string): string {
+  return id.split("/").at(-1)!;
+}
+
+/**
+ * Get the parent id of a given id
+ *
+ * @param {string} id
+ * @returns {string} parentId
+ *
+ *
+ * @example
+ * projectId/noteId.md -> projectId
+ * projectId/folderId/noteId.md -> projectId/folderId
+ */
+export function getParentId(id: string): string {
+  return id.split("/").slice(0, -1).join("/");
 }

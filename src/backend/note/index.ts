@@ -107,9 +107,9 @@ async function insertOrUpdateNote(
     timestampModified: number;
   }
 ) {
-  await sqldb.execute("DELETE FROM notes WHERE note_id = $1", [noteId]);
+  await sqldb.execute("DELETE FROM notes WHERE _id = $1", [noteId]);
   await sqldb.execute(
-    `INSERT INTO notes (meta_id, note_id, type, content, timestamp_added, timestamp_modified)
+    `INSERT INTO notes (projectId, _id, type, content, timestampAdded, timestampModified)
 VALUES ($1, $2, $3, $4, $5, $6)`,
     [
       props.projectId,
@@ -143,7 +143,7 @@ export async function deleteNote(noteId: string) {
 }
 
 async function removeNoteAndLinks(noteId: string) {
-  await sqldb.execute("DELETE FROM notes WHERE note_id = $1", [noteId]);
+  await sqldb.execute("DELETE FROM notes WHERE _id = $1", [noteId]);
   await sqldb.execute("DELETE FROM links WHERE source = $1 OR target = $1", [
     noteId,
   ]);
@@ -253,14 +253,14 @@ export async function getNotes(folderId: string): Promise<Note[]> {
   try {
     const notes = [] as Note[];
     let results =
-      (await sqldb.select<{ note_id: string }[]>(
-        "SELECT note_id FROM notes WHERE note_id LIKE '$1%'",
+      (await sqldb.select<{ _id: string }[]>(
+        "SELECT _id FROM notes WHERE _id LIKE '$1%'",
         [folderId]
       )) || [];
 
     if (results.length > 0) {
       for (const result of results)
-        notes.push((await getNote(result.note_id)) as Note);
+        notes.push((await getNote(result._id)) as Note);
       return notes;
     }
 
@@ -359,7 +359,7 @@ export async function loadNote(
   try {
     const result =
       (await sqldb.select<{ content: string }[]>(
-        "SELECT content FROM notes WHERE note_id = $1",
+        "SELECT content FROM notes WHERE _id = $1",
         [noteId]
       )) || [];
     if (result.length > 0) return result[0].content;
@@ -381,7 +381,7 @@ export async function saveNote(
 ) {
   try {
     await writeTextFile(notePath || idToPath(noteId), content);
-    sqldb.execute("UPDATE notes SET content = $1 WHERE note_id = $2", [
+    sqldb.execute("UPDATE notes SET content = $1 WHERE _id = $2", [
       content,
       noteId,
     ]);
@@ -530,7 +530,7 @@ export async function renameFolder(oldFolderId: string, newFolderId: string) {
  * @param newNoteId
  */
 export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
-  await sqldb.execute("UPDATE notes SET note_id = $1 WHERE note_id = $2", [
+  await sqldb.execute("UPDATE notes SET _id = $1 WHERE _id = $2", [
     newNoteId,
     oldNoteId,
   ]);
@@ -564,10 +564,10 @@ export async function batchReplaceLink(oldNoteId: string, newNoteId: string) {
       await writeTextFile(file.path, newContent);
 
       sqldb &&
-        (await sqldb.execute(
-          "UPDATE notes SET content = $1 WHERE note_id = $2",
-          [newContent, pathToId(file.path)]
-        ));
+        (await sqldb.execute("UPDATE notes SET content = $1 WHERE _id = $2", [
+          newContent,
+          pathToId(file.path),
+        ]));
     }
   });
 }
