@@ -88,6 +88,7 @@ import {
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
+import { extractPDFContent } from "src/backend/project";
 
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
@@ -187,6 +188,7 @@ async function addProjectsByFiles(filePaths: string[]) {
         label: title,
       } as Project);
       // do not use await since this task takes time
+      extractPDFContent(filePath);
       getMetaFromFile(filePath).then((meta) => {
         if (!meta) return;
         meta["citation-key"] = generateCiteKey(meta, settingStore.citeKeyRule);

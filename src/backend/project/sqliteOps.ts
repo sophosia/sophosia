@@ -7,7 +7,7 @@ class ProjectSQLAGUD {
    * @param {Project} project
    * @returns {Promise<void>}
    */
-  async addProject(project: Project) {
+  async addProject(project: Project): Promise<void> {
     await this.insertMeta(project);
     await this.insertTags(project._id, project.tags);
     await this.insertCategories(project._id, project.categories);
