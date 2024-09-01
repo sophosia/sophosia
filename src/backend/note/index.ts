@@ -1,4 +1,4 @@
-import { sqldb, db, FolderOrNote, idb, Note, NoteType } from "../database";
+import { sqldb, db, FolderOrNote, Note, NoteType } from "../database";
 import { Buffer } from "buffer";
 import {
   exists,
@@ -14,7 +14,6 @@ import {
 import { join, extname, basename } from "@tauri-apps/api/path";
 import type { FileEntry } from "@tauri-apps/api/fs";
 import { processEntries } from "../scan";
-import { updateForwardLinks } from "../graph";
 import { metadata } from "tauri-plugin-fs-extra-api";
 import { idToLink, idToPath, pathToId } from "../utils";
 import { i18n } from "src/boot/i18n";
@@ -340,11 +339,13 @@ export async function getNoteTree(projectId: string): Promise<FolderOrNote[]> {
 }
 
 /**
- * Get all notes in database
- * @returns array of noteIds
+ * Get all noteIds in database
+ * @returns {string[]} noteIds - array of noteId
  */
 export async function getAllNotes(): Promise<string[]> {
-  return await idb.getAllKeys("notes");
+  const results =
+    (await sqldb.select<{ _id: string }[]>("SELECT _id FROM notes")) || [];
+  return results.map((result) => result._id);
 }
 
 /**
@@ -393,7 +394,6 @@ export async function saveNote(
 /**
  * Upload image and save it under the project folder
  * If /img doesn't exist, it will create this folder
- * @param {string} noteId
  * @param {File} file
  */
 export async function uploadImage(
@@ -429,7 +429,9 @@ export async function uploadImage(
  * Generates a unique name for the new folder and creates it under the parent folder.
  * Returns the folder object with its properties.
  */
-export async function createFolder(parentFolderId: string) {
+export async function createFolder(
+  parentFolderId: string
+): Promise<FolderOrNote> {
   let name = t("new", { type: t("folder") });
   let path = await join(idToPath(parentFolderId), name);
   let i = 1;
@@ -479,12 +481,16 @@ export async function addFolder(folder: FolderOrNote) {
  */
 export async function deleteFolder(folderId: string) {
   try {
-    // remove notes from indexeddb first
+    // remove notes from sqldb first
     const notes = await getNotes(folderId);
-    for (const note of notes) {
-      await idb.delete("notes", note._id);
-      await updateForwardLinks(note._id, []); // delete all links starting from this note
-    }
+    const noteIds = notes.map((note) => note._id);
+
+    const placeholders = noteIds.map((_, index) => `$${index + 1}`).join(", ");
+    sqldb.execute(`DELETE FROM notes WHERE _id IN (${placeholders})`, noteIds);
+    sqldb.execute(
+      `DELETE FROM links WHERE source IN ($${placeholders}) OR target IN ($${placeholders})`,
+      noteIds
+    );
 
     // remove the actual folder
     await removeDir(idToPath(folderId), { recursive: true });
@@ -506,12 +512,15 @@ export async function deleteFolder(folderId: string) {
  */
 export async function renameFolder(oldFolderId: string, newFolderId: string) {
   try {
-    // update indexeddb
+    // update sqldb
     const notes = await getNotes(oldFolderId);
+    sqldb.execute("UPDATE notes SET _id = REPLACE(_id, $1, $2)", [
+      oldFolderId,
+      newFolderId,
+    ]);
+
     for (const note of notes) {
-      await idb.delete("notes", note._id);
       const newNoteId = note._id.replace(oldFolderId, newFolderId);
-      await idb.put("notes", { noteId: newNoteId });
       await batchReplaceLink(note._id, newNoteId);
     }
 

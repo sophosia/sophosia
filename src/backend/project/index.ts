@@ -13,14 +13,8 @@ import {
 import { generateCiteKey } from "../meta";
 import { getNoteTree, getNotes, renameFolder } from "../note";
 import { pathToId } from "../utils";
-import {
-  copyFileToProjectFolder,
-  createProjectFolder,
-  deleteProjectFolder,
-  loadProjectNote,
-  saveProjectNote,
-} from "./fileOps";
-import { insertContent, insertProject } from "./sqliteOps";
+import { projectFileAGUD } from "./fileOps";
+import { projectSQLAGUD } from "./sqliteOps";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import * as pdfjsLib from "pdfjs-dist";
 import { TextItem } from "pdfjs-dist/types/src/display/api";
@@ -70,9 +64,9 @@ export async function addProject(
     // need to remomve _graph property if update by meta
     delete project._graph;
     // create actual folder for containing its files
-    createProjectFolder(project);
+    projectFileAGUD.createProjectFolder(project);
     // insert data into sqldb
-    insertProject(project);
+    projectSQLAGUD.addProject(project);
     return project;
   } catch (err) {
     console.log(err);
@@ -102,7 +96,7 @@ export async function deleteProject(
       }
 
       // remove the acutual files
-      await deleteProjectFolder(projectId);
+      await projectFileAGUD.deleteProjectFolder(projectId);
     } else {
       if (category === undefined) throw new Error("category is needed");
       project.categories = project.categories.filter((id) => id != category);
@@ -168,7 +162,7 @@ export async function updateProject(
       await renameFolder(projectId, project._id);
     }
 
-    saveProjectNote(project);
+    projectFileAGUD.saveProjectNote(project);
     // add these back since the vue components need this
     project.path = await getPDF(project._id);
     project.children = await getNoteTree(project._id);
@@ -192,7 +186,9 @@ export async function getProject(
   options?: { includePDF?: boolean; includeNotes?: boolean }
 ): Promise<Project | undefined> {
   try {
-    const project = (await loadProjectNote(projectId)) as Project;
+    const project = (await projectFileAGUD.loadProjectNote(
+      projectId
+    )) as Project;
     if (options?.includePDF) project.path = await getPDF(projectId);
     if (options?.includeNotes) project.children = await getNoteTree(projectId);
     return project;
@@ -322,7 +318,7 @@ export async function attachPDF(
   if (typeof filePath !== "string") return;
   const oldPDFPath = await getPDF(projectId);
   if (oldPDFPath) await removeFile(oldPDFPath);
-  return await copyFileToProjectFolder(filePath, projectId);
+  return await projectFileAGUD.copyFileToProjectFolder(filePath, projectId);
 }
 
 /**
@@ -359,6 +355,6 @@ export async function extractPDFContent(filePath: string) {
     let page = await pdf.getPage(pageNumber);
     let content = await page.getTextContent();
     let text = content.items.map((item) => (item as TextItem).str).join("");
-    insertContent(projectId, `${pageNumber}`, text);
+    projectSQLAGUD.insertContent(projectId, `${pageNumber}`, text);
   }
 }
