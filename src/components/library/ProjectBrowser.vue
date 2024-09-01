@@ -79,7 +79,7 @@ import {
   getMetaFromFile,
   importMeta,
 } from "src/backend/meta";
-import { copyFileToProjectFolder } from "src/backend/project/fileOps";
+import { projectFileAGUD } from "src/backend/project/fileOps";
 import {
   exportDialog,
   identifierDialog,
@@ -88,7 +88,7 @@ import {
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
-import { extractPDFContent } from "src/backend/project";
+import { extractPDFContent, getPDF } from "src/backend/project";
 
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
@@ -177,7 +177,7 @@ async function addProjectsByFiles(filePaths: string[]) {
     try {
       let project = projectStore.createProject(projectStore.selectedCategory);
       await projectStore.addProject(project, true);
-      let filename = (await copyFileToProjectFolder(
+      let filename = (await projectFileAGUD.copyFileToProjectFolder(
         filePath,
         project._id
       )) as string;
@@ -188,15 +188,15 @@ async function addProjectsByFiles(filePaths: string[]) {
         label: title,
       } as Project);
       // do not use await since this task takes time
-      extractPDFContent(filePath);
-      getMetaFromFile(filePath).then((meta) => {
+      getMetaFromFile(filePath).then(async (meta) => {
         if (!meta) return;
         meta["citation-key"] = generateCiteKey(meta, settingStore.citeKeyRule);
         (meta as Project)._id = generateCiteKey(
           meta,
           settingStore.projectIdRule
         );
-        projectStore.updateProject(project._id, meta as Project);
+        await projectStore.updateProject(project._id, meta as Project);
+        await extractPDFContent((await getPDF(project._id))!);
       });
     } catch (error) {
       console.log(error);

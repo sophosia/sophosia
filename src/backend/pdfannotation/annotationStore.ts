@@ -1,5 +1,5 @@
 import { reactive, ref } from "vue";
-import { AnnotationData, AnnotationType, db } from "../database";
+import { AnnotationData, AnnotationType, db, sqldb } from "../database";
 import { Annotation, Ink } from "./annotations";
 
 /**
@@ -58,16 +58,32 @@ export default class AnnotationStore {
   }
 
   /**
-   * Load and return annotDatas from db
+   * Load and return annotDatas with current projectId from db
    * @returns annotDatas
    */
   async loadFromDB() {
     try {
-      // get all annotations of the current project
-      let annotDatas = (await db.getDocs("pdfAnnotation")) as AnnotationData[];
-      annotDatas = annotDatas.filter(
-        (annotData) => annotData.projectId === this.projectId
-      );
+      // try to get it from sqldb first
+      let annotDatas =
+        (await sqldb.select<AnnotationData[]>(
+          "SELECT * FROM annotations WHERE projectId = $1",
+          [this.projectId]
+        )) || [];
+      if (annotDatas.length > 0) {
+        for (const annotData of annotDatas) {
+          annotData.pageNumber = parseInt(
+            annotData.pageNumber as unknown as string
+          );
+          annotData.rects = JSON.parse(annotData.rects as unknown as string);
+        }
+      } else {
+        // fallback to filedb
+        annotDatas = (await db.getDocs("pdfAnnotation")) as AnnotationData[];
+        annotDatas = annotDatas.filter(
+          (annotData) => annotData.projectId === this.projectId
+        );
+      }
+      console.log("annotDatas", annotDatas);
 
       return annotDatas;
     } catch (err) {

@@ -5,12 +5,7 @@ import { AnnotationData, NoteType, Project, db, sqldb } from "../database";
 import { idToPath, linkToId, pathToId } from "../utils";
 import * as pdfjsLib from "pdfjs-dist";
 import { getProject, extractPDFContent } from "../project";
-import {
-  insertCategories,
-  insertTags,
-  insertAuthors,
-  insertMeta,
-} from "../project/sqliteOps";
+import { projectSQLAGUD } from "../project/sqliteOps";
 import { insertLink } from "../graph";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
@@ -109,10 +104,7 @@ export async function processEntries(
 async function extractMetaFromMarkdown(filePath: string) {
   const projectId = pathToId(filePath).split("/")[0];
   const project = (await getProject(projectId)) as Project;
-  insertMeta(project);
-  insertAuthors(projectId, project.author);
-  insertTags(projectId, project.tags);
-  insertCategories(projectId, project.categories);
+  projectSQLAGUD.addProject(project);
 }
 
 /**

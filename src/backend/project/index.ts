@@ -97,6 +97,7 @@ export async function deleteProject(
 
       // remove the acutual files
       await projectFileAGUD.deleteProjectFolder(projectId);
+      await projectSQLAGUD.deleteProject(projectId);
     } else {
       if (category === undefined) throw new Error("category is needed");
       project.categories = project.categories.filter((id) => id != category);
@@ -162,6 +163,7 @@ export async function updateProject(
       await renameFolder(projectId, project._id);
     }
 
+    projectSQLAGUD.updateProject(projectId, project);
     projectFileAGUD.saveProjectNote(project);
     // add these back since the vue components need this
     project.path = await getPDF(project._id);
@@ -356,5 +358,6 @@ export async function extractPDFContent(filePath: string) {
     let content = await page.getTextContent();
     let text = content.items.map((item) => (item as TextItem).str).join("");
     projectSQLAGUD.insertContent(projectId, `${pageNumber}`, text);
+    console.log("page", pageNumber, text);
   }
 }

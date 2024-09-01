@@ -28,6 +28,8 @@ export async function getCategoryTree(): Promise<CategoryNode[]> {
     if (categories.length == 0)
       categories = await categoryFileAGUD.getCategories();
 
+    if (categories.length == 0) return [{ _id: "library", children: [] }];
+
     // build tree
     const root = { _id: "root", children: [] } as CategoryNode;
     for (const category of categories) {
@@ -53,7 +55,7 @@ export async function getCategoryTree(): Promise<CategoryNode[]> {
     return root.children;
   } catch (error) {
     console.log(error);
-    return [];
+    return [{ _id: "library", children: [] }];
   }
 }
 

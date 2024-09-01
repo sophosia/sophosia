@@ -52,9 +52,6 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $
    * @param {Author[]} authors - list of authors to be inserted
    */
   async insertAuthors(projectId: string, authors: Author[]) {
-    await sqldb.execute("DELETE FROM authors WHERE projectId = $1", [
-      projectId,
-    ]);
     for (const author of authors) {
       const given = author.given || "";
       const family = author.family || "";
@@ -63,8 +60,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $
       // insert the meta-author relation into authors table
       sqldb.execute(
         `INSERT INTO authors (projectId, given, family, literal, affiliation)
-SELECT $1, $2, $3, $4, $5
-WHERE NOT EXISTS (SELECT 1 FROM authors WHERE projectId = $1)`,
+VALUES ($1, $2, $3, $4, $5)`,
         [projectId, given, family, literal, affiliation]
       );
     }
@@ -116,9 +112,10 @@ WHERE NOT EXISTS (SELECT 1 FROM categories WHERE projectId = $1 AND category = $
    * @param {string} content - content of specific page
    */
   async insertContent(projectId: string, page: string, content: string) {
-    await sqldb.execute("DELETE FROM contents WHERE projectId = $1", [
-      projectId,
-    ]);
+    await sqldb.execute(
+      "DELETE FROM contents WHERE projectId = $1 AND page = $2",
+      [projectId, page]
+    );
     await sqldb.execute(
       "INSERT INTO contents (projectId, page, content) VALUES ($1, $2, $3)",
       [projectId, page, content]
@@ -127,7 +124,7 @@ WHERE NOT EXISTS (SELECT 1 FROM categories WHERE projectId = $1 AND category = $
 
   async getProject(projectId: string): Promise<Project | undefined> {
     const projects = await sqldb.select<Project[]>(
-      "SELECT * FROM metas WHERE projectId = $1",
+      "SELECT * FROM metas WHERE _id = $1",
       [projectId]
     );
     if (!projects) return;
@@ -186,13 +183,45 @@ WHERE NOT EXISTS (SELECT 1 FROM categories WHERE projectId = $1 AND category = $
   async updateProject(projectId: string, props: Project) {
     const project = await this.getProject(projectId);
     if (!project) return;
-    await this.deleteProject(projectId);
     Object.assign(project, props);
+
+    // delete rows and reinsert them
+    await sqldb.execute("DELETE FROM metas WHERE _id = $1", [projectId]);
+    await sqldb.execute("DELETE FROM authors WHERE projectId = $1", [
+      projectId,
+    ]);
+    await sqldb.execute("DELETE FROM categories WHERE projectId = $1", [
+      projectId,
+    ]);
+    await sqldb.execute("DELETE FROM tags WHERE projectId = $1", [projectId]);
     await this.addProject(project);
+    // update projectId in the following tables if the projectId is changed
+    if (projectId !== project._id) {
+      await sqldb.execute(
+        "UPDATE annotations SET projectId = $1  WHERE projectId = $2",
+        [project._id, projectId]
+      );
+      await sqldb.execute(
+        "UPDATE notes SET projectId = $1  WHERE projectId = $2",
+        [project._id, projectId]
+      );
+      await sqldb.execute(
+        `
+UPDATE links
+SET source = CASE WHEN source = $1 THEN $2 ELSE source END,
+    target = CASE WHEN target = $1 THEN $2 ELSE target END
+WHERE source = $1 OR target = $1`,
+        [projectId, project._id]
+      );
+      await sqldb.execute(
+        "UPDATE contents SET projectId = $1  WHERE projectId = $2",
+        [project._id, projectId]
+      );
+    }
   }
 
   async deleteProject(projectId: string) {
-    await sqldb.execute("DELETE FROM metas WHERE projectId = $1", [projectId]);
+    await sqldb.execute("DELETE FROM metas WHERE _id = $1", [projectId]);
     await sqldb.execute("DELETE FROM authors WHERE projectId = $1", [
       projectId,
     ]);

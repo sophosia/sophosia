@@ -6,6 +6,7 @@ import {
   PDFState,
   Rect,
   RenderEvt,
+  sqldb,
 } from "../database";
 import { db } from "../database";
 import Konva from "konva";
@@ -157,6 +158,25 @@ export abstract class Annotation {
       props.timestampModified = Date.now();
       Object.assign(this.data, props);
       await db.put(this.data);
+      await sqldb.execute("DELETE FROM annotations WHERE _id = $1", [
+        this.data._id,
+      ]);
+      await sqldb.execute(
+        `
+INSERT INTO annotations (projectId, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          this.data.projectId,
+          this.data._id,
+          this.data.type,
+          this.data.rects,
+          this.data.color,
+          this.data.pageNumber,
+          this.data.content,
+          this.data.timestampAdded,
+          this.data.timestampModified,
+        ]
+      );
     } catch (err) {
       console.log(err);
     }
@@ -194,6 +214,9 @@ export abstract class Annotation {
     try {
       let annot = await db.get(this.data._id);
       await db.remove(annot);
+      await sqldb.execute("DELETE FROM annotations WHERE _id = $1", [
+        this.data._id,
+      ]);
     } catch (error) {
       console.log(error);
     }
