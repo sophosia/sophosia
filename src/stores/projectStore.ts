@@ -22,14 +22,13 @@ import {
 } from "src/backend/note";
 import {
   addProject,
-  attachPDF,
   createProject,
   deleteProject,
   getProject,
   getProjects,
-  renamePDF,
   updateProject,
 } from "src/backend/project";
+import { projectFileAGUD } from "src/backend/project/fileOps";
 import { sortTree } from "src/backend/utils";
 import { useLayoutStore } from "./layoutStore";
 
@@ -105,6 +104,7 @@ export const useProjectStore = defineStore("projectStore", {
       const uniqueIds = new Set(openedProjectIds);
       for (let projectId of uniqueIds) {
         const project = (await this.getProjectFromDB(projectId)) as Project;
+        console.log("project", project);
         sortTree(project); // sort notes by alphabet
         openedProjects.push(project);
       }
@@ -214,7 +214,7 @@ export const useProjectStore = defineStore("projectStore", {
      */
     async renamePDF(projectId: string, renameRule: string) {
       // update db
-      const newPath = await renamePDF(projectId, renameRule);
+      const newPath = await projectFileAGUD.renamePDF(projectId, renameRule);
       // update ui
       let project = this.getProject(projectId);
       if (!project) return;
@@ -234,7 +234,7 @@ export const useProjectStore = defineStore("projectStore", {
      */
     async attachPDF(projectId: string) {
       // update db
-      const filename = await attachPDF(projectId);
+      const filename = await projectFileAGUD.attachPDF(projectId);
       // update ui
       if (filename)
         await this.updateProject(projectId, { path: filename } as Project);

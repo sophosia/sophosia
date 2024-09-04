@@ -1,17 +1,14 @@
-import { open } from "@tauri-apps/api/dialog";
-import { exists, readDir, removeFile, renameFile } from "@tauri-apps/api/fs";
-import { extname, join } from "@tauri-apps/api/path";
+import { exists, renameFile } from "@tauri-apps/api/fs";
+import { join } from "@tauri-apps/api/path";
 import {
   AnnotationData,
   Author,
   FolderOrNote,
   PDFState,
   Project,
-  SpecialCategory,
   db,
 } from "src/backend/database";
-import { generateCiteKey } from "../meta";
-import { getNoteTree, getNotes, renameFolder } from "../note";
+import { getNoteTree, renameFolder } from "../note";
 import { pathToId } from "../utils";
 import { projectFileAGUD } from "./fileOps";
 import { projectSQLAGUD } from "./sqliteOps";
@@ -89,14 +86,7 @@ export async function deleteProject(
   try {
     const project = (await getProject(projectId)) as Project;
     if (deleteFromDB) {
-      // remove project and its related pdfState, pdfAnnotation and notes on db
-      for (let dataType of ["pdfState", "pdfAnnotation"]) {
-        const docs = await db.getDocs(dataType);
-        for (const doc of docs) if (doc._id === projectId) await db.remove(doc);
-      }
-
-      // remove the acutual files
-      await projectFileAGUD.deleteProjectFolder(projectId);
+      await projectFileAGUD.deleteProject(projectId);
       await projectSQLAGUD.deleteProject(projectId);
     } else {
       if (category === undefined) throw new Error("category is needed");
@@ -166,7 +156,7 @@ export async function updateProject(
     projectSQLAGUD.updateProject(projectId, project);
     projectFileAGUD.saveProjectNote(project);
     // add these back since the vue components need this
-    project.path = await getPDF(project._id);
+    project.path = await projectFileAGUD.getPDF(project._id);
     project.children = await getNoteTree(project._id);
     return project;
   } catch (error) {
@@ -187,16 +177,14 @@ export async function getProject(
   projectId: string,
   options?: { includePDF?: boolean; includeNotes?: boolean }
 ): Promise<Project | undefined> {
-  try {
-    const project = (await projectFileAGUD.loadProjectNote(
-      projectId
-    )) as Project;
-    if (options?.includePDF) project.path = await getPDF(projectId);
-    if (options?.includeNotes) project.children = await getNoteTree(projectId);
-    return project;
-  } catch (error) {
-    console.log(error);
-  }
+  let project = await projectSQLAGUD.getProject(projectId);
+  if (!project) project = await projectFileAGUD.getProject(projectId);
+  if (!project) return;
+
+  if (options?.includePDF)
+    project.path = await projectFileAGUD.getPDF(projectId);
+  if (options?.includeNotes) project.children = await getNoteTree(projectId);
+  return project;
 }
 
 /**
@@ -212,23 +200,7 @@ export async function getAllProjects(options?: {
   includePDF?: boolean;
   includeNotes?: boolean;
 }): Promise<Project[]> {
-  try {
-    const projects = [] as Project[];
-    const projectFolders = await readDir(db.config.storagePath);
-    for (const folder of projectFolders) {
-      // only read non-hidden folders
-      if (folder.name!.startsWith(".")) continue;
-      const project = await getProject(folder.name!);
-      if (!project) continue; // skip this folder if it has not meta info
-      if (options?.includePDF) project.path = await getPDF(project._id);
-      if (options?.includeNotes) project.children = await getNotes(project._id);
-      projects.push(project);
-    }
-    return projects;
-  } catch (error) {
-    console.log(error);
-    return [];
-  }
+  return await projectFileAGUD.getAllProjects(options);
 }
 
 /**
@@ -245,102 +217,7 @@ export async function getProjects(
   category: string,
   options?: { includePDF?: boolean; includeNotes?: boolean }
 ): Promise<Project[]> {
-  try {
-    let projects = await getAllProjects();
-    switch (category) {
-      case SpecialCategory.LIBRARY:
-        break;
-      case SpecialCategory.ADDED:
-        const date = new Date();
-        // get recently added project in the last 30 days
-        const timestamp = date.setDate(date.getDate() - 30);
-        projects = projects.filter(
-          (project) => project.timestampAdded > timestamp
-        );
-        // sort projects in descending order
-        projects.sort((a, b) => b.timestampAdded - a.timestampAdded);
-        break;
-      case SpecialCategory.FAVORITES:
-        projects = projects.filter((project) => project.favorite);
-        break;
-      default:
-        projects = projects.filter((project) =>
-          project.categories.includes(category)
-        );
-        break;
-    }
-
-    for (const project of projects) {
-      if (options?.includePDF) project.path = await getPDF(project._id);
-      if (options?.includeNotes)
-        project.children = await getNoteTree(project._id);
-    }
-
-    return projects;
-  } catch (error) {
-    console.log(error);
-    return [];
-  }
-}
-
-/**
- * Renames the PDF file associated with a project based on a generated citation key.
- *
- * @param projectId - The project whose associated PDF needs renaming.
- * @returns The new path of the renamed PDF file or undefined if the project has no associated path.
- *
- * Generates a new filename using the citation key and moves the PDF file to this new path.
- */
-export async function renamePDF(projectId: string, renameRule: string) {
-  const project = await getProject(projectId, { includePDF: true });
-  if (!project || project.path === undefined) return;
-  const oldPath = project.path;
-  const fileName = generateCiteKey(project, renameRule) + ".pdf";
-  const newPath = await join(db.config.storagePath, project._id, fileName);
-  await renameFile(oldPath, newPath);
-  return newPath;
-}
-
-/**
- * Attaches a PDF file to a project by copying it to the project's folder.
- *
- * @param {string} projectId - The ID of the project to attach the PDF to.
- * @returns {Promise<string | undefined>} The path of the copied PDF file in the project's folder, or undefined if no file is selected.
- *
- * Opens a file dialog to select a PDF, removes any existing PDF associated with the project, and copies the selected PDF to the project's folder.
- */
-export async function attachPDF(
-  projectId: string
-): Promise<string | undefined> {
-  const filePath = await open({
-    multiple: false,
-    filters: [{ name: "*.pdf", extensions: ["pdf"] }],
-  });
-
-  if (typeof filePath !== "string") return;
-  const oldPDFPath = await getPDF(projectId);
-  if (oldPDFPath) await removeFile(oldPDFPath);
-  return await projectFileAGUD.copyFileToProjectFolder(filePath, projectId);
-}
-
-/**
- * Retrieve the path of the first PDF file found within a project folder.
- *
- * @param projectId - The unique identifier of the project.
- * @returns The path of the first PDF file found, or undefined if no PDF is found or an error occurs.
- */
-export async function getPDF(projectId: string) {
-  try {
-    const projectFolder = await join(db.config.storagePath, projectId);
-    const entries = await readDir(projectFolder);
-    for (const entry of entries) {
-      try {
-        if ((await extname(entry.path)) === "pdf") return entry.path;
-      } catch (error) {}
-    }
-  } catch (error) {
-    console.log(error);
-  }
+  return await projectFileAGUD.getProjects(category, options);
 }
 
 /**
@@ -358,6 +235,5 @@ export async function extractPDFContent(filePath: string) {
     let content = await page.getTextContent();
     let text = content.items.map((item) => (item as TextItem).str).join("");
     projectSQLAGUD.insertContent(projectId, `${pageNumber}`, text);
-    console.log("page", pageNumber, text);
   }
 }

@@ -28,8 +28,8 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $
         meta._id,
         meta.type,
         meta["citation-key"],
-        meta.title,
         meta["original-title"],
+        meta.title,
         meta.abstract,
         meta.issued,
         meta.publisher,
@@ -37,6 +37,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $
         meta.volume,
         meta.DOI,
         meta.ISBN,
+        meta.ISSN,
         meta.URL,
         meta.favorite,
         meta.timestampAdded,
@@ -127,28 +128,34 @@ WHERE NOT EXISTS (SELECT 1 FROM categories WHERE projectId = $1 AND category = $
       "SELECT * FROM metas WHERE _id = $1",
       [projectId]
     );
-    if (!projects) return;
+    if (!projects || projects.length == 0) return;
     const authors =
       (await sqldb.select<Author[]>(
         "SELECT given, family, literal, affiliation FROM authors WHERE projectId = $1",
         [projectId]
       )) || [];
-    const categories =
-      (await sqldb.select<string[]>(
+    const categoryResults =
+      (await sqldb.select<{ category: string }[]>(
         "SELECT category FROM categories WHERE projectId = $1",
         [projectId]
       )) || [];
-    const tags =
-      (await sqldb.select<string[]>(
+    const tagResults =
+      (await sqldb.select<{ category: string }[]>(
         "SELECT tag FROM tags WHERE projectId = $1",
         [projectId]
       )) || [];
 
     // put things together to form a project
     const project = projects[0];
+    project.dataType = "project";
+    project.label = project.title;
     project.author = authors;
-    project.categories = categories;
-    project.tags = tags;
+    project.favorite = JSON.parse(
+      (project.favorite as unknown as string) || "false"
+    );
+    project.issued = JSON.parse(project.issued as unknown as string);
+    project.categories = categoryResults.map((result) => result.category);
+    project.tags = tagResults.map((result) => result.category);
     return project;
   }
 

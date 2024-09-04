@@ -88,7 +88,7 @@ import {
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
-import { extractPDFContent, getPDF } from "src/backend/project";
+import { extractPDFContent } from "src/backend/project";
 
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
@@ -196,7 +196,7 @@ async function addProjectsByFiles(filePaths: string[]) {
           settingStore.projectIdRule
         );
         await projectStore.updateProject(project._id, meta as Project);
-        await extractPDFContent((await getPDF(project._id))!);
+        await extractPDFContent((await projectFileAGUD.getPDF(project._id))!);
       });
     } catch (error) {
       console.log(error);

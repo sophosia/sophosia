@@ -15,10 +15,11 @@ import type {
   Stack,
 } from "src/backend/database/models";
 import { getLayout, updateLayout } from "src/backend/layout";
-import { getPDF, getProject } from "src/backend/project";
+import { getProject } from "src/backend/project";
 import { toRaw } from "vue";
 import { useProjectStore } from "./projectStore";
 import { getDataType } from "src/backend/utils";
+import { projectFileAGUD } from "src/backend/project/fileOps";
 
 export const useLayoutStore = defineStore("layoutStore", {
   state: () => ({
@@ -202,7 +203,7 @@ export const useLayoutStore = defineStore("layoutStore", {
         if (dataType === "project") {
           const item = (await projectStore.getProjectFromDB(itemId)) as Project;
           await projectStore.openProject(item._id);
-          const path = await getPDF(itemId);
+          const path = await projectFileAGUD.getPDF(itemId);
           if (!path || item.type === "notebook") return; // do not open page if there is no pdf or it's a notebook
           this.openPage({
             id: itemId,
