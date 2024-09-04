@@ -41,7 +41,7 @@ export const useProjectStore = defineStore("projectStore", {
     selected: [] as (Project | Note)[], // projectIds selected by checkbox
     projects: [] as Project[], // array of projects
     openedProjects: [] as Project[], // array of opened projects
-
+      
     updatedProject: {} as Project, // for updating window tab name
     selectedFolderId: SpecialFolder.LIBRARY.toString(), // selected category in library page
   }),

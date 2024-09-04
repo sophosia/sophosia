@@ -196,7 +196,7 @@ export const useLayoutStore = defineStore("layoutStore", {
     async openItem(itemId: string) {
       if (!itemId) return;
       try {
-        // open associated project
+        // open associated project'
         const projectStore = useProjectStore();
         const dataType = getDataType(itemId);
         if (dataType === "project") {

@@ -50,7 +50,7 @@
       "http": {
         "all": true,
         "request": true,
-        "scope": ["https://*"]
+        "scope": ["https://*","https://fileupload-agent-production.up.railway.app/upload"]
       },
       "fs": {
         "all": true,

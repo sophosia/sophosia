@@ -184,6 +184,7 @@ import { useSettingStore } from "src/stores/settingStore";
 import { deleteDialog, identifierDialog } from "../dialogs/dialogController";
 import { watchEffect } from "vue";
 import { getProject } from "src/backend/project/project";
+import { uploadPDF } from "src/backend/conversationAgent/uploadPDF";
 
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
@@ -236,6 +237,7 @@ async function addNote(noteType: NoteType) {
  */
 async function openProject() {
   for (let project of projectStore.selected) {
+    // uploadPDF(project._id);
     layoutStore.openItem(project._id);
     await nextTick();
   }
