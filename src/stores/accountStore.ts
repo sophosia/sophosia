@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import {getSupabaseClient} from "src/backend/authSupabase/supabaseClient"
 import { open } from "@tauri-apps/api/shell";
 import { defineStore } from "pinia";
 import {
@@ -11,9 +11,8 @@ import { computed, reactive, ref } from "vue";
 // sophosia://auth#access_token=... on linux and
 // sophosia://auth/#access_token=... on macos and windows
 const redirectUrl = "sophosia://auth/";
-const supabseUrl = "https://plcyjwjhmvykeypakwgc.supabase.co";
-const supabseKey = import.meta.env.VITE_SUPABASE_KEY;
-const supabase = createClient(supabseUrl, supabseKey);
+
+const supabase = getSupabaseClient();
 
 export const useAccountStore = defineStore("accountStore", () => {
   const initialized = ref(false);
@@ -77,7 +76,6 @@ export const useAccountStore = defineStore("accountStore", () => {
         tokens[key] = value;
       if (key === "type") type = value;
     }
-
     // sign in the user
     await signInWithTokens(tokens);
 

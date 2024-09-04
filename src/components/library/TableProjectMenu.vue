@@ -180,12 +180,12 @@ import { invoke } from "@tauri-apps/api";
 import { join } from "@tauri-apps/api/path";
 import { copyToClipboard } from "quasar";
 import { generateCiteKey, getMeta } from "src/backend/meta";
+import { getProject } from "src/backend/project/project";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
-import { deleteDialog, identifierDialog } from "../dialogs/dialogController";
 import { watchEffect } from "vue";
-import { getProject } from "src/backend/project";
+import { deleteDialog, identifierDialog } from "../dialogs/dialogController";
 
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
@@ -238,6 +238,7 @@ async function addNote(noteType: NoteType) {
  */
 async function openProject() {
   for (let project of projectStore.selected) {
+    // uploadPDF(project._id);
     layoutStore.openItem(project._id);
     await nextTick();
   }
