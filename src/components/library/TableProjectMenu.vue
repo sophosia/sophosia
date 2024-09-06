@@ -100,6 +100,7 @@
           </i18n-t>
         </q-item-section>
       </q-item>
+
       <q-item
         v-if="projectStore.selected.length == 1 && projectType !== 'notebook'"
         clickable
@@ -125,6 +126,19 @@
         <q-item-section>
           <i18n-t keypath="open">
             <template #type>{{ $t("project") }}</template>
+          </i18n-t>
+        </q-item-section>
+      </q-item>
+
+      <q-item
+        v-if="projectStore.selected.length == 1"
+        clickable
+        v-close-popup
+        @click="uploadProject"
+      >
+        <q-item-section>
+          <i18n-t keypath="upload">
+            <template #type>{{ $t("file") }}</template>
           </i18n-t>
         </q-item-section>
       </q-item>
@@ -179,13 +193,18 @@ import { Ref, inject, nextTick, ref } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { join } from "@tauri-apps/api/path";
 import { copyToClipboard } from "quasar";
+import { uploadPDF } from "src/backend/conversationAgent/uploadPDF";
 import { generateCiteKey, getMeta } from "src/backend/meta";
-import { getProject } from "src/backend/project/project";
+import { getProject } from "src/backend/project";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { watchEffect } from "vue";
-import { deleteDialog, identifierDialog } from "../dialogs/dialogController";
+import {
+  deleteDialog,
+  errorDialog,
+  identifierDialog,
+} from "../dialogs/dialogController";
 
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
@@ -238,9 +257,23 @@ async function addNote(noteType: NoteType) {
  */
 async function openProject() {
   for (let project of projectStore.selected) {
-    // uploadPDF(project._id);
     layoutStore.openItem(project._id);
     await nextTick();
+  }
+}
+
+/**
+ * Uploads the selected project(s) to the conversation agent.
+ */
+async function uploadProject() {
+  for (let project of projectStore.selected) {
+    const check = await uploadPDF(project._id);
+    if (check.status == false && check.error) {
+      errorDialog.show();
+      errorDialog.error.name = "Upload Error";
+      errorDialog.error.message = check.error;
+    }
+    console.log(check);
   }
 }
 
