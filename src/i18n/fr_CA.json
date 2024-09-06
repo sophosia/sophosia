@@ -8,6 +8,7 @@
   "about": "À propos",
   "project": "Projet",
   "upload": "Téléverser {type}",
+  "file-upload": "{type} téléversé ",
   "note": "Note",
   "tags": "Tags",
   "file": "Document",

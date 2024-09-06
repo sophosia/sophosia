@@ -200,7 +200,7 @@ import { deleteDialog, identifierDialog } from "../dialogs/dialogController";
 import { watchEffect } from "vue";
 import { getProject } from "src/backend/project/project";
 import { uploadPDF } from "src/backend/conversationAgent/uploadPDF";
-import { errorDialog } from "../dialogs/dialogController";
+import { errorDialog, successDialog } from "../dialogs/dialogController";
 
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
@@ -262,15 +262,27 @@ async function openProject() {
 /**
  * Uploads the selected project(s) to the conversation agent.
  */
+ import { useQuasar } from 'quasar';
+ import { useI18n } from 'vue-i18n'
+ const $q = useQuasar();
+ const { t } = useI18n()
+
 async function uploadProject() {
   for (let project of projectStore.selected) {
     const check = await uploadPDF(project._id);
-    if (check.status ==false && check.error) {
+    if (check.status ===false && check.error) {
       errorDialog.show();
       errorDialog.error.name = "Upload Error";
       errorDialog.error.message = check.error;
     }
+    if(check.status === true){
+      $q.notify({
+        message: t('file-upload', {type: project.label}),
+        position: 'top-right'
+      });
+    }
     console.log(check);
+    await nextTick();
   }
 }
 

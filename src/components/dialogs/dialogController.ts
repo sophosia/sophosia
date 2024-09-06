@@ -134,6 +134,21 @@ function useErrorDialog() {
   };
 }
 
+
+/**
+ * Controller for SuccessDialog
+ * @returns properties and controls
+ */
+function useSuccessDialog() {
+  const dialog = useDialog();
+  const message = ref("");
+  return {
+    ...dialog,
+    message,
+  };
+}
+
+
 /**
  * Controller for ProgressDialog
  * @returns properties and controls
@@ -174,5 +189,6 @@ export const deleteDialog = reactive(useDeleteDialog());
 export const identifierDialog = reactive(useIdentifierDialog());
 export const exportDialog = reactive(useExportDialog());
 export const errorDialog = reactive(useErrorDialog());
+export const successDialog = reactive(useSuccessDialog());
 export const progressDialog = reactive(useProgressDialog());
 export const authDialog = reactive(useAuthDialog());

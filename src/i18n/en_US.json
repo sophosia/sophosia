@@ -8,6 +8,7 @@
   "about": "About",
   "project": "Project",
   "upload": "Upload {type}",
+  "file-upload": "{type} uploaded",
   "note": "Note",
   "tags": "Tags",
   "file": "File",
