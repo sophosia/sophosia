@@ -265,6 +265,11 @@ async function openProject() {
 /**
  * Uploads the selected project(s) to the conversation agent.
  */
+import { useQuasar } from "quasar";
+import { useI18n } from "vue-i18n";
+const $q = useQuasar();
+const { t } = useI18n();
+
 async function uploadProject() {
   for (let project of projectStore.selected) {
     const check = await uploadPDF(project._id);
@@ -273,7 +278,14 @@ async function uploadProject() {
       errorDialog.error.name = "Upload Error";
       errorDialog.error.message = check.error;
     }
+    if (check.status === true) {
+      $q.notify({
+        message: t("file-upload", { type: project.label }),
+        position: "top-right",
+      });
+    }
     console.log(check);
+    await nextTick();
   }
 }
 

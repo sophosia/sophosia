@@ -8,6 +8,7 @@
   "about": "关于",
   "project": "项目",
   "upload": "上传 {type}",
+  "file-upload": "{type} 已上传",
   "note": "笔记",
   "tags": "标签",
   "file": "文件",
