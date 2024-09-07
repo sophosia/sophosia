@@ -9,6 +9,7 @@
   "project": "项目",
   "upload": "上传 {type}",
   "file-upload": "{type} 已上传",
+  "chat": "问我！",
   "note": "笔记",
   "tags": "标签",
   "file": "文件",

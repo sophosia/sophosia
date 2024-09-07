@@ -9,6 +9,7 @@
   "project": "Project",
   "upload": "Upload {type}",
   "file-upload": "{type} uploaded",
+  "chat": "Ask me!",
   "note": "Note",
   "tags": "Tags",
   "file": "File",

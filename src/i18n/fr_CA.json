@@ -9,6 +9,7 @@
   "project": "Projet",
   "upload": "Téléverser {type}",
   "file-upload": "{type} téléversé ",
+  "chat": "Demandez-moi!",
   "note": "Note",
   "tags": "Tags",
   "file": "Document",

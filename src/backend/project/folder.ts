@@ -13,12 +13,29 @@ async function getFolder(folderId: string): Promise<Folder | undefined> {
 }
 
 /**
+ * Get the an array of all folders
+ * @returns Folder[]
+ */
+async function getAllFolders(): Promise<Folder[] | undefined> {
+  try{
+    const docs = await db.getDocs("folder");
+    return docs as Folder[];
+
+  }catch(error){
+    console.log(error);
+    return undefined;
+  }
+
+}
+
+/**
  * Get the folder tree
  * @returns tree
  */
 async function getFolderTree(): Promise<Folder[] | undefined> {
   try {
     const docs = await db.getDocs("folder");
+
 
     // no folders in db yet
     if (docs.length == 0) {
@@ -193,6 +210,7 @@ export {
   addFolder,
   deleteFolder,
   getFolder,
+  getAllFolders,
   getFolderTree,
   getParentFolder,
   moveFolderInto,
