@@ -14,10 +14,10 @@ class SQLDatabase {
 
   async load() {
     if (!db.config.storagePath) return;
-    else
-      return await Database.load(
-        `sqlite:${simpleHash(db.config.storagePath)}.db`
-      );
+    // return await Database.load(
+    //   `sqlite:${simpleHash(db.config.storagePath)}.db`
+    // );
+    else return await Database.load("sqlite::memory:");
   }
 
   async execute(query: string, bindValues?: unknown[]) {
