@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { Note, NoteType, Project } from "../database";
-import { getGraph, updateLinks } from "./graph";
-import { addNote, createNote } from "./note";
-import { addProject, createProject } from "./project";
+import { getGraph, updateForwardLinks } from "./index";
+import { addNote, createNote } from "../note";
+import { addProject, createProject } from "../project";
 
 const notes = [] as Note[];
 const projects = [] as Project[];
@@ -23,11 +23,11 @@ describe("graph.ts", () => {
 
     const note1 = await createNote(projects[1]._id, NoteType.MARKDOWN);
     notes.push((await addNote(note1)) as Note);
-    await updateLinks(note1._id, [{ source: note1._id, target: note2._id }]);
+    await updateForwardLinks(note1._id, [note2._id]);
 
     const note0 = await createNote(projects[0]._id, NoteType.MARKDOWN);
     notes.push((await addNote(note0)) as Note);
-    await updateLinks(note0._id, [{ source: note0._id, target: note1._id }]);
+    await updateForwardLinks(note0._id, [note1._id]);
   });
 
   it("getGraph", async () => {
