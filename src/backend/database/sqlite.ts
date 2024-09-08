@@ -14,10 +14,9 @@ class SQLDatabase {
 
   async load() {
     if (!db.config.storagePath) return;
-    // return await Database.load(
-    //   `sqlite:${simpleHash(db.config.storagePath)}.db`
-    // );
-    else return await Database.load("sqlite::memory:");
+    return await Database.load(
+      `sqlite:${simpleHash(db.config.storagePath)}.db`
+    );
   }
 
   async execute(query: string, bindValues?: unknown[]) {

@@ -16,10 +16,10 @@ class CategorySQLAGUD {
 
   async update(oldCategory: string, newCategory: string): Promise<void> {
     try {
-      sqldb.execute("UPDATE categories SET category = $1 WHERE category = $2", [
-        newCategory,
-        oldCategory,
-      ]);
+      sqldb.execute(
+        "UPDATE categories SET category = REPLACE(category, $1, $2)",
+        [oldCategory, newCategory]
+      );
     } catch (error) {
       console.log(error);
     }
@@ -27,7 +27,9 @@ class CategorySQLAGUD {
 
   async delete(category: string): Promise<void> {
     try {
-      sqldb.execute("DELETE FROM categories WHERE category = $1", [category]);
+      sqldb.execute("DELETE FROM categories WHERE category LIKE '$1%'", [
+        category,
+      ]);
     } catch (error) {
       console.log(error);
     }

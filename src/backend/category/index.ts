@@ -35,10 +35,10 @@ export async function getCategoryTree(): Promise<CategoryNode[]> {
     for (const category of categories) {
       const parts = category.split("/");
       let currentNode = root;
-      for (const [index, part] of parts.entries()) {
-        const currentCategory = parts.slice(0, index + 1).join("/");
+      for (let index in parts) {
+        const currentCategory = parts.slice(0, parseInt(index) + 1).join("/");
         let childNode = currentNode.children.find(
-          (child) => child._id === part
+          (child) => child._id === currentCategory
         );
         if (!childNode) {
           childNode = {
@@ -79,14 +79,11 @@ export async function deleteCategory(category: string) {
 }
 
 /**
- * Move the dragFolder into the dropFolder
- * @param {string} dragCategory
- * @param {string} dropCategory
+ * Move the oldCategory (and its subcategories) to the newCategory
+ * @param {string} oldCategory
+ * @param {string} newCategory
  */
-export async function moveCategoryInto(
-  dragCategory: string,
-  dropCategory: string
-) {
-  categoryFileAGUD.moveInto(dragCategory, dropCategory);
-  categorySQLAGUD.moveInto(dragCategory, dropCategory);
+export async function moveCategoryTo(oldCategory: string, newCategory: string) {
+  categoryFileAGUD.moveInto(oldCategory, newCategory);
+  categorySQLAGUD.moveInto(oldCategory, newCategory);
 }

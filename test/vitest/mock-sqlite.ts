@@ -32,7 +32,7 @@ export function mockSQLDB() {
         });
         mockTable.push(row);
       } else if (query.startsWith("UPDATE")) {
-        // TODO: mock update?
+        updateSQLDB(query, bindValues);
       } else if (query.startsWith("DELETE")) {
         const conditionStr = query.split("WHERE").at(1);
         if (!conditionStr) return;
@@ -52,7 +52,7 @@ export function mockSQLDB() {
     select: async <T>(query: string, bindValues?: unknown[] | undefined) => {
       if (!query.startsWith("SELECT")) return;
       const conditionStr = query.split("WHERE").at(1);
-      if (!conditionStr) return;
+      if (!conditionStr) return mockTable as T;
       let subConditionStr = [] as string[];
       // for now we only have these simple cases in application
       if (conditionStr.includes("AND"))
@@ -80,4 +80,25 @@ export function mockSQLDB() {
     },
     createTables: async () => {},
   });
+}
+
+function updateSQLDB(query: string, bindValues: string[]) {
+  if (query === "UPDATE categories SET category = REPLACE(category, $1, $2)") {
+    for (const row of mockTable) {
+      row.category = row.category.replace(bindValues[0], bindValues[1]);
+    }
+  } else if (
+    query === "UPDATE categories SET category = $1 WHERE category = $2"
+  ) {
+    for (const row of mockTable) {
+      if (row.category === bindValues[1]) row.category = bindValues[0];
+    }
+  }
+
+  // UPDATE table SET key = REPLACE() WHERE condition = $2
+  //
+  // UPDATE links
+  // SET source = CASE WHEN source = $1 THEN $2 ELSE source END,
+  //     target = CASE WHEN target = $1 THEN $2 ELSE target END
+  // WHERE source = $1 OR target = $1`,
 }

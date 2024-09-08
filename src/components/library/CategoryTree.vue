@@ -139,9 +139,8 @@ import {
   getCategoryTree,
   updateCategory,
   deleteCategory,
-  moveCategoryInto,
 } from "src/backend/category";
-import { sortTree, getIdLabel, getParentId } from "src/backend/utils";
+import { sortTree, getIdLabel } from "src/backend/utils";
 import { useProjectStore } from "src/stores/projectStore";
 import { CategoryNode } from "src/backend/database";
 import { useI18n } from "vue-i18n";
@@ -274,7 +273,6 @@ function setRenameCategoryNode(node: CategoryNode) {
 /**
  * Checks for duplicate paths when renaming a node.
  * @param {CategoryNode} node - The note being renamed to check for duplicates.
- * @param {string} label - Input label
  */
 function checkDuplicate(node: CategoryNode) {
   if (!node || !tree.value) return;
@@ -325,6 +323,7 @@ function exportCategory(node: CategoryNode) {
  * @param node - the category user is dragging
  */
 function onDragStart(e: DragEvent, node: CategoryNode) {
+  console.log("on drag start", node);
   draggingNode.value = node;
   // need to set transfer data for some browsers to work
   e.dataTransfer?.setData("draggingNode", JSON.stringify(node));
@@ -368,22 +367,22 @@ function onDragLeave(e: DragEvent, node: CategoryNode) {
  */
 async function onDrop(e: DragEvent, node: CategoryNode) {
   // record this first otherwise dragend events makes it null
-  if (!draggingNode.value) return;
-  const dragId = draggingNode.value._id;
+  const draggedProjectsRaw = e.dataTransfer?.getData("draggedProjects");
   const dropId = node._id;
-  // no dropping into itself
-  if (dragId === dropId) return;
-  let draggedProjectsRaw = e.dataTransfer?.getData("draggedProjects");
 
   if (draggedProjectsRaw) {
     // drag and drop project into category
     for (let project of JSON.parse(draggedProjectsRaw) as Project[]) {
-      if (!project.categories.includes(dragId)) {
-        project.categories.push(dragId);
+      console.log("droping", project, "into", dropId);
+      if (!project.categories.includes(dropId)) {
+        project.categories.push(dropId);
         await projectStore.updateProject(project._id, project);
       }
     }
-  } else {
+  } else if (draggingNode.value) {
+    const dragId = draggingNode.value._id;
+    // no dropping into itself
+    if (dragId === dropId) return;
     // drag category into another category
     // check duplicate
     let newId = `${dropId}/${getIdLabel(dragId)}`;
@@ -408,7 +407,7 @@ async function onDrop(e: DragEvent, node: CategoryNode) {
     moveNodes(categoryNodes.value[0]);
 
     // update db
-    await moveCategoryInto(dragId, dropId);
+    await updateCategory(dragId, newId);
   }
 
   onDragEnd(e);

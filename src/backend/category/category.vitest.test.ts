@@ -1,57 +1,55 @@
 import "src/backend/category";
-import { beforeEach, describe, expect, it } from "vitest";
-import { CategoryNode, SpecialCategory, db } from "../database";
+import { beforeAll, describe, expect, it } from "vitest";
+import { SpecialCategory } from "../database";
+import {
+  getCategoryTree,
+  updateCategory,
+  deleteCategory,
+} from "src/backend/category";
+import { addProject, createProject } from "../project";
 
-const library = {
-  _id: SpecialCategory.LIBRARY,
-  timestampAdded: Date.now(),
-  timestampModified: Date.now(),
-  label: "Library",
-  icon: "mdi-bookshelf",
-  children: [],
-  dataType: "folder",
-} as CategoryNode;
-
-describe("folder.ts", () => {
-  beforeEach(async () => {
-    await db.put(library);
+describe("category", () => {
+  beforeAll(async () => {
+    const project = createProject("library");
+    project.categories.push("library/test-category1");
+    project.categories.push("library/test-category2");
+    await addProject(project);
   });
 
-  it("getFolderTree", async () => {
-    const tree = (await getFolderTree()) as Folder[];
-    expect(tree[0]._id).toBe(SpecialFolder.LIBRARY);
+  it("getCategoryTree", async () => {
+    const tree = await getCategoryTree();
+    expect(tree[0]._id).toBe(SpecialCategory.LIBRARY);
+    expect(tree[0].children.length).toBe(2);
+    expect(tree[0].children[0]._id).toBe("library/test-category1");
   });
 
-  it("addFolder", async () => {
-    const parentId = library._id;
-    const folder = (await addFolder(parentId)) as Folder;
-    const parentFolder = (await getParentFolder(folder._id)) as Folder;
-    expect(parentFolder.children).toContain(folder._id);
+  it("updateCategory", async () => {
+    await updateCategory(
+      "library/test-category1",
+      "library/new-test-category1"
+    );
+    const tree = await getCategoryTree();
+    expect(tree[0].children.length).toBe(2);
+    expect(tree[0].children[0]._id).toBe("library/new-test-category1");
   });
 
-  it("updateFolder", async () => {
-    const parentId = library._id;
-    const folder = (await addFolder(parentId)) as Folder;
-    const label = "test label";
-    const newFolder = (await updateFolder(folder._id, {
-      label,
-    } as Folder)) as Folder;
-    expect(newFolder.label).toBe(label);
+  it("moveCategoryTo", async () => {
+    await updateCategory(
+      "library/test-category2",
+      "library/new-test-category1/test-category2"
+    );
+    const tree = await getCategoryTree();
+    expect(tree[0].children.length).toBe(1);
+    expect(tree[0].children[0]._id).toBe("library/new-test-category1");
+    expect(tree[0].children[0].children.length).toBe(1);
+    expect(tree[0].children[0].children[0]._id).toBe(
+      "library/new-test-category1/test-category2"
+    );
   });
 
-  it("deleteFolder", async () => {
-    const parentId = library._id;
-    const folder = (await addFolder(parentId)) as Folder;
-    await deleteFolder(folder._id);
-    const newFolder = await getFolder(folder._id);
-    expect(newFolder).toBe(undefined);
-  });
-
-  it("moveFolderInto", async () => {
-    const folder1 = (await addFolder(library._id)) as Folder;
-    const folder2 = (await addFolder(library._id)) as Folder;
-    await moveFolderInto(folder1._id, folder2._id);
-    const parentFolder = (await getParentFolder(folder1._id)) as Folder;
-    expect(parentFolder.children).toContain(folder1._id);
+  it("deleteCategory", async () => {
+    await deleteCategory("library/new-test-category1");
+    const tree = await getCategoryTree();
+    expect(tree[0].children.length).toBe(0);
   });
 });

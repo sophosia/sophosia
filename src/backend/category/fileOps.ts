@@ -22,7 +22,7 @@ export class CategoryFileAGUD {
       const projects = (await getAllProjects()) as Project[];
       for (const project of projects) {
         project.categories = project.categories.map((category) =>
-          category === oldCategory ? newCategory : category
+          category.replace(oldCategory, newCategory)
         );
         updateProject(project._id, project);
       }
