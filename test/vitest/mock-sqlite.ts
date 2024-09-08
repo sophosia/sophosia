@@ -54,6 +54,17 @@ export function mockSQLDB() {
       const conditionStr = query.split("WHERE").at(1);
       if (!conditionStr) return mockTable as T;
       let subConditionStr = [] as string[];
+
+      if (conditionStr.includes("LIKE")) {
+        const [key, _] = conditionStr.split("LIKE").map((cond) => cond.trim());
+        const rows = [] as Array<{ [k: string]: string }>;
+        for (const row of mockTable) {
+          if (key in row && row[key].startsWith(bindValues![0] as string))
+            rows.push(row);
+        }
+        return rows as T;
+      }
+
       // for now we only have these simple cases in application
       if (conditionStr.includes("AND"))
         subConditionStr = conditionStr.split("AND");
@@ -73,7 +84,7 @@ export function mockSQLDB() {
         for (const [key, val] of conditions.entries())
           if (key in row && row[key] === val) rows.push(row);
       }
-      return rows as T | undefined;
+      return rows as T;
     },
     queryData: async (pattern: string) => {
       return "" as unknown;

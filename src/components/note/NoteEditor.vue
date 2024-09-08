@@ -29,7 +29,7 @@ import Vditor from "vditor";
 import { exportPDF } from "vditor/src/ts/export";
 // db related
 import {
-  getAllNotes,
+  getAllNoteIds,
   getNote,
   loadNote,
   saveNote,
@@ -580,7 +580,7 @@ async function filterHints(
 ): Promise<Array<{ value: string; html: string }>> {
   const hints = [];
   const projects = (await getAllProjects()) as Project[];
-  const noteIds = await getAllNotes();
+  const noteIds = await getAllNoteIds();
   for (const project of projects) {
     project.authorString = authorToString(project.author);
     project.year = project.issued?.["date-parts"];

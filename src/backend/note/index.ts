@@ -342,7 +342,7 @@ export async function getNoteTree(projectId: string): Promise<FolderOrNote[]> {
  * Get all noteIds in database
  * @returns {string[]} noteIds - array of noteId
  */
-export async function getAllNotes(): Promise<string[]> {
+export async function getAllNoteIds(): Promise<string[]> {
   const results =
     (await sqldb.select<{ _id: string }[]>("SELECT _id FROM notes")) || [];
   return results.map((result) => result._id);
