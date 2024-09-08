@@ -57,6 +57,7 @@ export function createProject(category: string): Project {
 export async function addProject(
   project: Project
 ): Promise<Project | undefined> {
+  console.log("here");
   try {
     // need to remomve _graph property if update by meta
     delete project._graph;
@@ -178,6 +179,7 @@ export async function getProject(
   options?: { includePDF?: boolean; includeNotes?: boolean }
 ): Promise<Project | undefined> {
   let project = await projectSQLAGUD.getProject(projectId);
+  console.log("sql project", project);
   if (!project) project = await projectFileAGUD.getProject(projectId);
   if (!project) return;
 

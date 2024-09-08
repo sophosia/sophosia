@@ -83,6 +83,7 @@ export function mockSQLDB() {
       for (const str of subConditionStr) {
         const [key, valPlaceHolder] = str.split("=").map((s) => s.trim());
         const index = parseInt(valPlaceHolder.slice(1)) - 1;
+        console.log("key", key, "val", bindValues![index] as string);
         conditions.set(key, bindValues![index] as string);
       }
 
