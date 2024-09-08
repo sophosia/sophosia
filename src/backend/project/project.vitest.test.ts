@@ -16,14 +16,14 @@ afterEach(() => {
 
 describe("project.ts", () => {
   it("createProject", () => {
-    const folderId = "folderId";
-    const project = createProject(folderId);
-    expect(project.folderIds).toContain(folderId);
+    const category = "category";
+    const project = createProject(category);
+    expect(project.categories).toContain(category);
   });
 
   it("addProject", async () => {
-    const folderId = "folderId";
-    const project = createProject(folderId);
+    const category = "category";
+    const project = createProject(category);
     await addProject(project);
 
     const projectPath = [db.config.storagePath, project._id].join("/");
@@ -33,8 +33,8 @@ describe("project.ts", () => {
   });
 
   it("deleteProject (deleteFromDB)", async () => {
-    const folderId = "folderId";
-    const project = createProject(folderId);
+    const category = "category";
+    const project = createProject(category);
     await addProject(project);
 
     await deleteProject(project._id, true);
@@ -44,21 +44,21 @@ describe("project.ts", () => {
   });
 
   it("deleteProject (deleteFromFolder)", async () => {
-    const folderId = "folderId";
-    const project = createProject(folderId);
+    const category = "category";
+    const project = createProject(category);
     await addProject(project);
 
-    await deleteProject(project._id, false, folderId);
+    await deleteProject(project._id, false, category);
     const newProject = (await getProject(project._id)) as Project;
 
     const projectPath = [db.config.storagePath, project._id].join("/");
-    expect(newProject.folderIds).not.toContain(folderId);
+    expect(newProject.categories).not.toContain(category);
     expect(mockFS.has(projectPath)).toBe(true);
   });
 
   it("updateProject", async () => {
-    const folderId = "folderId";
-    const project = createProject(folderId);
+    const category = "category";
+    const project = createProject(category);
     await addProject(project);
 
     const props = { title: "new_title" };
@@ -69,20 +69,20 @@ describe("project.ts", () => {
   });
 
   it("getProject", async () => {
-    const folderId = "folderId";
-    const project = createProject(folderId);
+    const category = "category";
+    const project = createProject(category);
     await addProject(project);
 
     const newProject = await getProject(project._id);
-    expect(newProject?.folderIds).toContain(folderId);
+    expect(newProject?.categories).toContain(category);
   });
 
   it("getProjects", async () => {
-    const folderId = "folderId";
-    for (let i = 0; i < 10; i++) await addProject(createProject(folderId));
+    const category = "category";
+    for (let i = 0; i < 10; i++) await addProject(createProject(category));
 
     // console.log("mockFS", mockFS);
-    const projects = await getProjects(folderId);
+    const projects = await getProjects(category);
     expect(projects.length).toBe(10);
   });
 });
