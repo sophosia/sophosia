@@ -2,6 +2,7 @@ import { basename } from "@tauri-apps/api/path";
 import { defineStore } from "pinia";
 import {
   AppState,
+  CategoryNode,
   FolderOrNote,
   Note,
   NoteType,
@@ -28,6 +29,11 @@ import {
   getProjects,
   updateProject,
 } from "src/backend/project";
+import {
+  deleteCategory,
+  getCategoryTree,
+  updateCategory,
+} from "src/backend/category";
 import { projectFileAGUD } from "src/backend/project/fileOps";
 import { sortTree } from "src/backend/utils";
 import { useLayoutStore } from "./layoutStore";
@@ -317,6 +323,58 @@ export const useProjectStore = defineStore("projectStore", {
       let project = (await this.getProjectFromDB(projectId)) as Project;
       sortTree(project);
       this._updateProjectUI(projectId, project);
+    },
+
+    /**
+     * Get category tree
+     *
+     * @returns {Promise<CategoryNode[]>}
+     */
+    async getCategoryTree(): Promise<CategoryNode[]> {
+      return await getCategoryTree();
+    },
+
+    /**
+     * Update category and the corresponding projects
+     *
+     * @param {string} oldCategory
+     * @param {string} newCategory
+     *
+     * @example
+     * To rename a category (and its subcategories)
+     * updateCategory(oldCategory, newCategory)
+     *
+     * @example
+     * To move a category into another category
+     * move library/category1 into library/category2
+     * updateCategory("library/category1", "library/category2/category1")
+     * duplicate must be check before using this function
+     */
+    async updateCategory(oldCategory: string, newCategory: string) {
+      // updte db
+      await updateCategory(oldCategory, newCategory);
+      // update UI
+      for (const project of this.projects) {
+        project.categories = project.categories.map((category) =>
+          category.replace(oldCategory, newCategory)
+        );
+      }
+    },
+
+    /**
+     * Delete a category and its subcategories
+     *
+     * @param {string} category
+     */
+    async deleteCategory(category: string) {
+      // update db
+      await deleteCategory(category);
+      // update UI
+      for (const project of this.projects) {
+        project.categories = project.categories.filter(
+          (cat) => !cat.startsWith(category)
+        );
+      }
     },
   },
 });

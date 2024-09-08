@@ -19,7 +19,8 @@ export function traverseTree(
   root: QTreeNode,
   processNode: (node: QTreeNode) => void
 ) {
-  if (root.children && root.children.length > 1) {
+  processNode(root);
+  if (root.children && root.children.length > 0) {
     for (let child of root.children) {
       processNode(child);
       traverseTree(child, processNode);

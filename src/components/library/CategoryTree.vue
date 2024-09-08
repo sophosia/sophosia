@@ -26,6 +26,7 @@
               dragoverNode == prop.node &&
               draggingNode != prop.node,
           }"
+          @click="onClick(prop.node)"
           draggable="true"
           @dragstart="(e: DragEvent) => onDragStart(e, prop.node)"
           @dragover="(e: DragEvent) => onDragOver(e, prop.node)"
@@ -135,12 +136,7 @@ import { QTree, QTreeNode } from "quasar";
 import { Project, SpecialCategory, db } from "src/backend/database";
 import { onMounted, ref } from "vue";
 //db
-import {
-  getCategoryTree,
-  updateCategory,
-  deleteCategory,
-} from "src/backend/category";
-import { sortTree, getIdLabel } from "src/backend/utils";
+import { sortTree, getIdLabel, traverseTree } from "src/backend/utils";
 import { useProjectStore } from "src/stores/projectStore";
 import { CategoryNode } from "src/backend/database";
 import { useI18n } from "vue-i18n";
@@ -163,7 +159,8 @@ const dragoverNode = ref<CategoryNode | null>(null);
 const enterTime = ref(0);
 
 onMounted(async () => {
-  categoryNodes.value = (await getCategoryTree()) as CategoryNode[];
+  categoryNodes.value =
+    (await projectStore.getCategoryTree()) as CategoryNode[];
   categoryNodes.value[0].icon = "mdi-library-outline";
 
   // add other special categories
@@ -242,7 +239,7 @@ function deleteCategoryNode(node: CategoryNode) {
   categoryNodes.value[0].children = _dfs(categoryNodes.value[0]);
 
   // remove from db
-  deleteCategory(node._id);
+  projectStore.deleteCategory(node._id);
 
   // select another category after this to refresh the table
   // if user is delete category that are not currently selected, table won't refresh
@@ -290,13 +287,17 @@ function renameCategoryNode(node: CategoryNode) {
   if (!renamingCategory.value || !tree.value) return;
   if (!pathDuplicate.value && newCategoryLabel.value) {
     // update db
-    const components = node._id.split("/");
+    const oldCategory = node._id;
+    const components = oldCategory.split("/");
     components[components.length - 1] = newCategoryLabel.value;
     const newCategory = components.join("/");
-    updateCategory(node._id, newCategory);
+    projectStore.updateCategory(oldCategory, newCategory);
 
-    // update ui
-    node._id = newCategory;
+    // update ui, update _id of current and sub categories
+    traverseTree(
+      node as QTreeNode,
+      (n) => (n._id = n._id.replace(oldCategory, newCategory))
+    );
   }
 
   // update ui
@@ -407,7 +408,7 @@ async function onDrop(e: DragEvent, node: CategoryNode) {
     moveNodes(categoryNodes.value[0]);
 
     // update db
-    await updateCategory(dragId, newId);
+    await projectStore.updateCategory(dragId, newId);
   }
 
   onDragEnd(e);
@@ -425,6 +426,10 @@ function onDragEnd(e: DragEvent) {
 function getLibraryNode() {
   if (!tree.value) return;
   return tree.value.getNodeByKey(SpecialCategory.LIBRARY.toString());
+}
+
+function onClick(node) {
+  console.log(node);
 }
 
 defineExpose({

@@ -77,13 +77,3 @@ export async function deleteCategory(category: string) {
   categoryFileAGUD.delete(category);
   categorySQLAGUD.delete(category);
 }
-
-/**
- * Move the oldCategory (and its subcategories) to the newCategory
- * @param {string} oldCategory
- * @param {string} newCategory
- */
-export async function moveCategoryTo(oldCategory: string, newCategory: string) {
-  categoryFileAGUD.moveInto(oldCategory, newCategory);
-  categorySQLAGUD.moveInto(oldCategory, newCategory);
-}

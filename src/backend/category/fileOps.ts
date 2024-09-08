@@ -44,22 +44,6 @@ export class CategoryFileAGUD {
       console.log(err);
     }
   }
-
-  async moveInto(dragCategory: string, dropCategory: string) {
-    try {
-      const projects = await getAllProjects();
-      for (const project of projects) {
-        project.categories = project.categories.map((category) => {
-          return category.startsWith(dragCategory)
-            ? category.replace(getParentId(category), dropCategory)
-            : category;
-        });
-        updateProject(project._id, project);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
 }
 
 export const categoryFileAGUD = new CategoryFileAGUD();

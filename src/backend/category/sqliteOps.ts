@@ -34,17 +34,6 @@ class CategorySQLAGUD {
       console.log(error);
     }
   }
-
-  async moveInto(dragCategory: string, dropCategory: string) {
-    try {
-      sqldb.execute(
-        "UPDATE categories SET category = REPLACE(category, $1, $2)",
-        [dragCategory, dropCategory]
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }
 }
 
 export const categorySQLAGUD = new CategorySQLAGUD();
