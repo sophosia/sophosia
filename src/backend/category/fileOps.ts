@@ -24,7 +24,7 @@ export class CategoryFileAGUD {
         project.categories = project.categories.map((category) =>
           category.replace(oldCategory, newCategory)
         );
-        updateProject(project._id, project);
+        await updateProject(project._id, project);
       }
     } catch (error) {
       console.log(error);

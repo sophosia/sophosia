@@ -61,9 +61,9 @@ export async function addProject(
     // need to remomve _graph property if update by meta
     delete project._graph;
     // create actual folder for containing its files
-    projectFileAGUD.createProjectFolder(project);
+    await projectFileAGUD.createProjectFolder(project);
     // insert data into sqldb
-    projectSQLAGUD.addProject(project);
+    await projectSQLAGUD.addProject(project);
     return project;
   } catch (err) {
     console.log(err);

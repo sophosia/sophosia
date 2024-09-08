@@ -1,5 +1,5 @@
 import "src/backend/category";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SpecialCategory } from "../database";
 import {
   getCategoryTree,
@@ -7,9 +7,10 @@ import {
   deleteCategory,
 } from "src/backend/category";
 import { addProject, createProject } from "../project";
+import { mockTable } from "app/test/vitest/mock-sqlite";
 
 describe("category", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     const project = createProject("library");
     project.categories.push("library/test-category1");
     project.categories.push("library/test-category2");
@@ -36,20 +37,21 @@ describe("category", () => {
   it("moveCategoryTo", async () => {
     await updateCategory(
       "library/test-category2",
-      "library/new-test-category1/test-category2"
+      "library/test-category1/test-category2"
     );
     const tree = await getCategoryTree();
     expect(tree[0].children.length).toBe(1);
-    expect(tree[0].children[0]._id).toBe("library/new-test-category1");
+    expect(tree[0].children[0]._id).toBe("library/test-category1");
     expect(tree[0].children[0].children.length).toBe(1);
     expect(tree[0].children[0].children[0]._id).toBe(
-      "library/new-test-category1/test-category2"
+      "library/test-category1/test-category2"
     );
   });
 
   it("deleteCategory", async () => {
-    await deleteCategory("library/new-test-category1");
+    await deleteCategory("library/test-category1");
+    console.log("mockTable", mockTable);
     const tree = await getCategoryTree();
-    expect(tree[0].children.length).toBe(0);
+    expect(tree[0].children.length).toBe(1);
   });
 });

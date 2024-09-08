@@ -1,6 +1,6 @@
 import * as sqlite from "../../src/backend/database/sqlite";
 import type { QueryResult } from "tauri-plugin-sql-api";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
 import { ref } from "vue";
 import Database from "tauri-plugin-sql-api";
 import { parseInt } from "lodash";
@@ -36,6 +36,13 @@ export function mockSQLDB() {
       } else if (query.startsWith("DELETE")) {
         const conditionStr = query.split("WHERE").at(1);
         if (!conditionStr) return;
+        if (conditionStr.includes("LIKE")) {
+          const [key, _] = conditionStr.split("LIKE").map((str) => str.trim());
+          mockTable = mockTable.filter(
+            (row) =>
+              key in row && row[key].startsWith(bindValues.at(0)! as string)
+          );
+        }
         const [key, _] = conditionStr
           .split(conditionStr.includes("=") ? "=" : "IN")
           .map((str) => str.trim());
@@ -113,3 +120,7 @@ function updateSQLDB(query: string, bindValues: string[]) {
   //     target = CASE WHEN target = $1 THEN $2 ELSE target END
   // WHERE source = $1 OR target = $1`,
 }
+
+afterEach(() => {
+  mockTable = [];
+});

@@ -65,8 +65,8 @@ export async function getCategoryTree(): Promise<CategoryNode[]> {
  * @param {string} newCategory
  */
 export async function updateCategory(oldCategory: string, newCategory: string) {
-  categoryFileAGUD.update(oldCategory, newCategory);
-  categorySQLAGUD.update(oldCategory, newCategory);
+  await categoryFileAGUD.update(oldCategory, newCategory);
+  await categorySQLAGUD.update(oldCategory, newCategory);
 }
 
 /**
@@ -74,6 +74,6 @@ export async function updateCategory(oldCategory: string, newCategory: string) {
  * @param {string} category
  */
 export async function deleteCategory(category: string) {
-  categoryFileAGUD.delete(category);
-  categorySQLAGUD.delete(category);
+  await categoryFileAGUD.delete(category);
+  await categorySQLAGUD.delete(category);
 }

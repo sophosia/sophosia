@@ -96,7 +96,7 @@ WHERE NOT EXISTS (SELECT 1 FROM tags WHERE projectId = $1 AND tag = $2)`,
       projectId,
     ]);
     for (const category of categories) {
-      sqldb.execute(
+      await sqldb.execute(
         `INSERT INTO categories (projectId, category)
 SELECT $1, $2
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE projectId = $1 AND category = $2)`,
