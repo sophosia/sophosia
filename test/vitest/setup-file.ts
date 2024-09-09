@@ -1,7 +1,6 @@
 // This file will be run before each test file
 // mock the indexeddb
 import { mockIPC } from "@tauri-apps/api/mocks";
-import "fake-indexeddb/auto";
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach } from "vitest";
 import { db } from "../../src/backend/database";
