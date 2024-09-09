@@ -179,7 +179,6 @@ export async function getProject(
   options?: { includePDF?: boolean; includeNotes?: boolean }
 ): Promise<Project | undefined> {
   let project = await projectSQLAGUD.getProject(projectId);
-  console.log("sql project", project);
   if (!project) project = await projectFileAGUD.getProject(projectId);
   if (!project) return;
 
@@ -202,24 +201,34 @@ export async function getAllProjects(options?: {
   includePDF?: boolean;
   includeNotes?: boolean;
 }): Promise<Project[]> {
+  projectSQLAGUD.getAllProjects(options);
   return await projectFileAGUD.getAllProjects(options);
 }
 
 /**
- * Retrieves projects from a specific folder, with options to include related PDFs and notes.
+ * Retrieves projects from a specific category, with options to include related PDFs and notes.
  *
  * @param {string} category - The ID of the folder to filter projects by.
  * @param {Object} [options] - Options to include associated PDFs and/or notes for each project.
  * @returns {Promise<Project[]>} A promise resolving to an array of Project objects filtered by the folder ID.
  *
- * Fetches projects based on the specified folder ID, applying additional filters for special folders like Library, Added, and Favorites.
+ * Fetches projects based on the specified category, applying additional filters for special folders like Library, Added, and Favorites.
  * Optionally attaches associated PDF paths and note trees for each project based on provided options.
  */
 export async function getProjects(
   category: string,
   options?: { includePDF?: boolean; includeNotes?: boolean }
 ): Promise<Project[]> {
-  return await projectFileAGUD.getProjects(category, options);
+  let projects = await projectSQLAGUD.getProjects(category);
+  if (!projects.length) projects = await projectFileAGUD.getProjects(category);
+
+  for (const project of projects) {
+    if (options?.includePDF)
+      project.path = await projectFileAGUD.getPDF(project._id);
+    if (options?.includeNotes)
+      project.children = await getNoteTree(project._id);
+  }
+  return projects;
 }
 
 /**

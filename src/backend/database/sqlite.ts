@@ -39,7 +39,7 @@ class SQLDatabase {
     if (!_sqldb) return;
     // store a meta, _id is understood as projectId
     await _sqldb.execute(
-      "CREATE VIRTUAL TABLE IF NOT EXISTS metas USING fts5 (_id, type, citationKey, originalTitle, title, abstract, issued, publisher, containerTitle, volume, DOI, ISBN, ISSN, URL, favorite, timestampAdded, timestampModified)"
+      "CREATE VIRTUAL TABLE IF NOT EXISTS metas USING fts5 (_id, type, citationKey, originalTitle, title, abstract, issued, publisher, containerTitle, containerTitleShort, volume, DOI, ISBN, ISSN, URL, favorite, timestampAdded, timestampModified)"
     );
     // store the contents of pdf/epub of each meta
     await _sqldb.execute(

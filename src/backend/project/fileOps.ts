@@ -27,10 +27,7 @@ class ProjectFileAGUD {
     }
   }
 
-  async getProjects(
-    category: string,
-    options?: { includePDF?: boolean; includeNotes?: boolean }
-  ) {
+  async getProjects(category: string) {
     try {
       let projects = await this.getAllProjects();
       switch (category) {
@@ -54,12 +51,6 @@ class ProjectFileAGUD {
             project.categories.includes(category)
           );
           break;
-      }
-
-      for (const project of projects) {
-        if (options?.includePDF) project.path = await this.getPDF(project._id);
-        if (options?.includeNotes)
-          project.children = await getNoteTree(project._id);
       }
 
       return projects;
