@@ -448,3 +448,14 @@ export interface ChatMessage {
 
 
 export type PluginStatusMap = Map<string, PluginStatus>;
+
+// chat
+export interface ChatState {
+  _id: string;
+  theme: string;
+  type: ChatType;
+}
+export enum ChatType {
+  REFERENCE = "reference",
+  CATEGORY = "category",
+}

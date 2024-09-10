@@ -9,7 +9,7 @@
   "project": "Projet",
   "upload": "Téléverser {type}",
   "file-upload": "{type} téléversé ",
-  "chat": "Demandez-moi!",
+  "ask-sophosia": "Demandez à Sophosia !",
   "note": "Note",
   "tags": "Tags",
   "file": "Document",
@@ -175,5 +175,6 @@
   "signed-in-as": "Connecté en tant que {type}",
   "updated": "{type} mis à jour",
   "progress": "Progrès",
-  "show": "Afficher {type}"
+  "show": "Afficher {type}",
+  "type-a-message": "Tapez un message..."
 }

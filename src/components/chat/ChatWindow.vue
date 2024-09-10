@@ -1,11 +1,25 @@
 <template>
   <q-card class="chat-window">
-    <q-card-section v-if="chatStore.chatVisibility" class="title-bar items-center">
-      <h2 v-if="chatStore.currentChatState" class="title">
-        {{ chatStore.currentChatState.label }} ({{ chatStore.currentChatState.type }})
+    <q-card-section
+      v-if="chatStore.chatVisibility"
+      class="title-bar items-center"
+    >
+      <h2
+        v-if="chatStore.currentChatState"
+        class="title"
+      >
+        {{ chatStore.currentChatState.label }} ({{
+          chatStore.currentChatState.type
+        }})
       </h2>
       <q-space />
-      <q-btn flat round dense icon="close" @click="chatStore.hideChat" />
+      <q-btn
+        flat
+        round
+        dense
+        icon="close"
+        @click="chatStore.hideChat"
+      />
     </q-card-section>
 
     <q-card-section class="messages">
@@ -48,7 +62,10 @@
             flat
             color="primary"
           >
-            <q-spinner-ball color="primary" size="1.5em" />
+            <q-spinner-ball
+              color="primary"
+              size="1.5em"
+            />
           </q-btn>
         </template>
       </q-input>
@@ -57,25 +74,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useChatStore } from 'src/stores/chatStore';
-import { getSupabaseClient } from 'src/backend/authSupabase';
-import { converse, ConverseRequest } from 'src/backend/conversationAgent/converse';
-import { errorDialog } from '../dialogs/dialogController';
-import { ChatMessage } from 'src/backend/database';
+import { getSupabaseClient } from "src/backend/authSupabase";
+import {
+  converse,
+  ConverseRequest,
+} from "src/backend/conversationAgent/converse";
+import { ChatMessage } from "src/backend/database";
+import { useChatStore } from "src/stores/chatStore";
+import { computed, onMounted, ref } from "vue";
+import { errorDialog } from "../dialogs/dialogController";
 
 const supabase = getSupabaseClient();
 const chatStore = useChatStore();
 const messages = ref<ChatMessage[]>([]);
-const newMessage = ref('');
+const newMessage = ref("");
 const sendingMessage = ref(false);
 
 const shouldShowSendButton = computed(() => {
-  return newMessage.value.trim() !== '' || sendingMessage.value;
+  return newMessage.value.trim() !== "" || sendingMessage.value;
 });
 
 onMounted(async () => {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     errorDialog.show();
     errorDialog.error.name = "Error";
@@ -115,7 +137,9 @@ const sendMessage = async () => {
 
   sendingMessage.value = true;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     errorDialog.show();
     errorDialog.error.name = "Error";
@@ -134,14 +158,15 @@ const sendMessage = async () => {
   const req: ConverseRequest = {
     user_uuid: user.id,
     message: newMessage.value,
-    title: chatStore.currentChatState.type === 'paper'
-      ? chatStore.currentChatState.label
-      : chatStore.currentChatState._id,
-    type: chatStore.currentChatState.type
+    title:
+      chatStore.currentChatState.type === "paper"
+        ? chatStore.currentChatState.label
+        : chatStore.currentChatState._id,
+    type: chatStore.currentChatState.type,
   };
 
   const msg = newMessage.value;
-  newMessage.value = '';
+  newMessage.value = "";
   messages.value.push({ content: msg, isUserMessage: true });
 
   try {
@@ -157,18 +182,16 @@ const sendMessage = async () => {
 };
 </script>
 
-
-
 <style scoped>
 .chat-window {
   display: flex;
   flex-direction: column;
-  height: 100vh; 
-  width: 400px; 
+  height: 100vh;
+  width: 400px;
   border: 1px solid #444;
   border-radius: 10px;
   overflow: hidden;
-  background-color: #1F212D;
+  background-color: #1f212d;
   z-index: 100;
 }
 
@@ -195,7 +218,7 @@ const sendMessage = async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #1F212D;
+  background-color: #1f212d;
   padding: 10px;
   box-sizing: border-box;
 }

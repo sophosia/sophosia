@@ -9,7 +9,7 @@
   "project": "Project",
   "upload": "Upload {type}",
   "file-upload": "{type} uploaded",
-  "chat": "Ask me!",
+  "ask-sophosia": "Ask Sophosia!",
   "note": "Note",
   "tags": "Tags",
   "file": "File",
@@ -175,5 +175,7 @@
   "signed-in-as": "Signed in as {type}",
   "updated": "{type} updated",
   "progress": "Progress",
-  "show": "Show {type}"
+  "show": "Show {type}",
+  "assistant": "Assistant",
+  "type-a-message": "Type a message..."
 }

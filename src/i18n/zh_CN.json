@@ -9,7 +9,7 @@
   "project": "项目",
   "upload": "上传 {type}",
   "file-upload": "{type} 已上传",
-  "chat": "问我！",
+  "ask-sophosia": "问小助手！",
   "note": "笔记",
   "tags": "标签",
   "file": "文件",
@@ -79,7 +79,7 @@
   "delete-from-folder": "从文件夹中删除",
   "delete-from-database": "从数据库中删除",
   "author": "作者",
-  "export-references": "导出此文件夹的引用",
+  "export-references": "导出文献",
   "no-spreads": "单页视图",
   "odd-spreads": "双页视图",
   "even-spreads": "书籍视图",
@@ -91,7 +91,7 @@
   "start": "开始",
   "replace-file": "替换文件",
   "attach-file": "附加文件",
-  "reference": "引用文献",
+  "reference": "文献",
   "rectangle": "矩形高亮",
   "copy": "复制",
   "strikeout": "删除线",
@@ -175,5 +175,7 @@
   "signed-in-as": "以 {type} 身份登录",
   "updated": "{type}已更新",
   "progress": "进度",
-  "show": "显示{type}"
+  "show": "显示{type}",
+  "assistant": "小助手",
+  "type-a-message": "输入消息..."
 }
