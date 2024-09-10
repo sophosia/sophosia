@@ -130,7 +130,7 @@ export default {
     });
 
     const updateSuggestions = () => {
-      if (newChatState.value.type === "category") {
+      if (newChatState.value.type === ChatType.CATEGORY) {
         filteredSuggestions.value = allFolders.value
           .filter((folder) =>
             folder.label
@@ -138,7 +138,7 @@ export default {
               .includes(newChatState.value.theme.toLowerCase())
           )
           .map((folder) => folder.label);
-      } else if (newChatState.value.type === "reference") {
+      } else if (newChatState.value.type === ChatType.REFERENCE) {
         filteredSuggestions.value = allPapers.value
           .filter((reference) =>
             reference.label

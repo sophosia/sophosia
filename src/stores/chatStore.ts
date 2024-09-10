@@ -5,7 +5,12 @@ import {
   retrieveHistory,
   retrievePaperid,
 } from "src/backend/conversationAgent";
-import { AppState, ChatMessage, ChatState } from "src/backend/database";
+import {
+  AppState,
+  ChatMessage,
+  ChatState,
+  ChatType,
+} from "src/backend/database";
 import { errorDialog } from "src/components/dialogs/dialogController";
 import { ref } from "vue";
 
@@ -40,17 +45,17 @@ export const useChatStore = defineStore("chat", {
       }
     },
 
-    addMessageToChatState(label: string, message: ChatMessage) {
-      if (this.chatMessages[label]) {
-        this.chatMessages[label].push(message); // Add message to corresponding chat state
+    addMessageToChatState(theme: string, message: ChatMessage) {
+      if (this.chatMessages[theme]) {
+        this.chatMessages[theme].push(message); // Add message to corresponding chat state
       }
     },
-    removeChatState(label: string) {
-      const index = this.chatStates.findIndex((state) => state.label === label);
+    removeChatState(theme: string) {
+      const index = this.chatStates.findIndex((state) => state.theme === theme);
       if (index !== -1) {
         this.chatStates.splice(index, 1);
       }
-      delete this.chatMessages[label];
+      delete this.chatMessages[theme];
     },
     openModal() {
       this.showModal = true;
@@ -72,8 +77,8 @@ export const useChatStore = defineStore("chat", {
       }
       try {
         let history;
-        if (state.type === "paper") {
-          const paperid = await retrievePaperid(supabase, user.id, state.label);
+        if (state.type === ChatType.REFERENCE) {
+          const paperid = await retrievePaperid(supabase, user.id, state.theme);
           console.log("paperid", paperid);
           history = await retrieveHistory(
             supabase,

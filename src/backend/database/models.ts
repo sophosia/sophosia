@@ -293,9 +293,7 @@ export interface AppState {
   chatVisibility: boolean;
   chatStates: ChatState[] | [];
   currentChatState: ChatState | null;
-  chatMessages: {[key:string]:ChatMessage[]} | {};
-
-
+  chatMessages: { [key: string]: ChatMessage[] } | {};
 }
 
 export interface Row {
@@ -434,19 +432,6 @@ export interface PluginStatus {
   updatable: boolean;
 }
 
-export interface ChatState {
-  _id: string;
-  label: string;
-  type: 'folder' | 'paper';
-
-}
-
-export interface ChatMessage {
-  content: string;
-  isUserMessage: boolean;
-}
-
-
 export type PluginStatusMap = Map<string, PluginStatus>;
 
 // chat
@@ -458,4 +443,9 @@ export interface ChatState {
 export enum ChatType {
   REFERENCE = "reference",
   CATEGORY = "category",
+}
+
+export interface ChatMessage {
+  content: string;
+  isUserMessage: boolean;
 }

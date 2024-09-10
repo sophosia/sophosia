@@ -8,7 +8,7 @@
         v-if="chatStore.currentChatState"
         class="title"
       >
-        {{ chatStore.currentChatState.label }} ({{
+        {{ chatStore.currentChatState.theme }} ({{
           chatStore.currentChatState.type
         }})
       </h2>
@@ -38,8 +38,9 @@
     <q-card-section class="input-area">
       <q-input
         v-model="newMessage"
+        dense
         type="textarea"
-        placeholder="Type a message..."
+        :placeholder="$t('type-a-message')"
         rows="1"
         class="input-field"
         @keyup.enter="sendMessage"
@@ -79,7 +80,7 @@ import {
   converse,
   ConverseRequest,
 } from "src/backend/conversationAgent/converse";
-import { ChatMessage } from "src/backend/database";
+import { ChatMessage, ChatType } from "src/backend/database";
 import { useChatStore } from "src/stores/chatStore";
 import { computed, onMounted, ref } from "vue";
 import { errorDialog } from "../dialogs/dialogController";
@@ -159,8 +160,8 @@ const sendMessage = async () => {
     user_uuid: user.id,
     message: newMessage.value,
     title:
-      chatStore.currentChatState.type === "paper"
-        ? chatStore.currentChatState.label
+      chatStore.currentChatState.type === ChatType.REFERENCE
+        ? chatStore.currentChatState.theme
         : chatStore.currentChatState._id,
     type: chatStore.currentChatState.type,
   };
