@@ -11,7 +11,9 @@ export function getSupabaseClient(): SupabaseClient {
       auth: {
         storageKey: "sophosiaAuth",
         storage: window.localStorage,
-        flowType:"implicit"
+        flowType:"implicit",
+        autoRefreshToken: true,
+        persistSession: true,
       },
     });
   }

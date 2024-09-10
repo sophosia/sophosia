@@ -1,51 +1,78 @@
 <template>
-  <div class="chat-window">
-    <div class="title-bar" v-if="chatStore.chatVisibility">
-      <h2 v-if="chatStore.currentChatState">
+  <q-card class="chat-window">
+    <q-card-section v-if="chatStore.chatVisibility" class="title-bar items-center">
+      <h2 v-if="chatStore.currentChatState" class="title">
         {{ chatStore.currentChatState.label }} ({{ chatStore.currentChatState.type }})
       </h2>
-      <h2 v-else>Chat</h2>
-      <q-btn class="delete-button" @click="chatStore.hideChat">x</q-btn>
-    </div>
-    <div class="messages">
-      <Message
-        v-for="(message, index) in messages"
-        :key="index"
-        :content="message.content"
-        :isUserMessage="message.isUserMessage"
-      />
-    </div>
-    <div class="input-area">
-      <textarea
+      <q-space />
+      <q-btn flat round dense icon="close" @click="chatStore.hideChat" />
+    </q-card-section>
+
+    <q-card-section class="messages">
+      <q-scroll-area class="scroll-area">
+        <q-chat-message
+          v-for="(message, index) in messages"
+          :key="index"
+          :text="[message.content]"
+          :sent="message.isUserMessage"
+          :bg-color="message.isUserMessage ? 'primary' : 'grey-3'"
+          :text-color="message.isUserMessage ? 'white' : 'black'"
+        />
+      </q-scroll-area>
+    </q-card-section>
+
+    <q-card-section class="input-area">
+      <q-input
         v-model="newMessage"
+        type="textarea"
         placeholder="Type a message..."
+        rows="1"
         class="input-field"
         @keyup.enter="sendMessage"
-      ></textarea>
-      <button 
-        v-if="newMessage.trim()"
-        @click="sendMessage" 
-        class="send-button"
+        autogrow
       >
-      </button>
-    </div>
-  </div>
+        <template v-slot:after>
+          <q-btn
+            v-if="!sendingMessage && shouldShowSendButton"
+            round
+            dense
+            flat
+            color="primary"
+            icon="send"
+            @click="sendMessage"
+          />
+          <q-btn
+            v-else-if="sendingMessage"
+            round
+            dense
+            flat
+            color="primary"
+          >
+            <q-spinner-ball color="primary" size="1.5em" />
+          </q-btn>
+        </template>
+      </q-input>
+    </q-card-section>
+  </q-card>
 </template>
-  
-  
+
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import Message from './Message.vue';
+import { ref, onMounted, computed } from 'vue';
 import { useChatStore } from 'src/stores/chatStore';
 import { getSupabaseClient } from 'src/backend/authSupabase';
-import { converse, ConverseRequest, ConverseResponse } from 'src/backend/conversationAgent/converse';
+import { converse, ConverseRequest } from 'src/backend/conversationAgent/converse';
 import { errorDialog } from '../dialogs/dialogController';
-import { retrieveFolderid, retrievePaperid, retrieveHistory, ChatMessage } from 'src/backend/conversationAgent';
+import { ChatMessage } from 'src/backend/database';
 
 const supabase = getSupabaseClient();
 const chatStore = useChatStore();
 const messages = ref<ChatMessage[]>([]);
 const newMessage = ref('');
+const sendingMessage = ref(false);
+
+const shouldShowSendButton = computed(() => {
+  return newMessage.value.trim() !== '' || sendingMessage.value;
+});
 
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser();
@@ -63,168 +90,145 @@ onMounted(async () => {
     return;
   }
 
-  try {
-    let history;
-    //TODO: verify why the  retrieve history function fails to retrieve the chat logs
-    if (chatStore.currentChatState.type === 'paper') {
-      const paperid = await retrievePaperid(supabase, user.id, chatStore.currentChatState.label);
-      console.log("paperid", paperid);
-      history = await retrieveHistory(supabase, user.id, "paper", undefined, paperid);
-    } else {
-    
-      const folderid = await retrieveFolderid(supabase, user.id, chatStore.currentChatState?._id);
-      console.log("folderid", folderid);
-      history = await retrieveHistory(supabase, user.id, "paper", folderid);
-    }
+  messages.value = chatStore.chatMessages[chatStore.currentChatState._id] || [];
 
-    messages.value = history || [];
-  } catch (error) {
-    errorDialog.show();
-    errorDialog.error.name = "Error";
-    errorDialog.error.message = "Failed to retrieve chat history.";
-  }
+  // try {
+  //   let history;
+  //   if (chatStore.currentChatState.type === 'paper') {
+  //     const paperid = await retrievePaperid(supabase, user.id, chatStore.currentChatState.label);
+  //     history = await retrieveHistory(supabase, user.id, "paper", undefined, paperid);
+  //   } else {
+  //     const folderid = await retrieveFolderid(supabase, user.id, chatStore.currentChatState._id);
+  //     history = await retrieveHistory(supabase, user.id, "folder", folderid);
+  //   }
+
+  //   messages.value = history || [];
+  // } catch (error) {
+  //   errorDialog.show();
+  //   errorDialog.error.name = "Error";
+  //   errorDialog.error.message = "Failed to retrieve chat history.";
+  // }
 });
 
 const sendMessage = async () => {
+  if (!newMessage.value.trim()) return;
+
+  sendingMessage.value = true;
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     errorDialog.show();
     errorDialog.error.name = "Error";
     errorDialog.error.message = "You need to relogin to continue";
+    sendingMessage.value = false;
     return;
   }
   if (!chatStore.currentChatState) {
     errorDialog.show();
     errorDialog.error.name = "Error";
     errorDialog.error.message = "Something went wrong with the chat state";
+    sendingMessage.value = false;
     return;
   }
 
-  if (newMessage.value.trim()) {
-    const req: ConverseRequest = {
-      user_uuid: user.id,
-      message: newMessage.value,
-      title: "",
-      type: chatStore.currentChatState.type
-    };
+  const req: ConverseRequest = {
+    user_uuid: user.id,
+    message: newMessage.value,
+    title: chatStore.currentChatState.type === 'paper'
+      ? chatStore.currentChatState.label
+      : chatStore.currentChatState._id,
+    type: chatStore.currentChatState.type
+  };
 
-    if (chatStore.currentChatState.type === 'paper') {
-      req.title = chatStore.currentChatState.label;
-    } else {
-      req.title = chatStore.currentChatState._id;
-    }
+  const msg = newMessage.value;
+  newMessage.value = '';
+  messages.value.push({ content: msg, isUserMessage: true });
 
-    messages.value.push({ content: newMessage.value, isUserMessage: true });
-    try {
-      const res: ConverseResponse = await converse(req);
-      messages.value.push({ content: res.response, isUserMessage: false });
-      newMessage.value = '';
-    } catch (error) {
-      errorDialog.show();
-      errorDialog.error.name = "Error";
-      errorDialog.error.message = "Failed to send message.";
-    }
+  try {
+    const res = await converse(req);
+    messages.value.push({ content: res.response, isUserMessage: false });
+  } catch (error) {
+    errorDialog.show();
+    errorDialog.error.name = "Error";
+    errorDialog.error.message = "Failed to send message.";
+  } finally {
+    sendingMessage.value = false;
   }
 };
 </script>
 
-  
-  <style scoped>
-  .chat-window {
-    display: flex;
-    flex-direction: column;
-    height: 300px;
-    width: 600px;
-    border: 1px solid #444;
-    border-radius: 10px;
-    overflow: hidden;
-    background-color: #1F212D;
-  }
-  .title-bar {
-    width: 100%;
-    height: 25px; /* adjust this value to your desired height */
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    border-bottom: 1px solid #444;
-  }
-  
-  .title-bar h2 {
-    margin: 0 auto;
-    justify-content: space-between;
-    font-size: 16px;
-  }
-  
-  .messages {
-    flex: 1;
-    padding: 10px;
-    overflow-y: scroll;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .input-area {
-    padding: 5px;
-    display: flex;
-    max-height: 300px;
-    background-color:#474851;
-    align-items: flex-start;
-    
-  }
-  
-  .input-field {
-    flex: 1;
-    padding: 8px;
-    border-radius: 5px;
-    border: none;
-    margin-right: 10px;
-    background-color: #474851;
-    overflow-y: auto;
-    resize: none;
-  }
-  .input-field:focus {
-    border: none; 
-    outline: none; 
-  }
-  .input-field::-webkit-scrollbar {
-    width: 8px; /* Width of the scrollbar */
-  }
-  .input-field::-webkit-scrollbar-thumb {
-    background-color: #888; /* Color of the scrollbar thumb */
-    border-radius: 10px; /* Rounded corners of the scrollbar thumb */
-  }
-  
-  .input-field::-webkit-scrollbar-thumb:hover {
-    background-color: #555; /* Darker color when hovering over the scrollbar thumb */
-  }
-  
-  .input-field::-webkit-scrollbar-track {
-    background-color: #f1f1f1; /* Color of the track (part the thumb moves within) */
-  }
-  
-  .send-button {
-    padding: 8px 12px;
-    background-color: orange;
-    height: 50px;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    height: 28px;
-  }
-  
-  .send-button:hover {
-    background-color: orangered;
-  }
 
-  .delete-button {
-    position: relative; /* Changed from absolute to relative */
-    margin-left: auto; /* Added to push the button to the right */
-    font-size: 16px;
-    cursor: pointer;
-  }
-  </style>
+
+<style scoped>
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; 
+  width: 400px; 
+  border: 1px solid #444;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #1F212D;
+  z-index: 100;
+}
+
+.title-bar {
+  width: 100%;
+  height: 40px; /* Adjust height as needed */
+  color: white;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #444;
+  padding: 0 10px; /* Adjust padding as needed */
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 16px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #1F212D;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.scroll-area {
+  height: 100%; /* Make scroll area fill the messages section */
+}
+
+.input-area {
+  background-color: #474851;
+  padding: 5px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.input-field {
+  flex: 1;
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+  background-color: #474851;
+  color: white;
+}
+
+:deep(.q-field__native) {
+  color: white;
+}
+
+:deep(.q-field__control) {
+  background-color: #474851 !important;
+}
+
+:deep(.q-field__marginal) {
+  background-color: #474851;
+}
+</style>

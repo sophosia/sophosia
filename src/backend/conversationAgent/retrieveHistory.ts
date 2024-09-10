@@ -1,10 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-
+import { ChatMessage } from '../database';
 // Define the structure of a chat message
-export interface ChatMessage {
-  content: string;
-  isUserMessage: boolean;
-}
+
 
 // Define the structure of the database row
 interface ChatLogRow {
@@ -14,28 +11,38 @@ interface ChatLogRow {
 }
 
 
-export async function retrieveHistory(supabase: SupabaseClient, user_uuid: string,type:string, folder_id?: string, paper_id?: string): Promise<ChatMessage[]> {
-  
-  const { data, error } = await supabase
+export async function retrieveHistory(
+  supabase: SupabaseClient,
+  type: string,
+  folder_id?: string,
+  paper_id?: string
+): Promise<ChatMessage[]> {
+  const query = supabase
     .from('chat-logs')
     .select('*')
-    .eq('user_uuid', user_uuid)
     .eq('type', type)
-    .eq('folder_id', folder_id)
-    .eq('paper_id',paper_id)
     .order('created_at', { ascending: true });
+
+  if (folder_id) {
+    query.eq('folder_id', folder_id);
+  }
+
+  if (paper_id) {
+    query.eq('paper_id', paper_id);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching chat logs:', error);
     throw error;
   }
 
-  return (data as ChatLogRow[]).map(row => ({
+  return (data as ChatLogRow[]).map((row) => ({
     content: row.log,
-    isUserMessage: row.author === 'user'
+    isUserMessage: row.author === 'user',
   }));
 }
-
 
 
 export async function retrievePaperid(supabase: SupabaseClient, user_uuid: string, paper_label: string): Promise<string> {
@@ -48,7 +55,7 @@ export async function retrievePaperid(supabase: SupabaseClient, user_uuid: strin
      
   
     if (error) {
-      console.error('Error fetching chat logs:', error);
+      console.error('Error fetching paper:', error);
       throw error;
     }
     return data[0].id;
@@ -58,14 +65,14 @@ export async function retrievePaperid(supabase: SupabaseClient, user_uuid: strin
 export async function retrieveFolderid(supabase: SupabaseClient, user_uuid: string, folder_uid: string): Promise<string> {
   
     const { data, error } = await supabase
-      .from('paper')
+      .from('folder')
       .select("id")
       .eq("user_uuid", user_uuid)
       .eq("title", folder_uid)
      
   
     if (error) {
-      console.error('Error fetching chat logs:', error);
+      console.error('Error fetching folder:', error);
       throw error;
     }
     return data[0].id;
