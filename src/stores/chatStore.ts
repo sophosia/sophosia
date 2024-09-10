@@ -37,7 +37,7 @@ export const useChatStore = defineStore("chat", {
       this.currentChatState = state;
       this.showChat();
     },
-    async addChatState(newState: ChatState) {
+    addChatState (newState: ChatState) {
       if (!this.chatMessages[newState._id]) {
         this.chatMessages[newState._id] = [];
 

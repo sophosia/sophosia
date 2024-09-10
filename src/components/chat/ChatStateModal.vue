@@ -181,6 +181,8 @@ export default {
       chatStore.addChatState(new_state);
       newChatState.value = { _id: "", theme: "", type: ChatType.CATEGORY };
       chatStore.hideModal();
+
+      console.log("All chat states", chatStore.chatStates);
     };
 
     const hideModal = () => {
