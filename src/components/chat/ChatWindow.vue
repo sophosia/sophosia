@@ -31,6 +31,7 @@
           :sent="message.isUserMessage"
           :bg-color="message.isUserMessage ? 'primary' : 'grey-3'"
           :text-color="message.isUserMessage ? 'white' : 'black'"
+          class="message-content"
         />
       </q-scroll-area>
     </q-card-section>
@@ -73,7 +74,6 @@
     </q-card-section>
   </q-card>
 </template>
-
 <script setup lang="ts">
 import { getSupabaseClient } from "src/backend/authSupabase";
 import {
@@ -115,22 +115,6 @@ onMounted(async () => {
 
   messages.value = chatStore.chatMessages[chatStore.currentChatState._id] || [];
 
-  // try {
-  //   let history;
-  //   if (chatStore.currentChatState.type === 'paper') {
-  //     const paperid = await retrievePaperid(supabase, user.id, chatStore.currentChatState.label);
-  //     history = await retrieveHistory(supabase, user.id, "paper", undefined, paperid);
-  //   } else {
-  //     const folderid = await retrieveFolderid(supabase, user.id, chatStore.currentChatState._id);
-  //     history = await retrieveHistory(supabase, user.id, "folder", folderid);
-  //   }
-
-  //   messages.value = history || [];
-  // } catch (error) {
-  //   errorDialog.show();
-  //   errorDialog.error.name = "Error";
-  //   errorDialog.error.message = "Failed to retrieve chat history.";
-  // }
 });
 
 const sendMessage = async () => {
@@ -167,6 +151,8 @@ const sendMessage = async () => {
         : chatStore.currentChatState._id,
     type: chatStore.currentChatState.type === ChatType.REFERENCE ? "paper" : "folder",
   };
+
+  console.log("Request: ", req);
 
   const msg = newMessage.value;
   newMessage.value = "";
@@ -225,10 +211,15 @@ const sendMessage = async () => {
   background-color: #1f212d;
   padding: 10px;
   box-sizing: border-box;
+  user-select: text; /* Allow text selection */
 }
 
 .scroll-area {
   height: 100%; /* Make scroll area fill the messages section */
+}
+
+.message-content {
+  cursor: text; /* Show text cursor to indicate selectable text */
 }
 
 .input-area {
