@@ -47,7 +47,7 @@ export const useChatStore = defineStore("chat", {
 
     addMessageToChatState(theme: string, message: ChatMessage) {
       if (this.chatMessages[theme]) {
-        this.chatMessages[theme].push(message); // Add message to corresponding chat state
+        this.chatMessages[theme].push(message); 
       }
     },
     removeChatState(theme: string) {
