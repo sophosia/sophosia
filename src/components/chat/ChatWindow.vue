@@ -109,7 +109,7 @@ onMounted(async () => {
   if (!chatStore.currentChatState) {
     errorDialog.show();
     errorDialog.error.name = "Error";
-    errorDialog.error.message = "Something went wrong with the chat state";
+  errorDialog.error.message = "Something went wrong with the chat state";
     return;
   }
 

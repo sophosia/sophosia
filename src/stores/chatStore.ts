@@ -95,9 +95,9 @@ export const useChatStore = defineStore("chat", {
           console.log("folderid", folderid);
           history = await retrieveHistory(
             supabase,
-            user.id,
             "folder",
-            folderid
+            folderid,
+            undefined
           );
         }
 
