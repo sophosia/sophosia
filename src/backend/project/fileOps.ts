@@ -60,10 +60,7 @@ class ProjectFileAGUD {
     }
   }
 
-  async getAllProjects(options?: {
-    includePDF?: boolean;
-    includeNotes?: boolean;
-  }): Promise<Project[]> {
+  async getAllProjects(): Promise<Project[]> {
     try {
       const projects = [] as Project[];
       const projectFolders = await readDir(db.config.storagePath);
@@ -72,9 +69,6 @@ class ProjectFileAGUD {
         if (folder.name!.startsWith(".")) continue;
         const project = await this.getProject(folder.name!);
         if (!project) continue; // skip this folder if it has not meta info
-        if (options?.includePDF) project.path = await this.getPDF(project._id);
-        if (options?.includeNotes)
-          project.children = await getNotes(project._id);
         projects.push(project);
       }
       return projects;

@@ -61,6 +61,9 @@ export async function addProject(
   try {
     // need to remomve _graph property if update by meta
     delete project._graph;
+    const ot = project["original-title"];
+    if (!ot || (Array.isArray(ot) && ot.length === 0))
+      project["original-title"] = "";
     // create actual folder for containing its files
     await projectFileAGUD.createProjectFolder(project);
     // insert data into sqldb
@@ -117,6 +120,9 @@ export async function updateProject(
     project.timestampModified = Date.now();
     delete project._graph; // remomve _graph property if update by meta
     delete project.folderIds; // this property is removed since v0.17.0
+    const ot = project["original-title"];
+    if (!ot || (Array.isArray(ot) && ot.length === 0))
+      project["original-title"] = "";
 
     // project._id is the new id
     // projectId is the old id
@@ -191,18 +197,15 @@ export async function getProject(
 /**
  * Retrieves all projects from the database, with options to include related PDFs and notes.
  *
- * @param {Object} [options] - Options to include associated PDFs and/or notes for each project.
  * @returns {Promise<Project[]>} A promise resolving to an array of Project objects.
  *
  * Iterates through all projects in the database, optionally attaching their associated PDF paths and note trees
  * based on the specified options.
  */
-export async function getAllProjects(options?: {
-  includePDF?: boolean;
-  includeNotes?: boolean;
-}): Promise<Project[]> {
-  projectSQLAGUD.getAllProjects(options);
-  return await projectFileAGUD.getAllProjects(options);
+export async function getAllProjects(): Promise<Project[]> {
+  let projects = await projectSQLAGUD.getAllProjects();
+  if (!projects.length) projects = await projectFileAGUD.getAllProjects();
+  return projects;
 }
 
 /**

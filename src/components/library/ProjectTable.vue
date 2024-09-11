@@ -330,12 +330,12 @@ async function filterRows() {
   computedRows.value = [];
   expansionText.value = [];
   const results = (await sqldb.queryData(props.searchString)) as Array<{
-    id: string;
+    projectId: string;
     pages: string;
     extracts: string;
   }>;
   for (let result of results) {
-    let [projectId, noteName] = result.id.split("/");
+    let [projectId, noteName] = result.projectId.split("/");
     let row = props.projects.find((row) => row._id == projectId);
     if (!row) continue;
     computedRows.value.push(row);

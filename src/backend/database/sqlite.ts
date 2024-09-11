@@ -72,16 +72,16 @@ class SQLDatabase {
   }
 
   async queryData(pattern: string) {
-    const db = await Database.load("sqlite:contents.db");
-    return await db.select(
+    const _sqldb = await this.load();
+    return await _sqldb?.select(
       `
 SELECT
-  id,
+  projectId,
   group_concat(page, ',') as pages,
   group_concat(extract, '</br>') as extracts
 FROM (
   SELECT
-    id,
+    projectId,
     page,
     snippet(contents, 2, '<span class="highlight-class-place-holder">', '</span>', '...', 15) as extract
   FROM
@@ -89,7 +89,7 @@ FROM (
   WHERE
     content MATCH 'NEAR(${pattern})'
   LIMIT -1 OFFSET 0) fts
-GROUP BY id
+GROUP BY projectId
 LIMIT 100;
 `
     );

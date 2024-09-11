@@ -20,32 +20,37 @@ export async function indexFiles() {
 
   const entries = await readDir(db.config.storagePath, { recursive: true });
   await processEntries(entries, async (file: FileEntry) => {
-    const ext = await extname(file.path);
-    switch (ext) {
-      case "md":
-        if (
-          pathToId(file.path) ==
-          `${file.name!.slice(0, -3)}/${file.name!.slice(0, -3)}.md`
-        ) {
-          // folder note
-          extractMetaFromMarkdown(file.path);
-        } else {
-          // normal note
-          extractMarkdownContent(file.path);
-          extractMarkdownLinks(file.path);
-        }
-        break;
-      case "excalidraw":
-        extractExcalidrawContent(file.path);
-        break;
-      case "pdf":
-        extractPDFContent(file.path);
-        break;
-      case "json":
-        if (file.name!.startsWith("SA")) extractAnnotContent(file.path);
-        break;
-      default:
-        break;
+    try {
+      const ext = await extname(file.path);
+      switch (ext) {
+        case "md":
+          if (
+            pathToId(file.path) ==
+            `${file.name!.slice(0, -3)}/${file.name!.slice(0, -3)}.md`
+          ) {
+            // folder note
+            extractMetaFromMarkdown(file.path);
+          } else {
+            // normal note
+            extractMarkdownContent(file.path);
+            extractMarkdownLinks(file.path);
+          }
+          break;
+        case "excalidraw":
+          extractExcalidrawContent(file.path);
+          break;
+        case "pdf":
+          extractPDFContent(file.path);
+          break;
+        case "json":
+          if (file.name!.startsWith("SA")) extractAnnotContent(file.path);
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      // possibly some hidden files like .DS_store
+      console.log(error);
     }
   });
   sqldb.readyToRead.value = true;
