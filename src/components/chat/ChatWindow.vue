@@ -146,6 +146,7 @@ const sendMessage = async () => {
     errorDialog.error.name = "Error";
     errorDialog.error.message = "You need to relogin to continue";
     sendingMessage.value = false;
+    console.log("User not found");
     return;
   }
   if (!chatStore.currentChatState) {
@@ -153,6 +154,7 @@ const sendMessage = async () => {
     errorDialog.error.name = "Error";
     errorDialog.error.message = "Something went wrong with the chat state";
     sendingMessage.value = false;
+    console.log("Chat state not found");
     return;
   }
 
@@ -163,7 +165,7 @@ const sendMessage = async () => {
       chatStore.currentChatState.type === ChatType.REFERENCE
         ? chatStore.currentChatState.theme
         : chatStore.currentChatState._id,
-    type: chatStore.currentChatState.type,
+    type: chatStore.currentChatState.type === ChatType.REFERENCE ? "paper" : "folder",
   };
 
   const msg = newMessage.value;
@@ -172,6 +174,7 @@ const sendMessage = async () => {
 
   try {
     const res = await converse(req);
+    console.log("Response: ", res);
     messages.value.push({ content: res.response, isUserMessage: false });
   } catch (error) {
     errorDialog.show();

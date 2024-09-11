@@ -38,11 +38,14 @@ export const useChatStore = defineStore("chat", {
       this.showChat();
     },
     addChatState (newState: ChatState) {
+      console.log("newState", newState);
+      console.log("chatMessages", this.chatMessages);
       if (!this.chatMessages[newState._id]) {
         this.chatMessages[newState._id] = [];
-
+        console.log("chatstate before addition",this.chatStates.length);
         this.chatStates.push(newState);
       }
+      console.log("chatStates", this.chatStates.length);
     },
 
     addMessageToChatState(theme: string, message: ChatMessage) {
@@ -50,13 +53,14 @@ export const useChatStore = defineStore("chat", {
         this.chatMessages[theme].push(message); 
       }
     },
-    removeChatState(theme: string) {
-      const index = this.chatStates.findIndex((state) => state.theme === theme);
+    removeChatState(_id: string) {
+      const index = this.chatStates.findIndex((state) => state._id === _id);
       if (index !== -1) {
         this.chatStates.splice(index, 1);
       }
-      delete this.chatMessages[theme];
+      delete this.chatMessages[_id];
     },
+
     openModal() {
       this.showModal = true;
     },

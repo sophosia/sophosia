@@ -28,7 +28,7 @@
                 icon="close"
                 flat
                 dense
-                @click.stop="removeChatState(state.theme)"
+                @click.stop="removeChatState(state._id)"
               />
             </q-item-section>
           </q-item>
@@ -182,15 +182,14 @@ export default {
       newChatState.value = { _id: "", theme: "", type: ChatType.CATEGORY };
       chatStore.hideModal();
 
-      console.log("All chat states", chatStore.chatStates);
     };
 
     const hideModal = () => {
       chatStore.hideModal();
     };
 
-    const removeChatState = (label: string) => {
-      chatStore.removeChatState(label);
+    const removeChatState = (_id: string) => {
+      chatStore.removeChatState(_id);
     };
 
     return {
