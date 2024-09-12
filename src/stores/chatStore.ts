@@ -99,8 +99,8 @@ export const useChatStore = defineStore("chat", {
         return history || [];
       } catch (error) {
         errorDialog.show();
-        errorDialog.error.name = "Error";
-        errorDialog.error.message = "Failed to retrieve chat history from db";
+        errorDialog.error.name = "Error Chat retrieval";
+        errorDialog.error.message = "If it's the first time for this reference/category, please ignore ";
       }
     },
 

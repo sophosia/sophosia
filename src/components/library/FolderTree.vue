@@ -222,9 +222,9 @@ return true ? accountStore.user.email : false;
         _id: category_id,
         theme: category.label,
         type: ChatType.CATEGORY,
-      });
-      chatStore.setCurrentChatState(
-        chatStore.chatStates[chatStore.chatStates.length - 1]);
+      }).then(()=>{   chatStore.setCurrentChatState(
+        chatStore.chatStates[chatStore.chatStates.length - 1]);})
+   
 
     } else {
       const category = await getFolder(category_id);
@@ -237,17 +237,11 @@ return true ? accountStore.user.email : false;
         _id: category_id,
         theme: category.label,
         type: ChatType.CATEGORY,
-      });
-      await chatStore
-        .syncMessages(chatStore.chatStates[chatStore.chatStates.length - 1])
-        .then((history) => {
-          chatStore.chatMessages[
-            chatStore.chatStates[chatStore.chatStates.length - 1]._id
-          ] = history || [];
-          chatStore.setCurrentChatState(
-            chatStore.chatStates[chatStore.chatStates.length - 1]
-          );
-        });
+      }).then(()=>{
+        chatStore.setCurrentChatState(
+          chatStore.chatStates[chatStore.chatStates.length - 1]);
+      })
+   
     }
   }
 }
