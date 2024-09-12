@@ -38,6 +38,12 @@
             class="menu"
           >
             <q-list dense>
+              <q-item  clickable v-close-popup @click="askSophosiaCategory">
+                <q-item-section>
+                  <i18n-t keypath="ask-sophosia" />
+                </q-item-section>
+              </q-item>
+            <q-separator />
               <q-item
                 clickable
                 v-close-popup
@@ -119,12 +125,13 @@
 // types
 
 import { QTree, QTreeNode } from "quasar";
-import { Folder, SpecialFolder } from "src/backend/database";
+import { ChatState, ChatType, Folder, SpecialFolder } from "src/backend/database";
 import { onMounted, ref } from "vue";
 //db
 import {
   addFolder as addFolderDB,
   deleteFolder as deleteFolderDB,
+  getFolder,
   getFolderTree,
   getParentFolder,
   moveFolderInto,
@@ -132,9 +139,13 @@ import {
 } from "src/backend/project/folder";
 import { sortTree } from "src/backend/project/utils";
 import { useProjectStore } from "src/stores/projectStore";
+import { useChatStore } from "src/stores/chatStore";
+import { checkIfUploaded, uploadPDF } from "src/backend/conversationAgent/uploadPDF";
+import { errorDialog } from "../dialogs/dialogController";
+import { getProjects } from "src/backend/project/project";
 
 const projectStore = useProjectStore();
-
+const chatStore = useChatStore();
 const emit = defineEmits(["exportFolder"]);
 
 const renameInput = ref<HTMLInputElement | null>(null);
@@ -164,6 +175,77 @@ onMounted(async () => {
     icon: "mdi-star-outline",
   });
 });
+
+
+
+
+/**
+ * Takes the selected Category and opens a chat with Sophosia.
+ */
+ async function askSophosiaCategory() {
+  const category_id = projectStore.selectedFolderId;
+  const chatState = chatStore.chatStates.find(
+    (state: ChatState) => state._id === category_id
+  );
+  if (chatState) {
+    chatStore.setCurrentChatState(chatState);
+  } else {
+    let check = await checkIfUploaded(category_id, "category");
+    if (!check.status) {
+      const projects = await getProjects(category_id);
+      if (!projects) {
+        errorDialog.show();
+        errorDialog.error.name = "Project Error";
+        return;
+      }
+      for (const project of projects) {
+        let isUploaded = await uploadPDF(project._id);
+        if (!isUploaded.status) {
+          errorDialog.show();
+          errorDialog.error.name = "Upload Error";
+          return;
+        }
+
+      }
+      const category = await getFolder(category_id);
+      if (!category) {
+        errorDialog.show();
+        errorDialog.error.name = "Category Error";
+        return;
+      }
+      chatStore.addChatState({
+        _id: category_id,
+        theme: category.label,
+        type: ChatType.CATEGORY,
+      });
+      chatStore.setCurrentChatState(
+        chatStore.chatStates[chatStore.chatStates.length - 1]);
+
+    } else {
+      const category = await getFolder(category_id);
+      if (!category) {
+        errorDialog.show();
+        errorDialog.error.name = "Category Error";
+        return;
+      }
+      chatStore.addChatState({
+        _id: category_id,
+        theme: category.label,
+        type: ChatType.CATEGORY,
+      });
+      await chatStore
+        .syncMessages(chatStore.chatStates[chatStore.chatStates.length - 1])
+        .then((history) => {
+          chatStore.chatMessages[
+            chatStore.chatStates[chatStore.chatStates.length - 1]._id
+          ] = history || [];
+          chatStore.setCurrentChatState(
+            chatStore.chatStates[chatStore.chatStates.length - 1]
+          );
+        });
+    }
+  }
+}
 
 /**************************
  * Add, delete, update, export

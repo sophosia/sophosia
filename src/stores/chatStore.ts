@@ -14,6 +14,7 @@ import {
 import { errorDialog } from "src/components/dialogs/dialogController";
 import { ref } from "vue";
 
+
 export const useChatStore = defineStore("chat", {
   state: () => ({
     initialized: false,
@@ -38,14 +39,12 @@ export const useChatStore = defineStore("chat", {
       this.showChat();
     },
     addChatState (newState: ChatState) {
-      console.log("newState", newState);
-      console.log("chatMessages", this.chatMessages);
+
+
       if (!this.chatMessages[newState._id]) {
         this.chatMessages[newState._id] = [];
-        console.log("chatstate before addition",this.chatStates.length);
         this.chatStates.push(newState);
       }
-      console.log("chatStates", this.chatStates.length);
     },
 
     addMessageToChatState(theme: string, message: ChatMessage) {
@@ -75,15 +74,12 @@ export const useChatStore = defineStore("chat", {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        // errorDialog.show();
-        // errorDialog.error.name = "Error";
-        // errorDialog.error.message = "You need to relogin to continue";
         return;
       }
       try {
         let history;
         if (state.type === ChatType.REFERENCE) {
-          const paperid = await retrievePaperid(supabase, user.id, state.theme);
+          const paperid = await retrievePaperid(supabase, state.theme);
           console.log("paperid", paperid);
           history = await retrieveHistory(
             supabase,
@@ -92,7 +88,7 @@ export const useChatStore = defineStore("chat", {
             paperid
           );
         } else {
-          const folderid = await retrieveFolderid(supabase, user.id, state._id);
+          const folderid = await retrieveFolderid(supabase, state._id);
           console.log("folderid", folderid);
           history = await retrieveHistory(
             supabase,

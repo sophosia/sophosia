@@ -1,3 +1,3 @@
 export * from "./uploadPDF";
 export * from "./converse";
-export * from "./retrieveHistory";
+export * from "./retrieveDBinfo";
