@@ -12,7 +12,11 @@ export interface ConverseResponse {
   response: string;
   retrievedNodes: any[];
 }
-
+/**
+ * Sends a message to the conversation agent and returns the response
+ * @param params ConverseRequest
+ * @returns ConverseResponse
+  */
 export async function converse(params: ConverseRequest): Promise<ConverseResponse> {
   const client = await getClient();
   try {

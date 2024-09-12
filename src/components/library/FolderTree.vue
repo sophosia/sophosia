@@ -218,7 +218,7 @@ return true ? accountStore.user.email : false;
         errorDialog.error.name = "Category Error";
         return;
       }
-      chatStore.addChatState({
+      await chatStore.addChatState({
         _id: category_id,
         theme: category.label,
         type: ChatType.CATEGORY,
@@ -233,7 +233,7 @@ return true ? accountStore.user.email : false;
         errorDialog.error.name = "Category Error";
         return;
       }
-      chatStore.addChatState({
+      await chatStore.addChatState({
         _id: category_id,
         theme: category.label,
         type: ChatType.CATEGORY,

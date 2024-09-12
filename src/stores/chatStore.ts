@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
 import { getSupabaseClient } from "src/backend/authSupabase";
 import {
-  retrieveFolderid,
+  retrieveCategoryid,
   retrieveHistory,
-  retrievePaperid,
+  retrieveReferenceid,
 } from "src/backend/conversationAgent";
 import {
   AppState,
@@ -38,11 +38,9 @@ export const useChatStore = defineStore("chat", {
       this.currentChatState = state;
       this.showChat();
     },
-    addChatState (newState: ChatState) {
-
-
+    async addChatState (newState: ChatState) {
       if (!this.chatMessages[newState._id]) {
-        this.chatMessages[newState._id] = [];
+        this.chatMessages[newState._id] = await this.syncMessages(newState) || [];
         this.chatStates.push(newState);
       }
     },
@@ -79,7 +77,7 @@ export const useChatStore = defineStore("chat", {
       try {
         let history;
         if (state.type === ChatType.REFERENCE) {
-          const paperid = await retrievePaperid(supabase, state.theme);
+          const paperid = await retrieveReferenceid(supabase, state.theme);
           console.log("paperid", paperid);
           history = await retrieveHistory(
             supabase,
@@ -88,7 +86,7 @@ export const useChatStore = defineStore("chat", {
             paperid
           );
         } else {
-          const folderid = await retrieveFolderid(supabase, state._id);
+          const folderid = await retrieveCategoryid(supabase, state._id);
           console.log("folderid", folderid);
           history = await retrieveHistory(
             supabase,

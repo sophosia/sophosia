@@ -1,16 +1,17 @@
 <template>
   <q-menu touch-position context-menu square transition-duration="0" class="menu">
     <q-list dense>
-      <q-item v-if="projectStore.selected.length <= 1 && isUserLoggedIn()" clickable v-close-popup @click="askSophosiaReference">
+      <q-item v-if="projectStore.selected.length <= 1 && isUserLoggedIn()" clickable v-close-popup
+        @click="askSophosiaReference">
         <q-item-section>
           <i18n-t keypath="ask-sophosia" />
         </q-item-section>
       </q-item>
       <q-separator />
       <q-item v-if="projectStore.selected.length <= 1" clickable v-close-popup @click="() => {
-          $q.notify($t('text-copied'));
-          copyToClipboard(projectId);
-        }
+        $q.notify($t('text-copied'));
+        copyToClipboard(projectId);
+      }
         ">
         <q-item-section>
           <i18n-t keypath="copy-id">
@@ -19,13 +20,13 @@
         </q-item-section>
       </q-item>
       <q-item v-if="projectStore.selected.length <= 1" clickable v-close-popup @click="() => {
-          $q.notify($t('text-copied'));
-          copyToClipboard(
-            `[${generateCiteKey(
-              projectStore.selected[0] as Meta, settingStore.citeKeyRule
-            )}](sophosia://open-item/${projectId})`
-          );
-        }
+        $q.notify($t('text-copied'));
+        copyToClipboard(
+          `[${generateCiteKey(
+            projectStore.selected[0] as Meta, settingStore.citeKeyRule
+          )}](sophosia://open-item/${projectId})`
+        );
+      }
         ">
         <q-item-section>
           <i18n-t keypath="copy-as-link">
@@ -162,7 +163,7 @@ watchEffect(async () => {
 
 const isUserLoggedIn = () => {
 
-return true ? accountStore.user.email : false;
+  return true ? accountStore.user.email : false;
 };
 
 /**
@@ -184,7 +185,7 @@ async function askSophosiaReference() {
         errorDialog.error.name = "Upload Error";
         return;
       }
-      chatStore.addChatState({
+      await chatStore.addChatState({
         _id: project_id,
         theme: projectStore.selected[0].label,
         type: ChatType.REFERENCE,
@@ -193,21 +194,16 @@ async function askSophosiaReference() {
         chatStore.chatStates[chatStore.chatStates.length - 1]
       );
     } else {
-      chatStore.addChatState({
+      console.log("Before adding chat state", chatStore.chatStates);
+      await chatStore.addChatState({
         _id: project_id,
         theme: projectStore.selected[0].label,
         type: ChatType.REFERENCE,
       });
-      await chatStore
-        .syncMessages(chatStore.chatStates[chatStore.chatStates.length - 1])
-        .then((history) => {
-          chatStore.chatMessages[
-            chatStore.chatStates[chatStore.chatStates.length - 1]._id
-          ] = history || [];
-          chatStore.setCurrentChatState(
-            chatStore.chatStates[chatStore.chatStates.length - 1]
-          );
-        });
+      console.log("After adding chat state", chatStore.chatStates);
+      chatStore.setCurrentChatState(
+        chatStore.chatStates[chatStore.chatStates.length - 1]
+      );
     }
 
   }

@@ -13,7 +13,7 @@
               {{ state.theme }} ({{ state.type }})
             </q-item-section>
             <q-item-section side>
-              <q-btn icon="close" flat dense @click.stop="removeChatState(state._id)" />
+              <q-btn icon="close" flat dense @click.stop="removeState(state._id)" />
             </q-item-section>
           </q-item>
         </q-list>
@@ -48,7 +48,7 @@
       </q-card-section>
 
       <q-card-actions align="around">
-        <q-btn flat :label="$t('add')" color="primary" @click="addChatState" />
+        <q-btn flat :label="$t('add')" color="primary" @click="addState" />
         <q-btn flat :label="$t('cancel')" color="primary" @click="hideModal" />
       </q-card-actions>
     </q-card>
@@ -87,7 +87,9 @@ export default {
         allPapers.value = papers;
       }
     });
-
+    /**
+     * Update suggestions(names) in the dropdown based on the current input
+     */
     const updateSuggestions = () => {
       if (newChatState.value.type === ChatType.CATEGORY) {
         filteredSuggestions.value = allFolders.value
@@ -118,7 +120,7 @@ export default {
       chatStore.hideModal();
     };
 
-    const addChatState = async () => {
+    const addState = async () => {
       let selectedItem;
       const { type, theme } = newChatState.value;
 
@@ -168,7 +170,7 @@ export default {
         type: type,
       } as ChatState;
 
-      chatStore.addChatState(newState);
+      await chatStore.addChatState(newState);
       newChatState.value = { _id: "", theme: "", type: ChatType.CATEGORY };
       chatStore.hideModal();
     };
@@ -176,7 +178,7 @@ export default {
       chatStore.hideModal();
     };
 
-    const removeChatState = (_id: string) => {
+    const removeState = (_id: string) => {
       chatStore.removeChatState(_id);
     };
 
@@ -186,9 +188,9 @@ export default {
       newChatState,
       filteredSuggestions,
       selectChatState,
-      addChatState,
+      addState,
       hideModal,
-      removeChatState,
+      removeState,
       updateSuggestions,
       selectSuggestion,
     };

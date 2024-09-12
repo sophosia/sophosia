@@ -3,7 +3,7 @@ import { getPDF, getProject } from "../project/project";
 import { useProjectStore } from "src/stores/projectStore";
 import { readBinaryFile } from "@tauri-apps/api/fs";
 import { getClient, Body, ResponseType } from "@tauri-apps/api/http";
-import { retrievePaperid,retrieveFolderid } from "./retrieveDBinfo";
+import { retrieveCategoryid, retrieveReferenceid } from "./retrieveDBinfo";
 
 const uploadURL = import.meta.env.VITE_UPLOAD_URL;
 const supabase = getSupabaseClient();
@@ -29,13 +29,13 @@ export async function checkIfUploaded(Id: string,type: string): Promise<{ status
         if (!project) {
           return { status: false, error: "Project not found" };
         }
-        const referenceId = await retrievePaperid(supabase, project.label);
+        const referenceId = await retrieveReferenceid(supabase, project.label);
         if (!referenceId) {
           return { status: false, error: "Reference not found" };
         }
     
       } else if(type ==="category"){
-          const categoryId = await retrieveFolderid(supabase,Id);
+          const categoryId = await retrieveCategoryid(supabase,Id);
           if (!categoryId) {
             return { status: false, error: "Category not found" };
           }

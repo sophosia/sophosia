@@ -5,6 +5,10 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 let _supabaseClient: SupabaseClient | null = null;
 
+/**
+ * Creates a single instance of the SupabaseClient
+ * @returns SupabaseClient
+ */
 export function getSupabaseClient(): SupabaseClient {
   if (!_supabaseClient) {
     _supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
