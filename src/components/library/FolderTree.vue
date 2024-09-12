@@ -38,7 +38,7 @@
             class="menu"
           >
             <q-list dense>
-              <q-item  clickable v-close-popup @click="askSophosiaCategory">
+              <q-item v-if="isUserLoggedIn()" clickable v-close-popup @click="askSophosiaCategory">
                 <q-item-section>
                   <i18n-t keypath="ask-sophosia" />
                 </q-item-section>
@@ -143,9 +143,11 @@ import { useChatStore } from "src/stores/chatStore";
 import { checkIfUploaded, uploadPDF } from "src/backend/conversationAgent/uploadPDF";
 import { errorDialog } from "../dialogs/dialogController";
 import { getProjects } from "src/backend/project/project";
+import { useAccountStore } from "src/stores/accountStore";
 
 const projectStore = useProjectStore();
 const chatStore = useChatStore();
+const accountStore = useAccountStore();
 const emit = defineEmits(["exportFolder"]);
 
 const renameInput = ref<HTMLInputElement | null>(null);
@@ -177,7 +179,10 @@ onMounted(async () => {
 });
 
 
+const isUserLoggedIn = () => {
 
+return true ? accountStore.user.email : false;
+};
 
 /**
  * Takes the selected Category and opens a chat with Sophosia.

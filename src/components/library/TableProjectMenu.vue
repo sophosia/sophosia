@@ -1,7 +1,7 @@
 <template>
   <q-menu touch-position context-menu square transition-duration="0" class="menu">
     <q-list dense>
-      <q-item v-if="projectStore.selected.length <= 1" clickable v-close-popup @click="askSophosiaReference">
+      <q-item v-if="projectStore.selected.length <= 1 && isUserLoggedIn()" clickable v-close-popup @click="askSophosiaReference">
         <q-item-section>
           <i18n-t keypath="ask-sophosia" />
         </q-item-section>
@@ -143,6 +143,7 @@ import {
 } from "src/backend/conversationAgent/uploadPDF";
 import { errorDialog, successDialog } from "../dialogs/dialogController";
 
+const accountStore = useAccountStore();
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 const settingStore = useSettingStore();
@@ -158,6 +159,12 @@ watchEffect(async () => {
   const project = await getProject(props.projectId);
   projectType.value = project?.type;
 });
+
+const isUserLoggedIn = () => {
+
+return true ? accountStore.user.email : false;
+};
+
 /**
  * Takes the selected reference and opens a chat with Sophosia.
  */
@@ -255,6 +262,7 @@ import { useI18n } from "vue-i18n";
 import { ask } from "@tauri-apps/api/dialog";
 import { useChatStore } from "src/stores/chatStore";
 import { c } from "vitest/dist/reporters-5f784f42";
+import { useAccountStore } from "src/stores/accountStore";
 const $q = useQuasar();
 const { t } = useI18n();
 
