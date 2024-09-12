@@ -63,6 +63,7 @@ export const useChatStore = defineStore("chat", {
 
     openModal() {
       this.showModal = true;
+      
     },
     hideModal() {
       this.showModal = false;
@@ -74,9 +75,9 @@ export const useChatStore = defineStore("chat", {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        errorDialog.show();
-        errorDialog.error.name = "Error";
-        errorDialog.error.message = "You need to relogin to continue";
+        // errorDialog.show();
+        // errorDialog.error.name = "Error";
+        // errorDialog.error.message = "You need to relogin to continue";
         return;
       }
       try {

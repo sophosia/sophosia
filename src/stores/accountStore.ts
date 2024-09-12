@@ -36,6 +36,9 @@ export const useAccountStore = defineStore("accountStore", () => {
       if (email) user.email = email;
     }
     initialized.value = true;
+
+  
+
   }
 
   /**
