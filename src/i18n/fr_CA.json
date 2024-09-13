@@ -4,11 +4,13 @@
   "openedProjects": "Projets ouverts",
   "help": "Aide",
   "settings": "Paramètres",
+  "discussions": "Discussions",
   "general": "Général",
   "about": "À propos",
   "project": "Projet",
   "upload": "Téléverser {type}",
   "file-upload": "{type} téléversé ",
+  "ask-sophosia": "Demandez à Sophosia !",
   "note": "Note",
   "tags": "Tags",
   "file": "Document",
@@ -175,6 +177,7 @@
   "updated": "{type} mis à jour",
   "progress": "Progrès",
   "show": "Afficher {type}",
+  "type-a-message": "Tapez un message...",
   "index-files": "Indexer des fichiers",
   "index-files-info": "Indexer tous les fichiers pour une récupération des données plus rapide et une recherche en texte intégral dans les fichiers PDF."
 }

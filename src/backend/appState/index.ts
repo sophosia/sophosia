@@ -32,6 +32,10 @@ export async function getAppState(): Promise<AppState> {
     citeKeyRule: "author_year_title",
     pdfRenameRule: "author_year_fullTitle",
     projectIdRule: "uid",
+    chatStates: [],
+    chatVisibility: false,
+    currentChatState: null,
+    chatMessages: {},
   };
   try {
     const state = (await db.get("appState")) as AppState;

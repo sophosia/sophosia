@@ -2,10 +2,56 @@ import { readBinaryFile } from "@tauri-apps/api/fs";
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http";
 import { getSupabaseClient } from "src/backend/authSupabase/supabaseClient";
 import { useProjectStore } from "src/stores/projectStore";
+import { getProject } from "../project";
 import { projectFileAGUD } from "../project/fileOps";
+import { retrieveCategoryid, retrieveReferenceid } from "./retrieveDBinfo";
 
 const uploadURL = import.meta.env.VITE_UPLOAD_URL;
 const supabase = getSupabaseClient();
+
+/**
+ * Check if the reference or category is uploaded to the server
+ *
+ * @param Id  the id of the project or folder
+ * @param type the type of the id (reference or category)
+ * @returns { status: boolean; error?: string }
+ */
+export async function checkIfUploaded(
+  Id: string,
+  type: string
+): Promise<{ status: boolean; error?: string }> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const userId = user?.id;
+    if (!userId) {
+      return { status: false, error: "You need to login first :)" };
+    }
+    if (type === "reference") {
+      const project = await getProject(Id);
+      if (!project) {
+        return { status: false, error: "Project not found" };
+      }
+      const referenceId = await retrieveReferenceid(supabase, project.label);
+      if (!referenceId) {
+        return { status: false, error: "Reference not found" };
+      }
+    } else if (type === "category") {
+      const categoryId = await retrieveCategoryid(supabase, Id);
+      if (!categoryId) {
+        return { status: false, error: "Category not found" };
+      }
+    }
+  } catch (error) {
+    console.error("Error in checkIfUploaded:", error);
+    return {
+      status: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+  return { status: true };
+}
 
 export async function uploadPDF(
   projectId: string
@@ -24,6 +70,7 @@ export async function uploadPDF(
     const filePath = await projectFileAGUD.getPDF(projectId);
     const fileName = project?.label;
     const folders = project?.folderIds;
+    console.log("Filenmae", fileName);
     console.log(JSON.stringify(folders));
 
     if (!filePath || !fileName) {

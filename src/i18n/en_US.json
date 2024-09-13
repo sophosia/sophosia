@@ -4,11 +4,13 @@
   "openedProjects": "Opened projects",
   "help": "Help",
   "settings": "Settings",
+  "discussions": "Discussions",
   "general": "General",
   "about": "About",
   "project": "Project",
   "upload": "Upload {type}",
   "file-upload": "{type} uploaded",
+  "ask-sophosia": "Ask Sophosia!",
   "note": "Note",
   "tags": "Tags",
   "file": "File",
@@ -175,6 +177,8 @@
   "updated": "{type} updated",
   "progress": "Progress",
   "show": "Show {type}",
+  "assistant": "Assistant",
+  "type-a-message": "Type a message...",
   "index-files": "Index files",
   "index-files-info": "Index all files for faster data fetch speed, and full-text search within PDFs."
 }

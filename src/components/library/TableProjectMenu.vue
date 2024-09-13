@@ -8,6 +8,17 @@
   >
     <q-list dense>
       <q-item
+        v-if="projectStore.selected.length <= 1 && isUserLoggedIn()"
+        clickable
+        v-close-popup
+        @click="askSophosiaReference"
+      >
+        <q-item-section>
+          <i18n-t keypath="ask-sophosia" />
+        </q-item-section>
+      </q-item>
+      <q-separator />
+      <q-item
         v-if="projectStore.selected.length <= 1"
         clickable
         v-close-popup
@@ -28,15 +39,14 @@
         v-if="projectStore.selected.length <= 1"
         clickable
         v-close-popup
-        @click="
-          () => {
-            $q.notify($t('text-copied'));
-            copyToClipboard(
-              `[${generateCiteKey(
-                projectStore.selected[0] as Meta, settingStore.citeKeyRule
-              )}](sophosia://open-item/${projectId})`
-            );
-          }
+        @click="() => {
+        $q.notify($t('text-copied'));
+        copyToClipboard(
+          `[${generateCiteKey(
+            projectStore.selected[0] as Meta, settingStore.citeKeyRule
+          )}](sophosia://open-item/${projectId})`
+        );
+      }
         "
       >
         <q-item-section>
@@ -180,6 +190,8 @@
 // types
 import { QMenu } from "quasar";
 import {
+  ChatState,
+  ChatType,
   Meta,
   Note,
   NoteType,
@@ -200,16 +212,13 @@ import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { watchEffect } from "vue";
-import {
-  deleteDialog,
-  errorDialog,
-  identifierDialog,
-} from "../dialogs/dialogController";
+import { errorDialog } from "../dialogs/dialogController";
 
+const accountStore = useAccountStore();
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 const settingStore = useSettingStore();
-
+const chatStore = useChatStore();
 const props = defineProps({
   projectId: { type: String, required: true },
 });
@@ -221,6 +230,52 @@ watchEffect(async () => {
   const project = await getProject(props.projectId);
   projectType.value = project?.type;
 });
+
+const isUserLoggedIn = () => {
+  return true ? accountStore.user.email : false;
+};
+
+/**
+ * Takes the selected reference and opens a chat with Sophosia.
+ */
+async function askSophosiaReference() {
+  const project_id = projectStore.selected[0]._id;
+  const chatState = chatStore.chatStates.find(
+    (state: ChatState) => state._id === project_id
+  );
+  if (chatState) {
+    chatStore.setCurrentChatState(chatState);
+  } else {
+    let check = await checkIfUploaded(project_id, "reference");
+    if (!check.status) {
+      let isUploaded = await uploadPDF(project_id);
+      if (!isUploaded.status) {
+        errorDialog.show();
+        errorDialog.error.name = "Upload Error";
+        return;
+      }
+      await chatStore.addChatState({
+        _id: project_id,
+        theme: projectStore.selected[0].label,
+        type: ChatType.REFERENCE,
+      });
+      chatStore.setCurrentChatState(
+        chatStore.chatStates[chatStore.chatStates.length - 1]
+      );
+    } else {
+      console.log("Before adding chat state", chatStore.chatStates);
+      await chatStore.addChatState({
+        _id: project_id,
+        theme: projectStore.selected[0].label,
+        type: ChatType.REFERENCE,
+      });
+      console.log("After adding chat state", chatStore.chatStates);
+      chatStore.setCurrentChatState(
+        chatStore.chatStates[chatStore.chatStates.length - 1]
+      );
+    }
+  }
+}
 
 /**
  * Handles the export of the citation information for the selected project.
@@ -257,6 +312,7 @@ async function addNote(noteType: NoteType) {
  */
 async function openProject() {
   for (let project of projectStore.selected) {
+    console.log("Project", project._id);
     layoutStore.openItem(project._id);
     await nextTick();
   }
@@ -266,14 +322,19 @@ async function openProject() {
  * Uploads the selected project(s) to the conversation agent.
  */
 import { useQuasar } from "quasar";
+import { useAccountStore } from "src/stores/accountStore";
+import { useChatStore } from "src/stores/chatStore";
 import { useI18n } from "vue-i18n";
 const $q = useQuasar();
 const { t } = useI18n();
 
+/**
+ * Uploads the selected project(s) to the cloud temporarily for processing.
+ */
 async function uploadProject() {
   for (let project of projectStore.selected) {
     const check = await uploadPDF(project._id);
-    if (check.status == false && check.error) {
+    if (check.status === false && check.error) {
       errorDialog.show();
       errorDialog.error.name = "Upload Error";
       errorDialog.error.message = check.error;
@@ -284,7 +345,6 @@ async function uploadProject() {
         position: "top-right",
       });
     }
-    console.log(check);
     await nextTick();
   }
 }

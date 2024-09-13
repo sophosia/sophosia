@@ -2,6 +2,11 @@
 
 > **Warning**: This note will be reset every time. **DO NOT** save anything important here.
 
+## Community
+
+Join our Discord community to share your thoughts, provide feedback, and suggest new features to help us improve and tailor our services to your needs!
+[Official Discord](https://discord.gg/Wn5hwWbnRq)
+
 ## Official sites
 
 - [Official Site](https://sophosia.com)
