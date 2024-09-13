@@ -2,6 +2,12 @@ name: Build
 
 on: workflow_dispatch
 
+env:
+  VITE_UPLOAD_URL: ${{ secrets.VITE_UPLOAD_URL }}
+  VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+  VITE_CONVERSE_URL: ${{ secrets.VITE_CONVERSE_URL }}
+  VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
 jobs:
   build-sophosia:
     permissions:
