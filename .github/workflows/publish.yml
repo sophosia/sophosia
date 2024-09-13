@@ -125,8 +125,6 @@ jobs:
           gh release download $tag --dir assets
           gh release delete $tag --yes
           gh release create $tag assets/* --title "Sophosia $tag" --generate-notes
-          gh release view $tag --json body --jq .body >> release-note
-          gh release create $tag assets/* --title "Sophosia $tag" --notes-file release-note
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # GITHUB_TOKEN: ${{ secrets.PAT_CLASSIC }} # PAT is good for releasing to another repo
