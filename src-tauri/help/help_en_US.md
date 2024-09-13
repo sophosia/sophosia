@@ -4,7 +4,7 @@
 
 ## Community
 Join our Discord community to share your thoughts, provide feedback, and suggest new features to help us improve and tailor our services to your needs! 
-[Official Discord](https://discord.com/invite/8RDZE85tBj) 
+[Official Discord](https://discord.gg/Wn5hwWbnRq) 
 
 ## Official sites
 
