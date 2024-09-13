@@ -2,6 +2,11 @@
 
 > **警告**：此笔记每次都会被重置。 **不要**在这里保存任何重要的东西。
 
+## 社区
+
+加入我们的 Discord 社区，分享你的想法和体验。有什么新功能或者优化想要我们去做的，都可以在这里说哦！
+[Official Discord](https://discord.gg/Wn5hwWbnRq)
+
 ## 官方网站
 
 - [官方网站](https://sophosia.com)

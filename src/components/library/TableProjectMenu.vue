@@ -1,74 +1,49 @@
 <template>
-  <q-menu
-    touch-position
-    context-menu
-    square
-    transition-duration="0"
-    class="menu"
-  >
+  <q-menu touch-position context-menu square transition-duration="0" class="menu">
     <q-list dense>
-      <q-item
-        v-if="projectStore.selected.length <= 1"
-        clickable
-        v-close-popup
-        @click="
-          () => {
-            $q.notify($t('text-copied'));
-            copyToClipboard(projectId);
-          }
-        "
-      >
+      <q-item v-if="projectStore.selected.length <= 1 && isUserLoggedIn()" clickable v-close-popup
+        @click="askSophosiaReference">
+        <q-item-section>
+          <i18n-t keypath="ask-sophosia" />
+        </q-item-section>
+      </q-item>
+      <q-separator />
+      <q-item v-if="projectStore.selected.length <= 1" clickable v-close-popup @click="() => {
+        $q.notify($t('text-copied'));
+        copyToClipboard(projectId);
+      }
+        ">
         <q-item-section>
           <i18n-t keypath="copy-id">
             <template #type>{{ $t("project") }}</template>
           </i18n-t>
         </q-item-section>
       </q-item>
-      <q-item
-        v-if="projectStore.selected.length <= 1"
-        clickable
-        v-close-popup
-        @click="
-          () => {
-            $q.notify($t('text-copied'));
-            copyToClipboard(
-              `[${generateCiteKey(
-                projectStore.selected[0] as Meta, settingStore.citeKeyRule
-              )}](sophosia://open-item/${projectId})`
-            );
-          }
-        "
-      >
+      <q-item v-if="projectStore.selected.length <= 1" clickable v-close-popup @click="() => {
+        $q.notify($t('text-copied'));
+        copyToClipboard(
+          `[${generateCiteKey(
+            projectStore.selected[0] as Meta, settingStore.citeKeyRule
+          )}](sophosia://open-item/${projectId})`
+        );
+      }
+        ">
         <q-item-section>
           <i18n-t keypath="copy-as-link">
             <template #type>{{ $t("project") }}</template>
           </i18n-t>
         </q-item-section>
       </q-item>
-      <q-item
-        v-if="projectStore.selected.length <= 1"
-        clickable
-        v-close-popup
-        @click="exportCitation"
-      >
+      <q-item v-if="projectStore.selected.length <= 1" clickable v-close-popup @click="exportCitation">
         <q-item-section>
           {{ $t("copy-reference") }}
         </q-item-section>
       </q-item>
       <q-separator />
-      <q-item
-        clickable
-        v-close-popup
-        @click="showInExplorer"
-      >
+      <q-item clickable v-close-popup @click="showInExplorer">
         <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
       </q-item>
-      <q-item
-        v-if="projectStore.selected.length === 1"
-        clickable
-        v-close-popup
-        @click="showInNewWindow()"
-      >
+      <q-item v-if="projectStore.selected.length === 1" clickable v-close-popup @click="showInNewWindow()">
         <q-item-section>
           {{ $t("open-page-in-new-window") }}
         </q-item-section>
@@ -76,24 +51,14 @@
 
       <q-separator v-if="projectStore.selected.length == 1" />
 
-      <q-item
-        v-if="projectStore.selected.length == 1"
-        clickable
-        v-close-popup
-        @click="addNote(NoteType.MARKDOWN)"
-      >
+      <q-item v-if="projectStore.selected.length == 1" clickable v-close-popup @click="addNote(NoteType.MARKDOWN)">
         <q-item-section>
           <i18n-t keypath="add">
             <template #type>Markdown</template>
           </i18n-t>
         </q-item-section>
       </q-item>
-      <q-item
-        v-if="projectStore.selected.length == 1"
-        clickable
-        v-close-popup
-        @click="addNote(NoteType.EXCALIDRAW)"
-      >
+      <q-item v-if="projectStore.selected.length == 1" clickable v-close-popup @click="addNote(NoteType.EXCALIDRAW)">
         <q-item-section>
           <i18n-t keypath="add">
             <template #type>Excalidraw</template>
@@ -101,13 +66,8 @@
         </q-item-section>
       </q-item>
 
-
-      <q-item
-        v-if="projectStore.selected.length == 1 && projectType !== 'notebook'"
-        clickable
-        v-close-popup
-        @click="onAttachFile()"
-      >
+      <q-item v-if="projectStore.selected.length == 1 && projectType !== 'notebook'" clickable v-close-popup
+        @click="onAttachFile()">
         <q-item-section>
           {{
             !!projectStore.selected[0].path
@@ -118,12 +78,7 @@
       </q-item>
 
       <q-separator />
-      <q-item
-        v-if="projectStore.selected.length == 1"
-        clickable
-        v-close-popup
-        @click="openProject"
-      >
+      <q-item v-if="projectStore.selected.length == 1" clickable v-close-popup @click="openProject">
         <q-item-section>
           <i18n-t keypath="open">
             <template #type>{{ $t("project") }}</template>
@@ -131,12 +86,7 @@
         </q-item-section>
       </q-item>
 
-      <q-item
-        v-if="projectStore.selected.length == 1"
-        clickable
-        v-close-popup
-        @click="uploadProject"
-      >
+      <q-item v-if="projectStore.selected.length == 1" clickable v-close-popup @click="uploadProject">
         <q-item-section>
           <i18n-t keypath="upload">
             <template #type>{{ $t("file") }}</template>
@@ -144,12 +94,7 @@
         </q-item-section>
       </q-item>
 
-      <q-item
-        v-if="projectStore.selected.length == 1"
-        clickable
-        v-close-popup
-        @click="showIdentifierDialog()"
-      >
+      <q-item v-if="projectStore.selected.length == 1" clickable v-close-popup @click="showIdentifierDialog()">
         <q-item-section>
           <i18n-t keypath="search">
             <template #type>{{ $t("info") }}</template>
@@ -157,19 +102,11 @@
         </q-item-section>
       </q-item>
 
-      <q-item
-        v-if="projectStore.selectedFolderId != SpecialFolder.LIBRARY.toString()"
-        clickable
-        v-close-popup
-        @click="showDeleteDialog(false)"
-      >
+      <q-item v-if="projectStore.selectedFolderId != SpecialFolder.LIBRARY.toString()" clickable v-close-popup
+        @click="showDeleteDialog(false)">
         <q-item-section>{{ $t("delete-from-folder") }}</q-item-section>
       </q-item>
-      <q-item
-        clickable
-        v-close-popup
-        @click="showDeleteDialog(true)"
-      >
+      <q-item clickable v-close-popup @click="showDeleteDialog(true)">
         <q-item-section>{{ $t("delete-from-database") }}</q-item-section>
       </q-item>
     </q-list>
@@ -179,6 +116,8 @@
 // types
 import { QMenu } from "quasar";
 import {
+  ChatState,
+  ChatType,
   Meta,
   Note,
   NoteType,
@@ -199,13 +138,17 @@ import { useSettingStore } from "src/stores/settingStore";
 import { deleteDialog, identifierDialog } from "../dialogs/dialogController";
 import { watchEffect } from "vue";
 import { getProject } from "src/backend/project/project";
-import { uploadPDF } from "src/backend/conversationAgent/uploadPDF";
+import {
+  checkIfUploaded,
+  uploadPDF,
+} from "src/backend/conversationAgent/uploadPDF";
 import { errorDialog, successDialog } from "../dialogs/dialogController";
 
+const accountStore = useAccountStore();
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 const settingStore = useSettingStore();
-
+const chatStore = useChatStore();
 const props = defineProps({
   projectId: { type: String, required: true },
 });
@@ -217,6 +160,54 @@ watchEffect(async () => {
   const project = await getProject(props.projectId);
   projectType.value = project?.type;
 });
+
+const isUserLoggedIn = () => {
+
+  return true ? accountStore.user.email : false;
+};
+
+/**
+ * Takes the selected reference and opens a chat with Sophosia.
+ */
+async function askSophosiaReference() {
+  const project_id = projectStore.selected[0]._id;
+  const chatState = chatStore.chatStates.find(
+    (state: ChatState) => state._id === project_id
+  );
+  if (chatState) {
+    chatStore.setCurrentChatState(chatState);
+  } else {
+    let check = await checkIfUploaded(project_id, "reference");
+    if (!check.status) {
+      let isUploaded = await uploadPDF(project_id);
+      if (!isUploaded.status) {
+        errorDialog.show();
+        errorDialog.error.name = "Upload Error";
+        return;
+      }
+      await chatStore.addChatState({
+        _id: project_id,
+        theme: projectStore.selected[0].label,
+        type: ChatType.REFERENCE,
+      });
+      chatStore.setCurrentChatState(
+        chatStore.chatStates[chatStore.chatStates.length - 1]
+      );
+    } else {
+      console.log("Before adding chat state", chatStore.chatStates);
+      await chatStore.addChatState({
+        _id: project_id,
+        theme: projectStore.selected[0].label,
+        type: ChatType.REFERENCE,
+      });
+      console.log("After adding chat state", chatStore.chatStates);
+      chatStore.setCurrentChatState(
+        chatStore.chatStates[chatStore.chatStates.length - 1]
+      );
+    }
+
+  }
+}
 
 /**
  * Handles the export of the citation information for the selected project.
@@ -253,35 +244,41 @@ async function addNote(noteType: NoteType) {
  */
 async function openProject() {
   for (let project of projectStore.selected) {
+    console.log("Project", project._id);
     layoutStore.openItem(project._id);
     await nextTick();
   }
 }
 
-
 /**
  * Uploads the selected project(s) to the conversation agent.
  */
- import { useQuasar } from 'quasar';
- import { useI18n } from 'vue-i18n'
- const $q = useQuasar();
- const { t } = useI18n()
+import { useQuasar } from "quasar";
+import { useI18n } from "vue-i18n";
+import { ask } from "@tauri-apps/api/dialog";
+import { useChatStore } from "src/stores/chatStore";
+import { c } from "vitest/dist/reporters-5f784f42";
+import { useAccountStore } from "src/stores/accountStore";
+const $q = useQuasar();
+const { t } = useI18n();
 
+/**
+ * Uploads the selected project(s) to the cloud temporarily for processing.
+ */
 async function uploadProject() {
   for (let project of projectStore.selected) {
     const check = await uploadPDF(project._id);
-    if (check.status ===false && check.error) {
+    if (check.status === false && check.error) {
       errorDialog.show();
       errorDialog.error.name = "Upload Error";
       errorDialog.error.message = check.error;
     }
-    if(check.status === true){
+    if (check.status === true) {
       $q.notify({
-        message: t('file-upload', {type: project.label}),
-        position: 'top-right'
+        message: t("file-upload", { type: project.label }),
+        position: "top-right",
       });
     }
-    console.log(check);
     await nextTick();
   }
 }

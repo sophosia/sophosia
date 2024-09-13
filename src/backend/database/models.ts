@@ -288,6 +288,12 @@ export interface AppState {
   citeKeyRule: string; // "author_year_title" by default
   pdfRenameRule: string; // "author_year_fullTitle" by default
   projectIdRule: string; // "uid" by default
+
+  //chat store
+  chatVisibility: boolean;
+  chatStates: ChatState[] | [];
+  currentChatState: ChatState | null;
+  chatMessages: { [key: string]: ChatMessage[] } | {};
 }
 
 export interface Row {
@@ -427,3 +433,19 @@ export interface PluginStatus {
 }
 
 export type PluginStatusMap = Map<string, PluginStatus>;
+
+// chat
+export interface ChatState {
+  _id: string;
+  theme: string;
+  type: ChatType;
+}
+export enum ChatType {
+  REFERENCE = "reference",
+  CATEGORY = "category",
+}
+
+export interface ChatMessage {
+  content: string;
+  isUserMessage: boolean;
+}

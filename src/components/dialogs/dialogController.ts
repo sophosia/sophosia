@@ -183,7 +183,7 @@ function useAuthDialog() {
   };
 }
 
-// use reative here so we can use properties in the composable reactively without desconstruct them
+// use reative here so we can use properties in the composable reactively without desconstructing them
 export const importDialog = reactive(useImportDialog());
 export const deleteDialog = reactive(useDeleteDialog());
 export const identifierDialog = reactive(useIdentifierDialog());

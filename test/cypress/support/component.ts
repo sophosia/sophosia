@@ -23,7 +23,9 @@ import "src/css/app.scss"; // Or 'src/css/app.css' if no CSS preprocessor is ins
 
 // ICON SETS
 // If you use multiple or different icon-sets then the default, be sure to import them here.
-import "quasar/dist/icon-set/material-icons.umd.prod";
+// Fix unable to read icon-set issue: https://github.com/quasarframework/quasar-testing/issues/368
+// import "quasar/dist/icon-set/material-icons.umd.prod";
+import "quasar/icon-set/material-icons";
 import "@quasar/extras/material-icons/material-icons.css";
 
 import { installQuasarPlugin } from "@quasar/quasar-app-extension-testing-e2e-cypress";
