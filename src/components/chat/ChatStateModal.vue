@@ -1,19 +1,37 @@
 <template>
-  <q-dialog v-model="showModal" persistent transition-show="scale" transition-hide="scale">
-    <q-card style="width: 400px; max-width: 60vw">
+  <q-dialog
+    v-model="showModal"
+    persistent
+    transition-show="scale"
+    transition-hide="scale"
+  >
+    <q-card style="width: 400px; max-width: 50vw">
       <q-card-section>
         <div class="text-h8 text-center">{{ $t("discussions") }}</div>
       </q-card-section>
 
       <q-card-section style="overflow-y: auto; max-height: 200px">
         <q-list dense>
-          <q-item v-for="state in chatStates" :key="state._id" clickable v-ripple
-            @click="selectChatState(state as ChatState)" style="justify-content: center">
-            <q-item-section >
-              {{ state.theme }} ({{ state.type }})
+          <q-item
+            v-for="state in chatStates"
+            :key="state._id"
+            clickable
+            v-ripple
+            @click="selectChatState(state as ChatState)"
+            style="justify-content: center"
+          >
+            <q-item-section>
+              <div style="width: 100%; word-wrap: break-word">
+                {{ state.theme }} ({{ state.type }})
+              </div>
             </q-item-section>
             <q-item-section side>
-              <q-btn icon="close" flat dense @click.stop="removeState(state._id)" />
+              <q-btn
+                icon="close"
+                flat
+                dense
+                @click.stop="removeState(state._id)"
+              />
             </q-item-section>
           </q-item>
         </q-list>
@@ -21,24 +39,40 @@
 
       <q-card-section>
         <q-form>
-          <q-select v-model="newChatState.type" :options="[
-            {
-              value: 'reference',
-              label: $t('reference'),
-            },
-            {
-              value: 'category',
-              label: $t('category'),
-            },
-          ]" :label="$t('type')" emit-value map-options @update:model-value="updateSuggestions" />
-          <q-input v-model="newChatState.theme" :label="$t('theme')" @update:model-value="updateSuggestions">
+          <q-select
+            v-model="newChatState.type"
+            :options="[
+              {
+                value: 'reference',
+                label: $t('reference'),
+              },
+              {
+                value: 'category',
+                label: $t('category'),
+              },
+            ]"
+            :label="$t('type')"
+            emit-value
+            map-options
+            @update:model-value="updateSuggestions"
+          />
+          <q-input
+            v-model="newChatState.theme"
+            :label="$t('theme')"
+            @update:model-value="updateSuggestions"
+          >
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
           <q-list dense>
-            <q-item v-for="suggestion in filteredSuggestions" :key="suggestion" clickable v-ripple
-              @click="selectSuggestion(suggestion)">
+            <q-item
+              v-for="suggestion in filteredSuggestions"
+              :key="suggestion"
+              clickable
+              v-ripple
+              @click="selectSuggestion(suggestion)"
+            >
               <q-item-section>
                 {{ suggestion }}
               </q-item-section>
@@ -48,8 +82,18 @@
       </q-card-section>
 
       <q-card-actions align="around">
-        <q-btn flat :label="$t('add')" color="primary" @click="addState" />
-        <q-btn flat :label="$t('cancel')" color="primary" @click="hideModal" />
+        <q-btn
+          flat
+          :label="$t('add')"
+          color="primary"
+          @click="addState"
+        />
+        <q-btn
+          flat
+          :label="$t('cancel')"
+          color="primary"
+          @click="hideModal"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -58,12 +102,19 @@
 <script lang="ts">
 import { getAllFolders } from "src/backend/project/folder";
 
+import {
+  checkIfUploaded,
+  uploadPDF,
+} from "src/backend/conversationAgent/uploadPDF";
 import type { ChatState } from "src/backend/database";
 import { ChatType, Folder, Project } from "src/backend/database";
-import { getAllProjects, getProject, getProjects } from "src/backend/project/project";
+import {
+  getAllProjects,
+  getProject,
+  getProjects,
+} from "src/backend/project/project";
 import { useChatStore } from "src/stores/chatStore";
 import { computed, onMounted, ref } from "vue";
-import { checkIfUploaded, uploadPDF } from "src/backend/conversationAgent/uploadPDF";
 
 export default {
   setup() {
@@ -126,9 +177,13 @@ export default {
 
       // Select item based on type
       if (type === ChatType.CATEGORY) {
-        selectedItem = allFolders.value.find(folder => folder.label === theme);
+        selectedItem = allFolders.value.find(
+          (folder) => folder.label === theme
+        );
       } else if (type === ChatType.REFERENCE) {
-        selectedItem = allPapers.value.find(reference => reference.label === theme);
+        selectedItem = allPapers.value.find(
+          (reference) => reference.label === theme
+        );
       }
 
       if (!selectedItem) return;
@@ -136,8 +191,11 @@ export default {
       // Check if already uploaded
       console.log("selectedItem", selectedItem);
       console.log("type", type);
-      
-      const isUploaded = await checkIfUploaded(selectedItem._id, type.toLowerCase());
+
+      const isUploaded = await checkIfUploaded(
+        selectedItem._id,
+        type.toLowerCase()
+      );
       console.log("isUploaded", isUploaded);
       if (!isUploaded.status) {
         if (type === ChatType.CATEGORY) {
@@ -146,7 +204,11 @@ export default {
             for (const project of projects) {
               const check = await uploadPDF(project._id);
               if (!check.status) {
-                console.error("Error uploading project", project._id, project.label);
+                console.error(
+                  "Error uploading project",
+                  project._id,
+                  project.label
+                );
                 return;
               }
             }
@@ -156,7 +218,11 @@ export default {
           if (project) {
             const check = await uploadPDF(project._id);
             if (!check.status) {
-              console.error("Error uploading project", project._id, project.label);
+              console.error(
+                "Error uploading project",
+                project._id,
+                project.label
+              );
               return;
             }
           }
