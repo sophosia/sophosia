@@ -1,15 +1,15 @@
 <template>
   <q-dialog v-model="showModal" persistent transition-show="scale" transition-hide="scale">
-    <q-card style="width: 300px; max-width: 50vw">
+    <q-card style="width: 400px; max-width: 60vw">
       <q-card-section>
-        <div class="text-h8 text-center">{{ $t("settings") }}</div>
+        <div class="text-h8 text-center">{{ $t("discussions") }}</div>
       </q-card-section>
 
       <q-card-section style="overflow-y: auto; max-height: 200px">
         <q-list dense>
           <q-item v-for="state in chatStates" :key="state._id" clickable v-ripple
             @click="selectChatState(state as ChatState)" style="justify-content: center">
-            <q-item-section>
+            <q-item-section >
               {{ state.theme }} ({{ state.type }})
             </q-item-section>
             <q-item-section side>

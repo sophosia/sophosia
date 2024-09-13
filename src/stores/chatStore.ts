@@ -98,9 +98,7 @@ export const useChatStore = defineStore("chat", {
 
         return history || [];
       } catch (error) {
-        errorDialog.show();
-        errorDialog.error.name = "Error Chat retrieval";
-        errorDialog.error.message = "If it's the first time for this reference/category, please ignore ";
+        console.log("Error in syncMessages", error);
       }
     },
 
