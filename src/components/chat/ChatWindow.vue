@@ -23,7 +23,7 @@
     </q-card-section>
 
     <q-card-section class="messages">
-      <q-scroll-area class="scroll-area">
+      <q-scroll-area ref = "scrollAreaRef"class="scroll-area">
         <q-chat-message
           v-for="(message, index) in messages"
           :key="index"
@@ -79,21 +79,40 @@ import { getSupabaseClient } from "src/backend/authSupabase";
 import {
   converse,
   ConverseRequest,
+  converseStream,
 } from "src/backend/conversationAgent/converse";
 import { ChatMessage, ChatType } from "src/backend/database";
 import { useChatStore } from "src/stores/chatStore";
-import { computed, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
 import { errorDialog } from "../dialogs/dialogController";
+import { QScrollArea } from "quasar";
 
 const supabase = getSupabaseClient();
 const chatStore = useChatStore();
 const messages = ref<ChatMessage[]>([]);
 const newMessage = ref("");
 const sendingMessage = ref(false);
+const scrollAreaRef = ref<QScrollArea>();
+
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    const scrollArea = scrollAreaRef.value;
+    if (scrollArea) {
+      const scrollTarget = scrollArea.$el!.querySelector('.q-scrollarea__container');
+      if (scrollTarget) {
+        scrollTarget.scrollTop = scrollTarget.scrollHeight;
+      }
+    }
+  });
+};
+
 
 const shouldShowSendButton = computed(() => {
   return newMessage.value.trim() !== "" || sendingMessage.value;
 });
+
+
 
 onMounted(async () => {
   const {
@@ -114,58 +133,64 @@ onMounted(async () => {
   }
 
   messages.value = chatStore.chatMessages[chatStore.currentChatState._id] || [];
-
+  scrollToBottom();
 });
 
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return;
 
   sendingMessage.value = true;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    errorDialog.show();
-    errorDialog.error.name = "Error";
-    errorDialog.error.message = "You need to relogin to continue";
-    sendingMessage.value = false;
-    console.log("User not found");
-    return;
-  }
-  if (!chatStore.currentChatState) {
-    errorDialog.show();
-    errorDialog.error.name = "Error";
-    errorDialog.error.message = "Something went wrong with the chat state";
-    sendingMessage.value = false;
-    console.log("Chat state not found");
-    return;
-  }
-
-  const req: ConverseRequest = {
-    user_uuid: user.id,
-    message: newMessage.value,
-    title:
-      chatStore.currentChatState.type === ChatType.REFERENCE
-        ? chatStore.currentChatState.theme
-        : chatStore.currentChatState._id,
-    type: chatStore.currentChatState.type === ChatType.REFERENCE ? "paper" : "folder",
-  };
-
-  console.log("Request: ", req);
-
-  const msg = newMessage.value;
-  newMessage.value = "";
-  messages.value.push({ content: msg, isUserMessage: true });
+  scrollToBottom();
 
   try {
-    const res = await converse(req);
-    console.log("Response: ", res);
-    messages.value.push({ content: res.response, isUserMessage: false });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error("You need to relogin to continue");
+    }
+    if (!chatStore.currentChatState) {
+      throw new Error("Something went wrong with the chat state");
+    }
+
+    const req: ConverseRequest = {
+      user_uuid: user.id,
+      message: newMessage.value,
+      title:
+        chatStore.currentChatState.type === ChatType.REFERENCE
+          ? chatStore.currentChatState.theme
+          : chatStore.currentChatState._id,
+      type: chatStore.currentChatState.type === ChatType.REFERENCE ? "paper" : "folder",
+    };
+
+    const msg = newMessage.value;
+    newMessage.value = "";
+    messages.value.push({ content: msg, isUserMessage: true });
+
+    const streamGenerator = converseStream(req);
+    let fullResponse = '';
+    let retrievedNodes: any[] = [];
+
+    for await (const chunk of streamGenerator) {
+      if (typeof chunk === 'string') {
+        fullResponse += chunk;
+        
+        if (messages.value[messages.value.length - 1].isUserMessage) {
+          messages.value.push({ content: fullResponse, isUserMessage: false });
+        } else {
+          messages.value[messages.value.length - 1].content = fullResponse;
+        }
+        scrollToBottom();
+      } else {
+        retrievedNodes = chunk.retrievedNodes;
+      }
+    }
+
+    console.log("Retrieved Nodes:", retrievedNodes);
+    // You can use retrievedNodes here if needed
+
   } catch (error) {
-    errorDialog.show();
-    errorDialog.error.name = "Error";
-    errorDialog.error.message = "Failed to send message.";
+    console.error('Error in sendMessage:', error);
   } finally {
     sendingMessage.value = false;
   }
