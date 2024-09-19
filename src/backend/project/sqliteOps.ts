@@ -1,7 +1,6 @@
 import { Author, Project, SpecialCategory, sqldb } from "src/backend/database";
 import { getTitle } from "../utils";
 import { useSettingStore } from "src/stores/settingStore";
-import { metadata } from "tauri-plugin-fs-extra-api";
 
 interface ProjectData {
   _id: string;
@@ -280,10 +279,12 @@ GROUP BY metas._id
         timestampModified: parseInt(row.timestampModified),
         tags: row.tags ? row.tags.split("|") : [],
         categories: row.categories ? row.categories.split("|") : [],
-        author: row.authors.split("|").map((name) => {
-          const [family, given] = name.split(",");
-          return { family, given };
-        }),
+        author: row.authors
+          ? row.authors.split("|").map((name) => {
+              const [family, given] = name.split(",");
+              return { family, given };
+            })
+          : "",
         children: [],
         path: "",
       }));

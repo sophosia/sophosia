@@ -13,7 +13,6 @@ import { Project, SpecialCategory, db } from "src/backend/database";
 import { i18n } from "src/boot/i18n";
 import { authorToString, idToPath } from "../utils";
 import { basename, extname, join } from "@tauri-apps/api/path";
-import { getNoteTree, getNotes } from "../note";
 import { generateCiteKey } from "../meta";
 import { open } from "@tauri-apps/api/dialog";
 const { t } = i18n.global;
