@@ -124,7 +124,7 @@ async function extractMarkdownContent(filePath: string) {
   const content = await readTextFile(filePath);
   const meta = await metadata(filePath);
   const note = {
-    id: noteId,
+    _id: noteId,
     projectId: projectId,
     type: NoteType.MARKDOWN,
     timestampAdded: meta.createdAt.getTime(),
