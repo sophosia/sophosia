@@ -166,7 +166,6 @@ async function addEmptyProject() {
  */
 async function addNotebook() {
   const project = projectStore.createProject(projectStore.selectedCategory);
-  project.type = "notebook";
   projectStore.addProject(project, true);
 }
 
@@ -202,12 +201,8 @@ async function addProjectsByFiles(filePaths: string[]) {
             settingStore.projectIdRule
           );
           await projectStore.updateProject(project._id, meta as Project);
-          await extractPDFContent(
-            (await projectFileAGUD.getPDF((meta as Project)._id))!
-          );
-        } else {
-          await extractPDFContent((await projectFileAGUD.getPDF(project._id))!);
         }
+        await extractPDFContent((await projectFileAGUD.getPDF(project._id))!);
       });
     } catch (error) {
       console.log(error);

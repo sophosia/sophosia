@@ -132,11 +132,11 @@ export const useProjectStore = defineStore("projectStore", {
 
     /**
      * Creates a new project in a specified folder.
-     * @param folderId - The unique identifier of the folder where the project is to be created.
+     * @param category - The unique identifier of the category where the project is to be created.
      * @returns A new project object.
      */
-    createProject(folderId: string) {
-      return createProject(folderId);
+    createProject(category: string) {
+      return createProject(category);
     },
 
     /**

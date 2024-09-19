@@ -29,8 +29,10 @@ const { t } = i18n.global;
  */
 export function createProject(category: string): Project {
   // create empty project entry
+  const id = `SP${db.nanoid}`;
   const project = {
-    _id: `SP${db.nanoid}`,
+    _id: id,
+    "citation-key": id,
     timestampAdded: Date.now(),
     timestampModified: Date.now(),
     dataType: "project",
