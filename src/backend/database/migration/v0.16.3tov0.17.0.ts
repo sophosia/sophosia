@@ -24,7 +24,7 @@ import { join } from "@tauri-apps/api/path";
 import { db } from "../jsondb";
 import { exists, readDir, readTextFile, removeDir } from "@tauri-apps/api/fs";
 import { Project } from "../models";
-import { getAllProjects, updateProject } from "src/backend/project";
+import { updateProject } from "src/backend/project";
 import { projectFileAGUD } from "src/backend/project/fileOps";
 
 /**
@@ -57,6 +57,8 @@ export async function changeFolderIdToCategoryPath() {
   const folderIdToPathMap = buildIdToPathMap(folders);
   const projects = (await projectFileAGUD.getAllProjects()) as Project[];
   for (const project of projects) {
+    if (!project.folderIds || project.folderIds.length === 0)
+      project.folderIds = ["SFlibrary"];
     project.categories = project.folderIds.map(
       (folderId: string) => folderIdToPathMap[folderId]
     );
