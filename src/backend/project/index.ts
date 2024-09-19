@@ -240,6 +240,7 @@ export async function getProjects(
  * @param {string} filePath - absolute path to the PDF
  */
 export async function extractPDFContent(filePath: string) {
+  console.log("extract pdf content");
   const projectId = pathToId(filePath).split("/")[0];
   // const buffer = await readBinaryFile(filePath);
   const url = convertFileSrc(filePath);
@@ -247,6 +248,7 @@ export async function extractPDFContent(filePath: string) {
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
     let page = await pdf.getPage(pageNumber);
     let content = await page.getTextContent();
+    console.log("content", content);
     let text = content.items.map((item) => (item as TextItem).str).join("");
     projectSQLAGUD.insertContent(projectId, `${pageNumber}`, text);
   }

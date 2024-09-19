@@ -117,6 +117,7 @@ import {
   ref,
   toRaw,
   watch,
+  watchEffect,
 } from "vue";
 // components
 import TableItemRow from "./TableItemRow.vue";
@@ -129,9 +130,11 @@ const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 // utils
 import { useI18n } from "vue-i18n";
+import Fuse from "fuse.js";
 const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
+  searchMode: { type: String, required: true },
   searchString: { type: String, required: true },
   projects: { type: Array as PropType<Project[]>, required: true },
 });
@@ -327,36 +330,127 @@ async function filterRows() {
     computedRows.value = props.projects;
     return;
   }
+
+  loading.value = true;
   computedRows.value = [];
   expansionText.value = [];
-  const results = (await sqldb.queryData(props.searchString)) as Array<{
-    projectId: string;
-    pages: string;
-    extracts: string;
-  }>;
-  for (let result of results) {
-    let [projectId, noteName] = result.projectId.split("/");
-    let row = props.projects.find((row) => row._id == projectId);
-    if (!row) continue;
-    computedRows.value.push(row);
+  if (props.searchMode === "meta") {
+    const results = fuse.search(props.searchString);
+    for (const result of results) {
+      computedRows.value.push(result.item);
+      let text = "";
+      for (const match of result.matches!) {
+        let key = match.key!;
+        if (key.includes("author")) key = "author";
+        else if (key.includes("children")) key = "notes";
+        const highlighted = match.indices
+          .reduce((str, [start, end]) => {
+            str[
+              start
+            ] = `<span class="tableview-highlighted-row">${str[start]}`;
+            str[end] = `${str[end]}</span>`;
+            return str;
+          }, match.value!.split(""))
+          .join("");
 
-    // expansion text
+        text += `<div>${key}: ${highlighted}</div>`;
+      }
+      expansionText.value.push(text);
+    }
+  } else if (props.searchMode === "content") {
+    const results = (await sqldb.queryData(props.searchString)) as Map<
+      string,
+      string[]
+    >;
+    console.log("results", results);
+    for (const [projectId, extracts] of results.entries()) {
+      let row = props.projects.find((row) => row._id == projectId);
+      if (!row) continue;
+      computedRows.value.push(row);
+
+      // expansion text
+      let text = "";
+      for (const extract of extracts) {
+        if (!extract) continue;
+        text += `<div>${extract
+          .trim()
+          .replaceAll(
+            "highlight-class-place-holder",
+            "tableview-highlighted-row"
+          )}</div>`;
+      }
+      expansionText.value.push(text);
+    }
+  }
+  loading.value = false;
+}
+
+let fuse: Fuse<Project>;
+watchEffect(() => {
+  fuse = new Fuse(props.projects, {
+    includeMatches: true,
+    threshold: 0.4,
+    keys: [
+      "_id",
+      "type",
+      "title",
+      "author.family",
+      "author.given",
+      "author.literal",
+      "original-title",
+      "abstract",
+      "DOI",
+      "ISBN",
+      "ISSN",
+      "publisher",
+      "container-title",
+      "path",
+      "citation-key",
+      "issued.data-parts",
+      "tags",
+      "children.label",
+    ],
+  });
+});
+
+/**
+ * Custom filter method for the table.
+ * @param {Project[]} rows - The array of projects to filter.
+ * @param {string} terms - The search terms to filter with.
+ * @param {QTableColumn[]} cols - The array of table columns.
+ * @param {Function} getCellValue - Optional function to get a cell value.
+ * @returns {Project[]} - The filtered projects.
+ */
+function searchProject(
+  rows: Project[],
+  terms: string,
+  cols: QTableColumn[],
+  getCellValue: (col: QTableColumn, row: Project) => any
+): Project[] {
+  loading.value = true;
+  expansionText.value = [];
+  const filtered = [];
+  const results = fuse.search(terms);
+  for (const result of results) {
+    filtered.push(result.item);
     let text = "";
-    let matches = result.extracts.split("</br>");
-    let pages = result.pages.split(",");
-    for (let [ind, match] of matches.entries()) {
-      let highlightedRow = match
-        .trim()
-        .replaceAll(
-          "highlight-class-place-holder",
-          "tableview-highlighted-row"
-        );
-      let indicator = noteName
-        ? `<b>${noteName}:</b>`
-        : `<b>PDF Page${pages[ind]}:</b>`;
-      text += `<div>${indicator} ${highlightedRow}</div>`;
+    for (const match of result.matches!) {
+      let key = match.key!;
+      if (key.includes("author")) key = "author";
+      else if (key.includes("children")) key = "notes";
+      const highlighted = match.indices
+        .reduce((str, [start, end]) => {
+          str[start] = `<span class="tableview-highlighted-row">${str[start]}`;
+          str[end] = `${str[end]}</span>`;
+          return str;
+        }, match.value!.split(""))
+        .join("");
+      text += `<div>${key}: ${highlighted}</div>`;
     }
     expansionText.value.push(text);
   }
+  loading.value = false;
+  showExpansion.value = true;
+  return filtered;
 }
 </script>

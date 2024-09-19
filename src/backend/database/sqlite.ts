@@ -8,6 +8,7 @@ import Database from "tauri-plugin-sql-api";
 import { simpleHash } from "../utils";
 import { db } from "./jsondb";
 import { ref } from "vue";
+import { Project } from "./models";
 
 class SQLDatabase {
   readyToRead = ref(false);
@@ -73,26 +74,39 @@ class SQLDatabase {
 
   async queryData(pattern: string) {
     const _sqldb = await this.load();
-    return await _sqldb?.select(
-      `
+    // search metas: title, abstract, doi, issn, isbn, journal
+    // search authos
+    // search tags
+    // search contents
+    // search notes
+    // no need to search category because it's their already
+    const results =
+      (await _sqldb?.select<{ projectId: string; extract: string }[]>(`
 SELECT
   projectId,
-  group_concat(page, ',') as pages,
-  group_concat(extract, '</br>') as extracts
-FROM (
-  SELECT
-    projectId,
-    page,
-    snippet(contents, 2, '<span class="highlight-class-place-holder">', '</span>', '...', 15) as extract
-  FROM
+  'Page '|| contents.page || ': ' || snippet(contents, 2, '<span class="highlight-class-place-holder">', '</span>', '...', 15) AS extract
+FROM
     contents
-  WHERE
+WHERE
     content MATCH 'NEAR(${pattern})'
-  LIMIT -1 OFFSET 0) fts
-GROUP BY projectId
-LIMIT 100;
-`
-    );
+
+UNION
+
+SELECT
+    projectId,
+    'Note ' || notes._id || ': ' || snippet(notes, 3, '<span class="highlight-class-place-holder">', '</span>', '...', 15) AS extract
+FROM
+    notes
+WHERE
+    content MATCH 'NEAR(${pattern})'
+`)) || [];
+    // group by projectId
+    const matches = new Map<string, string[]>();
+    for (const result of results) {
+      if (!matches.has(result.projectId)) matches.set(result.projectId, []);
+      matches.get(result.projectId)!.push(result.extract);
+    }
+    return matches;
   }
 }
 

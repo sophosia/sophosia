@@ -118,6 +118,29 @@
           class="cursor-pointer"
           name="mdi-magnify"
         />
+        <q-btn-dropdown
+          dense
+          size="md"
+          padding="0"
+          :ripple="false"
+          dropdown-icon="mdi-chevron-down"
+        >
+          <div class="text-center">Search Mode</div>
+          <div class="q-gutter-sm q-pa-sm">
+            <q-radio
+              dense
+              v-model="searchMode"
+              val="meta"
+              label="Meta"
+            />
+            <q-radio
+              dense
+              v-model="searchMode"
+              val="content"
+              label="Content"
+            />
+          </div>
+        </q-btn-dropdown>
       </template>
     </q-input>
 
@@ -159,6 +182,11 @@ const showNotebooks = defineModel("showNotebooks", {
   type: Boolean,
   required: true,
   default: true,
+});
+const searchMode = defineModel("searchMode", {
+  type: String,
+  required: true,
+  default: "meta",
 });
 const emit = defineEmits([
   "addEmptyProject",

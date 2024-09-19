@@ -1,5 +1,5 @@
 <template>
-  <q-tr>
+  <q-tr v-if="text">
     <q-td colspan="100%">
       <div
         :style="`width: ${width}px;`"

@@ -24,11 +24,12 @@
         }"
         :disable="!(layoutStore.libraryRightMenuSize > 0)"
         v-model="layoutStore.libraryRightMenuSize"
-        @update:model-value="(size) => layoutStore.resizeLibraryRightMenu(size)"
+        @update:model-value="(size: number) => layoutStore.resizeLibraryRightMenu(size)"
       >
         <template v-slot:before>
           <ActionBar
             class="project-action-bar"
+            v-model:searchMode="searchMode"
             v-model:searchString="searchString"
             v-model:showReferences="projectStore.showReferences"
             v-model:showNotebooks="projectStore.showNotebooks"
@@ -44,6 +45,7 @@
           <!-- actionbar height 36px, table view is 100%-36px -->
           <ProjectTable
             v-model:projects="projectStore.projects"
+            :searchMode="searchMode"
             :searchString="searchString"
             style="
               height: calc(100% - 36px);
@@ -102,7 +104,7 @@ const treeview = ref<typeof CategoryTree | null>(null);
 
 // data
 const searchString = ref("");
-
+const searchMode = ref<"meta" | "content">("meta");
 const treeViewSize = ref(20);
 
 watch(
@@ -187,8 +189,11 @@ async function addProjectsByFiles(filePaths: string[]) {
         title: title,
         label: title,
       } as Project);
+      console.log("get meta from file");
       // do not use await since this task takes time
       getMetaFromFile(filePath).then(async (meta) => {
+        // FIXME: when meta is undefined, we can trigger the extract pdf content
+        console.log("meta?", meta);
         if (!meta) return;
         meta["citation-key"] = generateCiteKey(meta, settingStore.citeKeyRule);
         (meta as Project)._id = generateCiteKey(
