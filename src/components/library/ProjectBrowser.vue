@@ -189,19 +189,25 @@ async function addProjectsByFiles(filePaths: string[]) {
         title: title,
         label: title,
       } as Project);
-      console.log("get meta from file");
       // do not use await since this task takes time
       getMetaFromFile(filePath).then(async (meta) => {
         // FIXME: when meta is undefined, we can trigger the extract pdf content
-        console.log("meta?", meta);
-        if (!meta) return;
-        meta["citation-key"] = generateCiteKey(meta, settingStore.citeKeyRule);
-        (meta as Project)._id = generateCiteKey(
-          meta,
-          settingStore.projectIdRule
-        );
-        await projectStore.updateProject(project._id, meta as Project);
-        await extractPDFContent((await projectFileAGUD.getPDF(project._id))!);
+        if (meta) {
+          meta["citation-key"] = generateCiteKey(
+            meta,
+            settingStore.citeKeyRule
+          );
+          (meta as Project)._id = generateCiteKey(
+            meta,
+            settingStore.projectIdRule
+          );
+          await projectStore.updateProject(project._id, meta as Project);
+          await extractPDFContent(
+            (await projectFileAGUD.getPDF((meta as Project)._id))!
+          );
+        } else {
+          await extractPDFContent((await projectFileAGUD.getPDF(project._id))!);
+        }
       });
     } catch (error) {
       console.log(error);

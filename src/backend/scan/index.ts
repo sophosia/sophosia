@@ -4,7 +4,7 @@ import { metadata } from "tauri-plugin-fs-extra-api";
 import { AnnotationData, NoteType, Project, db, sqldb } from "../database";
 import { idToPath, linkToId, pathToId } from "../utils";
 import * as pdfjsLib from "pdfjs-dist";
-import { getProject, extractPDFContent } from "../project";
+import { extractPDFContent } from "../project";
 import { projectSQLAGUD } from "../project/sqliteOps";
 import { insertLink } from "../graph";
 import { projectFileAGUD } from "../project/fileOps";
