@@ -51,12 +51,11 @@ watch(
     // then we can start to scan the storage path and build indexeddb (for faster data retrieval)
     if (!layoutStore.showWelcomeCarousel) {
       await migrate();
+      await indexFiles();
+      isScanned.value = true;
       await db.createHiddenFolders();
       await stateStore.loadState();
-      indexFiles().then(() => {
-        isScanned.value = true;
-        db.setConfig({ lastScanTime: Date.now() } as Config);
-      });
+      db.setConfig({ lastScanTime: Date.now() } as Config);
     }
   }
 );

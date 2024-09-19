@@ -66,6 +66,7 @@ async function removeDanglingData() {
   for (const result of results) {
     if (!(await exists(idToPath(result._id)))) removedItemIds.push(result._id);
   }
+  console.log("removedItems", removedItemIds);
 
   // remove the rows with projectId if that meta has been removed from user's storagePath
   const placeholders = removedItemIds

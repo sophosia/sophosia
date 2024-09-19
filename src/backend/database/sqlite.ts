@@ -8,7 +8,6 @@ import Database from "tauri-plugin-sql-api";
 import { simpleHash } from "../utils";
 import { db } from "./jsondb";
 import { ref } from "vue";
-import { Project } from "./models";
 
 class SQLDatabase {
   readyToRead = ref(false);
@@ -75,11 +74,6 @@ class SQLDatabase {
   async queryData(pattern: string) {
     const _sqldb = await this.load();
     // search metas: title, abstract, doi, issn, isbn, journal
-    // search authos
-    // search tags
-    // search contents
-    // search notes
-    // no need to search category because it's their already
     const results =
       (await _sqldb?.select<{ projectId: string; extract: string }[]>(`
 SELECT
