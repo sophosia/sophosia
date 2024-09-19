@@ -74,6 +74,7 @@ async function removeDanglingData() {
     .join(", ");
   const queries = [
     `DELETE FROM metas WHERE _id IN (${placeholders})`,
+    `DELETE FROM categories WHERE projectId IN (${placeholders})`,
     `DELETE FROM authors WHERE projectId IN (${placeholders})`,
     `DELETE FROM contents WHERE projectId IN (${placeholders})`,
     `DELETE FROM notes WHERE projectId IN (${placeholders})`,
