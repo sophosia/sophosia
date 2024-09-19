@@ -7,6 +7,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import { getProject, extractPDFContent } from "../project";
 import { projectSQLAGUD } from "../project/sqliteOps";
 import { insertLink } from "../graph";
+import { projectFileAGUD } from "../project/fileOps";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 /**
@@ -66,7 +67,6 @@ async function removeDanglingData() {
   for (const result of results) {
     if (!(await exists(idToPath(result._id)))) removedItemIds.push(result._id);
   }
-  console.log("removedItems", removedItemIds);
 
   // remove the rows with projectId if that meta has been removed from user's storagePath
   const placeholders = removedItemIds
@@ -109,8 +109,8 @@ export async function processEntries(
  */
 async function extractMetaFromMarkdown(filePath: string) {
   const projectId = pathToId(filePath).split("/")[0];
-  const project = (await getProject(projectId)) as Project;
-  projectSQLAGUD.addProject(project);
+  const project = (await projectFileAGUD.getProject(projectId)) as Project;
+  await projectSQLAGUD.addProject(project);
 }
 
 /**

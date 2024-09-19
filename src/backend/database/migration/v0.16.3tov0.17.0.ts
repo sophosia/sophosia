@@ -25,6 +25,7 @@ import { db } from "../jsondb";
 import { exists, readDir, readTextFile, removeDir } from "@tauri-apps/api/fs";
 import { Project } from "../models";
 import { getAllProjects, updateProject } from "src/backend/project";
+import { projectFileAGUD } from "src/backend/project/fileOps";
 
 /**
  * Folder is for both database and UI display use
@@ -54,7 +55,7 @@ export async function changeFolderIdToCategoryPath() {
   if (!folders) return;
 
   const folderIdToPathMap = buildIdToPathMap(folders);
-  const projects = (await getAllProjects()) as Project[];
+  const projects = (await projectFileAGUD.getAllProjects()) as Project[];
   for (const project of projects) {
     project.categories = project.folderIds.map(
       (folderId: string) => folderIdToPathMap[folderId]
