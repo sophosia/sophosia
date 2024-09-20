@@ -55,16 +55,16 @@ watch(
     // once the welcome page is gone
     // we need to load the app state
     // so the app doesn't overwrite the already existing app state
-    // then we can start to scan the storage path and build indexeddb (for faster data retrieval)
+    // then we can start to scan the storage path and build sqlitedb (for faster data retrieval)
     if (!layoutStore.showWelcomeCarousel) {
       await migrate();
       await indexFiles((progress) => {
         indexingProgress.value = progress;
       });
-      // isIndexed.value = true;
       await db.setConfig({ lastScanTime: Date.now() } as Config);
       await db.createHiddenFolders();
       await stateStore.loadState();
+      isIndexed.value = true;
     }
   }
 );
