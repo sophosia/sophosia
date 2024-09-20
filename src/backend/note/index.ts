@@ -359,13 +359,15 @@ export async function loadNote(
 ): Promise<string> {
   try {
     const result =
-      (await sqldb.select<{ content: string }[]>(
-        "SELECT content FROM notes WHERE _id = $1",
+      (await sqldb.select<{ type: string; content: string }[]>(
+        "SELECT type, content FROM notes WHERE _id = $1",
         [noteId]
       )) || [];
-    if (result.length > 0) return result[0].content;
+    if (result.length === 1 && result[0].type === NoteType.MARKDOWN)
+      return result[0].content;
     else return await readTextFile(notePath || idToPath(noteId));
   } catch (error) {
+    console.log(error);
     return "";
   }
 }

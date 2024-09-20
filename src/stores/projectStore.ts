@@ -110,7 +110,6 @@ export const useProjectStore = defineStore("projectStore", {
       const uniqueIds = new Set(openedProjectIds);
       for (let projectId of uniqueIds) {
         const project = (await this.getProjectFromDB(projectId)) as Project;
-        console.log("project", project);
         sortTree(project); // sort notes by alphabet
         openedProjects.push(project);
       }
