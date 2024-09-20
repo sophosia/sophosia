@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { Config, db } from "src/backend/database";
 import { migrate } from "src/backend/database/migration";
-import { indexFiles } from "src/backend/scan";
+import { indexFiles } from "src/backend/indexer";
 import DialogContainer from "src/components/dialogs/DialogContainer.vue";
 import WelcomeCarousel from "src/components/welcome/WelcomeCarousel.vue";
 import { useLayoutStore } from "src/stores/layoutStore";

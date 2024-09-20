@@ -204,7 +204,7 @@ import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { useI18n } from "vue-i18n";
 import { authDialog, progressDialog } from "../dialogs/dialogController";
-import { indexFiles } from "src/backend/scan";
+import { indexFiles } from "src/backend/indexer";
 const $q = useQuasar();
 
 const settingStore = useSettingStore();

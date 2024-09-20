@@ -13,7 +13,7 @@ import {
 } from "@tauri-apps/api/fs";
 import { join, extname, basename } from "@tauri-apps/api/path";
 import type { FileEntry } from "@tauri-apps/api/fs";
-import { processEntries } from "../scan";
+import { processEntries } from "../indexer";
 import { metadata } from "tauri-plugin-fs-extra-api";
 import { idToLink, idToPath, pathToId } from "../utils";
 import { i18n } from "src/boot/i18n";
