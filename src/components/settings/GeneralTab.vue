@@ -183,9 +183,14 @@
       ruleType="projectId"
       @bulkUpdate="updateProjectIds"
     />
+
+    <IndexFileCard @indexFiles="onIndexFiles" />
   </div>
 </template>
 <script setup lang="ts">
+// vue
+import CustomRuleModifier from "./CustomRuleModifier.vue";
+import IndexFileCard from "./IndexFileCard.vue";
 import { computed } from "vue";
 // db
 import { Config, Page, Project, db } from "src/backend/database";
@@ -199,7 +204,7 @@ import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { useI18n } from "vue-i18n";
 import { authDialog, progressDialog } from "../dialogs/dialogController";
-import CustomRuleModifier from "./CustomRuleModifier.vue";
+import { indexFiles } from "src/backend/scan";
 const $q = useQuasar();
 
 const settingStore = useSettingStore();
@@ -365,5 +370,14 @@ function showAuthDialog() {
     else if (authDialog.authView === "resetPassword")
       accountStore.updateUser({ password: authDialog.password });
   });
+}
+
+async function onIndexFiles() {
+  progressDialog.show();
+  progressDialog.onConfirm(() => progressDialog.close());
+  await indexFiles((progress) => {
+    progressDialog.progress = progress;
+  });
+  await db.setConfig({ lastScanTime: Date.now() } as Config);
 }
 </script>

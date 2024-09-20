@@ -11,15 +11,24 @@ import { projectFileAGUD } from "../project/fileOps";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the public folder
 
 /**
- * Scan all notes and update the links in database
+ * Scan all actual files and store their information in sqlite db
  */
-export async function indexFiles() {
+export async function indexFiles(
+  progressCallback?: (progress: number) => void
+) {
   console.log("scan files and update db");
   const start = performance.now();
   await sqldb.createTables();
   await removeDanglingData();
 
   const entries = await readDir(db.config.storagePath, { recursive: true });
+  let totalFiles = 0;
+  let processedFiles = 0;
+  if (progressCallback) {
+    await processEntries(entries, async (_) => {
+      totalFiles++;
+    });
+  }
   await processEntries(entries, async (file: FileEntry) => {
     try {
       const ext = await extname(file.path);
@@ -48,6 +57,10 @@ export async function indexFiles() {
           break;
         default:
           break;
+      }
+      if (totalFiles > 0 && progressCallback) {
+        processedFiles++;
+        progressCallback(processedFiles / totalFiles);
       }
     } catch (error) {
       // possibly some hidden files like .DS_store

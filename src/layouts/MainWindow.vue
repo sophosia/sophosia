@@ -5,17 +5,24 @@
     v-model="layoutStore.showWelcomeCarousel"
   />
   <div
-    v-else-if="!isScanned"
+    v-else-if="!isIndexed"
     style="margin-top: 50vh"
     class="q-px-xl row justify-center"
   >
-    <div class="text-h6">{{ $t("scaning") + "..." }}</div>
+    <div class="text-h6">{{ $t("indexing-files") }}</div>
     <q-linear-progress
-      v-if="loading"
-      size="md"
+      rounded
+      size="1.2rem"
       color="primary"
-      indeterminate
+      :value="indexingProgress"
     >
+      <div class="absolute-full flex flex-center">
+        <q-badge
+          color="white"
+          text-color="accent"
+          :label="`${indexingProgress * 100}%`"
+        />
+      </div>
     </q-linear-progress>
   </div>
   <MainLayout v-else />
@@ -34,8 +41,8 @@ import MainLayout from "./MainLayout.vue";
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
 // must determine the existence of storagePath before heading to MainLayout
-const loading = ref(false);
-const isScanned = ref(false);
+const isIndexed = ref(false);
+const indexingProgress = ref(0);
 
 onMounted(async () => {
   // if there is no path, show welcome carousel
@@ -51,11 +58,13 @@ watch(
     // then we can start to scan the storage path and build indexeddb (for faster data retrieval)
     if (!layoutStore.showWelcomeCarousel) {
       await migrate();
-      await indexFiles();
-      isScanned.value = true;
+      await indexFiles((progress) => {
+        indexingProgress.value = progress;
+      });
+      // isIndexed.value = true;
+      await db.setConfig({ lastScanTime: Date.now() } as Config);
       await db.createHiddenFolders();
       await stateStore.loadState();
-      db.setConfig({ lastScanTime: Date.now() } as Config);
     }
   }
 );

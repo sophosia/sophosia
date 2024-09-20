@@ -123,7 +123,7 @@
   "set-favorite": "收藏",
   "citation-key": "引用键",
   "duplicate": "该文件名已存在",
-  "scaning": "扫描中",
+  "indexing-files": "正在索引文件……",
   "done": "完成",
   "newer-version-available": "有更新的版本",
   "text-copied": "已复制到粘贴版",
@@ -172,5 +172,7 @@
   "signed-in-as": "以 {type} 身份登录",
   "updated": "{type}已更新",
   "progress": "进度",
-  "show": "显示{type}"
+  "show": "显示{type}",
+  "index-files": "索引文件",
+  "index-files-info": "索引笔记以及PDF的内容以便进行更快更便捷的搜索。"
 }

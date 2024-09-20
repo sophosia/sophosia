@@ -124,7 +124,7 @@
   "set-favorite": "Set as favorite",
   "citation-key": "Citation key",
   "duplicate": "There' already a file with the same name",
-  "scaning": "Scaning",
+  "indexing-files": "Indexing files...",
   "done": "Done",
   "newer-version-available": "Newer version available",
   "text-copied": "Text copied to clipboard",
@@ -172,5 +172,7 @@
   "signed-in-as": "Signed in as {type}",
   "updated": "{type} updated",
   "progress": "Progress",
-  "show": "Show {type}"
+  "show": "Show {type}",
+  "index-files": "Index files",
+  "index-files-info": "Index all files for faster data fetch speed, and full-text search within PDFs."
 }
