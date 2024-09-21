@@ -159,7 +159,7 @@ function onDrop(ev: DragEvent) {
 <style scoped lang="scss">
 .drop-highlight {
   position: absolute;
-  background: lighten($dark, 10);
+  background-color: hsl(from var(--q-dark) h s calc(l + 10%));
   pointer-events: none;
   z-index: 90;
   transition: 100ms;
