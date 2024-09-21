@@ -1,4 +1,4 @@
-import { basename } from "@tauri-apps/api/path";
+import { basename, join } from "@tauri-apps/api/path";
 import { defineStore } from "pinia";
 import {
   AppState,
@@ -9,6 +9,7 @@ import {
   PageType,
   Project,
   SpecialCategory,
+  db,
 } from "src/backend/database";
 import {
   addFolder,
@@ -25,6 +26,7 @@ import {
   addProject,
   createProject,
   deleteProject,
+  extractPDFContent,
   getProject,
   getProjects,
   updateProject,
@@ -35,8 +37,10 @@ import {
   updateCategory,
 } from "src/backend/category";
 import { projectFileAGUD } from "src/backend/project/fileOps";
-import { sortTree } from "src/backend/utils";
+import { idToPath, sortTree } from "src/backend/utils";
 import { useLayoutStore } from "./layoutStore";
+import { generateCiteKey, getMetaFromFile } from "src/backend/meta";
+import { useSettingStore } from "./settingStore";
 
 export const useProjectStore = defineStore("projectStore", {
   state: () => ({
@@ -240,6 +244,26 @@ export const useProjectStore = defineStore("projectStore", {
     async attachPDF(projectId: string) {
       // update db
       const filename = await projectFileAGUD.attachPDF(projectId);
+      const filePath = idToPath(`${projectId}/${filename}`);
+      const settingStore = useSettingStore();
+      getMetaFromFile(filePath).then(async (meta) => {
+        // FIXME: when meta is undefined, we can trigger the extract pdf content
+        let newProjectId = projectId;
+        if (meta) {
+          meta["citation-key"] = generateCiteKey(
+            meta,
+            settingStore.citeKeyRule
+          );
+          (meta as Project)._id = generateCiteKey(
+            meta,
+            settingStore.projectIdRule
+          );
+          await this.updateProject(projectId, meta as Project);
+          newProjectId = (meta as Project)._id;
+        }
+        await extractPDFContent((await projectFileAGUD.getPDF(newProjectId))!);
+      });
+
       // update ui
       if (filename)
         await this.updateProject(projectId, { path: filename } as Project);
