@@ -100,19 +100,15 @@
 </template>
 
 <script lang="ts">
-import { getAllFolders } from "src/backend/project/folder";
+import { getCategories } from "src/backend/category";
 
 import {
   checkIfUploaded,
   uploadPDF,
 } from "src/backend/conversationAgent/uploadPDF";
 import type { ChatState } from "src/backend/database";
-import { ChatType, Folder, Project } from "src/backend/database";
-import {
-  getAllProjects,
-  getProject,
-  getProjects,
-} from "src/backend/project/project";
+import { ChatType, Project } from "src/backend/database";
+import { getAllProjects, getProject, getProjects } from "src/backend/project";
 import { useChatStore } from "src/stores/chatStore";
 import { computed, onMounted, ref } from "vue";
 
@@ -125,13 +121,13 @@ export default {
       type: ChatType.CATEGORY,
     });
     const filteredSuggestions = ref<string[]>([]);
-    const allFolders = ref<Folder[]>([]);
+    const allCategories = ref<string[]>([]);
     const allPapers = ref<Project[]>([]);
 
     onMounted(async () => {
-      const folders = await getAllFolders();
-      if (folders) {
-        allFolders.value = folders;
+      const categories = await getCategories();
+      if (categories) {
+        allCategories.value = categories;
       }
       const papers = await getAllProjects();
       if (papers) {
@@ -143,13 +139,11 @@ export default {
      */
     const updateSuggestions = () => {
       if (newChatState.value.type === ChatType.CATEGORY) {
-        filteredSuggestions.value = allFolders.value
-          .filter((folder) =>
-            folder.label
-              .toLowerCase()
-              .includes(newChatState.value.theme.toLowerCase())
-          )
-          .map((folder) => folder.label);
+        filteredSuggestions.value = allCategories.value.filter((category) =>
+          category
+            .toLowerCase()
+            .includes(newChatState.value.theme.toLowerCase())
+        );
       } else if (newChatState.value.type === ChatType.REFERENCE) {
         filteredSuggestions.value = allPapers.value
           .filter((reference) =>
@@ -172,34 +166,34 @@ export default {
     };
 
     const addState = async () => {
-      let selectedItem;
+      let selectedItemId: string | undefined;
       const { type, theme } = newChatState.value;
 
       // Select item based on type
       if (type === ChatType.CATEGORY) {
-        selectedItem = allFolders.value.find(
-          (folder) => folder.label === theme
+        selectedItemId = allCategories.value.find(
+          (category) => category === theme
         );
       } else if (type === ChatType.REFERENCE) {
-        selectedItem = allPapers.value.find(
+        selectedItemId = allPapers.value.find(
           (reference) => reference.label === theme
-        );
+        )?._id;
       }
 
-      if (!selectedItem) return;
+      if (!selectedItemId) return;
 
       // Check if already uploaded
-      console.log("selectedItem", selectedItem);
+      console.log("selectedItemId", selectedItemId);
       console.log("type", type);
 
       const isUploaded = await checkIfUploaded(
-        selectedItem._id,
+        selectedItemId,
         type.toLowerCase()
       );
       console.log("isUploaded", isUploaded);
       if (!isUploaded.status) {
         if (type === ChatType.CATEGORY) {
-          const projects = await getProjects(selectedItem._id);
+          const projects = await getProjects(selectedItemId);
           if (projects) {
             for (const project of projects) {
               const check = await uploadPDF(project._id);
@@ -214,7 +208,7 @@ export default {
             }
           }
         } else if (type === ChatType.REFERENCE) {
-          const project = await getProject(selectedItem._id);
+          const project = await getProject(selectedItemId);
           if (project) {
             const check = await uploadPDF(project._id);
             if (!check.status) {
@@ -231,7 +225,7 @@ export default {
 
       // Add new chat state
       const newState = {
-        _id: selectedItem._id,
+        _id: selectedItemId,
         theme: theme,
         type: type,
       } as ChatState;

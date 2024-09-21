@@ -5,6 +5,26 @@ import { categoryFileAGUD } from "./fileOps";
 import { categorySQLAGUD } from "./sqliteOps";
 
 /**
+ * Get an array of all categories
+ * @returns {string[]} categories
+ */
+export async function getCategories(): Promise<string[]> {
+  try {
+    // use sqldb first
+    let categories = await categorySQLAGUD.getCategories();
+    // fallback to filedb
+    if (categories.length === 0)
+      categories = await categoryFileAGUD.getCategories();
+    // default to library
+    if (categories.length === 0) categories = ["library"];
+    return categories;
+  } catch (error) {
+    console.log(error);
+    return ["library"];
+  }
+}
+
+/**
  * Get the category tree
  *
  * @returns {CategoryNode[]} categoryTree - The category tree
@@ -22,14 +42,7 @@ import { categorySQLAGUD } from "./sqliteOps";
  */
 export async function getCategoryTree(): Promise<CategoryNode[]> {
   try {
-    // use sqldb first
-    let categories = await categorySQLAGUD.getCategories();
-    // fallback to filedb
-    if (categories.length == 0)
-      categories = await categoryFileAGUD.getCategories();
-
-    if (categories.length == 0) return [{ _id: "library", children: [] }];
-
+    const categories = await getCategories();
     // build tree
     const root = { _id: "root", children: [] } as CategoryNode;
     for (const category of categories) {
