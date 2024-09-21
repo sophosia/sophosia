@@ -205,14 +205,21 @@ import { Ref, inject, nextTick, ref } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { join } from "@tauri-apps/api/path";
 import { copyToClipboard } from "quasar";
-import { uploadPDF } from "src/backend/conversationAgent/uploadPDF";
+import {
+  checkIfUploaded,
+  uploadPDF,
+} from "src/backend/conversationAgent/uploadPDF";
 import { generateCiteKey, getMeta } from "src/backend/meta";
 import { getProject } from "src/backend/project";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { watchEffect } from "vue";
-import { errorDialog } from "../dialogs/dialogController";
+import {
+  deleteDialog,
+  errorDialog,
+  identifierDialog,
+} from "../dialogs/dialogController";
 
 const accountStore = useAccountStore();
 const projectStore = useProjectStore();
@@ -392,7 +399,7 @@ function showDeleteDialog(deleteFromDB: boolean) {
  * if deleteFromDB is true, delete the project from database and remove the actual files
  */
 async function deleteProject(
-  folderId: string,
+  category: string,
   deleteProjects: Project[],
   isDeleteFromDB: boolean
 ) {
@@ -420,7 +427,7 @@ async function deleteProject(
       }, 50);
     }
     // delete from db
-    projectStore.deleteProject(projectId, isDeleteFromDB, folderId);
+    projectStore.deleteProject(projectId, isDeleteFromDB, category);
   }
 }
 

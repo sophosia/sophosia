@@ -69,9 +69,9 @@ export async function uploadPDF(
     const project = await projectStore.getProjectFromDB(projectId);
     const filePath = await projectFileAGUD.getPDF(projectId);
     const fileName = project?.label;
-    const folders = project?.folderIds;
+    const categories = project?.categories;
     console.log("Filenmae", fileName);
-    console.log(JSON.stringify(folders));
+    console.log(JSON.stringify(categories));
 
     if (!filePath || !fileName) {
       return { status: false, error: "File path or name is missing" };
@@ -92,7 +92,7 @@ export async function uploadPDF(
             mime: "application/pdf",
           },
           user_uuid: userId,
-          folder: JSON.stringify(folders),
+          folder: JSON.stringify(categories),
         }),
         responseType: ResponseType.Text,
       });
