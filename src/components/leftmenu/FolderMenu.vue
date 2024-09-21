@@ -82,6 +82,6 @@ const emit = defineEmits([
   "addNote",
   "addFolder",
   "renameFolder",
-  "deleteFolder"
+  "deleteFolder",
 ]);
 </script>

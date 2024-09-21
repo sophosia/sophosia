@@ -134,7 +134,6 @@ function useErrorDialog() {
   };
 }
 
-
 /**
  * Controller for SuccessDialog
  * @returns properties and controls
@@ -147,7 +146,6 @@ function useSuccessDialog() {
     message,
   };
 }
-
 
 /**
  * Controller for ProgressDialog

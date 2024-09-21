@@ -9,7 +9,7 @@ import { onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { db } from "./backend/database";
 import { useProjectStore } from "./stores/projectStore";
-import { appWindow } from '@tauri-apps/api/window';
+import { appWindow } from "@tauri-apps/api/window";
 import { getSupabaseClient } from "./backend/authSupabase";
 import { useChatStore } from "./stores/chatStore";
 const { locale } = useI18n({ useScope: "global" });
@@ -27,7 +27,6 @@ const handleFocus = () => {
 const handleBlur = () => {
   supabase.auth.stopAutoRefresh();
 };
-
 
 onMounted(async () => {
   console.log("onmounted");
@@ -47,8 +46,8 @@ onMounted(async () => {
   await stateStore.loadState();
 
   // ensure when user is authenticated whenever they are logged in
-  appWindow.listen('tauri://focus', () => handleFocus());
-  appWindow.listen('tauri://blur', () => handleBlur());
+  appWindow.listen("tauri://focus", () => handleFocus());
+  appWindow.listen("tauri://blur", () => handleBlur());
 });
 
 settingStore.$subscribe(() => stateStore.updateState());

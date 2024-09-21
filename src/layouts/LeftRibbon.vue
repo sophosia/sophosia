@@ -140,25 +140,27 @@ import pluginManager from "src/backend/plugin";
 import { useAccountStore } from "src/stores/accountStore";
 import { useChatStore } from "src/stores/chatStore";
 import { useLayoutStore } from "src/stores/layoutStore";
-import {watch }from "vue";
+import { watch } from "vue";
 const chatStore = useChatStore();
 const layoutStore = useLayoutStore();
 const emit = defineEmits(["openPage"]);
 const accountStore = useAccountStore();
 const isUserLoggedIn = () => {
-
   return true ? accountStore.user.email : false;
 };
 
-watch( ()=>accountStore.user.email,async ()=>{
-  if (accountStore.user.email){
-    const chatStates = chatStore.chatStates;
-    for(const chatState of chatStates){
-      chatStore.chatMessages[chatState._id] = await chatStore.syncMessages(chatState) || [];
+watch(
+  () => accountStore.user.email,
+  async () => {
+    if (accountStore.user.email) {
+      const chatStates = chatStore.chatStates;
+      for (const chatState of chatStates) {
+        chatStore.chatMessages[chatState._id] =
+          (await chatStore.syncMessages(chatState)) || [];
+      }
+    } else {
+      console.log("user is not logged in");
     }
   }
-  else{
-    console.log('user is not logged in')
-  }
-})
+);
 </script>

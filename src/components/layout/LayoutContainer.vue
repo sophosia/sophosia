@@ -1,9 +1,19 @@
 <template>
   <div style="width: 100%; height: 100vh">
-    
     <LayoutComponent v-model:layout="layout" />
     <ChatStateModal v-if="chatStore.showModal" />
-    <ChatWindow v-if="chatStore.chatVisibility" style="max-height: 40%; overflow-y: auto; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 80%;" />    
+    <ChatWindow
+      v-if="chatStore.chatVisibility"
+      style="
+        max-height: 40%;
+        overflow-y: auto;
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+      "
+    />
   </div>
 </template>
 <script setup lang="ts">

@@ -7,7 +7,6 @@
   <SuccessDialog />
   <ProgressDialog />
   <AuthDialog />
-  
 </template>
 <script setup lang="ts">
 import AuthDialog from "./AuthDialog.vue";

@@ -76,18 +76,18 @@
               {
                 label: $t('no-spreads'),
                 value: 0,
-                icon: 'mdi-numeric-0-box-outline'
+                icon: 'mdi-numeric-0-box-outline',
               },
               {
                 label: $t('odd-spreads'),
                 value: 1,
-                icon: 'mdi-numeric-1-box-outline'
+                icon: 'mdi-numeric-1-box-outline',
               },
               {
                 label: $t('even-spreads'),
                 value: 2,
-                icon: 'mdi-numeric-2-box-outline'
-              }
+                icon: 'mdi-numeric-2-box-outline',
+              },
             ]"
             :model-value="spreadMode"
             @update:model-value="(mode: number) => $emit('changeSpreadMode',mode)"
@@ -133,12 +133,12 @@ const props = defineProps({
   currentScale: { type: Number, required: true, default: 1 },
   spreadMode: { type: Number, required: true, default: 0 },
   isFullscreen: { type: Boolean, required: true, default: false },
-  darkMode: { type: Boolean, required: true, default: false }
+  darkMode: { type: Boolean, required: true, default: false },
 });
 const emit = defineEmits([
   "changeScale",
   "changeSpreadMode",
   "toggleFullscreen",
-  "toggleDarkMode"
+  "toggleDarkMode",
 ]);
 </script>

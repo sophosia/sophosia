@@ -10,7 +10,7 @@
   "license": "GPL-3.0",
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
-    "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
+    "format": "prettier --write \"src/**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"See package.json => scripts for available tests.\" && exit 0",
     "dev": "yarn tauri dev",
     "debug": "yarn tauri build --debug",

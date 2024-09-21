@@ -14,7 +14,6 @@ import {
 import { errorDialog } from "src/components/dialogs/dialogController";
 import { ref } from "vue";
 
-
 export const useChatStore = defineStore("chat", {
   state: () => ({
     initialized: false,
@@ -38,16 +37,17 @@ export const useChatStore = defineStore("chat", {
       this.currentChatState = state;
       this.showChat();
     },
-    async addChatState (newState: ChatState) {
+    async addChatState(newState: ChatState) {
       if (!this.chatMessages[newState._id]) {
-        this.chatMessages[newState._id] = await this.syncMessages(newState) || [];
+        this.chatMessages[newState._id] =
+          (await this.syncMessages(newState)) || [];
         this.chatStates.push(newState);
       }
     },
 
     addMessageToChatState(theme: string, message: ChatMessage) {
       if (this.chatMessages[theme]) {
-        this.chatMessages[theme].push(message); 
+        this.chatMessages[theme].push(message);
       }
     },
     removeChatState(_id: string) {
@@ -60,7 +60,6 @@ export const useChatStore = defineStore("chat", {
 
     openModal() {
       this.showModal = true;
-      
     },
     hideModal() {
       this.showModal = false;

@@ -1,4 +1,4 @@
-import {getSupabaseClient} from "src/backend/authSupabase/supabaseClient"
+import { getSupabaseClient } from "src/backend/authSupabase/supabaseClient";
 import { open } from "@tauri-apps/api/shell";
 import { defineStore } from "pinia";
 import {
@@ -36,9 +36,6 @@ export const useAccountStore = defineStore("accountStore", () => {
       if (email) user.email = email;
     }
     initialized.value = true;
-
-  
-
   }
 
   /**

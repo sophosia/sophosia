@@ -64,12 +64,12 @@ import { computed } from "vue";
 
 const props = defineProps({
   inkThickness: { type: Number, required: true },
-  inkOpacity: { type: Number, required: true }
+  inkOpacity: { type: Number, required: true },
 });
 const emit = defineEmits([
   "setInkTool",
   "update:inkThickness",
-  "update:inkOpacity"
+  "update:inkOpacity",
 ]);
 
 const thickness = computed({
@@ -80,7 +80,7 @@ const thickness = computed({
     if (value > 30) value = 30;
     else if (value < 1) value = 1;
     emit("update:inkThickness", value);
-  }
+  },
 });
 
 const opacity = computed({
@@ -93,6 +93,6 @@ const opacity = computed({
     if (value > 1.0) value = 1;
     else if (value < 0.1) value = 0.1;
     emit("update:inkOpacity", value);
-  }
+  },
 });
 </script>

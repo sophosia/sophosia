@@ -12,7 +12,7 @@ import { textChangeRangeIsUnchanged } from "typescript";
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 
 const props = defineProps({
-  text: { type: String, required: true }
+  text: { type: String, required: true },
 });
 
 const root = ref<HTMLElement>();

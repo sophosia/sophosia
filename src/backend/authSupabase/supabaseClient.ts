@@ -1,7 +1,7 @@
-import {SupabaseClient, createClient } from "@supabase/supabase-js";
+import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import { c } from "vitest/dist/reporters-5f784f42";
 
-const supabaseUrl= import.meta.env.VITE_SUPABASE_URL;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 let _supabaseClient: SupabaseClient | null = null;
@@ -16,7 +16,7 @@ export function getSupabaseClient(): SupabaseClient {
       auth: {
         storageKey: "sophosiaAuth",
         storage: window.localStorage,
-        flowType:"implicit",
+        flowType: "implicit",
         autoRefreshToken: true,
         persistSession: true,
       },

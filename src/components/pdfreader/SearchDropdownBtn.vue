@@ -87,7 +87,7 @@ import {
   ref,
   onMounted,
   watch,
-  onBeforeUnmount
+  onBeforeUnmount,
 } from "vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n({ useScope: "global" });
@@ -96,8 +96,8 @@ const searchMenu = ref<QMenu>();
 const props = defineProps({
   matchesCount: {
     type: Object as PropType<{ current: number; total: number }>,
-    required: false
-  }
+    required: false,
+  },
 });
 
 const emit = defineEmits(["search", "clear", "changeMatch"]);
@@ -106,7 +106,7 @@ const search = reactive({
   query: "",
   highlightAll: true,
   caseSensitive: false,
-  entireWord: false
+  entireWord: false,
 });
 watch(
   search,
@@ -122,7 +122,7 @@ const searchSummary = computed(() => {
     if (matchesCount.total != 0) {
       text = t("matchescount-current-of-matchescount-total-matches", [
         matchesCount.current,
-        matchesCount.total
+        matchesCount.total,
       ]);
     } else {
       text = t("phrase-not-found");

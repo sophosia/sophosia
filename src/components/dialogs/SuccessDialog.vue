@@ -7,10 +7,7 @@
     @hide="successDialog.close()"
   >
     <q-card class="dialog">
-
-      <q-card-section
-        class="q-pt-none flex justify-center"
-      >
+      <q-card-section class="q-pt-none flex justify-center">
         {{ successDialog.message }}
       </q-card-section>
       <q-card-actions align="right">

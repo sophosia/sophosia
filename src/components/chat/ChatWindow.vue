@@ -23,7 +23,10 @@
     </q-card-section>
 
     <q-card-section class="messages">
-      <q-scroll-area ref = "scrollAreaRef"class="scroll-area">
+      <q-scroll-area
+        ref="scrollAreaRef"
+        class="scroll-area"
+      >
         <q-chat-message
           v-for="(message, index) in messages"
           :key="index"
@@ -94,12 +97,13 @@ const newMessage = ref("");
 const sendingMessage = ref(false);
 const scrollAreaRef = ref<QScrollArea>();
 
-
 const scrollToBottom = () => {
   nextTick(() => {
     const scrollArea = scrollAreaRef.value;
     if (scrollArea) {
-      const scrollTarget = scrollArea.$el!.querySelector('.q-scrollarea__container');
+      const scrollTarget = scrollArea.$el!.querySelector(
+        ".q-scrollarea__container"
+      );
       if (scrollTarget) {
         scrollTarget.scrollTop = scrollTarget.scrollHeight;
       }
@@ -107,12 +111,9 @@ const scrollToBottom = () => {
   });
 };
 
-
 const shouldShowSendButton = computed(() => {
   return newMessage.value.trim() !== "" || sendingMessage.value;
 });
-
-
 
 onMounted(async () => {
   const {
@@ -128,7 +129,7 @@ onMounted(async () => {
   if (!chatStore.currentChatState) {
     errorDialog.show();
     errorDialog.error.name = "Error";
-  errorDialog.error.message = "Something went wrong with the chat state";
+    errorDialog.error.message = "Something went wrong with the chat state";
     return;
   }
 
@@ -160,7 +161,10 @@ const sendMessage = async () => {
         chatStore.currentChatState.type === ChatType.REFERENCE
           ? chatStore.currentChatState.theme
           : chatStore.currentChatState._id,
-      type: chatStore.currentChatState.type === ChatType.REFERENCE ? "paper" : "folder",
+      type:
+        chatStore.currentChatState.type === ChatType.REFERENCE
+          ? "paper"
+          : "folder",
     };
 
     const msg = newMessage.value;
@@ -168,13 +172,13 @@ const sendMessage = async () => {
     messages.value.push({ content: msg, isUserMessage: true });
 
     const streamGenerator = converseStream(req);
-    let fullResponse = '';
+    let fullResponse = "";
     let retrievedNodes: any[] = [];
 
     for await (const chunk of streamGenerator) {
-      if (typeof chunk === 'string') {
+      if (typeof chunk === "string") {
         fullResponse += chunk;
-        
+
         if (messages.value[messages.value.length - 1].isUserMessage) {
           messages.value.push({ content: fullResponse, isUserMessage: false });
         } else {
@@ -188,9 +192,8 @@ const sendMessage = async () => {
 
     console.log("Retrieved Nodes:", retrievedNodes);
     // You can use retrievedNodes here if needed
-
   } catch (error) {
-    console.error('Error in sendMessage:', error);
+    console.error("Error in sendMessage:", error);
   } finally {
     sendingMessage.value = false;
   }

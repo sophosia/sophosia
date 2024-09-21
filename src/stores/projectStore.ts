@@ -50,7 +50,7 @@ export const useProjectStore = defineStore("projectStore", {
     selected: [] as (Project | Note)[], // projectIds selected by checkbox
     projects: [] as Project[], // array of projects
     openedProjects: [] as Project[], // array of opened projects
-      
+
     updatedProject: {} as Project, // for updating window tab name
     selectedCategory: SpecialCategory.LIBRARY.toString(), // selected category in library page
     // fire after a rename of note/folder, batchReplaceLink will change contents of markdowns containing the link to old note/folder
