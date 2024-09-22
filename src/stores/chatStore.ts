@@ -77,7 +77,6 @@ export const useChatStore = defineStore("chat", {
         let history;
         if (state.type === ChatType.REFERENCE) {
           const paperid = await retrieveReferenceid(supabase, state.theme);
-          console.log("paperid", paperid);
           history = await retrieveHistory(
             supabase,
             "paper",
@@ -86,7 +85,6 @@ export const useChatStore = defineStore("chat", {
           );
         } else {
           const folderid = await retrieveCategoryid(supabase, state._id);
-          console.log("folderid", folderid);
           history = await retrieveHistory(
             supabase,
             "folder",
@@ -111,7 +109,6 @@ export const useChatStore = defineStore("chat", {
       this.initialized = true;
 
       for (const chatState of state.chatStates) {
-        console.log("chatState", chatState);
         this.chatMessages[chatState._id] =
           (await this.syncMessages(chatState)) || [];
       }

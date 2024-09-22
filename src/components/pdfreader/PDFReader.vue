@@ -42,9 +42,13 @@
         <FloatingMenu
           v-if="showFloatingMenu"
           :style="style"
+          :projectid="props.projectId"
           @highlightText="(color: string) => highlightText(color)"
         />
+
+        
       </div>
+      <!-- <ExplainWindow /> --> <!-- This component is not yet implemented -->
 
       <PeekCard
         v-for="link in pdfApp.peekManager.links"
@@ -77,6 +81,7 @@ import FloatingMenu from "./FloatingMenu.vue";
 import PDFToolBar from "./PDFToolBar.vue";
 import PeekCard from "./PeekCard.vue";
 import RightMenu from "./RightMenu.vue";
+import ExplainWindow from "../library/ExplainWindow.vue";
 
 import { QSplitter, throttle } from "quasar";
 import { db } from "src/backend/database";
@@ -84,6 +89,7 @@ import { Annotation, Ink } from "src/backend/pdfannotation/annotations";
 import PDFApplication from "src/backend/pdfreader";
 import { getProject } from "src/backend/project";
 import { useLayoutStore } from "src/stores/layoutStore";
+import { useProjectStore } from "src/stores/projectStore";
 const layoutStore = useLayoutStore();
 
 /**********************************

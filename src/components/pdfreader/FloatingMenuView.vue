@@ -8,7 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import { textChangeRangeIsUnchanged } from "typescript";
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 
 const props = defineProps({

@@ -13,6 +13,7 @@ export interface ConverseResponse {
   response: string;
   retrievedNodes: any[];
 }
+
 /**
  * Sends a message to the conversation agent and returns the response
  * @param params ConverseRequest
@@ -76,8 +77,15 @@ export async function* converseStream(
           if (data === "[DONE]") {
             yield { response: fullResponse, retrievedNodes };
             return;
-          } else if (data.startsWith("NODES_DATA:")) {
-            retrievedNodes = JSON.parse(data.slice(11));
+          } else if (data.startsWith('NODES_DATA:')) {
+            const nodesData = data.slice(11);
+            try {
+              // Attempt to parse as JSON first
+              retrievedNodes = JSON.parse(nodesData);
+            } catch (error) {
+              console.log("retrieving nodes failed",error)
+            }
+         
           } else {
             fullResponse += data;
             yield data;
