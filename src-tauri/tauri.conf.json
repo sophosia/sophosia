@@ -50,7 +50,7 @@
       "http": {
         "all": true,
         "request": true,
-        "scope": ["https://*","https://fileupload-agent-production.up.railway.app/upload","http://127.0.0.1:5000/upload","http://0.0.0.0:8000/converse","https://harmonious-warmth-production.up.railway.app/converse"]
+        "scope": ["https://*","https://fileupload-agent-production.up.railway.app/upload","http://127.0.0.1:5000/upload","http://0.0.0.0:8000/converse","https://harmonious-warmth-production.up.railway.app/*"]
       },
       "fs": {
         "all": true,

@@ -1,7 +1,7 @@
 import { getClient, Body, ResponseType } from "@tauri-apps/api/http";
 
 const converseUrl = import.meta.env.VITE_CONVERSE_URL;
-const streamUrl = "http://localhost:8000/converse";
+// const streamUrl = "http://localhost:8000/converse";
 export interface ConverseRequest {
   user_uuid: string;
   message: string;
@@ -42,8 +42,8 @@ export async function* converseStream(
   params: ConverseRequest
 ): AsyncGenerator<string | ConverseResponse> {
   try {
-    console.log("Sending request to:", streamUrl);
-    const response = await fetch(streamUrl, {
+    console.log("Sending request to:", converseUrl);
+    const response = await fetch(converseUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -94,13 +94,10 @@ export async function* converseStream(
     }
   } catch (error) {
     console.error("Error in converseStream:", error);
-    if (
-      error instanceof TypeError &&
-      error.message.includes("Failed to fetch")
-    ) {
-      throw new Error(
-        "Network error: Unable to connect to the server. Please check your internet connection and try again."
-      );
+    if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
+      throw new Error("Network error: Unable to connect to the server. Please check your internet connection and try again.");
+    } else if (error instanceof TypeError && error.message.includes("Load failed")) {
+      throw new Error("CORS error: The server is not configured to accept requests from this origin. Please check the server's CORS configuration.");
     }
     throw error;
   }
