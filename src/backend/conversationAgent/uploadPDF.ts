@@ -25,6 +25,7 @@ export async function checkIfUploaded(
       data: { user },
     } = await supabase.auth.getUser();
     const userId = user?.id;
+    console.log("User ID:", userId);
     if (!userId) {
       return { status: false, error: "You need to login first :)" };
     }
@@ -70,7 +71,7 @@ export async function uploadPDF(
     const filePath = await projectFileAGUD.getPDF(projectId);
     const fileName = project?.label;
     const categories = project?.categories;
-    console.log("Filenmae", fileName);
+    console.log("Filename", fileName);
     console.log(JSON.stringify(categories));
 
     if (!filePath || !fileName) {

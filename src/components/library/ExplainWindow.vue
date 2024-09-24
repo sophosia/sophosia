@@ -1,5 +1,5 @@
-<template>
-    <q-card class="explain-window">
+<template >
+    <q-card v-if="props.isVisible" class="explain-window">
       <q-card-section
         v-if="true"
         class="title-bar items-center"
@@ -16,12 +16,15 @@
           round
           dense
           icon="close"
-          @click=""
+          @click="clearMessages"
         />
       </q-card-section>
   
       <q-card-section class="messages">
         <q-scroll-area ref="scrollAreaRef" class="scroll-area">
+          <div class="explain">
+            {{ props.text }}
+          </div>
           <q-chat-message
             v-for="(message, index) in messages"
             :key="index"
@@ -71,13 +74,26 @@
         </q-input>
       </q-card-section>
     </q-card>
-  </template>
+</template>
   
   <script setup lang="ts">
-  import { useChatStore } from "src/stores/chatStore";
-  import { ref, computed, nextTick } from "vue";
+  import { ref, computed, nextTick, watch } from "vue";
   import { ChatMessage} from "src/backend/database";
   import { QScrollArea } from "quasar";
+import { clear } from "console";
+
+  const emit = defineEmits(["explainTextVisibility"]);
+
+  const props = defineProps({
+    isVisible: { type: Boolean, required: true },
+    text: { type: String, required: true },
+  })
+
+  watch(() => props.isVisible, (newVal) => {
+  if (newVal) {
+    scrollToBottom(); // Scroll to the bottom if text is too long
+  }
+});
   
   const messages = ref<ChatMessage[]>([]);
   const newMessage = ref("");
@@ -94,6 +110,11 @@
         }
       }
     });
+  };
+
+  const clearMessages = () => {
+    messages.value = [];
+    emit("explainTextVisibility", false);
   };
   
   const shouldShowSendButton = computed(() => {

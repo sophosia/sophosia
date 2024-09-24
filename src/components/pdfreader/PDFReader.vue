@@ -44,11 +44,12 @@
           :style="style"
           :projectid="props.projectId"
           @highlightText="(color: string) => highlightText(color)"
+          @explainTextVisibility="toggleExplainWindow"
+          @explainText="explainText"
+          
         />
-
-        
       </div>
-      <!-- <ExplainWindow /> --> <!-- This component is not yet implemented -->
+      <ExplainWindow :isVisible="explainIsVisible" :text="selectedText" @explainTextVisibility="toggleExplainWindow" />
 
       <PeekCard
         v-for="link in pdfApp.peekManager.links"
@@ -89,7 +90,6 @@ import { Annotation, Ink } from "src/backend/pdfannotation/annotations";
 import PDFApplication from "src/backend/pdfreader";
 import { getProject } from "src/backend/project";
 import { useLayoutStore } from "src/stores/layoutStore";
-import { useProjectStore } from "src/stores/projectStore";
 const layoutStore = useLayoutStore();
 
 /**********************************
@@ -101,6 +101,8 @@ const props = defineProps({
 });
 
 const initialized = ref(false);
+const  explainIsVisible = ref(false);
+
 
 // viewer containers
 const viewerContainer = ref<HTMLDivElement>();
@@ -131,8 +133,9 @@ const showAnnotCard = ref(false);
 const showFloatingMenu = ref(false);
 const selectionPage = ref(0);
 const style = ref("");
+const selectedText =ref("");
 
-// PDFApplicaiton
+// PDFApplicaton
 const pdfApp = new PDFApplication(props.projectId);
 const renderEvt = ref<{
   pageNumber: number;
@@ -151,6 +154,27 @@ const renderEvt = ref<{
 function resizeRightMenu(size: number) {
   if (size < 15) showRightMenu.value = false;
 }
+
+/********************************
+ * Explain Window
+ *********************************/
+
+ /**
+  * Toggles the visibility of the explain window.
+  * @param show Flag indicating whether to show or hide the explain window.
+  */
+function toggleExplainWindow(show: boolean){
+  console.log('Toggling explain window:', show);
+  explainIsVisible.value = show;
+  console.log('explainIsVisible after update:', explainIsVisible.value);
+}
+
+function explainText(text: string){
+  console.log('Explain text:', text);
+  selectedText.value = text;
+  console.log('Selected text:', selectedText.value);
+}
+
 
 /*******************************
  * AnnotCard & FloatingMenu

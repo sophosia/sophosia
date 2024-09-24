@@ -33,6 +33,7 @@
       data-cy="btn-copy"
       >
         <q-tooltip>{{ $t("explain") }}</q-tooltip>
+
       </q-btn>
       <q-btn
         class="q-ml-sm"
@@ -67,15 +68,11 @@ import { Translate } from "translate";
 import { ref, watchEffect } from "vue";
 import ColorPicker from "./ColorPicker.vue";
 import FloatingMenuView from "./FloatingMenuView.vue";
-import { useProjectStore } from "src/stores/projectStore";
 import { checkIfUploaded, uploadPDF } from "src/backend/conversationAgent";
-import { is } from "cypress/types/bluebird";
 
-defineEmits(["highlightText"]);
-
+const emit = defineEmits(["highlightText","explainTextVisibility","explainText"]);
 
 const settingStore = useSettingStore();
-const projectStore = useProjectStore();
 const pluginBtns = ref<Button[]>([]);
 const pluginViews = ref<View[]>([]);
 const clickedTranslate = ref(false);
@@ -103,12 +100,13 @@ function copyText() {
  * Explains the selected text.
  */
 async function explainText() {
-  const textToExplain = window.getSelection()?.toString();
-  if (!textToExplain) return;
+  let selection = window.getSelection()?.toString();
+  if (!selection) return;
   console.log("PRoject",props.projectid);
 
-  const isUploaded = checkIfUploaded(props.projectid, "reference");
-  if (!(await isUploaded).status) {
+  const isUploaded = await checkIfUploaded(props.projectid, "reference");
+  console.log("isUploaded",isUploaded);
+  if (!(isUploaded).status) {
     const check = await uploadPDF(props.projectid);
     if (!check.status) {
       console.log("Error uploading PDF");
@@ -117,7 +115,8 @@ async function explainText() {
       console.log("PDF uploaded successfully FloatingMenu");
     }
   }
-  
+  emit("explainTextVisibility", true);
+  emit("explainText", selection);
 
 }
 
