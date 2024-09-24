@@ -281,6 +281,7 @@ export interface AppState {
   chatStates: ChatState[] | [];
   currentChatState: ChatState | null;
   chatMessages: { [key: string]: ChatMessage[] } | {};
+  showConfirmUploadDialog: boolean;
 }
 
 export interface Row {

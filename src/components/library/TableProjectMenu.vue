@@ -144,19 +144,6 @@
         v-if="projectStore.selected.length == 1"
         clickable
         v-close-popup
-        @click="uploadProject"
-      >
-        <q-item-section>
-          <i18n-t keypath="upload">
-            <template #type>{{ $t("file") }}</template>
-          </i18n-t>
-        </q-item-section>
-      </q-item>
-
-      <q-item
-        v-if="projectStore.selected.length == 1"
-        clickable
-        v-close-popup
         @click="showIdentifierDialog()"
       >
         <q-item-section>
@@ -216,6 +203,7 @@ import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { watchEffect } from "vue";
 import {
+  confirmUploadDialog,
   deleteDialog,
   errorDialog,
   identifierDialog,
@@ -246,41 +234,64 @@ const isUserLoggedIn = () => {
  * Takes the selected reference and opens a chat with Sophosia.
  */
 async function askSophosiaReference() {
-  const project_id = projectStore.selected[0]._id;
+  const projectId = projectStore.selected[0]._id;
   const chatState = chatStore.chatStates.find(
-    (state: ChatState) => state._id === project_id
+    (state: ChatState) => state._id === projectId
   );
   if (chatState) {
     chatStore.setCurrentChatState(chatState);
-  } else {
-    let check = await checkIfUploaded(project_id, "reference");
-    if (!check.status) {
-      let isUploaded = await uploadPDF(project_id);
+    return;
+  }
+
+  let check = await checkIfUploaded(projectId, "reference");
+  if (!check.status) {
+    if (settingStore.showConfirmUploadDialog) {
+      confirmUploadDialog.show();
+      confirmUploadDialog.onConfirm(async () => {
+        confirmUploadDialog.doNotShowAgain =
+          !settingStore.showConfirmUploadDialog;
+        let isUploaded = await uploadPDF(projectId);
+        if (!isUploaded.status) {
+          errorDialog.show();
+          errorDialog.error.name = "Upload Error";
+          return;
+        }
+        await chatStore.addChatState({
+          _id: projectId,
+          theme: projectStore.selected[0].label,
+          type: ChatType.REFERENCE,
+        });
+        chatStore.setCurrentChatState(
+          chatStore.chatStates[chatStore.chatStates.length - 1]
+        );
+      });
+    } else {
+      let isUploaded = await uploadPDF(projectId);
       if (!isUploaded.status) {
         errorDialog.show();
         errorDialog.error.name = "Upload Error";
         return;
       }
       await chatStore.addChatState({
-        _id: project_id,
+        _id: projectId,
         theme: projectStore.selected[0].label,
         type: ChatType.REFERENCE,
       });
-      chatStore.setCurrentChatState(
-        chatStore.chatStates[chatStore.chatStates.length - 1]
-      );
-    } else {
-      console.log("Before adding chat state", chatStore.chatStates);
-      await chatStore.addChatState({
-        _id: project_id,
-        theme: projectStore.selected[0].label,
-        type: ChatType.REFERENCE,
-      });
-      console.log("After adding chat state", chatStore.chatStates);
       chatStore.setCurrentChatState(
         chatStore.chatStates[chatStore.chatStates.length - 1]
       );
     }
+  } else {
+    console.log("Before adding chat state", chatStore.chatStates);
+    await chatStore.addChatState({
+      _id: projectId,
+      theme: projectStore.selected[0].label,
+      type: ChatType.REFERENCE,
+    });
+    console.log("After adding chat state", chatStore.chatStates);
+    chatStore.setCurrentChatState(
+      chatStore.chatStates[chatStore.chatStates.length - 1]
+    );
   }
 }
 
@@ -331,30 +342,7 @@ async function openProject() {
 import { useQuasar } from "quasar";
 import { useAccountStore } from "src/stores/accountStore";
 import { useChatStore } from "src/stores/chatStore";
-import { useI18n } from "vue-i18n";
 const $q = useQuasar();
-const { t } = useI18n();
-
-/**
- * Uploads the selected project(s) to the cloud temporarily for processing.
- */
-async function uploadProject() {
-  for (let project of projectStore.selected) {
-    const check = await uploadPDF(project._id);
-    if (check.status === false && check.error) {
-      errorDialog.show();
-      errorDialog.error.name = "Upload Error";
-      errorDialog.error.message = check.error;
-    }
-    if (check.status === true) {
-      $q.notify({
-        message: t("file-upload", { type: project.label }),
-        position: "top-right",
-      });
-    }
-    await nextTick();
-  }
-}
 
 /**
  * Opens the file explorer and navigates to the location of the selected project(s).

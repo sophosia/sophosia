@@ -180,5 +180,8 @@
   "show": "Afficher {type}",
   "type-a-message": "Tapez un message...",
   "index-files": "Indexer des fichiers",
-  "index-files-info": "Indexer tous les fichiers pour une récupération des données plus rapide et une recherche en texte intégral dans les fichiers PDF."
+  "index-files-info": "Indexer tous les fichiers pour une récupération des données plus rapide et une recherche en texte intégral dans les fichiers PDF.",
+  "upload-file-agreement": "En cliquant sur le bouton « Confirmer », vous acceptez de téléverser votre fichier PDF sur notre serveur pour le traitement des données. \nCe traitement comprend l'extraction du texte et des images de votre fichier. \nLes informations extraites seront utilisées dans un modèle de langage dans le but d'améliorer votre expérience d'interrogation de connaissances.",
+  "upload-confirmation": "Confirmation de téléchargement",
+  "do-not-show-msg-again": "Ne plus afficher ce message."
 }

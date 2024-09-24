@@ -36,6 +36,7 @@ export async function getAppState(): Promise<AppState> {
     chatVisibility: false,
     currentChatState: null,
     chatMessages: {},
+    showConfirmUploadDialog: true,
   };
   try {
     const state = (await db.get("appState")) as AppState;

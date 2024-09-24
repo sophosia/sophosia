@@ -4,7 +4,7 @@ import { getSupabaseClient } from "src/backend/authSupabase/supabaseClient";
 import { useProjectStore } from "src/stores/projectStore";
 import { getProject } from "../project";
 import { projectFileAGUD } from "../project/fileOps";
-import { retrieveCategoryid, retrieveReferenceid } from "./retrieveDBinfo";
+import { retrieveCategoryId, retrieveReferenceId } from "./retrieveDBInfo";
 
 const uploadURL = import.meta.env.VITE_UPLOAD_URL;
 const supabase = getSupabaseClient();
@@ -12,12 +12,12 @@ const supabase = getSupabaseClient();
 /**
  * Check if the reference or category is uploaded to the server
  *
- * @param Id  the id of the project or folder
+ * @param itemId  the id of the project or category
  * @param type the type of the id (reference or category)
  * @returns { status: boolean; error?: string }
  */
 export async function checkIfUploaded(
-  Id: string,
+  itemId: string,
   type: string
 ): Promise<{ status: boolean; error?: string }> {
   try {
@@ -29,16 +29,17 @@ export async function checkIfUploaded(
       return { status: false, error: "You need to login first :)" };
     }
     if (type === "reference") {
-      const project = await getProject(Id);
+      console.log("itemid", itemId);
+      const project = await getProject(itemId);
       if (!project) {
         return { status: false, error: "Project not found" };
       }
-      const referenceId = await retrieveReferenceid(supabase, project.label);
+      const referenceId = await retrieveReferenceId(supabase, project.label);
       if (!referenceId) {
         return { status: false, error: "Reference not found" };
       }
     } else if (type === "category") {
-      const categoryId = await retrieveCategoryid(supabase, Id);
+      const categoryId = await retrieveCategoryId(supabase, itemId);
       if (!categoryId) {
         return { status: false, error: "Category not found" };
       }

@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
 import { getSupabaseClient } from "src/backend/authSupabase";
 import {
-  retrieveCategoryid,
+  retrieveCategoryId,
   retrieveHistory,
-  retrieveReferenceid,
+  retrieveReferenceId,
 } from "src/backend/conversationAgent";
 import {
   AppState,
@@ -11,7 +11,6 @@ import {
   ChatState,
   ChatType,
 } from "src/backend/database";
-import { errorDialog } from "src/components/dialogs/dialogController";
 import { ref } from "vue";
 
 export const useChatStore = defineStore("chat", {
@@ -76,7 +75,7 @@ export const useChatStore = defineStore("chat", {
       try {
         let history;
         if (state.type === ChatType.REFERENCE) {
-          const paperid = await retrieveReferenceid(supabase, state.theme);
+          const paperid = await retrieveReferenceId(supabase, state.theme);
           history = await retrieveHistory(
             supabase,
             "paper",
@@ -84,7 +83,7 @@ export const useChatStore = defineStore("chat", {
             paperid
           );
         } else {
-          const folderid = await retrieveCategoryid(supabase, state._id);
+          const folderid = await retrieveCategoryId(supabase, state._id);
           history = await retrieveHistory(
             supabase,
             "folder",

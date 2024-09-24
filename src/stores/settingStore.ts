@@ -14,6 +14,7 @@ export const useSettingStore = defineStore("settingStore", {
     citeKeyRule: "author_year_title",
     pdfRenameRule: "author_year_fullTitle",
     projectIdRule: "uid",
+    showConfirmUploadDialog: true,
   }),
 
   actions: {
@@ -32,6 +33,7 @@ export const useSettingStore = defineStore("settingStore", {
       this.citeKeyRule = state.citeKeyRule;
       this.pdfRenameRule = state.pdfRenameRule;
       this.projectIdRule = state.projectIdRule;
+      this.showConfirmUploadDialog = state.showConfirmUploadDialog;
 
       this.changeTheme(state.theme);
       this.changeFontSize(parseFloat(state.fontSize));

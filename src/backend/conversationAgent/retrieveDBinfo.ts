@@ -55,10 +55,10 @@ export async function retrieveHistory(
  * @returns the cloud id of the reference
  */
 
-export async function retrieveReferenceid(
+export async function retrieveReferenceId(
   supabase: SupabaseClient,
   reference_label: string
-): Promise<string> {
+): Promise<string | undefined> {
   const { data, error } = await supabase
     .from("paper")
     .select("id")
@@ -68,7 +68,7 @@ export async function retrieveReferenceid(
     console.error("Error fetching paper:", error);
     throw error;
   }
-  return data[0].id;
+  return data[0]?.id;
 }
 
 /**
@@ -77,10 +77,10 @@ export async function retrieveReferenceid(
  * @param category_uid the local category id
  * @returns the cloud id of the category
  */
-export async function retrieveCategoryid(
+export async function retrieveCategoryId(
   supabase: SupabaseClient,
   category_uid: string
-): Promise<string> {
+): Promise<string | undefined> {
   const { data, error } = await supabase
     .from("folder")
     .select("id")
@@ -90,5 +90,5 @@ export async function retrieveCategoryid(
     console.error("Error fetching folder:", error);
     throw error;
   }
-  return data[0].id;
+  return data[0]?.id;
 }

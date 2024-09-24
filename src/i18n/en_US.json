@@ -181,5 +181,8 @@
   "assistant": "Assistant",
   "type-a-message": "Type a message...",
   "index-files": "Index files",
-  "index-files-info": "Index all files for faster data fetch speed, and full-text search within PDFs."
+  "index-files-info": "Index all files for faster data fetch speed, and full-text search within PDFs.",
+  "upload-file-agreement": "By clicking the \"Confirm\" button, you agree to upload your PDF file to our server for data processing. This processing includes extracting text and images from your file. The extracted information will be utilized in a language model for the purpose of enhancing your knowledge querying experience.",
+  "upload-confirmation": "Upload confirmation",
+  "do-not-show-msg-again": "          Do not show this message again."
 }

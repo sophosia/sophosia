@@ -181,5 +181,8 @@
   "index-files": "索引文件",
   "index-files-info": "索引笔记以及PDF的内容以便进行更快更便捷的搜索。",
   "assistant": "小助手",
-  "type-a-message": "输入消息..."
+  "type-a-message": "输入消息...",
+  "upload-file-agreement": "点击“确认”按钮，即表示您同意将您的 PDF 文件上传到我们的服务器进行数据处理。\n该处理将从文件中提取文本和图像。\n提取的信息将在语言模型中使用以增强您的知识查询体验。",
+  "upload-confirmation": "确认上传",
+  "do-not-show-msg-again": "不要再显示此消息。"
 }
