@@ -362,7 +362,6 @@ async function filterRows() {
       string,
       string[]
     >;
-    console.log("results", results);
     for (const [projectId, extracts] of results.entries()) {
       let row = props.projects.find((row) => row._id == projectId);
       if (!row) continue;

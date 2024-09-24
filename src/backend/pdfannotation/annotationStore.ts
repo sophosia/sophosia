@@ -83,7 +83,6 @@ export default class AnnotationStore {
           (annotData) => annotData.projectId === this.projectId
         );
       }
-      console.log("annotDatas", annotDatas);
 
       return annotDatas;
     } catch (err) {
