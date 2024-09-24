@@ -22,15 +22,15 @@
       </q-btn>
 
       <q-btn
-      class="q-ml-sm"
-      dense
-      flat
-      :ripple="false"
-      size="md"
-      padding="none"
-      icon="mdi-chat-question-outline"
-      @click="explainText"
-      data-cy="btn-copy"
+        class="q-ml-sm"
+        dense
+        flat
+        :ripple="false"
+        size="md"
+        padding="none"
+        icon="mdi-chat-question-outline"
+        @click="explainText"
+        data-cy="btn-copy"
       >
         <q-tooltip>{{ $t("explain") }}</q-tooltip>
       </q-btn>
@@ -73,7 +73,6 @@ import { is } from "cypress/types/bluebird";
 
 defineEmits(["highlightText"]);
 
-
 const settingStore = useSettingStore();
 const projectStore = useProjectStore();
 const pluginBtns = ref<Button[]>([]);
@@ -84,10 +83,9 @@ const floatingText = ref("");
 const props = defineProps({
   projectid: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
-
 
 /**
  * Copies the selected text to the clipboard.
@@ -97,15 +95,13 @@ function copyText() {
   if (selection) copyToClipboard(selection.toString());
 }
 
-
-
 /**
  * Explains the selected text.
  */
 async function explainText() {
   const textToExplain = window.getSelection()?.toString();
   if (!textToExplain) return;
-  console.log("PRoject",props.projectid);
+  console.log("PRoject", props.projectid);
 
   const isUploaded = checkIfUploaded(props.projectid, "reference");
   if (!(await isUploaded).status) {
@@ -113,12 +109,10 @@ async function explainText() {
     if (!check.status) {
       console.log("Error uploading PDF");
       return;
-    }else{
+    } else {
       console.log("PDF uploaded successfully FloatingMenu");
     }
   }
-  
-
 }
 
 /**

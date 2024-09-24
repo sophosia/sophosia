@@ -77,15 +77,14 @@ export async function* converseStream(
           if (data === "[DONE]") {
             yield { response: fullResponse, retrievedNodes };
             return;
-          } else if (data.startsWith('NODES_DATA:')) {
+          } else if (data.startsWith("NODES_DATA:")) {
             const nodesData = data.slice(11);
             try {
               // Attempt to parse as JSON first
               retrievedNodes = JSON.parse(nodesData);
             } catch (error) {
-              console.log("retrieving nodes failed",error)
+              console.log("retrieving nodes failed", error);
             }
-         
           } else {
             fullResponse += data;
             yield data;

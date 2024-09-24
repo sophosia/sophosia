@@ -45,10 +45,9 @@
           :projectid="props.projectId"
           @highlightText="(color: string) => highlightText(color)"
         />
-
-        
       </div>
-      <!-- <ExplainWindow /> --> <!-- This component is not yet implemented -->
+      <!-- <ExplainWindow /> -->
+      <!-- This component is not yet implemented -->
 
       <PeekCard
         v-for="link in pdfApp.peekManager.links"
