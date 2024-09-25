@@ -1,4 +1,4 @@
-import { basename, join } from "@tauri-apps/api/path";
+import { basename } from "@tauri-apps/api/path";
 import { defineStore } from "pinia";
 import {
   AppState,
@@ -9,7 +9,6 @@ import {
   PageType,
   Project,
   SpecialCategory,
-  db,
 } from "src/backend/database";
 import {
   addFolder,

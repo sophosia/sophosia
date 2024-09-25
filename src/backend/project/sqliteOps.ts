@@ -277,10 +277,12 @@ GROUP BY metas._id
         favorite: row.favorite === "true",
         timestampAdded: parseInt(row.timestampAdded),
         timestampModified: parseInt(row.timestampModified),
-        tags: row.tags ? row.tags.split("|") : [],
-        categories: row.categories ? row.categories.split("|") : [],
+        tags: row.tags ? [...new Set(row.tags.split("|"))] : [],
+        categories: row.categories
+          ? [...new Set(row.categories.split("|"))]
+          : [],
         author: row.authors
-          ? row.authors.split("|").map((name) => {
+          ? [...new Set(row.authors.split("|"))].map((name) => {
               const [family, given] = name.split(",");
               return { family, given };
             })

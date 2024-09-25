@@ -134,8 +134,8 @@ function shortAuthorString(authors: Author[]) {
   } else if (authors.length === 2) {
     let surnames = [];
     for (let i = 0; i < 2; i++) {
-      if (authors[0].literal) surnames.push(authors[0].literal);
-      else surnames.push(authors[0].family);
+      if (authors[i].literal) surnames.push(authors[i].literal);
+      else surnames.push(authors[i].family);
     }
     return surnames.join(" and ");
   } else {

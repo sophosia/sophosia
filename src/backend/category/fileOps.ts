@@ -1,6 +1,5 @@
 import { Project } from "../database";
 import { getAllProjects, updateProject } from "../project";
-import { getParentId } from "../utils";
 
 export class CategoryFileAGUD {
   async getCategories(): Promise<string[]> {
