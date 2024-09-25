@@ -20,7 +20,7 @@
       >
         <q-tooltip>{{ $t("copy") }}</q-tooltip>
       </q-btn>
-
+<!-- 
       <q-btn
         class="q-ml-sm"
         dense
@@ -33,7 +33,7 @@
         data-cy="btn-copy"
       >
         <q-tooltip>{{ $t("explain") }}</q-tooltip>
-      </q-btn>
+      </q-btn> -->
       <q-btn
         class="q-ml-sm"
         dense
