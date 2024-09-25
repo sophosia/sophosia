@@ -19,7 +19,7 @@ fn main() {
             // If you need macOS support this must be called in .setup() !
             // Otherwise this could be called right after prepare() but then you don't have access to tauri APIs
             let handle = app.handle();
-            let _window = app.get_window("main").unwrap();
+            let window = app.get_window("main").unwrap();
             tauri_plugin_deep_link::register("sophosia", move |request| {
                 dbg!(&request);
                 handle.emit_all("deep-link", request).unwrap();
