@@ -23,6 +23,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; // in the pu
 
 import { open } from "@tauri-apps/api/shell";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { type } from "@tauri-apps/api/os";
 
 /**
  * Class for managing PDF viewing and annotation functionality.
@@ -483,25 +484,23 @@ export default class PDFApplication {
       // this is not scrolling, so we need to
       // disable the default action avoid the offsetParent not set error
       e.preventDefault();
-
+      const MIN_SCALE = 0.5;
+      const MAX_SCALE = 2.5;
       const oldScale = this.pdfViewer.currentScale;
-      let newScale: number;
-      if (e.deltaY < 0) {
-        newScale = oldScale + 0.1;
-        if (newScale > 3) return;
-        this.pdfViewer.increaseScale({
-          drawingDelay: 100,
-          scaleFactor: newScale / oldScale,
-        });
-      } else {
-        newScale = oldScale - 0.1;
-        if (newScale < 0.3) return;
-        this.pdfViewer.decreaseScale({
-          drawingDelay: 100,
-          scaleFactor: newScale / oldScale,
-        });
-      }
-      this._centerAtPos(oldScale, e.clientX, e.clientY);
+      type().then((osType) => {
+        let delta: number;
+        if (osType == "Darwin") {
+          delta = Math.sign(e.deltaY) * Math.min(0.1, Math.abs(e.deltaY / 10));
+        } else {
+          delta = Math.sign(e.deltaY) * 0.1;
+        }
+        const newScale = Math.max(
+          MIN_SCALE,
+          Math.min(MAX_SCALE, oldScale - delta)
+        );
+        this.pdfViewer!.currentScale = newScale;
+        this._centerAtPos(oldScale, e.clientX, e.clientY);
+      });
     }
   }
 
