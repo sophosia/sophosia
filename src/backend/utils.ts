@@ -58,7 +58,8 @@ export function getTitle(meta: Meta, showTranslatedTitle: boolean) {
     !Array.isArray(meta["original-title"])
   )
     return meta["original-title"];
-  else return meta.title;
+  else if (typeof meta.title == "string") return meta.title;
+  else return "";
 }
 /**
  * Convert a path to folderId / noteId
