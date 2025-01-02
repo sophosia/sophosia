@@ -26,14 +26,17 @@ export const useAccountStore = defineStore("accountStore", () => {
    */
   async function loadState() {
     user.email = "";
-    const { data, error } = await supabase.auth.getSession();
-    if (error) {
-      errorDialog.error = error;
-      errorDialog.show();
-    }
+    const timeout = setTimeout(() => {
+      // no need to show user this timeout message because it doesn't affect users now
+      console.log("Error: Unable to login, request timeout");
+    }, 1000);
+    const { data, _ } = await supabase.auth.getSession();
     if (data) {
       const email = data.session?.user?.email;
-      if (email) user.email = email;
+      if (email) {
+        user.email = email;
+        clearTimeout(timeout);
+      }
     }
     initialized.value = true;
   }

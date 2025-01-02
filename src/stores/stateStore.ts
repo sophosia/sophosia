@@ -17,7 +17,7 @@ export const useStateStore = defineStore("stateStore", () => {
     const layoutStore = useLayoutStore();
     const projectStore = useProjectStore();
     const accountStore = useAccountStore();
-    const chatStore = useChatStore();
+    // const chatStore = useChatStore();
     settingStore.initialized = false; // set to false so the state can be overwrite
     await settingStore.loadState(state);
     layoutStore.initialized = false; // set to false so the state can be overwrite
@@ -26,8 +26,8 @@ export const useStateStore = defineStore("stateStore", () => {
     await projectStore.loadState(state);
     accountStore.initialized = false;
     await accountStore.loadState();
-    chatStore.initialized = false;
-    await chatStore.loadState(state);
+    // chatStore.initialized = false;
+    // await chatStore.loadState(state);
   }
 
   /**
