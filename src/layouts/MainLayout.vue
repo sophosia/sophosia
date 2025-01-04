@@ -26,7 +26,26 @@
           />
         </template>
         <template v-slot:after>
-          <LayoutContainer />
+          <q-splitter
+            class="library-right-menu-panel"
+            reverse
+            :limits="[0, 60]"
+            separator-style="background: var(--q-edge)"
+            :separator-class="{
+              'q-splitter-separator': layoutStore.libraryRightMenuSize > 0,
+              hidden: !(layoutStore.libraryRightMenuSize > 0),
+            }"
+            :disable="!(layoutStore.libraryRightMenuSize > 0)"
+            v-model="layoutStore.libraryRightMenuSize"
+            @update:model-value="(size: number) => layoutStore.resizeLibraryRightMenu(size)"
+          >
+            <template v-slot:before>
+              <LayoutContainer />
+            </template>
+            <template v-slot:after>
+              <RightMenu />
+            </template>
+          </q-splitter>
         </template>
       </q-splitter>
     </template>
@@ -38,6 +57,7 @@ import type { Page } from "src/backend/database";
 import LayoutContainer from "src/components/layout/LayoutContainer.vue";
 import LeftMenu from "src/components/leftmenu/LeftMenu.vue";
 import LeftRibbon from "./LeftRibbon.vue";
+import RightMenu from "src/components/library/RightMenu.vue";
 
 import { listen } from "@tauri-apps/api/event";
 import pluginManager from "src/backend/plugin";

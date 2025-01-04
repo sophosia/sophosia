@@ -1,8 +1,6 @@
 <template>
-  <!-- show this after rightMenu is shown,
-    otherwise autogrow extends to full-height -->
+  <!-- v-if="!!meta && !!meta.reference && meta.reference.length > 0" -->
   <q-tabs
-    v-if="!!meta && !!meta.reference && meta.reference.length > 0"
     v-model="tab"
     dense
     no-caps
@@ -17,368 +15,371 @@
     <q-tab-panel
       name="meta"
       class="tab-panel"
+      style="height: calc(100vh - 36px - 36px); overflow: scroll"
     >
-      <div class="row justify-between">
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          {{ $t("type") }}
-        </div>
-        <q-select
-          dense
-          options-dense
-          square
-          outlined
-          class="col-8"
-          input-class="input"
-          v-model="meta.type"
-          :options="types"
-          @update:model-value="modifyInfo()"
-        />
-      </div>
-
-      <div
-        v-if="meta.type !== 'notebook'"
-        class="row justify-between q-mt-sm"
-      >
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          {{ $t("citation-key") }}
-        </div>
-        <input
-          class="col-8 input"
-          type="text"
-          v-model="meta['citation-key']"
-          @blur="modifyInfo()"
-        />
-      </div>
-
-      <div class="row q-mt-sm">
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          {{ $t("title") }}
-        </div>
-      </div>
-      <div class="row q-mt-sm">
-        <textarea
-          style="min-height: 5rem"
-          class="col input"
-          type="text"
-          v-model="title"
-          @blur="modifyInfo()"
-          data-cy="title"
-        ></textarea>
-      </div>
-
-      <div
-        v-if="meta.type !== 'notebook'"
-        class="row justify-between q-mt-sm"
-      >
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          {{ $t("year") }}
-        </div>
-        <input
-          class="col-8 input"
-          type="text"
-          v-model="year"
-          @blur="modifyInfo()"
-        />
-      </div>
-
-      <div
-        v-if="meta.type !== 'notebook'"
-        class="row justify-between q-mt-sm"
-      >
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          {{ $t("journal") }}
-        </div>
-        <input
-          class="col-8 input"
-          type="text"
-          v-model="meta['container-title']"
-          @blur="modifyInfo()"
-        />
-      </div>
-
-      <div
-        v-if="meta.type !== 'notebook'"
-        class="row justify-between q-mt-sm"
-      >
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          {{ $t("publisher") }}
-        </div>
-        <input
-          class="col-8 input"
-          type="text"
-          v-model="meta.publisher"
-          @blur="modifyInfo()"
-        />
-      </div>
-
-      <div class="row justify-between q-mt-sm">
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          {{ $t("author") }}
-        </div>
-        <input
-          class="col-8 input"
-          type="text"
-          :placeholder="$t('first-last-last-first')"
-          v-model.trim="name"
-          @keydown.enter="addAuthor"
-          data-cy="author-input"
-        />
-      </div>
-
-      <div class="row q-mt-sm">
-        <q-chip
-          v-for="(author, index) in authors"
-          :key="index"
-          dense
-          size="1rem"
-          class="chip col-12"
-          :ripple="false"
-          :label="author"
-          removable
-          clickable
-          @remove="removeAuthor(index)"
-          @click="
-            () => {
-              $q.notify($t('text-copied'));
-              copyToClipboard(author);
-            }
-          "
-          :data-cy="`q-chip-${index}`"
-        >
-        </q-chip>
-      </div>
-
-      <div
-        class="col q-mt-sm"
-        style="font-size: 1rem"
-      >
-        {{ $t("abstract") }}
-      </div>
-      <div class="row">
-        <textarea
-          style="min-height: 10rem"
-          class="col input"
-          v-model="meta.abstract"
-          @blur="modifyInfo()"
-        ></textarea>
-      </div>
-
-      <div
-        v-if="meta.type !== 'notebook'"
-        class="row justify-between q-mt-sm"
-      >
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          DOI
-        </div>
-        <input
-          class="col-8 input"
-          type="text"
-          v-model.trim="meta.DOI"
-          @blur="modifyInfo()"
-        />
-      </div>
-
-      <div
-        v-if="meta.type !== 'notebook'"
-        class="row justify-between q-mt-sm"
-      >
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          ISBN
-        </div>
-        <input
-          class="col-8 input"
-          type="text"
-          v-model.trim="meta.ISBN"
-          @blur="modifyInfo()"
-        />
-      </div>
-
-      <div
-        v-if="meta.type !== 'notebook'"
-        class="row justify-between q-mt-sm"
-      >
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          URL
-          <q-btn
-            flat
-            padding="none"
-            size="md"
-            icon="mdi-open-in-new"
-            :disable="!!!meta.URL"
-            @click="openURL(meta?.URL)"
+      <div>
+        <div class="row justify-between">
+          <div
+            class="col"
+            style="font-size: 1rem"
           >
-            <q-tooltip>
-              <i18n-t keypath="open">
-                <template #type>{{ $t("link") }}</template>
-              </i18n-t>
-            </q-tooltip>
-          </q-btn>
+            {{ $t("type") }}
+          </div>
+          <q-select
+            dense
+            options-dense
+            square
+            outlined
+            class="col-8"
+            input-class="input"
+            v-model="meta.type"
+            :options="types"
+            @update:model-value="modifyInfo()"
+          />
         </div>
-        <input
-          class="col-8 input"
-          type="url"
-          placeholder="https://..."
-          v-model.trim="meta.URL"
-          @blur="modifyInfo()"
-        />
-      </div>
 
-      <div
-        v-if="meta.type !== 'notebook'"
-        class="row justify-between q-mt-sm"
-      >
         <div
-          class="col"
-          style="font-size: 1rem"
+          v-if="meta.type !== 'notebook'"
+          class="row justify-between q-mt-sm"
         >
-          {{ $t("file") }}
-          <q-btn
-            flat
-            padding="none"
-            size="md"
-            icon="mdi-open-in-new"
-            :disable="!meta.path"
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            {{ $t("citation-key") }}
+          </div>
+          <input
+            class="col-8 input"
+            type="text"
+            v-model="meta['citation-key']"
+            @blur="modifyInfo()"
+          />
+        </div>
+
+        <div class="row q-mt-sm">
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            {{ $t("title") }}
+          </div>
+        </div>
+        <div class="row q-mt-sm">
+          <textarea
+            style="min-height: 5rem"
+            class="col input"
+            type="text"
+            v-model="title"
+            @blur="modifyInfo()"
+            data-cy="title"
+          ></textarea>
+        </div>
+
+        <div
+          v-if="meta.type !== 'notebook'"
+          class="row justify-between q-mt-sm"
+        >
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            {{ $t("year") }}
+          </div>
+          <input
+            class="col-8 input"
+            type="text"
+            v-model="year"
+            @blur="modifyInfo()"
+          />
+        </div>
+
+        <div
+          v-if="meta.type !== 'notebook'"
+          class="row justify-between q-mt-sm"
+        >
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            {{ $t("journal") }}
+          </div>
+          <input
+            class="col-8 input"
+            type="text"
+            v-model="meta['container-title']"
+            @blur="modifyInfo()"
+          />
+        </div>
+
+        <div
+          v-if="meta.type !== 'notebook'"
+          class="row justify-between q-mt-sm"
+        >
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            {{ $t("publisher") }}
+          </div>
+          <input
+            class="col-8 input"
+            type="text"
+            v-model="meta.publisher"
+            @blur="modifyInfo()"
+          />
+        </div>
+
+        <div class="row justify-between q-mt-sm">
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            {{ $t("author") }}
+          </div>
+          <input
+            class="col-8 input"
+            type="text"
+            :placeholder="$t('first-last-last-first')"
+            v-model.trim="name"
+            @keydown.enter="addAuthor"
+            data-cy="author-input"
+          />
+        </div>
+
+        <div class="row q-mt-sm">
+          <q-chip
+            v-for="(author, index) in authors"
+            :key="index"
+            dense
+            size="1rem"
+            class="chip col-12"
+            :ripple="false"
+            :label="author"
+            removable
+            clickable
+            @remove="removeAuthor(index)"
             @click="
-              async () => {
-                await invoke('show_in_folder', {
-                  path: meta!.path as string,
-                });
+              () => {
+                $q.notify($t('text-copied'));
+                copyToClipboard(author);
               }
             "
+            :data-cy="`q-chip-${index}`"
           >
-            <q-tooltip> {{ $t("show-in-explorer") }}</q-tooltip>
+          </q-chip>
+        </div>
+
+        <div
+          class="col q-mt-sm"
+          style="font-size: 1rem"
+        >
+          {{ $t("abstract") }}
+        </div>
+        <div class="row">
+          <textarea
+            style="min-height: 10rem"
+            class="col input"
+            v-model="meta.abstract"
+            @blur="modifyInfo()"
+          ></textarea>
+        </div>
+
+        <div
+          v-if="meta.type !== 'notebook'"
+          class="row justify-between q-mt-sm"
+        >
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            DOI
+          </div>
+          <input
+            class="col-8 input"
+            type="text"
+            v-model.trim="meta.DOI"
+            @blur="modifyInfo()"
+          />
+        </div>
+
+        <div
+          v-if="meta.type !== 'notebook'"
+          class="row justify-between q-mt-sm"
+        >
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            ISBN
+          </div>
+          <input
+            class="col-8 input"
+            type="text"
+            v-model.trim="meta.ISBN"
+            @blur="modifyInfo()"
+          />
+        </div>
+
+        <div
+          v-if="meta.type !== 'notebook'"
+          class="row justify-between q-mt-sm"
+        >
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            URL
+            <q-btn
+              flat
+              padding="none"
+              size="md"
+              icon="mdi-open-in-new"
+              :disable="!!!meta.URL"
+              @click="openURL(meta?.URL)"
+            >
+              <q-tooltip>
+                <i18n-t keypath="open">
+                  <template #type>{{ $t("link") }}</template>
+                </i18n-t>
+              </q-tooltip>
+            </q-btn>
+          </div>
+          <input
+            class="col-8 input"
+            type="url"
+            placeholder="https://..."
+            v-model.trim="meta.URL"
+            @blur="modifyInfo()"
+          />
+        </div>
+
+        <div
+          v-if="meta.type !== 'notebook'"
+          class="row justify-between q-mt-sm"
+        >
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            {{ $t("file") }}
+            <q-btn
+              flat
+              padding="none"
+              size="md"
+              icon="mdi-open-in-new"
+              :disable="!meta.path"
+              @click="
+                async () => {
+                  await invoke('show_in_folder', {
+                    path: meta!.path as string,
+                  });
+                }
+              "
+            >
+              <q-tooltip> {{ $t("show-in-explorer") }}</q-tooltip>
+            </q-btn>
+          </div>
+          <q-chip
+            dense
+            style="max-width: 65%"
+            size="1rem"
+            class="chip"
+            :ripple="false"
+            clickable
+            @click="layoutStore.openItem(meta?._id)"
+          >
+            <q-icon name="img:icons/pdf.png"></q-icon>
+            <span class="q-ml-xs ellipsis">{{ file }}</span>
+          </q-chip>
+        </div>
+
+        <div class="row justify-between q-mt-sm">
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            {{ $t("tags") }}
+          </div>
+          <input
+            class="col-8 input"
+            type="text"
+            v-model.trim="tag"
+            @keydown.enter="addTag"
+          />
+        </div>
+        <div class="q-pb-sm">
+          <q-chip
+            v-for="(tag, index) in meta.tags"
+            :key="index"
+            class="chip"
+            :ripple="false"
+            :label="tag"
+            dense
+            clickable
+            size="1rem"
+            icon="mdi-tag"
+            removable
+            @remove="removeTag(tag)"
+            @click="
+              () => {
+                $q.notify($t('text-copied'));
+                copyToClipboard(tag);
+              }
+            "
+          />
+        </div>
+        <div class="row justify-between q-mt-sm">
+          <div
+            class="col"
+            style="font-size: 1rem"
+          >
+            {{ $t("category") }}
+          </div>
+        </div>
+        <div class="q-pb-sm">
+          <q-chip
+            v-for="(name, index) in meta.categories"
+            class="chip"
+            :key="index"
+            :ripple="false"
+            dense
+            size="1rem"
+            icon="mdi-folder-outline"
+            :label="name"
+          />
+        </div>
+
+        <div class="row justify-between q-mt-sm">
+          <div style="font-size: 1rem">
+            {{ $t("date-added") }}
+          </div>
+          <div>{{ new Date(meta.timestampAdded).toLocaleString() }}</div>
+        </div>
+
+        <div class="row justify-between q-mt-sm">
+          <div style="font-size: 1rem">
+            {{ $t("date-modified") }}
+          </div>
+          <div>{{ new Date(meta.timestampModified).toLocaleString() }}</div>
+        </div>
+
+        <div>
+          <q-btn
+            class="btn full-width"
+            :label="$t('update-meta')"
+            no-caps
+            :disable="!meta.URL && !meta.ISBN && !meta.DOI"
+            @click="updateMeta"
+          >
           </q-btn>
+          <q-tooltip
+            v-if="!(meta.URL || meta.ISBN || meta.DOI)"
+            anchor="bottom middle"
+            self="top middle"
+          >
+            {{ $t("update-meta-requirement") }}
+          </q-tooltip>
         </div>
-        <q-chip
-          dense
-          style="max-width: 65%"
-          size="1rem"
-          class="chip"
-          :ripple="false"
-          clickable
-          @click="layoutStore.openItem(meta?._id)"
-        >
-          <q-icon name="img:icons/pdf.png"></q-icon>
-          <span class="q-ml-xs ellipsis">{{ file }}</span>
-        </q-chip>
-      </div>
-
-      <div class="row justify-between q-mt-sm">
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          {{ $t("tags") }}
-        </div>
-        <input
-          class="col-8 input"
-          type="text"
-          v-model.trim="tag"
-          @keydown.enter="addTag"
-        />
-      </div>
-      <div class="q-pb-sm">
-        <q-chip
-          v-for="(tag, index) in meta.tags"
-          :key="index"
-          class="chip"
-          :ripple="false"
-          :label="tag"
-          dense
-          clickable
-          size="1rem"
-          icon="mdi-tag"
-          removable
-          @remove="removeTag(tag)"
-          @click="
-            () => {
-              $q.notify($t('text-copied'));
-              copyToClipboard(tag);
-            }
-          "
-        />
-      </div>
-      <div class="row justify-between q-mt-sm">
-        <div
-          class="col"
-          style="font-size: 1rem"
-        >
-          {{ $t("category") }}
-        </div>
-      </div>
-      <div class="q-pb-sm">
-        <q-chip
-          v-for="(name, index) in meta.categories"
-          class="chip"
-          :key="index"
-          :ripple="false"
-          dense
-          size="1rem"
-          icon="mdi-folder-outline"
-          :label="name"
-        />
-      </div>
-
-      <div class="row justify-between q-mt-sm">
-        <div style="font-size: 1rem">
-          {{ $t("date-added") }}
-        </div>
-        <div>{{ new Date(meta.timestampAdded).toLocaleString() }}</div>
-      </div>
-
-      <div class="row justify-between q-mt-sm">
-        <div style="font-size: 1rem">
-          {{ $t("date-modified") }}
-        </div>
-        <div>{{ new Date(meta.timestampModified).toLocaleString() }}</div>
-      </div>
-
-      <div>
-        <q-btn
-          class="btn full-width"
-          :label="$t('update-meta')"
-          no-caps
-          :disable="!meta.URL && !meta.ISBN && !meta.DOI"
-          @click="updateMeta"
-        >
-        </q-btn>
-        <q-tooltip
-          v-if="!(meta.URL || meta.ISBN || meta.DOI)"
-          anchor="bottom middle"
-          self="top middle"
-        >
-          {{ $t("update-meta-requirement") }}
-        </q-tooltip>
       </div>
     </q-tab-panel>
 
