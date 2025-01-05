@@ -150,7 +150,7 @@
       flat
       dense
       square
-      icon="mdi-format-list-bulleted"
+      icon="mdi-information-outline"
       size="0.8rem"
       padding="none"
       :ripple="false"

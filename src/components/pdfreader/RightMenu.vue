@@ -7,14 +7,6 @@
     indicator-color="transparent"
   >
     <q-tab
-      name="metaInfoTab"
-      icon="mdi-information-outline"
-      :ripple="false"
-      data-cy="tab-meta-info"
-    >
-      <q-tooltip>{{ $t("info") }}</q-tooltip>
-    </q-tab>
-    <q-tab
       name="tocTab"
       icon="mdi-table-of-contents"
       :ripple="false"
@@ -36,10 +28,6 @@
     class="right-menu-panel"
     v-model="rightMenuTab"
   >
-    <q-tab-panel name="metaInfoTab">
-      <MetaInfoTab v-model:project="project" />
-    </q-tab-panel>
-
     <q-tab-panel name="tocTab">
       <PDFTOC
         :outline="pdfApp.outline"
@@ -58,18 +46,16 @@
 </template>
 
 <script setup lang="ts">
-import { inject, Ref, ref } from "vue";
-import { Project, TOCNode } from "src/backend/database";
-import { KEY_pdfApp, KEY_project } from "./injectKeys";
+import { inject, ref } from "vue";
+import { TOCNode } from "src/backend/database";
+import { KEY_pdfApp } from "./injectKeys";
 import PDFApplication from "src/backend/pdfreader";
 import { Annotation } from "src/backend/pdfannotation/annotations";
 
-import MetaInfoTab from "../MetaInfoTab.vue";
 import PDFTOC from "./PDFTOC.vue";
 import AnnotList from "./AnnotList.vue";
 
 const rightMenuTab = ref("metaInfoTab");
 
 const pdfApp = inject(KEY_pdfApp) as PDFApplication;
-const project = inject(KEY_project) as Ref<Project>;
 </script>
