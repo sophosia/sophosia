@@ -32,12 +32,12 @@
             :limits="[0, 60]"
             separator-style="background: var(--q-edge)"
             :separator-class="{
-              'q-splitter-separator': layoutStore.libraryRightMenuSize > 0,
-              hidden: !(layoutStore.libraryRightMenuSize > 0),
+              'q-splitter-separator': layoutStore.rightMenuSize > 0,
+              hidden: !(layoutStore.rightMenuSize > 0),
             }"
-            :disable="!(layoutStore.libraryRightMenuSize > 0)"
-            v-model="layoutStore.libraryRightMenuSize"
-            @update:model-value="(size: number) => layoutStore.resizeLibraryRightMenu(size)"
+            :disable="!(layoutStore.rightMenuSize > 0)"
+            v-model="layoutStore.rightMenuSize"
+            @update:model-value="(size: number) => layoutStore.resizeRightMenu(size)"
           >
             <template v-slot:before>
               <LayoutContainer />

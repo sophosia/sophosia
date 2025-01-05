@@ -18,7 +18,7 @@ export async function getAppState(): Promise<AppState> {
     dataType: "appState",
     ribbonClickedBtnId: "",
     leftMenuSize: 0,
-    libraryRightMenuSize: 0,
+    rightMenuSize: 0,
     selectedCategory: SpecialCategory.LIBRARY,
     currentItemId: "library",
     historyItemIds: [],

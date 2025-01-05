@@ -154,8 +154,8 @@
       size="0.8rem"
       padding="none"
       :ripple="false"
-      :color="layoutStore.libraryRightMenuSize > 0 ? 'primary' : ''"
-      @click="layoutStore.toggleLibraryRightMenu()"
+      :color="layoutStore.rightMenuSize > 0 ? 'primary' : ''"
+      @click="layoutStore.toggleRightMenu()"
     >
       <q-tooltip>{{ $t("info") }}</q-tooltip>
     </q-btn>
