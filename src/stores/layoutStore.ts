@@ -354,6 +354,27 @@ export const useLayoutStore = defineStore("layoutStore", {
     },
 
     /**
+     * Returns all pages satisfying the predicate, returns undefined is not found
+     * @param pageId - the id of the page to search
+     * @returns page - the found node, could be undefined
+     */
+    findAllPages(predicate: (page: Page) => boolean): Page[] {
+      const pages = [] as Page[];
+      if (!this.layout) return pages;
+      const stack = [this.layout];
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        if (current.type === "stack") {
+          for (const page of current.children)
+            if (predicate(page)) pages.push(page);
+        } else {
+          stack.push(...(current.children as Layout[]));
+        }
+      }
+      return pages;
+    },
+
+    /**
      * Insert a page to position relative to the target page
      * @param page - node to be inserted
      * @param targetPageId - the id of the target node
