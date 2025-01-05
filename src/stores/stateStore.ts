@@ -37,13 +37,15 @@ export const useStateStore = defineStore("stateStore", () => {
     const settingStore = useSettingStore();
     const layoutStore = useLayoutStore();
     const projectStore = useProjectStore();
-    const chatStore = useChatStore();
+    // const chatStore = useChatStore();
     if (
       !(
-        settingStore.initialized &&
-        layoutStore.initialized &&
-        projectStore.initialized &&
-        chatStore.initialized
+        (
+          settingStore.initialized &&
+          layoutStore.initialized &&
+          projectStore.initialized
+        )
+        // chatStore.initialized
       )
     )
       return;
@@ -51,7 +53,7 @@ export const useStateStore = defineStore("stateStore", () => {
     Object.assign(state, settingStore.saveState());
     Object.assign(state, layoutStore.saveState());
     Object.assign(state, projectStore.saveState());
-    Object.assign(state, chatStore.saveState());
+    // Object.assign(state, chatStore.saveState());
     await updateAppState(state);
   }
 

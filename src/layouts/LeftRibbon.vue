@@ -52,18 +52,18 @@
         <q-tooltip>{{ btn.tooltip }}</q-tooltip>
       </q-btn>
     </div>
-    <div v-if="isUserLoggedIn()">
-      <q-btn
-        style="width: 30px"
-        flat
-        square
-        icon="mdi-chat-outline"
-        padding="xs"
-        @click="chatStore.openModal()"
-      >
-        <q-tooltip>{{ $t("ask-sophosia") }}</q-tooltip>
-      </q-btn>
-    </div>
+    <!-- <div v-if="isUserLoggedIn()"> -->
+    <!--   <q-btn -->
+    <!--     style="width: 30px" -->
+    <!--     flat -->
+    <!--     square -->
+    <!--     icon="mdi-chat-outline" -->
+    <!--     padding="xs" -->
+    <!--     @click="chatStore.openModal()" -->
+    <!--   > -->
+    <!--     <q-tooltip>{{ $t("ask-sophosia") }}</q-tooltip> -->
+    <!--   </q-btn> -->
+    <!-- </div> -->
     <div>
       <q-btn
         style="width: 30px"
@@ -137,30 +137,30 @@
 import { resolveResource } from "@tauri-apps/api/path";
 import { Component, PageType, db } from "src/backend/database";
 import pluginManager from "src/backend/plugin";
-import { useAccountStore } from "src/stores/accountStore";
-import { useChatStore } from "src/stores/chatStore";
+// import { useAccountStore } from "src/stores/accountStore";
+// import { useChatStore } from "src/stores/chatStore";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { watch } from "vue";
-const chatStore = useChatStore();
+// const chatStore = useChatStore();
 const layoutStore = useLayoutStore();
 const emit = defineEmits(["openPage"]);
-const accountStore = useAccountStore();
-const isUserLoggedIn = () => {
-  return true ? accountStore.user.email : false;
-};
+// const accountStore = useAccountStore();
+// const isUserLoggedIn = () => {
+//   return true ? accountStore.user.email : false;
+// };
 
-watch(
-  () => accountStore.user.email,
-  async () => {
-    if (accountStore.user.email) {
-      const chatStates = chatStore.chatStates;
-      for (const chatState of chatStates) {
-        chatStore.chatMessages[chatState._id] =
-          (await chatStore.syncMessages(chatState)) || [];
-      }
-    } else {
-      console.log("user is not logged in");
-    }
-  }
-);
+// watch(
+//   () => accountStore.user.email,
+//   async () => {
+//     if (accountStore.user.email) {
+//       const chatStates = chatStore.chatStates;
+//       for (const chatState of chatStates) {
+//         chatStore.chatMessages[chatState._id] =
+//           (await chatStore.syncMessages(chatState)) || [];
+//       }
+//     } else {
+//       console.log("user is not logged in");
+//     }
+//   }
+// );
 </script>
