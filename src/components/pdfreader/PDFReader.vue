@@ -1,9 +1,9 @@
 <template>
   <q-splitter
     class="PDF-reader"
-    v-model="rightMenuSize"
-    :separator-class="{ 'q-splitter-separator': showRightMenu }"
-    :disable="!showRightMenu"
+    v-model="pdfMenuSize"
+    :separator-class="{ 'q-splitter-separator': showPDFMenu }"
+    :disable="!showPDFMenu"
     reverse
     :limits="[0, 60]"
     @update:model-value="(size) => resizeRightMenu(size)"
@@ -14,7 +14,7 @@
         :pdfState="pdfApp.state"
         :pageLabels="pdfApp.pageLabels"
         :matchesCount="pdfApp.matchesCount"
-        v-model:showRightMenu="showRightMenu"
+        v-model:showPDFMenu="showPDFMenu"
       />
       <div
         ref="viewerContainer"
@@ -108,18 +108,18 @@ const viewerContainer = ref<HTMLDivElement>();
 const project = ref<Project>();
 
 // right menu (don't use stateStore since there will be many readerPages)
-const rightMenuSize = ref(0);
-const prvRightMenuSize = ref(0);
-const showRightMenu = computed({
+const pdfMenuSize = ref(0);
+const prvPDFMenuSize = ref(0);
+const showPDFMenu = computed({
   get() {
-    return rightMenuSize.value > 0;
+    return pdfMenuSize.value > 0;
   },
   set(visible: boolean) {
     if (visible) {
-      rightMenuSize.value = Math.max(prvRightMenuSize.value, 40);
+      pdfMenuSize.value = Math.max(prvPDFMenuSize.value, 40);
     } else {
-      prvRightMenuSize.value = rightMenuSize.value;
-      rightMenuSize.value = 0;
+      prvPDFMenuSize.value = pdfMenuSize.value;
+      pdfMenuSize.value = 0;
     }
   },
 });
@@ -148,7 +148,7 @@ const renderEvt = ref<{
  * @param {number} size - The new size of the right menu.
  */
 function resizeRightMenu(size: number) {
-  if (size < 15) showRightMenu.value = false;
+  if (size < 15) showPDFMenu.value = false;
 }
 
 /*******************************

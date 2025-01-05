@@ -190,8 +190,8 @@
       size="0.8rem"
       padding="xs"
       :ripple="false"
-      :color="showRightMenu ? 'primary' : ''"
-      @click="$emit('update:showRightMenu', !showRightMenu)"
+      :color="showPDFMenu ? 'primary' : ''"
+      @click="$emit('update:showPDFMenu', !showPDFMenu)"
     >
       <q-tooltip>{{ $t("toggle-right-menu") }}</q-tooltip>
     </q-btn>
@@ -233,9 +233,9 @@ const layoutStore = useLayoutStore();
  * Props, emits, data
  */
 const props = defineProps({
-  showRightMenu: { type: Boolean, required: true },
+  showPDFMenu: { type: Boolean, required: true },
 });
-const emit = defineEmits(["update:showRightMenu"]);
+const emit = defineEmits(["update:showPDFMenu"]);
 
 const pdfApp = inject(KEY_pdfApp) as PDFApplication;
 

@@ -57,7 +57,7 @@ import type { Page } from "src/backend/database";
 import LayoutContainer from "src/components/layout/LayoutContainer.vue";
 import LeftMenu from "src/components/leftmenu/LeftMenu.vue";
 import LeftRibbon from "./LeftRibbon.vue";
-import RightMenu from "src/components/library/RightMenu.vue";
+import RightMenu from "src/components/rightmenu/RightMenu.vue";
 
 import { listen } from "@tauri-apps/api/event";
 import pluginManager from "src/backend/plugin";

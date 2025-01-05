@@ -32,7 +32,7 @@
 </template>
 <script setup lang="ts">
 import { PageType } from "sophosia";
-import MetaInfoTab from "../MetaInfoTab.vue";
+import MetaInfoTab from "./MetaInfoTab.vue";
 import { Project } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
