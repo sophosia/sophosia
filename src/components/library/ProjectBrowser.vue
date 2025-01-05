@@ -13,52 +13,31 @@
       />
     </template>
     <template v-slot:after>
-      <q-splitter
-        class="library-right-menu-panel"
-        reverse
-        :limits="[0, 60]"
-        separator-style="background: var(--q-edge)"
-        :separator-class="{
-          'q-splitter-separator': layoutStore.libraryRightMenuSize > 0,
-          hidden: !(layoutStore.libraryRightMenuSize > 0),
-        }"
-        :disable="!(layoutStore.libraryRightMenuSize > 0)"
-        v-model="layoutStore.libraryRightMenuSize"
-        @update:model-value="(size: number) => layoutStore.resizeLibraryRightMenu(size)"
-      >
-        <template v-slot:before>
-          <ActionBar
-            class="project-action-bar"
-            v-model:searchMode="searchMode"
-            v-model:searchString="searchString"
-            v-model:showReferences="projectStore.showReferences"
-            v-model:showNotebooks="projectStore.showNotebooks"
-            @addEmptyProject="addEmptyProject"
-            @addNotebook="addNotebook"
-            @addByFiles="(filePaths) => addProjectsByFiles(filePaths)"
-            @addByCollection="
-              (collectionPath) => showImportDialog(collectionPath)
-            "
-            @showIdentifierDialog="showIdentifierDialog()"
-            ref="actionBar"
-          />
-          <!-- actionbar height 36px, table view is 100%-36px -->
-          <ProjectTable
-            v-model:projects="projectStore.projects"
-            :searchMode="searchMode"
-            :searchString="searchString"
-            style="
-              height: calc(100% - 36px);
-              width: 100%;
-              background: var(--color-library-tableview-bkgd);
-            "
-            ref="table"
-          />
-        </template>
-        <template v-slot:after>
-          <RightMenu />
-        </template>
-      </q-splitter>
+      <ActionBar
+        class="project-action-bar"
+        v-model:searchMode="searchMode"
+        v-model:searchString="searchString"
+        v-model:showReferences="projectStore.showReferences"
+        v-model:showNotebooks="projectStore.showNotebooks"
+        @addEmptyProject="addEmptyProject"
+        @addNotebook="addNotebook"
+        @addByFiles="(filePaths) => addProjectsByFiles(filePaths)"
+        @addByCollection="(collectionPath) => showImportDialog(collectionPath)"
+        @showIdentifierDialog="showIdentifierDialog()"
+        ref="actionBar"
+      />
+      <!-- actionbar height 36px, table view is 100%-36px -->
+      <ProjectTable
+        v-model:projects="projectStore.projects"
+        :searchMode="searchMode"
+        :searchString="searchString"
+        style="
+          height: calc(100% - 36px);
+          width: 100%;
+          background: var(--color-library-tableview-bkgd);
+        "
+        ref="table"
+      />
     </template>
   </q-splitter>
 </template>
@@ -71,7 +50,6 @@ import { CategoryNode, Project } from "src/backend/database";
 import ActionBar from "src/components/library/ActionBar.vue";
 import CategoryTree from "src/components/library/CategoryTree.vue";
 import ProjectTable from "src/components/library/ProjectTable.vue";
-import RightMenu from "src/components/library/RightMenu.vue";
 // db
 import { basename, extname } from "@tauri-apps/api/path";
 import {

@@ -188,12 +188,26 @@
       square
       icon="mdi-format-list-bulleted"
       size="0.8rem"
-      padding="none"
+      padding="xs"
       :ripple="false"
       :color="showRightMenu ? 'primary' : ''"
       @click="$emit('update:showRightMenu', !showRightMenu)"
     >
       <q-tooltip>{{ $t("toggle-right-menu") }}</q-tooltip>
+    </q-btn>
+
+    <q-btn
+      flat
+      dense
+      square
+      icon="mdi-information-outline"
+      size="0.8rem"
+      padding="xs"
+      :ripple="false"
+      :color="layoutStore.rightMenuSize > 0 ? 'primary' : ''"
+      @click="layoutStore.toggleRightMenu()"
+    >
+      <q-tooltip>{{ $t("info") }}</q-tooltip>
     </q-btn>
   </q-toolbar>
 </template>

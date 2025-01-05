@@ -259,7 +259,7 @@ export interface AppState {
   // layout
   ribbonClickedBtnId: string;
   leftMenuSize: number;
-  libraryRightMenuSize: number;
+  rightMenuSize: number;
   // project
   selectedCategory: string;
   currentItemId: string;

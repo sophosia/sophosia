@@ -1,8 +1,6 @@
 <template>
-  <!-- show this after rightMenu is shown,
-    otherwise autogrow extends to full-height -->
+  <!-- v-if="!!meta && !!meta.reference && meta.reference.length > 0" -->
   <q-tabs
-    v-if="!!meta && !!meta.reference && meta.reference.length > 0"
     v-model="tab"
     dense
     no-caps
@@ -11,12 +9,13 @@
     <q-tab name="reference">{{ $t("reference") }}</q-tab>
   </q-tabs>
   <q-tab-panels
-    v-if="!!meta"
+    v-if="meta"
     v-model="tab"
   >
     <q-tab-panel
       name="meta"
       class="tab-panel"
+      style="height: calc(100vh - 36px - 36px); overflow: scroll"
     >
       <div class="row justify-between">
         <div
@@ -407,7 +406,7 @@
 
 <script setup lang="ts">
 // types
-import { Author, Meta, Page, Project } from "src/backend/database";
+import { Author, Meta, Page, PageType, Project } from "src/backend/database";
 import type { PropType } from "vue";
 import { computed, ref, watch, watchEffect } from "vue";
 // backend stuff
@@ -426,6 +425,7 @@ const settingStore = useSettingStore();
 const layoutStore = useLayoutStore();
 
 const props = defineProps({ project: Object as PropType<Project> });
+const emit = defineEmits(["updatedProjectId"]);
 const tab = ref("meta");
 const name = ref(""); // author name
 const tag = ref(""); // project tag
@@ -506,12 +506,24 @@ async function modifyInfo() {
     settingStore.citeKeyRule
   );
   meta.value._id = generateCiteKey(meta.value, settingStore.projectIdRule);
+  const newProjectId = meta.value._id;
+  const newProjectLabel = meta.value.label;
   await projectStore.updateProject(oldProjectId, meta.value);
-  layoutStore.renamePage(oldProjectId, {
-    id: meta.value._id,
-    label: meta.value.label,
-  } as Page);
-  layoutStore.setActive(meta.value._id);
+  emit("updatedProjectId", oldProjectId, newProjectId);
+  const pages = layoutStore.findAllPages((page) =>
+    page.id.startsWith(oldProjectId)
+  );
+  for (const page of pages) {
+    if (page.type == PageType.ReaderPage)
+      layoutStore.renamePage(page.id, {
+        id: page.id.replace(oldProjectId, newProjectId),
+        label: newProjectLabel,
+      } as Page);
+    else
+      layoutStore.renamePage(page.id, {
+        id: page.id.replace(oldProjectId, newProjectId),
+      } as Page);
+  }
 }
 
 /**

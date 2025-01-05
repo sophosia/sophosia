@@ -29,9 +29,9 @@ export const useLayoutStore = defineStore("layoutStore", {
     prvRibbonClickedBtnId: "",
     leftMenuSize: 0,
     prvLeftMenuSize: 0,
-    libraryRightMenuSize: 0,
+    rightMenuSize: 0,
     leftMenuViewId: "projectNavigator",
-    prvLibraryRightMenuSize: 0,
+    prvRightMenuSize: 0,
     showWelcomeCarousel: true,
 
     // layout
@@ -63,7 +63,7 @@ export const useLayoutStore = defineStore("layoutStore", {
       this.ribbonClickedBtnId = state.ribbonClickedBtnId;
       this.prvRibbonClickedBtnId = state.ribbonClickedBtnId;
       this.leftMenuSize = state.leftMenuSize;
-      this.libraryRightMenuSize = state.libraryRightMenuSize;
+      this.rightMenuSize = state.rightMenuSize;
       // load layout from db
       await this.loadLayout();
       this.initialized = true;
@@ -82,7 +82,7 @@ export const useLayoutStore = defineStore("layoutStore", {
         historyItemIds: this.historyItemIds,
         ribbonClickedBtnId: this.ribbonClickedBtnId,
         leftMenuSize: this.leftMenuSize,
-        libraryRightMenuSize: this.libraryRightMenuSize,
+        rightMenuSize: this.rightMenuSize,
       } as AppState;
     },
 
@@ -278,16 +278,12 @@ export const useLayoutStore = defineStore("layoutStore", {
      * If visible is given, set the state as it is
      * @param visible
      */
-    toggleLibraryRightMenu(visible?: boolean) {
+    toggleRightMenu(visible?: boolean) {
       if (visible === undefined) {
-        const show = this.libraryRightMenuSize > 0;
-        this.libraryRightMenuSize = show
-          ? 0
-          : Math.max(this.prvLibraryRightMenuSize, 30);
+        const show = this.rightMenuSize > 0;
+        this.rightMenuSize = show ? 0 : Math.max(this.prvRightMenuSize, 30);
       } else {
-        this.libraryRightMenuSize = visible
-          ? Math.max(this.prvLibraryRightMenuSize, 30)
-          : 0;
+        this.rightMenuSize = visible ? Math.max(this.prvRightMenuSize, 30) : 0;
       }
     },
 
@@ -295,13 +291,13 @@ export const useLayoutStore = defineStore("layoutStore", {
      * After releasing the splitter, record the size and if close right menu if it is too small
      * @param size
      */
-    resizeLibraryRightMenu(size: number) {
-      this.prvLibraryRightMenuSize = size;
-      this.libraryRightMenuSize = size < 5 ? 0 : size;
+    resizeRightMenu(size: number) {
+      this.prvRightMenuSize = size;
+      this.rightMenuSize = size < 5 ? 0 : size;
     },
 
     /**
-     * Toggle left menu
+     * ToggrightMenuSize
      * The size is determined by the minimum size 20 and its previous size
      * If visible is given, set the state as it is
      * @param visible
@@ -351,6 +347,27 @@ export const useLayoutStore = defineStore("layoutStore", {
         }
       }
       return undefined;
+    },
+
+    /**
+     * Returns all pages satisfying the predicate, returns undefined is not found
+     * @param pageId - the id of the page to search
+     * @returns page - the found node, could be undefined
+     */
+    findAllPages(predicate: (page: Page) => boolean): Page[] {
+      const pages = [] as Page[];
+      if (!this.layout) return pages;
+      const stack = [this.layout];
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        if (current.type === "stack") {
+          for (const page of current.children)
+            if (predicate(page)) pages.push(page);
+        } else {
+          stack.push(...(current.children as Layout[]));
+        }
+      }
+      return pages;
     },
 
     /**
