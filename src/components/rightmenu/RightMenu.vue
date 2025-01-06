@@ -49,7 +49,10 @@ watchEffect(async () => {
   if (page!.type == PageType.LibraryPage) {
     currentProject.value = projectStore.selected[0] as Project;
   } else if (page.type == PageType.ReaderPage) {
+    // console.log("in reader page");
+    // console.log("should open metainfo ", itemId);
     currentProject.value = projectStore.getProject(itemId);
+    console.log("currentProject.value", currentProject.value);
   } else if (
     page.type == PageType.NotePage ||
     page.type == PageType.ExcalidrawPage

@@ -510,6 +510,7 @@ async function modifyInfo() {
   const newProjectLabel = meta.value.label;
   await projectStore.updateProject(oldProjectId, meta.value);
   emit("updatedProjectId", oldProjectId, newProjectId);
+  console.log("oldProjectId", oldProjectId, " newProjectId", newProjectId);
   const pages = layoutStore.findAllPages((page) =>
     page.id.startsWith(oldProjectId)
   );

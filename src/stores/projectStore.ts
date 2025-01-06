@@ -89,6 +89,7 @@ export const useProjectStore = defineStore("projectStore", {
      * @returns The project object if found, otherwise undefined.
      */
     getProject(projectId: string) {
+      console.log("getting project", projectId);
       return this.projects.find((project) => project._id === projectId);
     },
 
