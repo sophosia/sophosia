@@ -1,7 +1,6 @@
 <template>
   <!-- the class stack is only for searching -->
   <TabContainer
-    v-if="stack.children.length > 0"
     class="tab-container"
     :enableCrossWindowDragAndDrop="enableCrossWindowDragAndDrop"
     :pages="stack.children"
@@ -15,11 +14,11 @@
       :enableCrossWindowDragAndDrop="enableCrossWindowDragAndDrop"
       @moveToStack="(page: Page, pos: 'center' | 'left' | 'right'| 'top' | 'bottom', fromWindow: string) => moveToStack(page, pos, fromWindow)"
     />
+    <EmptyStack
+      v-else
+      @openPage="(page) => layoutStore.openPage(page)"
+    />
   </div>
-  <EmptyStack
-    v-if="stack.children.length === 0"
-    @openPage="(page) => layoutStore.openPage(page)"
-  />
 </template>
 <script setup lang="ts">
 import { listen } from "@tauri-apps/api/event";

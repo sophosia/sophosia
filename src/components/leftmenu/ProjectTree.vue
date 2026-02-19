@@ -139,7 +139,7 @@
         </div>
         <div
           v-else
-          style="width: calc(100% - 1.4rem); font-size: 1rem"
+          style="width: calc(100% - 1.4rem); font-size: 0.875rem"
           class="ellipsis non-selectable"
           :type="prop.node.dataType"
         >

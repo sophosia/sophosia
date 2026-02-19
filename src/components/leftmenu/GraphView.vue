@@ -5,7 +5,7 @@
         <div class="square"></div>
         <div
           class="q-ml-xs"
-          style="font-size: 1rem"
+          style="font-size: 0.875rem"
         >
           {{ $t("project") }}
         </div>
@@ -14,7 +14,7 @@
         <div class="circle"></div>
         <div
           class="q-ml-xs"
-          style="font-size: 1rem"
+          style="font-size: 0.875rem"
         >
           {{ $t("note") }}
         </div>
@@ -23,7 +23,7 @@
         <div class="triangle"></div>
         <div
           class="q-ml-xs"
-          style="font-size: 1rem"
+          style="font-size: 0.875rem"
         >
           {{ $t("annotation") }}
         </div>
