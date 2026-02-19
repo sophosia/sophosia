@@ -55,7 +55,7 @@ import { Annotation } from "src/backend/pdfannotation/annotations";
 import PDFTOC from "./PDFTOC.vue";
 import AnnotList from "./AnnotList.vue";
 
-const rightMenuTab = ref("metaInfoTab");
+const rightMenuTab = ref("tocTab");
 
 const pdfApp = inject(KEY_pdfApp) as PDFApplication;
 </script>
