@@ -8,17 +8,6 @@
   >
     <q-list dense>
       <q-item
-        v-if="projectStore.selected.length <= 1 && isUserLoggedIn()"
-        clickable
-        v-close-popup
-        @click="askSophosiaReference"
-      >
-        <q-item-section>
-          <i18n-t keypath="ask-sophosia" />
-        </q-item-section>
-      </q-item>
-      <q-separator />
-      <q-item
         v-if="projectStore.selected.length <= 1"
         clickable
         v-close-popup
@@ -177,8 +166,6 @@
 // types
 import { QMenu } from "quasar";
 import {
-  ChatState,
-  ChatType,
   Meta,
   Note,
   NoteType,
@@ -192,10 +179,6 @@ import { Ref, inject, nextTick, ref } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { join } from "@tauri-apps/api/path";
 import { copyToClipboard } from "quasar";
-import {
-  checkIfUploaded,
-  uploadPDF,
-} from "src/backend/conversationAgent/uploadPDF";
 import { generateCiteKey, getMeta } from "src/backend/meta";
 import { getProject } from "src/backend/project";
 import { useLayoutStore } from "src/stores/layoutStore";
@@ -203,17 +186,14 @@ import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { watchEffect } from "vue";
 import {
-  confirmUploadDialog,
   deleteDialog,
   errorDialog,
   identifierDialog,
 } from "../dialogs/dialogController";
 
-const accountStore = useAccountStore();
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 const settingStore = useSettingStore();
-const chatStore = useChatStore();
 const props = defineProps({
   projectId: { type: String, required: true },
 });
@@ -225,75 +205,6 @@ watchEffect(async () => {
   const project = await getProject(props.projectId);
   projectType.value = project?.type;
 });
-
-const isUserLoggedIn = () => {
-  return true ? accountStore.user.email : false;
-};
-
-/**
- * Takes the selected reference and opens a chat with Sophosia.
- */
-async function askSophosiaReference() {
-  const projectId = projectStore.selected[0]._id;
-  const chatState = chatStore.chatStates.find(
-    (state: ChatState) => state._id === projectId
-  );
-  if (chatState) {
-    chatStore.setCurrentChatState(chatState);
-    return;
-  }
-
-  let check = await checkIfUploaded(projectId, "reference");
-  if (!check.status) {
-    if (settingStore.showConfirmUploadDialog) {
-      confirmUploadDialog.show();
-      confirmUploadDialog.onConfirm(async () => {
-        confirmUploadDialog.doNotShowAgain =
-          !settingStore.showConfirmUploadDialog;
-        let isUploaded = await uploadPDF(projectId);
-        if (!isUploaded.status) {
-          errorDialog.show();
-          errorDialog.error.name = "Upload Error";
-          return;
-        }
-        await chatStore.addChatState({
-          _id: projectId,
-          theme: projectStore.selected[0].label,
-          type: ChatType.REFERENCE,
-        });
-        chatStore.setCurrentChatState(
-          chatStore.chatStates[chatStore.chatStates.length - 1]
-        );
-      });
-    } else {
-      let isUploaded = await uploadPDF(projectId);
-      if (!isUploaded.status) {
-        errorDialog.show();
-        errorDialog.error.name = "Upload Error";
-        return;
-      }
-      await chatStore.addChatState({
-        _id: projectId,
-        theme: projectStore.selected[0].label,
-        type: ChatType.REFERENCE,
-      });
-      chatStore.setCurrentChatState(
-        chatStore.chatStates[chatStore.chatStates.length - 1]
-      );
-    }
-  } else {
-    console.log("Before adding chat state", chatStore.chatStates);
-    await chatStore.addChatState({
-      _id: projectId,
-      theme: projectStore.selected[0].label,
-      type: ChatType.REFERENCE,
-    });
-    console.log("After adding chat state", chatStore.chatStates);
-    chatStore.setCurrentChatState(
-      chatStore.chatStates[chatStore.chatStates.length - 1]
-    );
-  }
-}
 
 /**
  * Handles the export of the citation information for the selected project.
@@ -336,12 +247,7 @@ async function openProject() {
   }
 }
 
-/**
- * Uploads the selected project(s) to the conversation agent.
- */
 import { useQuasar } from "quasar";
-import { useAccountStore } from "src/stores/accountStore";
-import { useChatStore } from "src/stores/chatStore";
 const $q = useQuasar();
 
 /**

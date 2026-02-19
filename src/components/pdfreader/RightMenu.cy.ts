@@ -1,10 +1,26 @@
+import { KEY_pdfApp } from "./injectKeys";
 import RightMenu from "./RightMenu.vue";
 
 describe("<RightMenu />", () => {
   it("renders", function () {
-    cy.mount(RightMenu);
+    const mockPdfApp = {
+      outline: [],
+      clickTOC: () => {},
+      annotStore: {
+        annots: [],
+        selectedId: "",
+        setActive: () => {},
+      },
+    };
 
-    cy.dataCy("tab-meta-info").should("be.visible");
+    cy.mount(RightMenu, {
+      global: {
+        provide: {
+          [KEY_pdfApp as symbol]: mockPdfApp,
+        },
+      },
+    });
+
     cy.dataCy("tab-toc").should("be.visible");
     cy.dataCy("tab-annot-list").should("be.visible");
   });

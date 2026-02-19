@@ -40,11 +40,6 @@ jobs:
           # to sign updater
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          # env variables
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_UPLOAD_URL: ${{ secrets.VITE_UPLOAD_URL }}
-          VITE_CONVERSE_URL: ${{ secrets.VITE_CONVERSE_URL }}
 
       - name: rename and upload portable .exe file
         if: matrix.platform == 'windows-latest'

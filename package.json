@@ -28,7 +28,6 @@
     "@citation-js/plugin-isbn": "^0.4.0",
     "@excalidraw/excalidraw": "^0.15.2",
     "@quasar/extras": "^1.16.4",
-    "@supabase/supabase-js": "^2.42.0",
     "@tauri-apps/api": "^1.5.3",
     "citation-js": "^0.7.5",
     "cytoscape": "^3.26.0",

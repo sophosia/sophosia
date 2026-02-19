@@ -162,34 +162,6 @@ function useProgressDialog() {
   };
 }
 
-function useAuthDialog() {
-  const dialog = useDialog();
-  const email = ref("");
-  const password = ref("");
-  const isSignUp = ref(false);
-  const isForgetPassword = ref(false);
-  const authView = ref<
-    "signIn" | "signUp" | "forgetPassword" | "resetPassword"
-  >("signIn");
-  return {
-    ...dialog,
-    email,
-    password,
-    isSignUp,
-    isForgetPassword,
-    authView,
-  };
-}
-
-function useConfirmUploadDialog() {
-  const dialog = useDialog();
-  const doNotShowAgain = ref(false);
-  return {
-    ...dialog,
-    doNotShowAgain,
-  };
-}
-
 // use reative here so we can use properties in the composable reactively without desconstructing them
 export const importDialog = reactive(useImportDialog());
 export const deleteDialog = reactive(useDeleteDialog());
@@ -198,5 +170,3 @@ export const exportDialog = reactive(useExportDialog());
 export const errorDialog = reactive(useErrorDialog());
 export const successDialog = reactive(useSuccessDialog());
 export const progressDialog = reactive(useProgressDialog());
-export const authDialog = reactive(useAuthDialog());
-export const confirmUploadDialog = reactive(useConfirmUploadDialog());

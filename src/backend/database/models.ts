@@ -276,12 +276,6 @@ export interface AppState {
   pdfRenameRule: string; // "author_year_fullTitle" by default
   projectIdRule: string; // "uid" by default
 
-  //chat store
-  chatVisibility: boolean;
-  chatStates: ChatState[] | [];
-  currentChatState: ChatState | null;
-  chatMessages: { [key: string]: ChatMessage[] } | {};
-  showConfirmUploadDialog: boolean;
 }
 
 export interface Row {
@@ -422,18 +416,3 @@ export interface PluginStatus {
 
 export type PluginStatusMap = Map<string, PluginStatus>;
 
-// chat
-export interface ChatState {
-  _id: string;
-  theme: string;
-  type: ChatType;
-}
-export enum ChatType {
-  REFERENCE = "reference",
-  CATEGORY = "category",
-}
-
-export interface ChatMessage {
-  content: string;
-  isUserMessage: boolean;
-}

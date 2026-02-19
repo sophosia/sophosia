@@ -1,0 +1,11 @@
+[    4055ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Gateway Timeout) @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/quasar_wrappers.js?v=7c48324e:0
+[    4055ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Gateway Timeout) @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=a0e00678:0
+[    4056ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Gateway Timeout) @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=8c175d52:0
+[    6230ms] [WARNING] Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.
+Note that this is not an issue if running this frontend on a browser instead of a Tauri window. @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/@tauri-apps_api_window.js?v=6be9438e:1045
+[    6354ms] Error: supabaseUrl is required.
+    at new SupabaseClient (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/@supabase_supabase-js.js?v=6be9438e:5343:13)
+    at createClient (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/@supabase_supabase-js.js?v=6be9438e:5467:10)
+    at getSupabaseClient (http://localhost:9001/src/backend/authSupabase/supabaseClient.ts:7:23)
+    at http://localhost:9001/src/stores/accountStore.ts:10:18
+[    6356ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:9001/favicon.ico:0

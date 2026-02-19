@@ -46,9 +46,6 @@
           @highlightText="(color: string) => highlightText(color)"
         />
       </div>
-      <!-- <ExplainWindow /> -->
-      <!-- This component is not yet implemented -->
-
       <PeekCard
         v-for="link in pdfApp.peekManager.links"
         :key="link.id"
@@ -80,8 +77,6 @@ import FloatingMenu from "./FloatingMenu.vue";
 import PDFToolBar from "./PDFToolBar.vue";
 import PeekCard from "./PeekCard.vue";
 import RightMenu from "./RightMenu.vue";
-import ExplainWindow from "../library/ExplainWindow.vue";
-
 import { QSplitter, throttle } from "quasar";
 import { db } from "src/backend/database";
 import { Annotation, Ink } from "src/backend/pdfannotation/annotations";
