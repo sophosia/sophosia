@@ -4,39 +4,6 @@
       flat
       class="q-my-md card"
     >
-      <q-card-section class="row justify-between">
-        <div>
-          <div class="text-h6">{{ $t("account") }}</div>
-          <div v-if="accountStore.isAuthenticated">
-            {{ $t("signed-in-as", { type: accountStore.user.email }) }}
-          </div>
-        </div>
-        <div v-if="accountStore.isAuthenticated">
-          <q-btn
-            class="btn q-ml-sm"
-            :ripple="false"
-            no-caps
-            @click="accountStore.signOut()"
-          >
-            {{ $t("sign-out") }}
-          </q-btn>
-        </div>
-        <div v-else>
-          <q-btn
-            class="btn q-ml-sm"
-            :ripple="false"
-            no-caps
-            @click="showAuthDialog()"
-          >
-            {{ $t("sign-in") }}
-          </q-btn>
-        </div>
-      </q-card-section>
-    </q-card>
-    <q-card
-      flat
-      class="q-my-md card"
-    >
       <q-card-section>
         <div class="text-h6">{{ $t("theme") }}</div>
       </q-card-section>
@@ -198,19 +165,17 @@ import { getAllProjects } from "src/backend/project";
 // utils
 import { useQuasar } from "quasar";
 import { generateCiteKey } from "src/backend/meta";
-import { useAccountStore } from "src/stores/accountStore";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { useI18n } from "vue-i18n";
-import { authDialog, progressDialog } from "../dialogs/dialogController";
+import { progressDialog } from "../dialogs/dialogController";
 import { indexFiles } from "src/backend/indexer";
 const $q = useQuasar();
 
 const settingStore = useSettingStore();
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
-const accountStore = useAccountStore();
 const { locale, t } = useI18n({ useScope: "global" });
 
 // options
@@ -352,24 +317,6 @@ async function updateProjectIds() {
     progressDialog.progress = (index + 1) / projects.length;
   }
   $q.notify(t("updated", { type: t("project") }));
-}
-
-/**
- * Show authentication dialog
- */
-function showAuthDialog() {
-  authDialog.authView = "signIn";
-  authDialog.show();
-  authDialog.onConfirm(() => {
-    if (authDialog.authView === "signIn")
-      accountStore.signIn(authDialog.email, authDialog.password);
-    else if (authDialog.authView === "signUp")
-      accountStore.signUp(authDialog.email, authDialog.password);
-    else if (authDialog.authView === "forgetPassword")
-      accountStore.resetPassword(authDialog.email);
-    else if (authDialog.authView === "resetPassword")
-      accountStore.updateUser({ password: authDialog.password });
-  });
 }
 
 async function onIndexFiles() {

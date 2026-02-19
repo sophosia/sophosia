@@ -51,11 +51,6 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          # env variables
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_UPLOAD_URL: ${{ secrets.VITE_UPLOAD_URL }}
-          VITE_CONVERSE_URL: ${{ secrets.VITE_CONVERSE_URL }}
         with:
           # need this to upload latest.json
           tagName: "v__VERSION__"

@@ -61,7 +61,6 @@ import RightMenu from "src/components/library/RightMenu.vue";
 
 import { listen } from "@tauri-apps/api/event";
 import pluginManager from "src/backend/plugin";
-import { useAccountStore } from "src/stores/accountStore";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { onMounted, onUnmounted, ref } from "vue";
 
@@ -82,10 +81,6 @@ async function parseDeepLink(url: string | undefined) {
     case "open-item":
       const itemId = decodeURI(params);
       await layoutStore.openItem(itemId);
-      break;
-    case "auth":
-      const accountStore = useAccountStore();
-      await accountStore.parseURL(params);
       break;
   }
 }
