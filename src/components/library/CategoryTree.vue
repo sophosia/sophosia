@@ -108,7 +108,7 @@
           </div>
           <div
             v-else
-            style="font-size: 1rem; width: calc(100% - 1.5rem)"
+            style="font-size: 0.875rem; width: calc(100% - 1.5rem)"
             class="ellipsis"
           >
             {{

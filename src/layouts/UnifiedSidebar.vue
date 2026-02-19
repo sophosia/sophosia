@@ -50,11 +50,21 @@
         <BookStack width="18" height="18" />
         <q-tooltip>{{ $t("library") }}</q-tooltip>
       </q-btn>
+    </div>
+    <div class="sidebar-content">
+      <ProjectNavigator />
+      <PluginView
+        v-for="view in pluginManager.getViews(Component.LeftMenu)"
+        :key="view.id"
+        :mount="view.mount"
+      />
+    </div>
+    <div class="sidebar-bottom-row">
       <q-btn
-        class="sidebar-icon-btn"
+        class="sidebar-bottom-btn"
         flat
-        square
-        padding="xs"
+        no-caps
+        padding="xs sm"
         @click="
           $emit('openPage', {
             id: 'workspace',
@@ -63,9 +73,11 @@
           })
         "
       >
-        <Folder width="18" height="18" />
+        <Folder width="16" height="16" class="q-mr-xs" />
+        <span class="sidebar-bottom-label">{{ $t("workspace") }}s</span>
         <q-tooltip>{{ $t("workspace") }}</q-tooltip>
       </q-btn>
+      <div class="sidebar-icon-spacer" />
       <q-btn
         class="sidebar-icon-btn"
         flat
@@ -86,7 +98,7 @@
           }
         "
       >
-        <HelpCircle width="18" height="18" />
+        <HelpCircle width="16" height="16" />
         <q-tooltip>{{ $t("help") }}</q-tooltip>
       </q-btn>
       <q-btn
@@ -102,17 +114,9 @@
           })
         "
       >
-        <Settings width="18" height="18" />
+        <Settings width="16" height="16" />
         <q-tooltip>{{ $t("settings") }}</q-tooltip>
       </q-btn>
-    </div>
-    <div class="sidebar-content">
-      <ProjectNavigator />
-      <PluginView
-        v-for="view in pluginManager.getViews(Component.LeftMenu)"
-        :key="view.id"
-        :mount="view.mount"
-      />
     </div>
   </div>
 </template>
@@ -182,5 +186,31 @@ defineEmits(["openPage"]);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.sidebar-bottom-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 10px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--q-border);
+}
+
+.sidebar-bottom-btn {
+  border-radius: 6px;
+  color: var(--q-text-muted);
+  font-size: 0.8125rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    color: var(--q-reg-text);
+    background: var(--q-hover);
+  }
+}
+
+.sidebar-bottom-label {
+  font-weight: 500;
 }
 </style>
