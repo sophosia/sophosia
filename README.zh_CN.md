@@ -90,6 +90,7 @@ yarn test:component:ci # 前端Vue Component测试
 - citation-js
 - cytoscape
 - golden-layout
+- EmbedPDF
 - pdf.js
 - konva
 - vditor

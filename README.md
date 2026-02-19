@@ -90,6 +90,7 @@ This project is made possible by the following open-source projects.
 - citation-js
 - Cytoscape
 - golden-layout
+- EmbedPDF
 - pdf.js
 - konva
 - vditor
