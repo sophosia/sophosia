@@ -8,7 +8,7 @@
   >
     <q-tab
       name="tocTab"
-      icon="mdi-table-of-contents"
+      icon="toc"
       :ripple="false"
       data-cy="tab-toc"
     >
@@ -16,7 +16,7 @@
     </q-tab>
     <q-tab
       name="annotationTab"
-      icon="mdi-comment-edit-outline"
+      icon="rate_review"
       :ripple="false"
       data-cy="tab-annot-list"
     >

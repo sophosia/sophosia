@@ -686,8 +686,8 @@ function _handleTable() {
     rightButton.style.alignItems = "center";
     rightButton.style.border = "1px solid var(--q-reg-text)";
     rightButton.classList.add("right-button");
-    rightButton.classList.add("mdi");
-    rightButton.classList.add("mdi-plus");
+    rightButton.classList.add("material-icons");
+    rightButton.textContent = "add";
     rightButton.onmouseenter = () => (rightButton!.style.opacity = "1");
     rightButton.onmouseleave = () => (rightButton!.style.opacity = "0");
     rightButton.onclick = () => {
@@ -710,8 +710,8 @@ function _handleTable() {
     bottomButton.style.display = "flex";
     bottomButton.style.justifyContent = "center";
     bottomButton.classList.add("bottom-button");
-    bottomButton.classList.add("mdi");
-    bottomButton.classList.add("mdi-plus");
+    bottomButton.classList.add("material-icons");
+    bottomButton.textContent = "add";
     bottomButton.onmouseenter = () => (bottomButton!.style.opacity = "1");
     bottomButton.onmouseleave = () => (bottomButton!.style.opacity = "0");
     bottomButton.onclick = () => {
@@ -734,8 +734,8 @@ function _handleTable() {
     topLeftButton.style.opacity = "0";
     topLeftButton.style.color = "red";
     topLeftButton.classList.add("top-left-button");
-    topLeftButton.classList.add("mdi");
-    topLeftButton.classList.add("mdi-close");
+    topLeftButton.classList.add("material-icons");
+    topLeftButton.textContent = "close";
     topLeftButton.onmouseenter = () => (topLeftButton!.style.opacity = "1");
     topLeftButton.onmouseleave = () => (topLeftButton!.style.opacity = "0");
     topLeftButton.onclick = () => table.remove();
@@ -759,8 +759,8 @@ function _handleTable() {
             topButton.style.cursor = "grab";
             topButton.style.fontSize = "1.5rem";
             topButton.classList.add("top-button");
-            topButton.classList.add("mdi");
-            topButton.classList.add("mdi-drag-horizontal");
+            topButton.classList.add("material-icons");
+            topButton.textContent = "drag_indicator";
             topButton.onmouseenter = () => (topButton!.style.opacity = "1");
             topButton.onmouseleave = () => (topButton!.style.opacity = "0");
             topButton.onclick = () => {
@@ -817,8 +817,8 @@ function _handleTable() {
             leftButton.style.cursor = "grab";
             leftButton.style.fontSize = "1.5rem";
             leftButton.classList.add("left-button");
-            leftButton.classList.add("mdi");
-            leftButton.classList.add("mdi-drag-vertical");
+            leftButton.classList.add("material-icons");
+            leftButton.textContent = "drag_indicator";
             leftButton.onmouseenter = () => (leftButton!.style.opacity = "1");
             leftButton.onmouseleave = () => (leftButton!.style.opacity = "0");
             leftButton.onclick = () => {

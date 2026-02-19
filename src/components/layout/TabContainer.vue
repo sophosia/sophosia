@@ -85,9 +85,10 @@
         </q-menu>
       </template>
     </Tab>
-    <!-- trailing tab header for dropping tabs into the header -->
+    <!-- trailing tab header for dropping tabs + window drag region -->
     <div
       style="width: 100%; height: 100%"
+      data-tauri-drag-region
       @dragover="(ev) => onDragOverTabContainer(ev)"
       @dragleave="(ev) => onDragLeaveTabContainer(ev)"
       @drop="(ev) => onDropTabContainer(ev)"

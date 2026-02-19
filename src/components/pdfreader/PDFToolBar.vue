@@ -28,7 +28,7 @@
         size="1rem"
         padding="none"
         :ripple="false"
-        icon="mdi-chevron-left"
+        icon="chevron_left"
         @click="pdfApp.jumpToPageHistory(-1)"
         :disable="pdfApp.pageHistoryIndex.value <= 0"
       >
@@ -39,7 +39,7 @@
         size="1rem"
         padding="none"
         :ripple="false"
-        icon="mdi-chevron-right"
+        icon="chevron_right"
         @click="pdfApp.jumpToPageHistory(1)"
         :disable="
           !pdfApp.state.pageHistory ||
@@ -75,32 +75,32 @@
       :options="[
         {
           value: AnnotationType.CURSOR,
-          icon: 'mdi-cursor-text',
+          icon: 'text_fields',
           slot: AnnotationType.CURSOR,
         },
         {
           value: AnnotationType.HIGHLIGHT,
-          icon: 'mdi-marker',
+          icon: 'border_color',
           slot: AnnotationType.HIGHLIGHT,
         },
         {
           value: AnnotationType.UNDERLINE,
-          icon: 'mdi-format-underline',
+          icon: 'format_underline',
           slot: AnnotationType.UNDERLINE,
         },
         {
           value: AnnotationType.STRIKEOUT,
-          icon: 'mdi-format-strikethrough',
+          icon: 'strikethrough_s',
           slot: AnnotationType.STRIKEOUT,
         },
         {
           value: AnnotationType.RECTANGLE,
-          icon: 'mdi-rectangle',
+          icon: 'crop_landscape',
           slot: AnnotationType.RECTANGLE,
         },
         {
           value: AnnotationType.COMMENT,
-          icon: 'mdi-comment-text',
+          icon: 'comment',
           slot: AnnotationType.COMMENT,
         },
         {
@@ -186,7 +186,7 @@
       flat
       dense
       square
-      icon="mdi-format-list-bulleted"
+      icon="format_list_bulleted"
       size="0.8rem"
       padding="xs"
       :ripple="false"
@@ -200,7 +200,7 @@
       flat
       dense
       square
-      icon="mdi-information-outline"
+      icon="info"
       size="0.8rem"
       padding="xs"
       :ripple="false"

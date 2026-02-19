@@ -2,7 +2,7 @@ import { Notify } from "quasar";
 
 Notify.setDefaults({
   position: "top-right",
-  icon: "mdi-information",
+  icon: "info",
   iconColor: "primary",
-  actions: [{ icon: "mdi-close", size: "md", handler: () => {} }],
+  actions: [{ icon: "close", size: "md", handler: () => {} }],
 });

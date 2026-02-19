@@ -232,7 +232,7 @@
             flat
             padding="none"
             size="md"
-            icon="mdi-open-in-new"
+            icon="open_in_new"
             :disable="!!!meta.URL"
             @click="openURL(meta?.URL)"
           >
@@ -265,7 +265,7 @@
             flat
             padding="none"
             size="md"
-            icon="mdi-open-in-new"
+            icon="open_in_new"
             :disable="!meta.path"
             @click="
               async () => {
@@ -316,7 +316,7 @@
           dense
           clickable
           size="1rem"
-          icon="mdi-tag"
+          icon="label"
           removable
           @remove="removeTag(tag)"
           @click="
@@ -343,7 +343,7 @@
           :ripple="false"
           dense
           size="1rem"
-          icon="mdi-folder-outline"
+          icon="folder_open"
           :label="name"
         />
       </div>

@@ -4,16 +4,15 @@
       flat
       dense
       square
-      icon="mdi-plus"
       size="0.8rem"
       padding="none"
       :ripple="false"
     >
+      <Plus width="16" height="16" />
       <q-tooltip>
         {{ $t("add", { type: $t("project") }) }}
       </q-tooltip>
       <q-menu
-        square
         class="menu"
       >
         <q-list dense>
@@ -72,14 +71,13 @@
       flat
       dense
       square
-      icon="mdi-filter-cog-outline"
       size="0.7rem"
       padding="none"
       :ripple="false"
     >
+      <FilterIcon width="14" height="14" />
       <q-tooltip>{{ $t("view") }}</q-tooltip>
       <q-menu
-        square
         class="menu"
       >
         <q-list dense>
@@ -114,16 +112,12 @@
       debounce="500"
     >
       <template v-slot:append>
-        <q-icon
-          class="cursor-pointer"
-          name="mdi-magnify"
-        />
+        <Search width="16" height="16" class="cursor-pointer" />
         <q-btn-dropdown
           dense
           size="md"
           padding="0"
           :ripple="false"
-          dropdown-icon="mdi-chevron-down"
         >
           <div class="text-center">Search Mode</div>
           <div class="q-gutter-sm q-pa-sm">
@@ -150,22 +144,22 @@
       flat
       dense
       square
-      icon="mdi-information-outline"
       size="0.8rem"
       padding="none"
       :ripple="false"
       :color="layoutStore.rightMenuSize > 0 ? 'primary' : ''"
       @click="layoutStore.toggleRightMenu()"
     >
+      <InfoCircle width="16" height="16" />
       <q-tooltip>{{ $t("info") }}</q-tooltip>
     </q-btn>
   </q-toolbar>
 </template>
 
 <script setup lang="ts">
-// types
 import { open } from "@tauri-apps/api/dialog";
 import { useLayoutStore } from "src/stores/layoutStore";
+import { Plus, Filter as FilterIcon, Search, InfoCircle } from "@iconoir/vue";
 
 const layoutStore = useLayoutStore();
 
@@ -196,13 +190,8 @@ const emit = defineEmits([
   "showIdentifierDialog",
 ]);
 
-/**
- * Opens a file dialog and adds projects based on the selected files.
- * Handles different types of file imports, including single files or collections.
- * @param {string} type - The type of file import ('file' or 'collection').
- */
 async function addByFiles(type: string) {
-  let filePath: string | string[] | null; //no type checking for now
+  let filePath: string | string[] | null;
   switch (type) {
     case "file":
       filePath = await open({
@@ -212,7 +201,7 @@ async function addByFiles(type: string) {
 
       if (Array.isArray(filePath)) emit("addByFiles", filePath);
       else if (!filePath) return;
-      else emit("addByFiles", [filePath]); // user selected a single file
+      else emit("addByFiles", [filePath]);
 
       break;
     case "collection":
@@ -228,38 +217,28 @@ async function addByFiles(type: string) {
   }
 }
 
-/**
- * Emits an event to trigger the creation of an empty project.
- */
 function addEmptyProject() {
   emit("addEmptyProject");
 }
 
-/**
- * Emits an event to trigger the creation of an empty notebook.
- */
 function addNotebook() {
   emit("addNotebook");
 }
 
-/**
- * Emits an event to show the dialog for adding a project by identifier.
- */
 function addByID() {
   emit("showIdentifierDialog");
 }
 </script>
-<stlye lang="scss" scoped>
-//here to prevent conflict with general tabs selector in global scss file
+<style lang="scss" scoped>
 .actionbar-input {
   .q-field__control {
-    height: min(2rem, 36px);
+    height: min(2rem, 40px);
   }
   .q-field__control-container {
-    height: min(2rem, 36px);
+    height: min(2rem, 40px);
   }
   .q-field__marginal {
-    height: min(2rem, 36px);
+    height: min(2rem, 40px);
   }
 }
-</stlye>
+</style>

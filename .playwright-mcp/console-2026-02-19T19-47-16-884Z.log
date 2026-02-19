@@ -1,0 +1,16 @@
+[    2467ms] [WARNING] Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.
+Note that this is not an issue if running this frontend on a browser instead of a Tauri window. @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:1002
+[    2602ms] [WARNING] [Vue warn]: Unhandled error during execution of mounted hook 
+  at <App> @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:2136
+[    2629ms] TypeError: Cannot read properties of undefined (reading '__currentWindow')
+    at getCurrent (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:73:54)
+    at Proxy.windowId (http://localhost:9001/src/stores/layoutStore.ts:28:26)
+    at ComputedRefImpl.fn (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:962:30)
+    at refreshComputed (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:602:29)
+    at get value (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1851:5)
+    at MutableReactiveHandler.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1158:61)
+    at Reflect.get (<anonymous>)
+    at Object.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:757:26)
+    at Proxy.loadLayout (http://localhost:9001/src/stores/layoutStore.ts:55:16)
+    at Proxy.wrappedAction (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:1076:18)
+[    2625ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:9001/favicon.ico:0

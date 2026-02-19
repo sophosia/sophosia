@@ -25,18 +25,14 @@ export const useLayoutStore = defineStore("layoutStore", {
   state: () => ({
     initialized: false,
     // toggles and sizes
-    ribbonClickedBtnId: "",
-    prvRibbonClickedBtnId: "",
-    leftMenuSize: 0,
-    prvLeftMenuSize: 0,
     rightMenuSize: 0,
-    leftMenuViewId: "projectNavigator",
     prvRightMenuSize: 0,
     showWelcomeCarousel: true,
 
     // layout
     currentItemId: "",
     historyItemIds: [] as string[],
+    graphFocusItemId: "", // item selected for the Related Items graph view
     // store layout for each window, the key is windowId
     layouts: new Map<string, Layout>(),
   }),
@@ -60,9 +56,6 @@ export const useLayoutStore = defineStore("layoutStore", {
       if (this.initialized) return;
       this.currentItemId = state.currentItemId;
       this.historyItemIds = state.historyItemIds;
-      this.ribbonClickedBtnId = state.ribbonClickedBtnId;
-      this.prvRibbonClickedBtnId = state.ribbonClickedBtnId;
-      this.leftMenuSize = state.leftMenuSize;
       this.rightMenuSize = state.rightMenuSize;
       // load layout from db
       await this.loadLayout();
@@ -80,8 +73,6 @@ export const useLayoutStore = defineStore("layoutStore", {
       return {
         currentItemId: this.currentItemId,
         historyItemIds: this.historyItemIds,
-        ribbonClickedBtnId: this.ribbonClickedBtnId,
-        leftMenuSize: this.leftMenuSize,
         rightMenuSize: this.rightMenuSize,
       } as AppState;
     },
@@ -294,37 +285,6 @@ export const useLayoutStore = defineStore("layoutStore", {
     resizeRightMenu(size: number) {
       this.prvRightMenuSize = size;
       this.rightMenuSize = size < 5 ? 0 : size;
-    },
-
-    /**
-     * ToggrightMenuSize
-     * The size is determined by the minimum size 20 and its previous size
-     * If visible is given, set the state as it is
-     * @param visible
-     */
-    toggleLeftMenu(visible?: boolean) {
-      const isClickedSameBtn =
-        this.ribbonClickedBtnId === this.prvRibbonClickedBtnId;
-      if (visible === undefined) {
-        const show = this.leftMenuSize > 0;
-        if (!isClickedSameBtn && show) return;
-        this.leftMenuSize = show ? 0 : Math.max(this.prvLeftMenuSize, 20);
-      } else {
-        this.leftMenuSize = visible ? Math.max(this.prvLeftMenuSize, 20) : 0;
-      }
-    },
-
-    setLeftMenuView(viewId: string) {
-      this.leftMenuViewId = viewId;
-    },
-
-    /**
-     * After releasing the splitter, record the size and if close left menu if it is too small
-     * @param size
-     */
-    resizeLeftMenu(size: number) {
-      this.prvLeftMenuSize = size;
-      this.leftMenuSize = size < 10 ? 0 : size;
     },
 
     /***********************************************

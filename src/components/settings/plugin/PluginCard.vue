@@ -2,14 +2,14 @@
   <q-card
     flat
     bordered
-    square
     class="card q-mb-sm row items-center justify-between"
   >
     <q-card-section class="q-py-none">
       <div class="text-subtitle1 text-bold">
         {{ manifest.name }}
-        <q-icon
-          name="mdi-star"
+        <StarIcon
+          width="14"
+          height="14"
           class="q-ml-md"
         />
         {{ star }}
@@ -27,9 +27,9 @@
         size="0.7rem"
         padding="xs"
         :ripple="false"
-        icon="mdi-cog-outline"
         @click="openSettingPage(manifest)"
       >
+        <SettingsIcon width="16" height="16" />
         <q-tooltip>{{ $t("settings") }}</q-tooltip>
       </q-btn>
       <q-btn
@@ -40,9 +40,9 @@
         size="0.7rem"
         padding="xs"
         :ripple="false"
-        icon="mdi-arrow-up"
         @click="$emit('install')"
       >
+        <ArrowUp width="16" height="16" />
         <q-tooltip>{{ $t("update") }}</q-tooltip>
       </q-btn>
       <q-btn
@@ -53,9 +53,9 @@
         size="0.7rem"
         padding="xs"
         :ripple="false"
-        icon="mdi-trash-can-outline"
         @click="$emit('uninstall')"
       >
+        <Trash width="16" height="16" />
         <q-tooltip>{{ $t("delete") }}</q-tooltip>
       </q-btn>
       <q-toggle
@@ -70,7 +70,6 @@
       <q-btn
         dense
         unelevated
-        square
         no-caps
         size="0.8rem"
         color="primary"
@@ -87,6 +86,7 @@
   </q-card>
 </template>
 <script setup lang="ts">
+import { Star as StarIcon, Settings as SettingsIcon, ArrowUp, Trash } from "@iconoir/vue";
 import { PageType, PluginManifest, PluginStatus } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { PropType, computed, onMounted, ref, watch } from "vue";
@@ -111,7 +111,7 @@ const enabled = computed({
 watch(
   () => props.status,
   (status: PluginStatus | undefined) => {
-    disableInstall.value = !!status ? true : false;
+    disableInstall.value = !!status;
   }
 );
 
@@ -123,7 +123,6 @@ function openSettingPage(manifest: PluginManifest) {
 }
 
 onMounted(async () => {
-  // get star
   try {
     let response = await fetch(
       `https://api.github.com/repos/${props.manifest.repo}`

@@ -5,7 +5,7 @@
     unelevated
     size="0.8rem"
     :ripple="false"
-    icon="mdi-eraser"
+    icon="ink_eraser"
     padding="none"
     @click="$emit('setEraserTool')"
     data-cy="btn-dropdown"

@@ -44,9 +44,9 @@ module.exports = configure(function (/* ctx */) {
       // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
       // "bootstrap-icons",
 
-      "roboto-font", // optional, you are not bound to it
+      // "roboto-font", // replaced with DM Sans
       "material-icons", // still need it in quasar's components
-      "mdi-v7",
+      // "mdi-v7", // replaced with Iconoir
     ],
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build

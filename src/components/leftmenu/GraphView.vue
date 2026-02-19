@@ -58,6 +58,7 @@ const props = defineProps({
 const layoutStore = useLayoutStore();
 const bus = inject("bus") as EventBus;
 
+const graph = ref<HTMLElement>();
 const specialPages = ref(["library", "settings"]);
 
 watch(
@@ -109,8 +110,9 @@ function setStyle(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
  * @param {Object} elements - Elements to add to the graph.
  */
 function drawGraph(elements: { nodes: NodeUI[]; edges: EdgeUI[] }) {
+  if (!graph.value) return;
   let cy = cytoscape({
-    container: document.getElementById("cy"),
+    container: graph.value,
 
     boxSelectionEnabled: false,
 

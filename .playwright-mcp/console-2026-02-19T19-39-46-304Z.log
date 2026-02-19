@@ -1,0 +1,157 @@
+[    3153ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Gateway Timeout) @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/quasar_wrappers.js?v=ee38bb60:0
+[    3153ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Gateway Timeout) @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=0f0afe7a:0
+[    3154ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Gateway Timeout) @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=3fc85452:0
+[    4351ms] [WARNING] Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.
+Note that this is not an issue if running this frontend on a browser instead of a Tauri window. @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/@tauri-apps_api_window.js?v=983c11cb:1045
+[    4511ms] [WARNING] [Vue warn]: Unhandled error during execution of mounted hook 
+  at <App> @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=983c11cb:2136
+[    4533ms] TypeError: Cannot read properties of undefined (reading '__currentWindow')
+    at getCurrent (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/@tauri-apps_api_window.js?v=983c11cb:116:54)
+    at Proxy.windowId (http://localhost:9001/src/stores/layoutStore.ts:28:26)
+    at ComputedRefImpl.fn (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=983c11cb:962:30)
+    at refreshComputed (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=983c11cb:602:29)
+    at get value (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=983c11cb:1851:5)
+    at MutableReactiveHandler.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=983c11cb:1158:61)
+    at Reflect.get (<anonymous>)
+    at Object.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=983c11cb:757:26)
+    at Proxy.loadLayout (http://localhost:9001/src/stores/layoutStore.ts:55:16)
+    at Proxy.wrappedAction (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=983c11cb:1076:18)
+[    4530ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:9001/favicon.ico:0
+[    5906ms] [ERROR] Failed to load resource: the server responded with a status of 504 (Gateway Timeout) @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/@tauri-apps_api_event.js?v=398ebea9:0
+[    5906ms] [WARNING] [Vue Router warn]: uncaught error during route navigation: @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=983c11cb:46
+[    5906ms] [ERROR] TypeError: Failed to fetch dynamically imported module: http://localhost:9001/src/layouts/MainWindow.vue @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=983c11cb:2430
+[    5906ms] [WARNING] [Vue Router warn]: Unexpected error when starting the router: TypeError: Failed to fetch dynamically imported module: http://localhost:9001/src/layouts/MainWindow.vue @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=983c11cb:46
+[    7453ms] [WARNING] Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.
+Note that this is not an issue if running this frontend on a browser instead of a Tauri window. @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:1002
+[    7591ms] [WARNING] [Vue warn]: Unhandled error during execution of mounted hook 
+  at <App> @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:2136
+[    7593ms] TypeError: Cannot read properties of undefined (reading '__currentWindow')
+    at getCurrent (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:73:54)
+    at Proxy.windowId (http://localhost:9001/src/stores/layoutStore.ts:28:26)
+    at ComputedRefImpl.fn (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:962:30)
+    at refreshComputed (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:602:29)
+    at get value (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1851:5)
+    at MutableReactiveHandler.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1158:61)
+    at Reflect.get (<anonymous>)
+    at Object.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:757:26)
+    at Proxy.loadLayout (http://localhost:9001/src/stores/layoutStore.ts:55:16)
+    at Proxy.wrappedAction (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:1076:18)
+[    7840ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:9001/src/components/leftmenu/ProjectTree.vue:0
+[    7840ms] [WARNING] [Vue Router warn]: uncaught error during route navigation: @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=7a988443:46
+[    7840ms] [ERROR] TypeError: Failed to fetch dynamically imported module: http://localhost:9001/src/layouts/MainWindow.vue @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=7a988443:2430
+[    7841ms] [WARNING] [Vue Router warn]: Unexpected error when starting the router: TypeError: Failed to fetch dynamically imported module: http://localhost:9001/src/layouts/MainWindow.vue @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=7a988443:46
+[   16714ms] [WARNING] Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.
+Note that this is not an issue if running this frontend on a browser instead of a Tauri window. @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:1002
+[   16765ms] [WARNING] [Vue warn]: Unhandled error during execution of mounted hook 
+  at <App> @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:2136
+[   16766ms] TypeError: Cannot read properties of undefined (reading '__currentWindow')
+    at getCurrent (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:73:54)
+    at Proxy.windowId (http://localhost:9001/src/stores/layoutStore.ts:28:26)
+    at ComputedRefImpl.fn (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:962:30)
+    at refreshComputed (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:602:29)
+    at get value (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1851:5)
+    at MutableReactiveHandler.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1158:61)
+    at Reflect.get (<anonymous>)
+    at Object.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:757:26)
+    at Proxy.loadLayout (http://localhost:9001/src/stores/layoutStore.ts:55:16)
+    at Proxy.wrappedAction (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:1076:18)
+[   19258ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:9001/src/components/leftmenu/ProjectTree.vue?import&t=1771530005485:0
+[   19260ms] [ERROR] [hmr] Failed to reload /src/components/leftmenu/ProjectTree.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:9001/@vite/client:194
+[   19429ms] TypeError: Cannot destructure property 'default' of 'undefined' as it is undefined.
+    at http://localhost:9001/src/components/leftmenu/ProjectTree.vue?t=1771529999871:470:36
+    at http://localhost:9001/@vite/client:519:60
+    at http://localhost:9001/@vite/client:461:13
+    at http://localhost:9001/@vite/client:350:60
+    at Array.forEach (<anonymous>)
+    at queueUpdate (http://localhost:9001/@vite/client:350:38)
+[   20265ms] [WARNING] Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.
+Note that this is not an issue if running this frontend on a browser instead of a Tauri window. @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:1002
+[   20297ms] [WARNING] [Vue warn]: Unhandled error during execution of mounted hook 
+  at <App> @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:2136
+[   20298ms] TypeError: Cannot read properties of undefined (reading '__currentWindow')
+    at getCurrent (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:73:54)
+    at Proxy.windowId (http://localhost:9001/src/stores/layoutStore.ts:28:26)
+    at ComputedRefImpl.fn (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:962:30)
+    at refreshComputed (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:602:29)
+    at get value (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1851:5)
+    at MutableReactiveHandler.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1158:61)
+    at Reflect.get (<anonymous>)
+    at Object.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:757:26)
+    at Proxy.loadLayout (http://localhost:9001/src/stores/layoutStore.ts:55:16)
+    at Proxy.wrappedAction (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:1076:18)
+[   20478ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:9001/src/components/leftmenu/ProjectTree.vue?t=1771530005485:0
+[   20480ms] [WARNING] [Vue Router warn]: uncaught error during route navigation: @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=7a988443:46
+[   20480ms] [ERROR] TypeError: Failed to fetch dynamically imported module: http://localhost:9001/src/layouts/MainWindow.vue?t=1771530005489 @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=7a988443:2430
+[   20480ms] [WARNING] [Vue Router warn]: Unexpected error when starting the router: TypeError: Failed to fetch dynamically imported module: http://localhost:9001/src/layouts/MainWindow.vue?t=1771530005489 @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=7a988443:46
+[   28279ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   29282ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   30285ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   31287ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   32290ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   33293ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   34295ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   35298ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   36300ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   37302ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   38304ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   39307ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   40311ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   41314ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   42317ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[   46158ms] [WARNING] Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.
+Note that this is not an issue if running this frontend on a browser instead of a Tauri window. @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:1002
+[   46232ms] [WARNING] [Vue warn]: Unhandled error during execution of mounted hook 
+  at <App> @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:2136
+[   46245ms] TypeError: Cannot read properties of undefined (reading '__currentWindow')
+    at getCurrent (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:73:54)
+    at Proxy.windowId (http://localhost:9001/src/stores/layoutStore.ts:28:26)
+    at ComputedRefImpl.fn (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:962:30)
+    at refreshComputed (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:602:29)
+    at get value (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1851:5)
+    at MutableReactiveHandler.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1158:61)
+    at Reflect.get (<anonymous>)
+    at Object.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:757:26)
+    at Proxy.loadLayout (http://localhost:9001/src/stores/layoutStore.ts:55:16)
+    at Proxy.wrappedAction (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:1076:18)
+[   46871ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:9001/src/components/leftmenu/ProjectTree.vue:0
+[   46871ms] [WARNING] [Vue Router warn]: uncaught error during route navigation: @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=7a988443:46
+[   46871ms] [ERROR] TypeError: Failed to fetch dynamically imported module: http://localhost:9001/src/layouts/MainWindow.vue @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=7a988443:2430
+[   46871ms] [WARNING] [Vue Router warn]: Unexpected error when starting the router: TypeError: Failed to fetch dynamically imported module: http://localhost:9001/src/layouts/MainWindow.vue @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/vue-router.js?v=7a988443:46
+[   97415ms] [WARNING] Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.
+Note that this is not an issue if running this frontend on a browser instead of a Tauri window. @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:1002
+[   97451ms] [WARNING] [Vue warn]: Unhandled error during execution of mounted hook 
+  at <App> @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:2136
+[   97452ms] TypeError: Cannot read properties of undefined (reading '__currentWindow')
+    at getCurrent (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:73:54)
+    at Proxy.windowId (http://localhost:9001/src/stores/layoutStore.ts:28:26)
+    at ComputedRefImpl.fn (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:962:30)
+    at refreshComputed (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:602:29)
+    at get value (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1851:5)
+    at MutableReactiveHandler.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1158:61)
+    at Reflect.get (<anonymous>)
+    at Object.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:757:26)
+    at Proxy.loadLayout (http://localhost:9001/src/stores/layoutStore.ts:55:16)
+    at Proxy.wrappedAction (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:1076:18)
+[  121169ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[  122172ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[  123175ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[  124177ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[  125180ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[  126182ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[  127185ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:9001/__vite_ping:0
+[  127341ms] [ERROR] WebSocket is already in CLOSING or CLOSED state. @ http://localhost:9001/@vite/client:215
+[  131418ms] [WARNING] Could not find "window.__TAURI_METADATA__". The "appWindow" value will reference the "main" window label.
+Note that this is not an issue if running this frontend on a browser instead of a Tauri window. @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:1002
+[  131489ms] [WARNING] [Vue warn]: Unhandled error during execution of mounted hook 
+  at <App> @ http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:2136
+[  131492ms] TypeError: Cannot read properties of undefined (reading '__currentWindow')
+    at getCurrent (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-CXMMULI3.js?v=7a988443:73:54)
+    at Proxy.windowId (http://localhost:9001/src/stores/layoutStore.ts:28:26)
+    at ComputedRefImpl.fn (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:962:30)
+    at refreshComputed (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:602:29)
+    at get value (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1851:5)
+    at MutableReactiveHandler.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/chunk-ZSB322H3.js?v=7a988443:1158:61)
+    at Reflect.get (<anonymous>)
+    at Object.get (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:757:26)
+    at Proxy.loadLayout (http://localhost:9001/src/stores/layoutStore.ts:55:16)
+    at Proxy.wrappedAction (http://localhost:9001/node_modules/.q-cache/vite/spa/deps/pinia.js?v=7a988443:1076:18)

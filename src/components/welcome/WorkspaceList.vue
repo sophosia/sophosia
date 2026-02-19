@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="q-ml-md q-mt-sm"
-    style="font-size: 1.3rem"
-  >
+  <div class="q-ml-md q-mt-sm workspace-heading">
     {{ $t("workspace") }}
   </div>
   <q-list>
@@ -13,12 +10,12 @@
       @click="$emit('update:modelValue', workspace.path)"
     >
       <q-item-section>
-        <q-item-label style="font-size: 1.2rem">
+        <q-item-label class="workspace-label">
           {{ workspace.label }}
         </q-item-label>
         <q-item-label
           caption
-          style="font-size: 1rem; word-wrap: break-word"
+          class="workspace-path"
         >
           {{ workspace.path }}
         </q-item-label>
@@ -28,8 +25,8 @@
           dense
           flat
           :ripple="false"
-          icon="mdi-dots-vertical"
         >
+          <MoreVert width="18" height="18" />
           <q-popup-proxy>
             <WorkspaceMenu
               @showInExplorer="showInExplorer"
@@ -48,15 +45,12 @@ import { renameFile } from "@tauri-apps/api/fs";
 import { homeDir, sep } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/tauri";
 import { Config, db } from "src/backend/database";
-import { PropType, computed } from "vue";
+import { computed } from "vue";
+import { MoreVert } from "@iconoir/vue";
 import WorkspaceMenu from "./WorkspaceMenu.vue";
 
 const props = defineProps({
   modelValue: { type: String, default: "" },
-  workspaces: {
-    type: Object as PropType<{ label: string; path: string }[]>,
-    default: [],
-  },
 });
 const emit = defineEmits(["update:modelValue"]);
 
@@ -86,16 +80,13 @@ async function removeStoragePath() {
 }
 
 async function showFolderPicker() {
-  // let result = window.fileBrowser.showFolderPicker();
-  let result = await open({
+  const result = await open({
     directory: true,
     multiple: false,
     defaultPath: await homeDir(),
   });
-  if (result !== undefined && result != null && !!result) {
-    let storagePath = result as string; // do not update texts in label yet
-    await changeStoragePath(storagePath);
-  }
+  if (!result) return;
+  await changeStoragePath(result as string);
 }
 
 async function changeStoragePath(newPath: string) {
@@ -108,3 +99,18 @@ async function changeStoragePath(newPath: string) {
   emit("update:modelValue", newPath);
 }
 </script>
+<style scoped lang="scss">
+.workspace-heading {
+  font-size: 1.3rem;
+  color: var(--q-reg-text);
+}
+.workspace-label {
+  font-size: 1.2rem;
+  color: var(--q-reg-text);
+}
+.workspace-path {
+  font-size: 1rem;
+  word-wrap: break-word;
+  color: var(--q-text-muted);
+}
+</style>

@@ -5,7 +5,7 @@
     unelevated
     size="0.8rem"
     :ripple="false"
-    icon="mdi-draw"
+    icon="draw"
     padding="none"
     @click="$emit('setInkTool')"
     data-cy="btn-dropdown"

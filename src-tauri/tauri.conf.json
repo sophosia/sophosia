@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
     "beforeBuildCommand": "yarn quasar build",
-    "beforeDevCommand": "yarn quasar dev",
+    "beforeDevCommand": "lsof -ti:9000 | xargs kill -9 2>/dev/null; yarn quasar dev",
     "devPath": "http://localhost:9000",
     "distDir": "../dist/spa"
   },
@@ -112,7 +112,7 @@
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI2REIzMjc5Q0ZGRDkxRDUKUldUVmtmM1BlVExidHZSVS9QMkgyZHRoSmZVOTl1bzFkTCswWDlYdng5N29XVTAyN1M3MXRNalkK"
     },
     "security": {
-      "csp": "default-src 'self' https: asset: https://asset.localhost data:; style-src 'self' 'unsafe-inline' asset:; script-src asset:"
+      "csp": "default-src 'self' https: asset: https://asset.localhost data:; style-src 'self' 'unsafe-inline' asset: https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; script-src asset:"
     },
     "windows": [
       {
@@ -121,6 +121,8 @@
         "width": 1200,
         "resizable": true,
         "title": "Sophosia",
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
         "fileDropEnabled": false
       }
     ]
