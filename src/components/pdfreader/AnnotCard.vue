@@ -31,7 +31,7 @@
           flat
           padding="none"
           :ripple="false"
-          icon="mdi-dots-vertical"
+          icon="more_vert"
           :class="{ 'text-black': luminosity(annot.data.color) > 0.4 }"
           data-cy="btn-menu"
         >

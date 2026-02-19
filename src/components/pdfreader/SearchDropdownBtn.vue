@@ -2,7 +2,7 @@
   <q-btn
     unelevated
     :ripple="false"
-    icon="mdi-magnify"
+    icon="search"
     size="0.8rem"
     padding="xs"
     data-cy="btn-dropdown"
@@ -33,7 +33,7 @@
         <q-btn
           dense
           flat
-          icon="mdi-arrow-left"
+          icon="arrow_back"
           :ripple="false"
           @click="$emit('changeMatch', -1)"
           data-cy="btn-change-match-prev"
@@ -41,7 +41,7 @@
         <q-btn
           dense
           flat
-          icon="mdi-arrow-right"
+          icon="arrow_forward"
           :ripple="false"
           @click="$emit('changeMatch', 1)"
           data-cy="btn-change-match-next"

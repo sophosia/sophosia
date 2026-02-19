@@ -1,200 +1,263 @@
-// app global css in SCSS form
+// ============================================================
+// Sophosia Design System
+// ============================================================
+
+// ----------------------------------------------------------
+// Theme: Dark Mode
+// ----------------------------------------------------------
 body.body--dark {
-  --q-primary: #aab8ff;
-  --q-secondary: #3d59a1;
-  --q-dark: #30313b;
-  --q-dark-page: #1f212d;
-  --q-edge: rgba(0, 0, 0, 0.209);
-  // --q-reg-text: #D1D1D3;
-  --q-reg-text: white;
-  --q-menu-highlight: #474851;
-  --q-main-highlight: #aab8ff25;
+  --q-primary: #818cf8;
+  --q-secondary: #6366f1;
+  --q-dark: #1a1b23;
+  --q-dark-page: #0f1117;
+  --q-edge: rgba(255, 255, 255, 0.06);
+  --q-reg-text: #e4e4e7;
+  --q-text-muted: #8b8d98;
+  --q-menu-highlight: #2e3040;
+  --q-main-highlight: rgba(129, 140, 248, 0.12);
+
+  --q-surface: #1a1b23;
+  --q-elevated: #252630;
+  --q-border: #2e3040;
+  --q-hover: rgba(255, 255, 255, 0.05);
+  --q-active: rgba(129, 140, 248, 0.18);
 }
 
+// ----------------------------------------------------------
+// Theme: Light Mode
+// ----------------------------------------------------------
 body {
-  --q-primary: #78b5de;
-  --q-secondary: #9fc5de;
-  --q-dark: #d4d6e4;
-  --q-dark-page: #e1e2e7;
-  --q-edge: white;
-  --q-reg-text: black;
+  --q-primary: #6366f1;
+  --q-secondary: #818cf8;
+  --q-dark: #f4f4f5;
+  --q-dark-page: #fafafa;
+  --q-edge: #e4e4e7;
+  --q-reg-text: #18181b;
+  --q-text-muted: #71717a;
+  --q-menu-highlight: #e4e4e7;
+  --q-main-highlight: rgba(99, 102, 241, 0.08);
 
-  // golden-layout background
+  --q-surface: #ffffff;
+  --q-elevated: #f4f4f5;
+  --q-border: #e4e4e7;
+  --q-hover: rgba(0, 0, 0, 0.04);
+  --q-active: rgba(99, 102, 241, 0.12);
+
+  // Layout
   --color-layout-base-bkgd: var(--q-dark-page);
-  // golden-layout tabs
-  --color-layout-active-tab-bkgd: var(
-    --q-menu-highlight
-  ); // tab hover mode background
-  --color-layout-active-tab-fore: var(
-    --q-reg-text
-  ); // tab hover mode text color
-  --color-layout-focused-tab-bkgd: var(
-    --q-main-highlight
-  ); // selected tab background
-  --color-layout-single-tab-container-fore: var(--q-reg-text); //tab text color
-  --color-layout-single-tab-container-bkgd: var(--q-dark); //tabs background
-  --color-layout-header-bkgd: var(--q-dark); //header background
+  --color-layout-active-tab-bkgd: var(--q-menu-highlight);
+  --color-layout-active-tab-fore: var(--q-reg-text);
+  --color-layout-focused-tab-bkgd: var(--q-main-highlight);
+  --color-layout-single-tab-container-fore: var(--q-reg-text);
+  --color-layout-single-tab-container-bkgd: var(--q-dark);
+  --color-layout-header-bkgd: var(--q-dark);
 
-  // left menu
+  // Left menu
   --color-leftmenu-bkgd: var(--q-dark);
 
-  // project tree
+  // Project tree
   --color-projecttree-bkgd: var(--q-dark);
 
-  // library page
-  --color-library-tableview-header-bkgd: var(
-    --q-dark-page
-  ); //title and authors header background
-  --color-library-tableview-row-bkgd: var(
-    --q-dark-page
-  ); //table rows background
-  --color-library-tableview-highlighted-row-bkgd: var(
-    --q-main-highlight
-  ); // selected table row background
-  --color-library-toolbar-bkgd: var(--q-dark-page); //toolbar background
-  --color-library-tableview-bkgd: var(--q-dark-page); //library background
-  --color-library-treeview-bkgd: var(--q-dark-page); //library column
+  // Library page
+  --color-library-tableview-header-bkgd: var(--q-dark-page);
+  --color-library-tableview-row-bkgd: var(--q-dark-page);
+  --color-library-tableview-highlighted-row-bkgd: var(--q-main-highlight);
+  --color-library-toolbar-bkgd: var(--q-dark-page);
+  --color-library-tableview-bkgd: var(--q-dark-page);
+  --color-library-treeview-bkgd: var(--q-dark-page);
 
-  // settings page
-  --color-settings-tabs-area-bkgd: var(--q-dark-page); //settings menu column
-  --color-settings-tab-panel-bkgd: var(
-    --q-dark-page
-  ); // settings page background
-  --color-settings-card-bkgd: var(--q-dark-page); //settings cards
+  // Settings page
+  --color-settings-tabs-area-bkgd: var(--q-dark-page);
+  --color-settings-tab-panel-bkgd: var(--q-dark-page);
+  --color-settings-card-bkgd: var(--q-dark-page);
 
-  // reader page
-  --color-pdfreader-viewer-bkgd: var(--q-dark-page); //pdf-reader background
-  --color-pdfreader-toolbar-bkgd: var(--q-dark-page); //pdf toolbar background
-  --color-pdfreader-colorpicker-bkgd: var(--q-dark-page); // pdf colorpicker
+  // Reader page
+  --color-pdfreader-viewer-bkgd: var(--q-dark-page);
+  --color-pdfreader-toolbar-bkgd: var(--q-dark-page);
+  --color-pdfreader-colorpicker-bkgd: var(--q-dark-page);
 
-  // right menu
-  --color-rightmenu-tabs-bkgd: var(--q-dark); //right menu tabs bar background
-  --color-rightmenu-tab-panel-bkgd: var(--q-dark); //right menu background
+  // Right menu
+  --color-rightmenu-tabs-bkgd: var(--q-dark);
+  --color-rightmenu-tab-panel-bkgd: var(--q-dark);
 
-  // plugin store
+  // Plugin store
   --color-pluginstore-dialog-bkgd: var(--q-dark);
 
-  // hoverPane
-  --color-hoverpane-border: var(--q-dark-page);
+  // Hover pane
+  --color-hoverpane-border: var(--q-border);
   --color-hoverpane-bkgd: var(--q-dark-page);
 }
 
+// ----------------------------------------------------------
+// Layout: Sidebar & Traffic Lights
+// ----------------------------------------------------------
+:root {
+  --sidebar-width: 270px;
+  --traffic-light-height: 0px;
+}
+
+body[data-platform="Darwin"] {
+  --traffic-light-height: 38px;
+}
+
+body[data-platform="Darwin"][data-fullscreen="true"] {
+  --traffic-light-height: 0px;
+}
+
+// ----------------------------------------------------------
+// Global Base Styles
+// ----------------------------------------------------------
 html {
-  // hide the global scrollbar
   overflow: hidden;
-  // not allow user selection in the app
-  // enable selection in specific places
   user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   -webkit-user-select: none;
 }
 
-a {
-  color: var(--q-reg-text);
+body {
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-// add this to eliminate the small gap created by dialogs
+a {
+  color: var(--q-primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 #q-app {
   width: 100vw;
 }
 
+// ----------------------------------------------------------
+// Button System
+// ----------------------------------------------------------
 .btn {
   border-radius: 8px;
-  background-color: var(--q-secondary);
-  border: 1px solid var(--q-secondary); /* Added '2px solid' as an example */
-
+  background-color: var(--q-primary);
+  color: white;
+  border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 
   &:hover {
-    // lighten it 10%
-    background-color: hsl(from var(--q-secondary) h s calc(l + 10%));
+    background-color: var(--q-secondary);
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 
-// ALl menu base setup
+// Restore focus visibility for keyboard navigation (accessibility)
+.q-btn:focus-visible {
+  outline: 2px solid var(--q-primary);
+  outline-offset: 2px;
+}
+
+// Subtle hover feedback for flat icon buttons
+.q-btn--flat:hover {
+  background: var(--q-hover) !important;
+}
+
+// ----------------------------------------------------------
+// Menu & Dialog Base
+// ----------------------------------------------------------
 .menu {
   border-radius: 8px;
-  background: var(--q-dark-page);
-  border: var(--q-main-highlight);
+  background: var(--q-elevated);
+  border: 1px solid var(--q-border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(12px);
 }
 
 .dialog {
-  border-radius: 8px;
-  background: var(--q-dark-page);
-  border: var(--q-main-highlight);
+  border-radius: 12px;
+  background: var(--q-surface);
+  border: 1px solid var(--q-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   min-width: 20vw;
 }
 
+// ----------------------------------------------------------
+// Tooltips
+// ----------------------------------------------------------
 .q-tooltip {
-  font-size: 0.8rem;
-  // fixed weird line breaks for chinese tooltip
+  font-size: 0.75rem;
+  font-weight: 500;
   word-break: keep-all;
   overflow: hidden;
+  border-radius: 6px;
+  background: var(--q-elevated);
+  color: var(--q-reg-text);
+  border: 1px solid var(--q-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+// ----------------------------------------------------------
+// Splitters
+// ----------------------------------------------------------
 .q-splitter__separator {
   background-color: var(--q-edge) !important;
+  transition: background-color 0.2s ease;
 }
 
 .q-splitter-separator {
   &:hover {
-    background-color: rgba($primary, 0.5) !important;
-    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
+    background-color: rgba($primary, 0.4) !important;
+    box-shadow: 0 0 0 1px rgba($primary, 0.4);
   }
+
   &:active {
-    background-color: rgba($primary, 0.5) !important;
-    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
+    background-color: rgba($primary, 0.6) !important;
+    box-shadow: 0 0 0 1px rgba($primary, 0.6);
   }
 }
 
 .q-splitter-separator-horizontal {
   &:hover {
-    background-color: rgba($primary, 0.5) !important;
-    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
+    background-color: rgba($primary, 0.4) !important;
+    box-shadow: 0 0 0 1px rgba($primary, 0.4);
   }
+
   &:active {
-    background-color: rgba($primary, 0.5) !important;
-    box-shadow: 0 0 0px 2px rgba($primary, 0.5);
+    background-color: rgba($primary, 0.6) !important;
+    box-shadow: 0 0 0 1px rgba($primary, 0.6);
   }
 }
 
-// scrollbar styles
-/* width */
+// ----------------------------------------------------------
+// Scrollbar
+// ----------------------------------------------------------
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
-/* handle */
 ::-webkit-scrollbar-thumb {
-  min-height: 10rem;
-  background: rgb(75, 75, 75, 75%);
-  border-radius: 5px;
+  min-height: 3rem;
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 4px;
+
   &:hover {
-    background-color: var(--q-primary);
+    background: rgba(128, 128, 128, 0.5);
   }
 }
 
-/* corner */
 ::-webkit-scrollbar-corner {
   color: transparent;
 }
 
-// dialog card
-.dialog {
-  box-shadow: none;
-  border: 1px solid rgba(128, 128, 128, 0.5);
-}
-
-// no hover effect on the button
-.q-btn .q-focus-helper {
-  display: none;
-}
-
-//Markdown - hoverpane
-
+// ----------------------------------------------------------
+// Hover Pane (Markdown)
+// ----------------------------------------------------------
 .hoverPane {
   position: absolute;
   width: 50%;
@@ -203,38 +266,41 @@ a {
   align-items: center;
   border-radius: 8px;
   background-color: var(--color-hoverpane-bkgd);
+  border: 1px solid var(--color-hoverpane-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .contentPane {
   overflow: auto;
-  padding: 15px;
+  padding: 16px;
   border-radius: 8px;
   background: transparent !important;
 }
 
-// Markdown - table
+// Markdown table
 .highlighted-cell {
   outline: 2px solid var(--q-primary);
 }
 
-//Peek card
-
+// ----------------------------------------------------------
+// Peek Card (PDF)
+// ----------------------------------------------------------
 .peekCard {
   position: absolute !important;
   background: var(--color-pdfreader-viewer-bkgd);
   border-radius: 8px !important;
+  border: 1px solid var(--q-border);
   display: none;
   z-index: 1000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 
-  &:hover {
-    box-shadow: 0 0 0px 2px rgba(var(--q-dark-page), 0.8) !important;
-    z-index: 1001 !important;
-  }
+  &:hover,
   &:active {
-    box-shadow: 0 0 0px 2px rgba(var(--q-dark-page), 0.8) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
     z-index: 1001 !important;
   }
 }
+
 .peekContainer {
   position: absolute;
   left: 0;
@@ -244,19 +310,22 @@ a {
   width: 100%;
 }
 
-//GraphView
-
+// ----------------------------------------------------------
+// Graph View
+// ----------------------------------------------------------
 .square {
   width: 1rem;
   height: 1rem;
   background: var(--q-reg-text);
 }
+
 .circle {
   width: 1rem;
   height: 1rem;
   background: var(--q-reg-text);
   border-radius: 50%;
 }
+
 .triangle {
   width: 0;
   height: 0;
@@ -265,16 +334,20 @@ a {
   border-bottom: 1rem solid var(--q-reg-text);
 }
 
-//Project Navigator
-
+// ----------------------------------------------------------
+// Project Navigator
+// ----------------------------------------------------------
 .project-nav-panel {
   background-color: var(--q-dark);
   overflow: hidden;
 }
 
 .menu-title {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--q-text-muted);
   width: 100%;
 }
 
@@ -282,42 +355,42 @@ a {
   overflow-y: auto;
 }
 
-//Project tree
+// Project tree drag state
 .dragover {
-  border: 1px solid var(--q-menu-highlight);
-  background-color: var(--q-menu-highlight);
+  border: 1px solid var(--q-primary);
+  background-color: var(--q-main-highlight);
+  border-radius: 4px;
 }
 
-//Action bar -- in the componenent to prevent conflict with other the general tabs
-//Export dialog
-
+// ----------------------------------------------------------
+// Dialogs
+// ----------------------------------------------------------
 .export-dialog {
   min-width: 300px;
 }
-
-//Progress dialog
 
 .progess-dialog {
   width: 50vw;
 }
 
-//Import dialog
-
 .import-dialog {
   min-width: 500px;
 }
 
-//Category tree
-.q-category-tree {
-  height: 100%;
-}
-
-//Identifier dialog
 .identifier-dialog {
   min-width: 500px;
 }
 
-//Project browser
+// ----------------------------------------------------------
+// Category Tree
+// ----------------------------------------------------------
+.q-category-tree {
+  height: 100%;
+}
+
+// ----------------------------------------------------------
+// Library: Project Browser
+// ----------------------------------------------------------
 .project-browser-splitter {
   position: absolute;
   width: 100%;
@@ -326,30 +399,36 @@ a {
 
 .library-right-menu-panel {
   overflow: hidden;
+  flex: 1;
 }
 
 .project-action-bar {
-  min-height: 36px;
+  min-height: 40px;
   background: var(--color-library-toolbar-bkgd);
 }
 
-//Project table
-
+// ----------------------------------------------------------
+// Library: Project Table
+// ----------------------------------------------------------
 .stickyHeader {
-  /* height or max-height is important */
   height: 20px;
 
   .q-table__top,
   .q-table__bottom,
   thead tr:first-child th {
-    /* bg color is important for th; just specify one */
     background-color: var(--color-library-tableview-header-bkgd);
   }
 
   thead tr th {
     position: sticky;
     z-index: 1;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--q-text-muted);
   }
+
   thead tr:first-child th {
     top: 0;
   }
@@ -357,26 +436,41 @@ a {
 
 .tableview-row {
   background: var(--color-library-tableview-row-bkgd);
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: var(--q-hover);
+  }
 }
+
 .tableview-highlighted-row {
   background: var(--color-library-tableview-highlighted-row-bkgd);
 }
 
-// table checkbox
+// Table checkbox
 .checkbox {
-  /* Remove most all native input styles */
   appearance: none;
-
   margin-top: 0.1rem;
   color: currentColor;
   width: 1rem;
   height: 1rem;
-  border: 0.1rem solid currentColor;
-  border-radius: 0.15rem;
-
+  border: 1.5px solid var(--q-text-muted);
+  border-radius: 3px;
   display: grid;
   place-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--q-primary);
+  }
+
+  &:checked {
+    border-color: var(--q-primary);
+    background-color: var(--q-primary);
+  }
 }
+
 .checkbox::before {
   content: "";
   width: 1rem;
@@ -384,9 +478,9 @@ a {
   clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
   transform: scale(0);
   transform-origin: bottom left;
-  /* Windows High Contrast Mode */
-  background-color: var(--q-reg-text);
+  background-color: white;
 }
+
 .checkbox:checked::before {
   transform: scale(1);
 }
@@ -395,44 +489,44 @@ a {
   padding: 0;
 }
 
-//TableSearch row
-
+// Table search row
 .q-px-lg {
   font-size: 0.8rem;
 }
 
-//Annotation card
-
+// ----------------------------------------------------------
+// Annotation Card
+// ----------------------------------------------------------
 .annot-card {
   min-width: 250px;
 }
 
-//Annotation List
-// Styles for .q-item-annotlist will be added in the future
-
-//Annotation Menu
-// Styles for .q-menu-annotmenu will be added in the future
-
+// ----------------------------------------------------------
+// Color Picker
+// ----------------------------------------------------------
 .color-picker {
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 .button {
   cursor: pointer;
   padding-left: 10px !important;
   padding-right: 10px !important;
   align-self: center;
   font-size: 1rem;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
 
   &:hover {
     background: var(--q-menu-highlight);
-    border-radius: 5px;
   }
 }
 
-//PDF reader
-
+// ----------------------------------------------------------
+// PDF Reader
+// ----------------------------------------------------------
 .PDF-reader {
   position: absolute;
   width: 100%;
@@ -445,73 +539,113 @@ a {
   background: var(--color-pdfreader-toolbar-bkgd);
 }
 
-//PDF toolbar
 .toolbar {
   min-height: unset;
-  height: 36px;
+  height: 40px;
   background: var(--color-pdfreader-toolbar-bkgd);
-  color: rgb(162, 171, 182);
+  color: var(--q-text-muted);
 }
 
-//Right menu
+// ----------------------------------------------------------
+// Right Menu
+// ----------------------------------------------------------
 .right-menu-tabs {
   background: var(--color-rightmenu-tabs-bkgd);
 }
 
 .right-menu-panel {
-  height: calc(100% - 36px);
+  height: calc(100% - 40px);
   background: var(--color-rightmenu-tab-panel-bkgd);
 }
 
-//Settings  tabs
+// ----------------------------------------------------------
+// Settings
+// ----------------------------------------------------------
 .card {
   background: var(--color-settings-card-bkgd);
+  border-radius: 8px;
 }
-
-//General
-
-//Settings Menu
 
 .settings-panel {
   height: 100%;
   background: var(--color-settings-tabs-area-bkgd);
-  color: var(--q-main-highlights);
 }
 
 .settings {
   background: var(--color-settings-tab-panel-bkgd);
 }
 
-//Metainfo tab
+// ----------------------------------------------------------
+// Meta Info Tab / Right Panel
+// ----------------------------------------------------------
 .tab-panel {
   background: var(--color-rightmenu-tab-panel-bkgd);
 }
 
 .input {
   color: var(--q-reg-text);
-  background: var(--color-rightmenu-tab-panel-bkgd);
-  border: 1px solid grey;
-  font-size: 1rem;
+  background: var(--q-surface);
+  border: 1px solid var(--q-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  padding: 4px 8px;
+  transition: border-color 0.2s ease;
 
   &:focus-visible {
     outline: none !important;
-    border: 2px solid $primary;
+    border-color: var(--q-primary);
+    box-shadow: 0 0 0 2px rgba($primary, 0.2);
   }
 }
 
 .link {
-  color: $primary;
+  color: var(--q-primary);
   text-decoration: underline;
 
   &:hover {
     cursor: pointer;
+    opacity: 0.8;
   }
 }
+
 .chip {
-  background-color: var(--color-rightmenu-tab-panel-bkgd);
+  background-color: var(--q-elevated);
+  border-radius: 6px;
 }
 
+// ----------------------------------------------------------
+// Tree Arrow Icons
+// ----------------------------------------------------------
 .q-icon.q-tree__arrow,
 .q-icon.q-tree__arrow--rotate {
   font-size: 1.3rem;
+}
+
+// ----------------------------------------------------------
+// Iconoir Icon Sizing Helpers
+// ----------------------------------------------------------
+.iconoir-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconoir-xs {
+  width: 16px;
+  height: 16px;
+}
+
+.iconoir-sm {
+  width: 18px;
+  height: 18px;
+}
+
+.iconoir-md {
+  width: 20px;
+  height: 20px;
+}
+
+.iconoir-lg {
+  width: 24px;
+  height: 24px;
 }

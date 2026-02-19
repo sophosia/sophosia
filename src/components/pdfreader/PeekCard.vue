@@ -21,7 +21,7 @@
             square
             dense
             size="md"
-            icon="mdi-magnify-plus-outline"
+            icon="zoom_in"
             :ripple="false"
             @mousedown="
               () => {
@@ -35,7 +35,7 @@
             square
             dense
             size="md"
-            icon="mdi-magnify-minus-outline"
+            icon="zoom_out"
             :ripple="false"
             @mousedown="
               () => {
@@ -51,8 +51,8 @@
             size="md"
             :ripple="false"
             :class="{ 'rotate-45': !pinned }"
-            unchecked-icon="mdi-pin"
-            checked-icon="mdi-pin"
+            unchecked-icon="push_pin"
+            checked-icon="push_pin"
             v-model="pinned"
           />
           <q-btn
@@ -62,7 +62,7 @@
             size="md"
             padding="none"
             :ripple="false"
-            icon="mdi-close"
+            icon="close"
             @click="close(true)"
           />
         </div>
@@ -79,7 +79,7 @@
     <q-icon
       style="cursor: se-resize; right: 0px; bottom: 0px; position: absolute"
       size="1.5rem"
-      name="mdi-resize-bottom-right"
+      name="open_in_full"
       @mousedown="
         (e:MouseEvent) => {
           pinned = true;

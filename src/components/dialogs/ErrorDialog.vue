@@ -12,8 +12,8 @@
           <q-icon
             :name="
               errorDialog.type === 'error'
-                ? 'mdi-alert-circle-outline'
-                : 'mdi-alert-outline'
+                ? 'error_outline'
+                : 'warning_amber'
             "
             :color="errorDialog.type === 'error' ? 'negative' : 'warning'"
             style="font-size: 1.5rem"

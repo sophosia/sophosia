@@ -5,11 +5,11 @@
       flat
       dense
       square
-      icon="mdi-plus"
       size="0.8rem"
       padding="none"
       @click="togglePluginStore(true)"
     >
+      <Plus width="16" height="16" />
       <q-tooltip>{{ $t("add-plugins") }}</q-tooltip>
     </q-btn>
     <q-space v-if="showAddBtn" />
@@ -23,9 +23,10 @@
       v-model="searchText"
     >
       <template v-slot:append>
-        <q-icon
+        <Search
+          width="16"
+          height="16"
           class="cursor-pointer"
-          name="mdi-magnify"
         />
       </template>
     </q-input>
@@ -36,10 +37,10 @@
       dense
       square
       v-close-popup
-      icon="mdi-close"
       size="0.8rem"
       padding="none"
     >
+      <Xmark width="16" height="16" />
       <q-tooltip>{{ $t("close") }}</q-tooltip>
     </q-btn>
   </q-toolbar>
@@ -47,6 +48,7 @@
 <script setup lang="ts">
 import { debounce } from "quasar";
 import { computed, inject } from "vue";
+import { Plus, Search, Xmark } from "@iconoir/vue";
 
 const props = defineProps({
   search: { type: String, required: true },
@@ -72,11 +74,4 @@ const togglePluginStore = inject("togglePluginStore") as (
 .actionbar-input {
   border-radius: 8px;
 }
-// .q-field__control {
-//   height: min(2rem, 36px) !important;
-//   border-radius: 8px !important;
-// }
-// .q-field__marginal {
-//   height: min(2rem, 36px) !important;
-// }
 </style>

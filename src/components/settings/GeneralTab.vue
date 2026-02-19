@@ -12,7 +12,6 @@
           class="selector"
           dense
           outlined
-          dropdown-icon="mdi-chevron-down"
           :options="themeOptions"
           :display-value="theme[0].toUpperCase() + theme.slice(1)"
           v-model="theme"
@@ -63,7 +62,6 @@
         <q-select
           dense
           outlined
-          dropdown-icon="mdi-chevron-down"
           v-model="language"
           :options="languageOptions"
         />
@@ -82,7 +80,6 @@
         <q-select
           dense
           outlined
-          dropdown-icon="mdi-chevron-down"
           map-options
           emit-value
           v-model="settingStore.pdfTranslateLanguage"
@@ -93,7 +90,6 @@
         <q-select
           dense
           outlined
-          dropdown-icon="mdi-chevron-down"
           map-options
           emit-value
           v-model="settingStore.pdfTranslateEngine"
@@ -126,7 +122,6 @@
           outlined
           emit-value
           map-options
-          dropdown-icon="mdi-chevron-down"
           v-model="settingStore.showTranslatedTitle"
           :options="titleTranslateOptions"
         />
@@ -155,14 +150,11 @@
   </div>
 </template>
 <script setup lang="ts">
-// vue
 import CustomRuleModifier from "./CustomRuleModifier.vue";
 import IndexFileCard from "./IndexFileCard.vue";
 import { computed } from "vue";
-// db
 import { Config, Page, Project, db } from "src/backend/database";
 import { getAllProjects } from "src/backend/project";
-// utils
 import { useQuasar } from "quasar";
 import { generateCiteKey } from "src/backend/meta";
 import { useLayoutStore } from "src/stores/layoutStore";
@@ -224,13 +216,10 @@ const themeOptions = ["dark", "light"];
 
 const language = computed({
   get() {
-    let result = languageOptions[0];
-    for (let option of languageOptions) {
-      if (option.value === db.config.language) {
-        result = option;
-      }
-    }
-    return result;
+    return (
+      languageOptions.find((opt) => opt.value === db.config.language) ||
+      languageOptions[0]
+    );
   },
   set(option: { value: string; label: string }) {
     locale.value = option.value;
@@ -256,15 +245,6 @@ const fontSize = computed({
   },
 });
 
-/*********************
- * Methods
- *********************/
-
-/**
- * Updates the citation keys for all projects in the database.
- * Utilizes the current citation key rule set in stateStore settings.
- * Notifies the user upon successful update.
- */
 async function updateCiteKeys() {
   progressDialog.show();
   progressDialog.onConfirm(() => progressDialog.close());
@@ -278,11 +258,6 @@ async function updateCiteKeys() {
   $q.notify(t("updated", { type: t("citation-key") }));
 }
 
-/**
- * Rename PDFs for all projects in the database.
- * Utilizes the pdfRenameRule set in stateStore settings.
- * Notifies the user upon successful update.
- */
 async function renamePDFs() {
   progressDialog.show();
   progressDialog.onConfirm(() => progressDialog.close());
@@ -294,11 +269,6 @@ async function renamePDFs() {
   $q.notify(t("updated", { type: "PDF" }));
 }
 
-/**
- * Update projectIds
- * Utilizes the projectIdRule set in stateStore settings.
- * Notifies the user upon successful update.
- */
 async function updateProjectIds() {
   progressDialog.show();
   progressDialog.onConfirm(() => progressDialog.close());
@@ -306,11 +276,9 @@ async function updateProjectIds() {
   for (const [index, project] of projects.entries()) {
     const oldId = project._id;
     const newId = generateCiteKey(project, settingStore.projectIdRule);
-    // update projectIds and openedProjectIds
     await projectStore.updateProject(oldId, {
       _id: newId,
     } as Project);
-    // update pageIds
     await layoutStore.renamePage(oldId, {
       id: newId,
     } as Page);

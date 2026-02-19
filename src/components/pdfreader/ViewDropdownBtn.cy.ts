@@ -16,10 +16,8 @@ describe("<ViewDropdownBtn />", () => {
     cy.dataCy("scale").should("have.text", "100%");
     cy.dataCy("btn-toggle-spread")
       .children(".text-primary")
-      .should(($el) => expect($el.text().trim()).to.equal("No Spreads"));
-    cy.dataCy("btn-toggle-fullscreen").should(($el) =>
-      expect($el.text().trim()).to.equal("Enter full screen")
-    );
+      .should("contain.text", "No Spreads");
+    cy.dataCy("btn-toggle-fullscreen").should("contain.text", "Enter full screen");
   });
   it("renders - isFullscreen=true", () => {
     // see: https://on.cypress.io/mounting-vue
@@ -35,10 +33,8 @@ describe("<ViewDropdownBtn />", () => {
     cy.dataCy("scale").should("have.text", "100%");
     cy.dataCy("btn-toggle-spread")
       .children(".text-primary")
-      .should(($el) => expect($el.text().trim()).to.equal("No Spreads"));
-    cy.dataCy("btn-toggle-fullscreen").should(($el) =>
-      expect($el.text().trim()).to.equal("Exit full screen")
-    );
+      .should("contain.text", "No Spreads");
+    cy.dataCy("btn-toggle-fullscreen").should("contain.text", "Exit full screen");
   });
   it("changeScale - page-width", () => {
     const vue = cy.mount(ViewDropdownBtn, {

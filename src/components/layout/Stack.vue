@@ -19,7 +19,6 @@
   <EmptyStack
     v-if="stack.children.length === 0"
     @openPage="(page) => layoutStore.openPage(page)"
-    @toggleWelcome="layoutStore.toggleWelcome(true)"
   />
 </template>
 <script setup lang="ts">
@@ -51,17 +50,8 @@ onBeforeUnmount(() => {
   unlisten();
 });
 
-watchEffect(() => {
-  refresh();
-});
+watchEffect(refresh);
 
-/**
- * Move a node to a position relative to the target node with id
- * @param node - the node to be moved
- * @param id - the id of the target node
- * @param pos - position relative to the target node
- * @param fromWindowId - the windowId of the dragged page from
- */
 function movePage(
   page: Page,
   id: string,
@@ -76,13 +66,6 @@ function movePage(
   fromWindow?.emit("closePage", page.id);
 }
 
-/**
- * Move a node to a position relative to the target stack with stackId
- * @param node - the node to be moved
- * @param stackId - the id of the target stack
- * @param pos - position relative to the target node
- * @param fromWindow - the windowId of the dragged page from
- */
 function moveToStack(
   page: Page,
   pos: "center" | "left" | "right" | "top" | "bottom",
@@ -106,22 +89,16 @@ function moveToStack(
     const col = layoutStore.wrappedInCol(props.stack, stack);
     layoutStore.replaceNode(col, props.stack.id);
   } else {
-    // center
     const pages = props.stack.children;
     const lastPageId = pages[pages.length - 1].id;
     layoutStore.insertPage(page, lastPageId, "after");
   }
   layoutStore.setActive(page.id);
-
-  // close the page in the original window
   if (fromWindowId === layoutStore.windowId) return;
   const fromWindow = WebviewWindow.getByLabel(fromWindowId);
   fromWindow?.emit("closePage", page.id);
 }
 
-/**
- * Set visibility of components after moving them around and trigger refresh of the tree
- */
 function refresh() {
   const pages = props.stack.children;
   let setVisible = false;
@@ -142,7 +119,6 @@ function refresh() {
       return;
     }
   }
-  // if cannot find in history, just make first page visible
   if (pages.length > 0) pages[0].visible = true;
 }
 </script>
@@ -150,13 +126,13 @@ function refresh() {
 .page-container {
   position: absolute;
   width: 100%;
-  height: calc(100% - 30px);
+  height: calc(100% - 44px);
 }
 .tab-container {
   display: flex;
   flex-direction: row;
   align-items: center;
   background: var(--color-layout-header-bkgd);
-  height: 30px;
+  height: 44px;
 }
 </style>

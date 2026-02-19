@@ -8,14 +8,13 @@
   >
     <q-tab
       name="metaInfoTab"
-      icon="mdi-information-outline"
       :ripple="false"
     >
+      <InfoCircle width="18" height="18" />
       <q-tooltip>{{ $t("info") }}</q-tooltip>
     </q-tab>
   </q-tabs>
-  <!-- q-tab height 36px -->
-  <q-tab-panels
+    <q-tab-panels
     class="right-menu-panel"
     model-value="metaInfoTab"
   >
@@ -37,16 +36,17 @@ import { Project } from "src/backend/database";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { watchEffect, ref } from "vue";
+import { InfoCircle } from "@iconoir/vue";
 const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 const currentProject = ref<Project>();
-const updatedProjectId = ref<String>("");
+const updatedProjectId = ref<string>("");
 watchEffect(async () => {
   const itemId = layoutStore.currentItemId;
   if (itemId == updatedProjectId.value) return;
   const page = layoutStore.findPage((page) => page.id == itemId);
   if (!page) return;
-  if (page!.type == PageType.LibraryPage) {
+  if (page.type == PageType.LibraryPage) {
     currentProject.value = projectStore.selected[0] as Project;
   } else if (page.type == PageType.ReaderPage) {
     currentProject.value = projectStore.getProject(itemId);

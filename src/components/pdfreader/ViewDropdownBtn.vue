@@ -4,7 +4,7 @@
     flat
     square
     :ripple="false"
-    icon="mdi-eye"
+    icon="visibility"
     size="0.7rem"
     padding="xs"
     data-cy="btn-dropdown"
@@ -22,7 +22,7 @@
             :ripple="false"
             :label="$t('page-width')"
             no-caps
-            icon="mdi-arrow-expand-horizontal"
+            icon="swap_horiz"
             @click="$emit('changeScale', { scaleValue: 'page-width' })"
             data-cy="btn-page-width"
           />
@@ -32,7 +32,7 @@
             :ripple="false"
             :label="$t('page-height')"
             no-caps
-            icon="mdi-arrow-expand-vertical"
+            icon="swap_vert"
             @click="$emit('changeScale', { scaleValue: 'page-height' })"
             data-cy="btn-page-height"
           />
@@ -43,7 +43,7 @@
             dense
             flat
             :ripple="false"
-            icon="mdi-magnify-minus-outline"
+            icon="zoom_out"
             @click="$emit('changeScale', { delta: -0.1 })"
             data-cy="btn-zoom-out"
           >
@@ -56,7 +56,7 @@
             dense
             flat
             :ripple="false"
-            icon="mdi-magnify-plus-outline"
+            icon="zoom_in"
             @click="$emit('changeScale', { delta: 0.1 })"
             data-cy="btn-zoom-in"
           >
@@ -76,17 +76,17 @@
               {
                 label: $t('no-spreads'),
                 value: 0,
-                icon: 'mdi-numeric-0-box-outline',
+                icon: 'filter_none',
               },
               {
                 label: $t('odd-spreads'),
                 value: 1,
-                icon: 'mdi-numeric-1-box-outline',
+                icon: 'looks_one',
               },
               {
                 label: $t('even-spreads'),
                 value: 2,
-                icon: 'mdi-numeric-2-box-outline',
+                icon: 'looks_two',
               },
             ]"
             :model-value="spreadMode"
@@ -101,7 +101,7 @@
             square
             flat
             :ripple="false"
-            :icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+            :icon="isFullscreen ? 'fullscreen_exit' : 'fullscreen'"
             :label="
               isFullscreen ? $t('exit-full-screen') : $t('enter-full-screen')
             "
@@ -119,8 +119,8 @@
             style="font-weight: 500"
             :model-value="darkMode"
             @update:model-value="$emit('toggleDarkMode')"
-            unchecked-icon="mdi-brightness-4"
-            checked-icon="mdi-white-balance-sunny"
+            unchecked-icon="brightness_4"
+            checked-icon="wb_sunny"
             :label="darkMode ? $t('enter-light-mode') : $t('enter-dark-mode')"
           />
         </q-item>

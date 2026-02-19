@@ -20,37 +20,28 @@
             name="general"
             :ripple="false"
           >
-            <q-icon
-              name="mdi-tune-vertical"
-              size="sm"
-            />
-            <div style="font-size: 1rem; padding-left: 0.5rem">
+            <Settings width="20" height="20" />
+            <span class="q-ml-xs settings-tab-label">
               {{ $t("general") }}
-            </div>
+            </span>
           </q-tab>
           <q-tab
             name="plugin"
             :ripple="false"
           >
-            <q-icon
-              name="mdi-toy-brick-outline"
-              size="sm"
-            ></q-icon>
-            <div style="font-size: 1rem; padding-left: 0.5rem">
+            <Puzzle width="20" height="20" />
+            <span class="q-ml-xs settings-tab-label">
               {{ $t("plugins") }}
-            </div>
+            </span>
           </q-tab>
           <q-tab
             name="about"
             :ripple="false"
           >
-            <q-icon
-              name="mdi-information-outline"
-              size="sm"
-            ></q-icon>
-            <div style="font-size: 1rem; padding-left: 0.5rem">
+            <InfoCircle width="20" height="20" />
+            <span class="q-ml-xs settings-tab-label">
               {{ $t("about") }}
-            </div>
+            </span>
           </q-tab>
         </q-tabs>
       </div>
@@ -82,7 +73,13 @@ import AboutTab from "src/components/settings/AboutTab.vue";
 import GeneralTab from "src/components/settings/GeneralTab.vue";
 import PluginTab from "src/components/settings/plugin/PluginTab.vue";
 import { ref } from "vue";
+import { Settings, Puzzle, InfoCircle } from "@iconoir/vue";
 
 const leftMenuSize = ref(20);
 const tab = ref("general");
 </script>
+<style scoped lang="scss">
+.settings-tab-label {
+  font-size: 0.875rem;
+}
+</style>

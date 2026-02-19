@@ -16,8 +16,6 @@ export async function getAppState(): Promise<AppState> {
   const defaultState: AppState = {
     _id: "appState",
     dataType: "appState",
-    ribbonClickedBtnId: "",
-    leftMenuSize: 0,
     rightMenuSize: 0,
     selectedCategory: SpecialCategory.LIBRARY,
     currentItemId: "library",

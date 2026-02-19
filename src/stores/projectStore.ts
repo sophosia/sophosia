@@ -49,6 +49,7 @@ export const useProjectStore = defineStore("projectStore", {
     selected: [] as (Project | Note)[], // projectIds selected by checkbox
     projects: [] as Project[], // array of projects
     openedProjects: [] as Project[], // array of opened projects
+    workspaceProjects: [] as Project[], // all projects in workspace (for sidebar tree)
 
     updatedProject: {} as Project, // for updating window tab name
     selectedCategory: SpecialCategory.LIBRARY.toString(), // selected category in library page
@@ -66,6 +67,7 @@ export const useProjectStore = defineStore("projectStore", {
       if (this.initialized) return;
       this.selectedCategory = state.selectedCategory;
       await this.loadOpenedProjects(state.openedProjectIds);
+      await this.loadWorkspaceProjects();
       await this.loadProjects(state.selectedCategory);
       this.initialized = true;
     },
@@ -122,6 +124,20 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     /**
+     * Loads all projects in the workspace for the sidebar tree.
+     */
+    async loadWorkspaceProjects() {
+      const projects = await getProjects(SpecialCategory.LIBRARY, {
+        includePDF: true,
+        includeNotes: true,
+      });
+      for (const project of projects) {
+        sortTree(project);
+      }
+      this.workspaceProjects = projects;
+    },
+
+    /**
      * Opens a project by loading its details from the database and adding it to the openedProjects array if not already present.
      * @param projectId - The unique identifier of the project to open.
      */
@@ -130,6 +146,11 @@ export const useProjectStore = defineStore("projectStore", {
       let project = (await this.getProjectFromDB(projectId)) as Project;
       if (!this.openedProjects.map((p) => p._id).includes(project._id))
         this.openedProjects.push(project);
+      // ensure project is in workspace sidebar
+      if (!this.workspaceProjects.find((p) => p._id === project._id)) {
+        sortTree(project);
+        this.workspaceProjects.push(project);
+      }
     },
 
     /**
@@ -149,6 +170,9 @@ export const useProjectStore = defineStore("projectStore", {
     async addProject(project: Project, saveToDB?: boolean) {
       if (saveToDB) project = (await addProject(project)) as Project;
       if (!this.getProject(project._id)) this.projects.push(project);
+      // keep workspace sidebar in sync
+      if (!this.workspaceProjects.find((p) => p._id === project._id))
+        this.workspaceProjects.push(project);
     },
 
     /**
@@ -166,11 +190,16 @@ export const useProjectStore = defineStore("projectStore", {
       let projectInOpened = this.openedProjects.find(
         (p) => p._id === projectId
       );
+      let projectInWorkspace = this.workspaceProjects.find(
+        (p) => p._id === projectId
+      );
 
       // project exists in list
       if (projectInList) Object.assign(projectInList, newProject);
       // project exists in opened project lists
       if (projectInOpened) Object.assign(projectInOpened, newProject);
+      // project exists in workspace sidebar
+      if (projectInWorkspace) Object.assign(projectInWorkspace, newProject);
 
       this.updatedProject = newProject;
     },
@@ -191,6 +220,9 @@ export const useProjectStore = defineStore("projectStore", {
         // update ui
         this.projects.splice(ind, 1);
         this.selected = this.selected.filter((p) => p._id === projectId);
+        // remove from workspace sidebar
+        const wsInd = this.workspaceProjects.findIndex((p) => p._id === projectId);
+        if (wsInd > -1) this.workspaceProjects.splice(wsInd, 1);
         // update db
         await deleteProject(projectId, deleteFromDB, folderId);
       }

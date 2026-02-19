@@ -16,15 +16,15 @@
         class="row items-center"
         data-cy="content"
       >
-        <q-icon
+        <DesignPencil
           v-if="item.type === NoteType.EXCALIDRAW"
-          size="xs"
-          name="mdi-fountain-pen-tip"
+          width="14"
+          height="14"
         />
-        <q-icon
+        <PageIcon
           v-else
-          size="xs"
-          name="mdi-language-markdown-outline"
+          width="14"
+          height="14"
         />
         <div
           v-if="renaming"
@@ -62,10 +62,10 @@
       colspan="100%"
     >
       <div class="row items-center">
-        <q-icon
+        <OpenBook
+          width="14"
+          height="14"
           class="q-mr-xs"
-          size="xs"
-          name="img:icons/pdf.png"
         />
         <div
           class="col"
@@ -80,10 +80,10 @@
       colspan="100%"
     >
       <div class="row items-center">
-        <q-icon
+        <Folder
+          width="14"
+          height="14"
           class="q-mr-xs"
-          size="xs"
-          name="mdi-folder-outline"
         />
         <div
           class="col"
@@ -118,10 +118,8 @@
   </q-tr>
 </template>
 <script setup lang="ts">
-// types
 import { Note, NoteType, Page, PageType, Project } from "src/backend/database";
 import { PropType, Ref, inject, nextTick, ref, watchEffect } from "vue";
-// db
 import { invoke } from "@tauri-apps/api";
 import { exists } from "@tauri-apps/api/fs";
 import { basename, dirname, join } from "@tauri-apps/api/path";
@@ -131,6 +129,7 @@ import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import TableItemMenu from "./TableItemMenu.vue";
+import { DesignPencil, Folder, OpenBook, Page as PageIcon } from "@iconoir/vue";
 
 const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
@@ -147,19 +146,11 @@ const oldNoteName = ref("");
 const pathDuplicate = ref(false);
 
 watchEffect(async () => {
-  // label changes whenever pdf is renamed
   const path = props.item.path || idToPath(props.item._id);
   label.value = await basename(path);
-
-  // if the note is newly added, rename it immediately
   if (renamingNoteId.value === props.item._id) setRenaming();
 });
 
-/**
- * Opens the file explorer and navigates to the location of the item.
- * If the item is a project, it opens the directory containing the project files.
- * If the item is a note, it opens the directory containing the note file.
- */
 async function showInExplorer() {
   const path =
     props.item.dataType === "project"
@@ -180,29 +171,16 @@ function showInNewWindow() {
   });
 }
 
-/**
- * Handles a single-click event on the item row.
- * Selects the item when clicked.
- */
 function clickItem() {
   projectStore.selected = [props.item];
 }
 
-/**
- * Handles a double-click event on the item row.
- * Opens the item for further interaction.
- */
 function openItem() {
   layoutStore.openItem(props.item._id);
 }
 
-/**
- * Initiates the renaming of the item.
- * Enables the user to edit the item's label.
- */
 function setRenaming() {
   renaming.value = true;
-  props.item.label;
   oldNoteName.value = props.item.label;
   pathDuplicate.value = false;
 
@@ -213,22 +191,15 @@ function setRenaming() {
   }, 100);
 }
 
-/**
- * Renames a note item.
- * Updates the item's label and updates the window tab name.
- * If a name collision occurs, reverts the name to the previous one.
- */
 async function renameNote() {
   let note = props.item as Note;
   if (pathDuplicate.value) {
-    console.log("oldname", oldNoteName.value);
     note.label = oldNoteName.value;
     label.value = oldNoteName.value;
   } else {
     const oldNoteId = note._id;
     const newNoteId = await oldToNewId(oldNoteId, label.value);
     const newLabel = await basename(newNoteId);
-    // update window tab name
     layoutStore.renamePage(oldNoteId, {
       id: newNoteId,
       label: newLabel,
@@ -241,25 +212,14 @@ async function renameNote() {
   pathDuplicate.value = false;
 }
 
-/**
- * Deletes the item from the project.
- */
 async function deleteItem() {
   await projectStore.deleteNode(props.item._id, "note");
 }
 
-/**
- * Renames a PDF item.
- */
 async function renamePDF() {
-  // update file name and the page label
   await projectStore.renamePDF(props.item._id, settingStore.pdfRenameRule);
 }
 
-/**
- * Checks for duplicate names when renaming an item.
- * Sets the `pathDuplicate` flag to `true` if a duplicate name is found.
- */
 async function checkDuplicate() {
   const extension =
     props.item.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";

@@ -37,6 +37,8 @@ import WelcomeCarousel from "src/components/welcome/WelcomeCarousel.vue";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useStateStore } from "src/stores/stateStore";
 import { onMounted, ref, watch } from "vue";
+import { type } from "@tauri-apps/api/os";
+import { getCurrent } from "@tauri-apps/api/window";
 import MainLayout from "./MainLayout.vue";
 const stateStore = useStateStore();
 const layoutStore = useLayoutStore();
@@ -45,6 +47,19 @@ const isIndexed = ref(false);
 const indexingProgress = ref(0);
 
 onMounted(async () => {
+  // Detect platform for traffic light spacing
+  const platform = await type();
+  document.body.dataset.platform = platform;
+
+  // Listen for fullscreen changes on macOS
+  if (platform === "Darwin") {
+    const win = getCurrent();
+    await win.listen("tauri://resize", async () => {
+      const fs = await win.isFullscreen();
+      document.body.dataset.fullscreen = String(fs);
+    });
+  }
+
   // if there is no path, show welcome carousel
   layoutStore.toggleWelcome(!db.config.storagePath);
 });

@@ -201,8 +201,8 @@ class PluginManager {
 
     // layout control
     const layoutStore = useLayoutStore();
-    plugin.toggleLeftMenu = layoutStore.toggleLeftMenu;
-    plugin.setLeftMenuView = layoutStore.setLeftMenuView;
+    plugin.toggleLeftMenu = () => {}; // no-op: sidebar is always visible
+    plugin.setLeftMenuView = () => {}; // no-op: sidebar view managed locally
     plugin.openPage = layoutStore.openPage;
 
     // data

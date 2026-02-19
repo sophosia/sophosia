@@ -13,7 +13,7 @@
       v-model:expanded="expandedKeys"
       v-model:selected="projectStore.selectedCategory"
       :no-selection-unset="true"
-      icon="mdi-chevron-right"
+      icon="keyboard_arrow_right"
       selected-color="primary"
       ref="tree"
     >
@@ -77,17 +77,11 @@
           </q-menu>
           <!-- the body of a tree node -->
           <!-- icon width: 1.5rem -->
-          <q-icon
-            size="1.5rem"
-            :name="
-                Object.values(SpecialCategory).includes(prop.node._id)
-                  ? prop.node.icon as string
-                  : (
-                    (prop.node._id === projectStore.selectedCategory || prop.expanded)
-                    ? 'mdi-folder-open-outline'
-                    : 'mdi-folder-outline'
-                  )
-            "
+          <component
+            :is="getNodeIcon(prop.node, prop.expanded)"
+            width="18"
+            height="18"
+            class="q-mr-xs"
           />
           <div
             v-if="renamingCategory === prop.node._id"
@@ -134,13 +128,27 @@
 
 import { QTree, QTreeNode } from "quasar";
 import { Project, SpecialCategory, db } from "src/backend/database";
-import { onMounted, ref } from "vue";
-//db
+import { onMounted, ref, type Component } from "vue";
 import { sortTree, getIdLabel, traverseTree } from "src/backend/utils";
 import { useProjectStore } from "src/stores/projectStore";
 import { CategoryNode } from "src/backend/database";
 import { useI18n } from "vue-i18n";
+import { BookStack, ClockRotateRight, Star, Folder } from "@iconoir/vue";
+
 const { t } = useI18n({ useScope: "global" });
+
+const specialCategoryIcons: Record<string, Component> = {
+  [SpecialCategory.LIBRARY]: BookStack,
+  [SpecialCategory.ADDED]: ClockRotateRight,
+  [SpecialCategory.FAVORITES]: Star,
+};
+
+function getNodeIcon(node: CategoryNode, expanded: boolean): Component {
+  if (Object.values(SpecialCategory).includes(node._id as SpecialCategory)) {
+    return specialCategoryIcons[node._id] || Folder;
+  }
+  return Folder;
+}
 
 const projectStore = useProjectStore();
 
@@ -161,17 +169,14 @@ const enterTime = ref(0);
 onMounted(async () => {
   categoryNodes.value =
     (await projectStore.getCategoryTree()) as CategoryNode[];
-  categoryNodes.value[0].icon = "mdi-library-outline";
 
   // add other special categories
   categoryNodes.value.push({
     _id: SpecialCategory.ADDED,
-    icon: "mdi-history",
     children: [],
   });
   categoryNodes.value.push({
     _id: SpecialCategory.FAVORITES,
-    icon: "mdi-star-outline",
     children: [],
   });
 });

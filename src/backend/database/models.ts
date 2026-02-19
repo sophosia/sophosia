@@ -257,8 +257,6 @@ export interface AppState {
   _id: "appState";
   dataType: "appState";
   // layout
-  ribbonClickedBtnId: string;
-  leftMenuSize: number;
   rightMenuSize: number;
   // project
   selectedCategory: string;
@@ -275,7 +273,6 @@ export interface AppState {
   citeKeyRule: string; // "author_year_title" by default
   pdfRenameRule: string; // "author_year_fullTitle" by default
   projectIdRule: string; // "uid" by default
-
 }
 
 export interface Row {
@@ -316,6 +313,8 @@ export enum PageType {
   SettingsPage = "SettingsPage",
   PluginSettingsPage = "PluginSettingsPage",
   PluginPage = "PluginPage",
+  GraphPage = "GraphPage",
+  WorkspacePage = "WorkspacePage",
 }
 
 export type Layout = Row | Col | Stack;

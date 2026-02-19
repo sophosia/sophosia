@@ -2,17 +2,16 @@
   <q-tree
     ref="tree"
     dense
-    icon="mdi-chevron-right"
+    icon="keyboard_arrow_right"
     no-connectors
     no-transition
     no-selection-unset
     :no-nodes-label="$t('empty')"
-    :nodes="projectStore.openedProjects"
+    :nodes="projectStore.workspaceProjects"
     node-key="_id"
     selected-color="primary"
     v-model:expanded="expanded"
-    :selected="layoutStore.currentItemId"
-    @update:selected="(id: string) => layoutStore.setActive(id)"
+    :selected="treeSelected"
   >
     <template v-slot:default-header="prop">
       <!-- use full-width so that click trailing empty space
@@ -89,41 +88,32 @@
           @deleteFolder="deleteNode(prop.node)"
         />
 
-        <q-icon
+        <OpenBook
           v-if="prop.node.dataType === 'project'"
-          size="1.4rem"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <title>book-open-blank-variant-outline</title>
-            <path
-              d="M12 21.5C10.65 20.65 8.2 20 6.5 20C4.85 20 3.15 20.3 1.75 21.05C1.65 21.1 1.6 21.1 1.5 21.1C1.25 21.1 1 20.85 1 20.6V6C1.6 5.55 2.25 5.25 3 5C4.11 4.65 5.33 4.5 6.5 4.5C8.45 4.5 10.55 4.9 12 6C13.45 4.9 15.55 4.5 17.5 4.5C18.67 4.5 19.89 4.65 21 5C21.75 5.25 22.4 5.55 23 6V20.6C23 20.85 22.75 21.1 22.5 21.1C22.4 21.1 22.35 21.1 22.25 21.05C20.85 20.3 19.15 20 17.5 20C15.8 20 13.35 20.65 12 21.5M11 7.5C9.64 6.9 7.84 6.5 6.5 6.5C5.3 6.5 4.1 6.65 3 7V18.5C4.1 18.15 5.3 18 6.5 18C7.84 18 9.64 18.4 11 19V7.5M13 19C14.36 18.4 16.16 18 17.5 18C18.7 18 19.9 18.15 21 18.5V7C19.9 6.65 18.7 6.5 17.5 6.5C16.16 6.5 14.36 6.9 13 7.5V19Z"
-            />
-          </svg>
-        </q-icon>
-
-        <q-icon
-          v-else-if="prop.node.dataType === 'folder'"
-          size="1.4rem"
-          :name="
-            prop.expanded ? 'mdi-folder-open-outline' : 'mdi-folder-outline'
-          "
+          width="16"
+          height="16"
+          class="q-mr-xs"
         />
-        <q-icon
+        <Folder
+          v-else-if="prop.node.dataType === 'folder'"
+          width="16"
+          height="16"
+          class="q-mr-xs"
+        />
+        <DesignPencil
           v-else-if="
             prop.node.dataType === 'note' &&
             prop.node.type === NoteType.EXCALIDRAW
           "
-          size="1.4rem"
-          name="mdi-fountain-pen-tip"
+          width="16"
+          height="16"
+          class="q-mr-xs"
         />
-        <!-- markdown note -->
-        <q-icon
+        <PageIcon
           v-else
-          size="1.4rem"
-          name="mdi-language-markdown-outline"
+          width="16"
+          height="16"
+          class="q-mr-xs"
         />
         <!-- note icon has 1rem width -->
         <!-- input must have keypress.space.stop since space is default to expand row rather than space in text -->
@@ -161,17 +151,6 @@
           <q-tooltip> ID: {{ prop.key }} </q-tooltip>
         </div>
       </div>
-      <q-icon
-        v-if="prop.node.dataType == 'project'"
-        name="mdi-close"
-        @click="closeProject(prop.key)"
-      >
-        <q-tooltip>
-          <i18n-t keypath="close">
-            <template #type>{{ $t("project") }}</template>
-          </i18n-t>
-        </q-tooltip>
-      </q-icon>
     </template>
   </q-tree>
 </template>
@@ -196,11 +175,17 @@ import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import { nextTick, onMounted, ref, watchEffect } from "vue";
+import { computed, nextTick, onMounted, ref, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
 import FolderMenu from "./FolderMenu.vue";
 import NoteMenu from "./NoteMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
+import {
+  OpenBook,
+  Folder,
+  DesignPencil,
+  Page as PageIcon,
+} from "@iconoir/vue";
 const { t } = useI18n({ useScope: "global" });
 
 const layoutStore = useLayoutStore();
@@ -222,7 +207,7 @@ const $q = useQuasar();
 
 onMounted(async () => {
   // expand all projects
-  expanded.value = Array.from(projectStore.openedProjects.map((p) => p._id));
+  expanded.value = Array.from(projectStore.workspaceProjects.map((p) => p._id));
 });
 
 watchEffect(() => {
@@ -245,15 +230,32 @@ async function showExportCitationDialog(project: Project) {
 }
 
 /**
+ * Computed tree selection: when on the GraphPage, highlight the graph focus item;
+ * otherwise highlight the current active item.
+ */
+const treeSelected = computed(() => {
+  if (layoutStore.currentItemId === "graph") {
+    return layoutStore.graphFocusItemId || "";
+  }
+  return layoutStore.currentItemId;
+});
+
+/**
  * Selects a project or note item and expands its tree view if necessary.
  * @param {string} nodeId - The ID of the item to select.
  */
 function selectItem(nodeId: string) {
   if (!tree.value) return;
   const node = tree.value.getNodeByKey(nodeId);
-  console.log("node", node);
   if ((node.children?.length as number) > 0) expanded.value.push(node._id);
   if (node.dataType === "folder") return;
+
+  // If the Related Items tab is active, update the graph focus
+  // instead of opening the file
+  if (layoutStore.currentItemId === "graph") {
+    layoutStore.graphFocusItemId = node._id;
+    return;
+  }
 
   layoutStore.openItem(node._id);
 }
@@ -300,8 +302,8 @@ function showInNewWindow(node: Project | Note) {
  * @param {string} projectId - The ID of the project to close.
  */
 async function closeProject(projectId: string) {
-  // close all pages
-  let project = projectStore.openedProjects.find((p) => p._id === projectId);
+  // close all pages for this project
+  let project = projectStore.workspaceProjects.find((p) => p._id === projectId);
   if (project) {
     layoutStore.closePage(project._id);
     const notes = await getNotes(project._id);
@@ -310,11 +312,6 @@ async function closeProject(projectId: string) {
       layoutStore.closePage(node._id);
     }
   }
-
-  // remove project from openedProjects
-  projectStore.openedProjects = projectStore.openedProjects.filter(
-    (p) => p._id !== projectId
-  );
 }
 
 /**
@@ -429,7 +426,7 @@ async function deleteNode(node: FolderOrNote) {
   // select something else if the selectedItem is deleted
   if (node._id === projectStore.selected[0]?._id) {
     const projectId = node._id.split("/")[0];
-    let project = projectStore.openedProjects.find((p) => p._id === projectId);
+    let project = projectStore.workspaceProjects.find((p) => p._id === projectId);
 
     if (project && project.children) {
       if (project.children.length == 0) {
