@@ -26,6 +26,7 @@
   "dependencies": {
     "@citation-js/plugin-csl": "^0.7.2",
     "@citation-js/plugin-isbn": "^0.4.0",
+    "@embedpdf/vue-pdf-viewer": "^2.6.1",
     "@excalidraw/excalidraw": "^0.15.2",
     "@quasar/extras": "^1.16.4",
     "@tauri-apps/api": "^1.5.3",
