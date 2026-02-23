@@ -22,7 +22,7 @@
         </div>
       </q-card-section>
       <q-card-section class="dialog-body">
-        <p class="dialog-text">{{ errorDialog.error?.message || "" }}</p>
+        <p class="dialog-text" data-cy="error-msg">{{ errorDialog.error?.message || "" }}</p>
       </q-card-section>
       <q-card-actions class="dialog-actions">
         <q-btn
