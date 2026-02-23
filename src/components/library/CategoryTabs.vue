@@ -9,7 +9,7 @@
         :class="{ active: projectStore.selectedCategory === tab.id }"
         @click="projectStore.selectedCategory = tab.id"
       >
-        <component :is="tab.icon" width="12" height="12" />
+        <component :is="tab.icon" width="14" height="14" />
         <span>{{ $t(tab.id) }}</span>
       </button>
 
@@ -22,13 +22,13 @@
         @click="projectStore.selectedCategory = cat._id"
         @contextmenu.prevent="showContextMenu($event, cat)"
       >
-        <FolderIcon width="12" height="12" />
+        <FolderIcon width="14" height="14" />
         <span>{{ getLabel(cat._id) }}</span>
       </button>
 
       <!-- Add category button -->
       <button class="category-tab category-tab-add" @click="addCategory">
-        <Plus width="12" height="12" />
+        <Plus width="14" height="14" />
       </button>
     </div>
 
@@ -205,7 +205,7 @@ async function deleteCategory() {
   background: transparent;
   color: var(--q-text-muted);
   font-family: inherit;
-  font-size: 0.6875rem;
+  font-size: 0.875rem;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;

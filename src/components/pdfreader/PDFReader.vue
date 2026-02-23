@@ -19,6 +19,7 @@
     </div>
     <PDFViewer
       v-else-if="viewerConfig"
+      ref="pdfViewerRef"
       :key="sourceUrl"
       class="embedpdf-viewer"
       :config="viewerConfig"
@@ -57,9 +58,42 @@ const loading = ref(false);
 const sourceUrl = ref("");
 const errorMessage = ref("");
 const viewerRegistry = ref<PluginRegistry | null>(null);
+const pdfViewerRef = ref<InstanceType<typeof PDFViewer> | null>(null);
 
 let clearViewerSubscriptions: Array<() => void> = [];
 let importingLegacy = false;
+
+function injectCompactToolbarStyles() {
+  const el = pdfViewerRef.value?.$el;
+  if (!el) return;
+  const container = el.querySelector("embedpdf-container");
+  if (!container?.shadowRoot) return;
+  const style = document.createElement("style");
+  style.textContent = `
+    [data-epdf-i="main-toolbar"] {
+      height: 40px;
+      padding-block: 0;
+      box-sizing: border-box;
+    }
+    [data-epdf-i="main-toolbar"] button {
+      height: 28px;
+      min-height: 28px;
+      min-width: 28px;
+    }
+    [data-epdf-i="main-toolbar"] .h-\\[32px\\] {
+      height: 28px;
+    }
+    [data-epdf-i="document-menu-button"],
+    [data-epdf-i="sidebar-button"],
+    [data-epdf-i="page-settings-button"],
+    [data-epdf-i="overflow-left-action-menu-button"],
+    [data-epdf-i="divider-1"],
+    [data-epdf-i="divider-2"] {
+      display: none !important;
+    }
+  `;
+  container.shadowRoot.appendChild(style);
+}
 
 type TrackedAnnotation = { object: PdfAnnotationObject };
 type AnnotationStateLike = { byUid: Record<string, TrackedAnnotation> };
@@ -104,7 +138,42 @@ const viewerConfig = computed(() => {
   return {
     src: sourceUrl.value,
     theme: {
-      preference: "system",
+      preference: "dark" as const,
+      dark: {
+        accent: {
+          primary: "#818cf8",
+          primaryHover: "#6366f1",
+          primaryActive: "#4f46e5",
+          primaryLight: "rgba(129, 140, 248, 0.18)",
+          primaryForeground: "#ffffff",
+        },
+        background: {
+          app: "#0f1117",
+          surface: "#1a1b23",
+          surfaceAlt: "#1a1b23",
+          elevated: "#252630",
+          overlay: "rgba(0, 0, 0, 0.5)",
+          input: "#252630",
+        },
+        foreground: {
+          primary: "#e4e4e7",
+          secondary: "#8b8d98",
+          muted: "#8b8d98",
+          disabled: "#52525b",
+          onAccent: "#ffffff",
+        },
+        border: {
+          default: "#2e3040",
+          strong: "#3f3f46",
+          subtle: "rgba(255, 255, 255, 0.06)",
+        },
+        interactive: {
+          hover: "rgba(255, 255, 255, 0.05)",
+          active: "rgba(129, 140, 248, 0.18)",
+          selected: "rgba(129, 140, 248, 0.12)",
+          focus: "#818cf8",
+        },
+      },
     },
     annotations: {
       annotationAuthor: "Sophosia",
@@ -221,6 +290,7 @@ function focusAnnotationIfNeeded(
 async function onViewerReady(registry: PluginRegistry) {
   viewerRegistry.value = registry;
   cleanupViewerSubscriptions();
+  injectCompactToolbarStyles();
 
   const annotationCapability = getCapability<AnnotationCapabilityLike>(
     registry,

@@ -64,7 +64,7 @@ function createProject() {
 }
 
 .project-nav-title {
-  font-size: 0.6875rem;
+  font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
