@@ -3,6 +3,7 @@
   "notebook": "Notebook",
   "openedProjects": "Opened projects",
   "help": "Help",
+  "collapse-sidebar": "Collapse sidebar",
   "settings": "Settings",
   "explain": "Explain",
   "general": "General",
@@ -164,5 +165,8 @@
   "show": "Show {type}",
   "assistant": "Assistant",
   "index-files": "Index files",
-  "index-files-info": "Index all files for faster data fetch speed, and full-text search within PDFs."
+  "index-files-info": "Index all files for faster data fetch speed, and full-text search within PDFs.",
+  "backlinks-count": "{count} backlinks",
+  "words-count": "{count} words",
+  "characters-count": "{count} characters"
 }

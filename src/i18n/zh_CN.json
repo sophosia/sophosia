@@ -3,6 +3,7 @@
   "notebook": "笔记本",
   "openedProjects": "当前项目",
   "help": "帮助",
+  "collapse-sidebar": "收起侧栏",
   "settings": "设置",
   "explain": "解释",
   "general": "通用",
@@ -164,5 +165,8 @@
   "show": "显示{type}",
   "index-files": "索引文件",
   "index-files-info": "索引笔记以及PDF的内容以便进行更快更便捷的搜索。",
-  "assistant": "小助手"
+  "assistant": "小助手",
+  "backlinks-count": "{count} 个反向链接",
+  "words-count": "{count} 个词",
+  "characters-count": "{count} 个字符"
 }

@@ -12,7 +12,7 @@
 import PDFReader from "src/components/pdfreader/PDFReader.vue";
 import { computed, PropType } from "vue";
 const props = defineProps({
-  visible: { type: Boolean, reqruied: true },
+  visible: { type: Boolean, required: true },
   itemId: { type: String, required: true },
   data: {
     type: Object as PropType<{

@@ -1,7 +1,7 @@
 import { FileEntry, exists, readDir, readTextFile } from "@tauri-apps/api/fs";
 import { extname } from "@tauri-apps/api/path";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import { AnnotationData, NoteType, Project, db, sqldb } from "../database";
+import { AnnotationData, NodeType, Project, db, sqldb } from "../database";
 import { idToPath, linkToId, pathToId } from "../utils";
 import * as pdfjsLib from "pdfjs-dist";
 import { extractPDFContent } from "../project";
@@ -140,7 +140,7 @@ async function extractMarkdownContent(filePath: string) {
   const note = {
     _id: noteId,
     projectId: projectId,
-    type: NoteType.MARKDOWN,
+    type: NodeType.MARKDOWN,
     timestampAdded: meta.createdAt.getTime(),
     timestampModified: meta.modifiedAt.getTime(),
     content: content,
@@ -186,7 +186,7 @@ async function extractExcalidrawContent(filePath: string) {
   const note = {
     _id: noteId,
     projectId: projectId,
-    type: NoteType.EXCALIDRAW,
+    type: NodeType.EXCALIDRAW,
     timestampAdded: meta.createdAt.getTime(),
     timestampModified: meta.modifiedAt.getTime(),
     content: content,
@@ -235,7 +235,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
  * @param {{
   id: string;
   projectId: string;
-  type: NoteType;
+  type: NodeType;
   content: string;
   timestampAdded: number;
   timestampModified: number;
@@ -244,7 +244,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
 async function insertNote(note: {
   _id: string;
   projectId: string;
-  type: NoteType;
+  type: NodeType;
   content: string;
   timestampAdded: number;
   timestampModified: number;

@@ -91,7 +91,7 @@
   </q-tr>
 </template>
 <script setup lang="ts">
-import { Note, ProjectNode, Project } from "src/backend/database";
+import { Note, ProjectNode } from "src/backend/database";
 import { PropType, Ref, inject, ref, watchEffect } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { basename } from "@tauri-apps/api/path";
@@ -105,7 +105,7 @@ import TableItemMenu from "./TableItemMenu.vue";
 import NodeTypeIcon from "src/components/shared/NodeTypeIcon.vue";
 
 const props = defineProps({
-  item: { type: Object as PropType<Project | Note>, required: true },
+  item: { type: Object as PropType<ProjectNode>, required: true },
 });
 const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();

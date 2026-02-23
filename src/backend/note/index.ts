@@ -1,4 +1,4 @@
-import { sqldb, db, ProjectNode, Note, NoteType, NodeType } from "../database";
+import { sqldb, db, ProjectNode, Note, NodeType } from "../database";
 import { Buffer } from "buffer";
 import {
   exists,
@@ -26,23 +26,23 @@ export const isLinkUpdated = ref(false); // to notify the reloading of note edit
  * Creates a new note with a unique name in the specified folder.
  *
  * @param {string} folderId - The ID of the folder where the note will be created.
- * @param {NoteType} type - The type of note (Markdown or Excalidraw).
+ * @param {NodeType} type - The type of note (Markdown or Excalidraw).
  * @returns {Promise<Note>} A promise that resolves to the newly created note object.
  *
  * Generates a note file path, ensuring no naming conflicts. Constructs and returns a note object.
  */
 export async function createNote(
   folderId: string,
-  type: NoteType
+  type: NodeType
 ): Promise<Note> {
   const splits = folderId.split("/");
   const projectId = splits[0];
-  let ext = type === NoteType.MARKDOWN ? ".md" : ".excalidraw";
-  let name = t("new", { type: t("note") });
+  let ext = type === NodeType.MARKDOWN ? ".md" : ".excalidraw";
+  let name = "untitled";
   let path = await join(db.config.storagePath, ...splits, name + ext);
   let i = 1;
   while (await exists(path)) {
-    name = `${t("new", { type: t("note") })} ${i}`;
+    name = `untitled ${i}`;
     path = await join(db.config.storagePath, ...splits, name + ext);
     i++;
   }
@@ -195,7 +195,7 @@ WHERE source = $1 OR target = $2
     return {
       _id: newNoteId,
       dataType: "note",
-      type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
+      type: ext === "md" ? NodeType.MARKDOWN : NodeType.EXCALIDRAW,
       projectId: newNoteId.split("/")[0],
       path: newPath,
       label: await basename(newNoteId),
@@ -229,7 +229,7 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
       projectId: projectId,
       label: label,
       path: path,
-      type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
+      type: ext === "md" ? NodeType.MARKDOWN : NodeType.EXCALIDRAW,
     } as Note;
     return note;
   } catch (error) {
@@ -282,7 +282,7 @@ export async function getNotes(folderId: string): Promise<Note[]> {
             projectId: projectId,
             label: label,
             path: entry.path,
-            type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
+            type: ext === "md" ? NodeType.MARKDOWN : NodeType.EXCALIDRAW,
           } as Note);
         } else if (entry.children) {
           await processEntries(entry.children);
@@ -324,7 +324,7 @@ export async function getNoteTree(projectId: string): Promise<ProjectNode[]> {
           node.children = [];
         } else if (["md", "excalidraw"].includes(ext)) {
           node.dataType = "note";
-          node.type = ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW;
+          node.type = ext === "md" ? NodeType.MARKDOWN : NodeType.EXCALIDRAW;
         } else {
           continue;
         }
@@ -370,7 +370,7 @@ export async function loadNote(
         "SELECT type, content FROM notes WHERE _id = $1",
         [noteId]
       )) || [];
-    if (result.length === 1 && result[0].type === NoteType.MARKDOWN)
+    if (result.length === 1 && result[0].type === NodeType.MARKDOWN)
       return result[0].content;
     else return await readTextFile(notePath || idToPath(noteId));
   } catch (error) {

@@ -4,7 +4,7 @@ import { Notify } from "quasar";
 import {
   ProjectNode,
   Note,
-  NoteType,
+  NodeType,
   Page,
 } from "src/backend/database";
 import { getNotes } from "src/backend/note";
@@ -21,8 +21,10 @@ export function useNodeActions() {
   const pathDuplicate = ref(false);
 
   async function checkDuplicate(node: Note, currentLabel: string) {
-    const extension =
-      node.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
+    let extension: string;
+    if (node.type === NodeType.EXCALIDRAW) extension = ".excalidraw";
+    else if (node.type === NodeType.PAPER) extension = ".pdf";
+    else extension = ".md";
     const labelWithExt = currentLabel.endsWith(extension)
       ? currentLabel
       : currentLabel + extension;
@@ -39,7 +41,7 @@ export function useNodeActions() {
     node: ProjectNode,
     onAfterDelete?: () => void
   ) {
-    if (node.dataType === "note") {
+    if (node.dataType === "note" || node.dataType === "paper") {
       layoutStore.closePage(node._id);
     } else if (node.dataType === "folder") {
       const notes = await getNotes(node._id);
@@ -55,7 +57,8 @@ export function useNodeActions() {
     oldNoteId: string,
     newLabel: string,
     onSuccess: (newNoteId: string, newLabel: string) => void,
-    onCancel: () => void
+    onCancel: () => void,
+    options?: { silent?: boolean }
   ) {
     if (pathDuplicate.value || !newLabel) {
       onCancel();
@@ -70,7 +73,7 @@ export function useNodeActions() {
     await nextTick();
     await projectStore.renameNode(oldNoteId, newNoteId, "note");
     onSuccess(newNoteId, finalLabel);
-    Notify.create(t("updated", { type: t("link") }));
+    if (!options?.silent) Notify.create(t("updated", { type: t("link") }));
   }
 
   async function renameFolder(

@@ -21,7 +21,7 @@
 </template>
 <script setup lang="ts">
 // types
-import { AnnotationData, Edge, Note, Project, db } from "src/backend/database";
+import { AnnotationData, Edge, Note, Project, db, sqldb } from "src/backend/database";
 import { inject, nextTick, onMounted, ref, watch } from "vue";
 // vditor
 import "src/css/vditor/index.css";
@@ -43,7 +43,8 @@ import { getAllProjects, getProject } from "src/backend/project";
 // util
 import { sep } from "@tauri-apps/api/path";
 import _ from "lodash";
-import { EventBus, debounce } from "quasar";
+import { EventBus } from "quasar";
+import { debounce } from "lodash";
 import { generateCiteKey } from "src/backend/meta";
 import {
   authorToString,
@@ -83,6 +84,17 @@ const hoverContent = ref("");
 const hoverData = ref({ content: "" });
 const links = ref<Edge[]>([]);
 
+// Exposed stats for the status bar
+const wordCount = ref(0);
+const charCount = ref(0);
+const backlinkCount = ref(0);
+
+// Track the first heading for title-based rename
+const lastHeadingTitle = ref("");
+const emit = defineEmits(["titleChanged"]);
+
+defineExpose({ wordCount, charCount, backlinkCount });
+
 watch(
   () => settingStore.theme,
   (theme: string) => {
@@ -109,6 +121,7 @@ onMounted(async () => {
   showEditor.value = true;
   initEditor();
   await nextTick();
+  await updateBacklinkCount();
 });
 
 /************************************************
@@ -217,15 +230,19 @@ function initEditor() {
       changeLinks();
       handleImage();
       handleTable();
+      updateTextStats();
     },
     blur: () => {
       saveContent();
+      debouncedCheckHeading.flush();
     },
     input: () => {
       changeLinks();
       handleImage();
       handleTable();
       saveContent();
+      updateTextStats();
+      debouncedCheckHeading();
     },
     keydown: (e) => {
       console.log(e);
@@ -289,7 +306,47 @@ function setTheme(theme: string) {
 async function setContent() {
   if (!vditor.value || (!props.noteId && !props.data?.path)) return;
   let content = await loadNote(props.noteId, props.data?.path);
-  vditor.value.setValue(content);
+  const isNew = !content || content.trim() === "";
+  if (isNew) {
+    content = "# Untitled\n";
+    vditor.value.setValue(content);
+    // Select "Untitled" text so user can immediately type a new title
+    await nextTick();
+    setTimeout(() => {
+      const el = vditor.value?.vditor?.ir?.element;
+      if (!el) return;
+      const headingNode = el.querySelector("h1, [data-type='heading']");
+      if (!headingNode) return;
+      const textNode = headingNode.lastChild || headingNode;
+      if (textNode.nodeType === Node.TEXT_NODE || textNode.textContent) {
+        const range = document.createRange();
+        const sel = window.getSelection();
+        // Find the actual text node
+        const walker = document.createTreeWalker(
+          headingNode,
+          NodeFilter.SHOW_TEXT
+        );
+        let lastText: globalThis.Node | null = null;
+        let node: globalThis.Node | null;
+        while ((node = walker.nextNode())) {
+          if (node.textContent && node.textContent.includes("Untitled")) {
+            lastText = node;
+          }
+        }
+        if (lastText) {
+          const start = lastText.textContent!.indexOf("Untitled");
+          range.setStart(lastText, start);
+          range.setEnd(lastText, start + "Untitled".length);
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+        }
+      }
+    }, 100);
+  } else {
+    vditor.value.setValue(content);
+  }
+  // Track the initial heading
+  lastHeadingTitle.value = extractFirstHeading(content);
 }
 
 /**
@@ -308,7 +365,7 @@ async function _saveContent() {
   await saveLinks(); // only save links if it's a built-in note
 }
 
-const saveContent = debounce(_saveContent, 100) as () => void;
+const saveContent = debounce(_saveContent, 100);
 
 /**
  * Saves link information related to the current note.
@@ -345,6 +402,76 @@ async function saveLinks() {
     links.value = newLinks;
     // notify graphview to update
     bus.emit("updateGraph");
+    // refresh backlink count
+    await updateBacklinkCount();
+  }
+}
+
+/*****************************************
+ * Title tracking (first heading → filename)
+ *****************************************/
+
+/**
+ * Extracts the first markdown heading (# Title) from content.
+ */
+function extractFirstHeading(content: string): string {
+  const match = content.match(/^#\s+(.+)$/m);
+  return match ? match[1].trim() : "";
+}
+
+/**
+ * Checks if the first heading changed and emits a titleChanged event.
+ */
+function checkHeadingChange() {
+  if (!vditor.value) return;
+  const content = vditor.value.getValue();
+  const currentHeading = extractFirstHeading(content);
+  if (
+    currentHeading &&
+    currentHeading !== lastHeadingTitle.value &&
+    currentHeading !== "Untitled"
+  ) {
+    lastHeadingTitle.value = currentHeading;
+    emit("titleChanged", currentHeading);
+  }
+}
+
+const debouncedCheckHeading = debounce(checkHeadingChange, 1500);
+
+/*****************************************
+ * Stats (word count, char count, backlinks)
+ *****************************************/
+
+/**
+ * Updates the word and character counts from the editor content.
+ */
+function updateTextStats() {
+  if (!vditor.value) return;
+  const text = vditor.value.getValue();
+  // strip markdown syntax for a rough plain-text count
+  const plainText = text
+    .replace(/```[\s\S]*?```/g, "") // code blocks
+    .replace(/`[^`]*`/g, "") // inline code
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1") // links/images
+    .replace(/[#*_~>`|-]/g, "") // markdown markers
+    .trim();
+  charCount.value = plainText.length;
+  const words = plainText.split(/\s+/).filter((w) => w.length > 0);
+  wordCount.value = words.length;
+}
+
+/**
+ * Fetches the count of backlinks (edges targeting this note) from SQLite.
+ */
+async function updateBacklinkCount() {
+  try {
+    const rows = await sqldb.select<{ count: number }[]>(
+      "SELECT COUNT(*) as count FROM links WHERE target = $1",
+      [props.noteId]
+    );
+    backlinkCount.value = rows && rows.length > 0 ? rows[0].count : 0;
+  } catch (error) {
+    backlinkCount.value = 0;
   }
 }
 
@@ -374,7 +501,7 @@ function _changeLinks() {
     linkNode.onmouseleave = () => hoverPane.value.close();
   }
 }
-const changeLinks = debounce(_changeLinks, 50) as () => void;
+const changeLinks = debounce(_changeLinks, 50);
 
 /**
  * Handles click events on hyperlinks within the editor.
@@ -559,7 +686,7 @@ async function _hangleImage() {
     };
   }
 }
-const handleImage = debounce(_hangleImage, 50) as () => void;
+const handleImage = debounce(_hangleImage, 50);
 
 /*******************************************
  * Hints

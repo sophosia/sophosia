@@ -6,7 +6,7 @@ import {
   PDFAttachment,
   ProjectNode,
   Note,
-  NoteType,
+  NodeType,
   PageType,
   Project,
   SpecialCategory,
@@ -232,7 +232,7 @@ export const useProjectStore = defineStore("projectStore", {
     async createNode(
       parentNodeId: string,
       nodeType: "folder" | "note",
-      noteType: NoteType = NoteType.MARKDOWN
+      noteType: NodeType = NodeType.MARKDOWN
     ) {
       if (nodeType === "folder") return await createFolder(parentNodeId);
       else return await createNote(parentNodeId, noteType);
@@ -240,7 +240,8 @@ export const useProjectStore = defineStore("projectStore", {
 
     async addNode(node: ProjectNode) {
       if (node.dataType === "folder") await addFolder(node);
-      else await addNote(node as Note);
+      else if (node.dataType === "note") await addNote(node as Note);
+      // Papers (PDFs) don't need file creation - the PDF already exists on disk
       const projectId = node._id.split("/")[0];
       const project = await fetchAndPrepareProject(projectId);
       await this._updateProjectUI(projectId, project);
@@ -262,9 +263,16 @@ export const useProjectStore = defineStore("projectStore", {
       }
     },
 
-    async deleteNode(nodeId: string, nodeType: "folder" | "note") {
+    async deleteNode(
+      nodeId: string,
+      nodeType: "folder" | "note" | "paper"
+    ) {
       if (nodeType === "folder") await deleteFolder(nodeId);
-      else await deleteNote(nodeId);
+      else if (nodeType === "paper") {
+        const projectId = nodeId.split("/")[0];
+        const pdfName = nodeId.split("/").slice(1).join("/");
+        await projectFileAGUD.removePDF(projectId, pdfName);
+      } else await deleteNote(nodeId);
       const projectId = nodeId.split("/")[0];
       const project = await fetchAndPrepareProject(projectId);
       await this._updateProjectUI(projectId, project);

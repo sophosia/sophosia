@@ -72,7 +72,7 @@ export interface Note {
   projectId: string; // the project it belongs to
   path: string; // path to actual markdown file
   label: string; // markdown file name
-  type: NoteType;
+  type: NodeType;
 }
 
 export type CategoryNode = QTreeNode<{ _id: string; children: CategoryNode[] }>;
@@ -84,7 +84,7 @@ export interface ProjectNode {
   _id: string;
   label: string;
   dataType: "folder" | "note" | "paper";
-  type?: NoteType;
+  type?: NodeType;
   children?: ProjectNode[];
 }
 
@@ -274,6 +274,7 @@ export interface AppState {
   dataType: "appState";
   // layout
   rightMenuSize: number;
+  sidebarCollapsed: boolean;
   // project
   selectedCategory: string;
   currentItemId: string;
@@ -313,6 +314,7 @@ export interface Stack {
 
 export interface Page {
   id: string;
+  uid?: string; // stable key for Vue rendering, does not change on rename
   type: PageType;
   label: string;
   visible?: boolean; // if visible not exists, then it's not visible

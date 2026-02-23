@@ -37,7 +37,7 @@
           :projectId="prop.node._id"
           @showInExplorer="showInExplorer(prop.node)"
           @showInNewWindow="showInNewWindow(prop.node)"
-          @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
+          @addNote="(noteType: NodeType) => addNode(prop.node._id, 'note', noteType)"
           @addFolder="addNode(prop.node._id, 'folder')"
           @exportCitation="showExportCitationDialog(prop.node)"
           @closeProject="closeProject(prop.node._id)"
@@ -55,7 +55,7 @@
         />
         <PaperMenu
           v-else-if="prop.node.dataType === 'paper'"
-          @addNote="(noteType: NoteType) => addNode(prop.node._id.split('/')[0], 'note', noteType)"
+          @addNote="(noteType: NodeType) => addNode(prop.node._id.split('/')[0], 'note', noteType)"
           @showInExplorer="showInExplorer(prop.node)"
           @showInNewWindow="showInNewWindow(prop.node)"
           @delete="deleteNode(prop.node)"
@@ -64,7 +64,7 @@
         <FolderMenu
           v-else
           @showInExplorer="showInExplorer(prop.node)"
-          @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
+          @addNote="(noteType: NodeType) => addNode(prop.node._id, 'note', noteType)"
           @addFolder="addNode(prop.node._id, 'folder')"
           @renameFolder="setRenameNode(prop.node)"
           @deleteFolder="deleteNode(prop.node)"
@@ -99,7 +99,7 @@
           class="ellipsis non-selectable"
           :type="prop.node.dataType"
         >
-          {{ prop.node.label }}
+          {{ prop.node.label.replace(/\.md$/, '') }}
           <q-tooltip> ID: {{ prop.key }} </q-tooltip>
         </div>
       </div>
@@ -111,7 +111,7 @@ import { QTree } from "quasar";
 import {
   ProjectNode,
   Note,
-  NoteType,
+  NodeType,
   Page,
   PageType,
   Project,
@@ -224,7 +224,7 @@ async function closeProject(projectId: string) {
 async function addNode(
   parentNodeId: string,
   nodeType: "folder" | "note",
-  noteType: NoteType = NoteType.MARKDOWN
+  noteType: NodeType = NodeType.MARKDOWN
 ) {
   if (nodeType === "folder") {
     nameDialog.showWithOptions({
@@ -253,6 +253,8 @@ async function addNode(
     const node = await projectStore.createNode(parentNodeId, nodeType, noteType);
     await projectStore.addNode(node);
     expanded.value.push(parentNodeId);
+    // Open the note immediately
+    layoutStore.openItem(node._id);
     addingNode.value = true;
     await nextTick();
     setRenameNode(node);

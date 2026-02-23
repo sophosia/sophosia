@@ -141,6 +141,28 @@ class ProjectFileAGUD {
     return newPath;
   }
 
+  /**
+   * Remove a specific PDF file from a project and update the project metadata.
+   *
+   * @param projectId - The project ID
+   * @param pdfName - The filename of the PDF to remove
+   */
+  async removePDF(projectId: string, pdfName: string): Promise<void> {
+    try {
+      const pdfPath = idToPath(`${projectId}/${pdfName}`);
+      if (await exists(pdfPath)) await removeFile(pdfPath);
+
+      // Update project metadata to remove the PDF from the pdfs array
+      const project = await this.getProject(projectId);
+      if (project) {
+        project.pdfs = (project.pdfs || []).filter((p) => p.name !== pdfName);
+        await this.saveProjectNote(project);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async deleteProject(projectId: string) {
     // remove project and its related pdfState, pdfAnnotation and notes on db
     for (let dataType of ["pdfState", "pdfAnnotation"]) {

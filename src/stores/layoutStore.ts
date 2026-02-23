@@ -2,7 +2,7 @@ import { basename } from "@tauri-apps/api/path";
 import { WebviewWindow, getCurrent } from "@tauri-apps/api/window";
 import { nanoid } from "nanoid";
 import { defineStore } from "pinia";
-import { NoteType, PageType, db } from "src/backend/database";
+import { NodeType, PageType, db } from "src/backend/database";
 import type {
   AnnotationData,
   AppState,
@@ -28,6 +28,7 @@ export const useLayoutStore = defineStore("layoutStore", {
     rightMenuSize: 0,
     prvRightMenuSize: 0,
     showWelcomeCarousel: true,
+    sidebarCollapsed: false,
 
     // layout
     currentItemId: "",
@@ -57,6 +58,7 @@ export const useLayoutStore = defineStore("layoutStore", {
       this.currentItemId = state.currentItemId;
       this.historyItemIds = state.historyItemIds;
       this.rightMenuSize = state.rightMenuSize;
+      this.sidebarCollapsed = state.sidebarCollapsed ?? false;
       // load layout from db
       await this.loadLayout();
       this.initialized = true;
@@ -74,6 +76,7 @@ export const useLayoutStore = defineStore("layoutStore", {
         currentItemId: this.currentItemId,
         historyItemIds: this.historyItemIds,
         rightMenuSize: this.rightMenuSize,
+        sidebarCollapsed: this.sidebarCollapsed,
       } as AppState;
     },
 
@@ -84,6 +87,10 @@ export const useLayoutStore = defineStore("layoutStore", {
     async loadLayout() {
       if (this.windowId !== "main") return;
       this.layouts.set(this.windowId, await getLayout());
+      // Backfill uid for pages loaded from older layouts
+      for (const page of this.findAllPages(() => true)) {
+        if (!page.uid) page.uid = nanoid();
+      }
       if (this.findPage((page) => page.id === this.currentItemId))
         this.setActive(this.currentItemId);
       else {
@@ -112,6 +119,7 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param page - The page object to be opened, containing necessary properties like id, label, type, etc.
      */
     openPage(page: Page) {
+      if (!page.uid) page.uid = nanoid();
       if (this.layout.type === "stack" && this.layout.children.length === 0) {
         this.layout.children.push(page);
       } else if (!this.findPage((p) => p.id === page.id)) {
@@ -167,6 +175,11 @@ export const useLayoutStore = defineStore("layoutStore", {
      */
     renamePage(oldPageId: string, newPage: Page) {
       this.replaceNode(newPage, oldPageId);
+      // Update currentItemId and history to reflect the new ID
+      if (this.currentItemId === oldPageId) this.currentItemId = newPage.id;
+      this.historyItemIds = this.historyItemIds.map((id) =>
+        id === oldPageId ? newPage.id : id
+      );
     },
 
     /**
@@ -225,7 +238,7 @@ export const useLayoutStore = defineStore("layoutStore", {
           this.openPage({
             id: itemId,
             type:
-              item.type === NoteType.MARKDOWN
+              item.type === NodeType.MARKDOWN
                 ? PageType.NotePage
                 : PageType.ExcalidrawPage,
             label: item.label,
@@ -284,6 +297,18 @@ export const useLayoutStore = defineStore("layoutStore", {
         this.showWelcomeCarousel = !this.showWelcomeCarousel;
       } else {
         this.showWelcomeCarousel = visible;
+      }
+    },
+
+    /**
+     * Toggle sidebar collapsed state
+     * @param collapsed - if given, set the state directly
+     */
+    toggleSidebar(collapsed?: boolean) {
+      if (collapsed === undefined) {
+        this.sidebarCollapsed = !this.sidebarCollapsed;
+      } else {
+        this.sidebarCollapsed = collapsed;
       }
     },
 
@@ -361,6 +386,7 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param pos - position relative to target node, either before or after
      */
     insertPage(page: Page, targetPageId: string, pos: "before" | "after") {
+      if (!page.uid) page.uid = nanoid();
       if (!this.layout) return;
       const stack = [this.layout];
       while (stack.length > 0) {

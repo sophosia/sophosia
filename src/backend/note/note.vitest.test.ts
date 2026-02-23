@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Note, NoteType } from "src/backend/database";
+import { Note, NodeType } from "src/backend/database";
 import {
   createNote,
   addNote,
@@ -14,7 +14,7 @@ import { mockTable } from "app/test/vitest/mock-sqlite";
 
 describe("note.ts", () => {
   it("createNote", async () => {
-    const type = NoteType.MARKDOWN;
+    const type = NodeType.MARKDOWN;
     const projectId = "projectId";
     const note = await createNote(projectId, type);
     expect(note.type).toBe(type);
@@ -23,7 +23,7 @@ describe("note.ts", () => {
 
   it("deleteNote", async () => {
     const projectId = "projectId";
-    const note = await createNote(projectId, NoteType.MARKDOWN);
+    const note = await createNote(projectId, NodeType.MARKDOWN);
     await addNote(note);
     await deleteNote(note._id);
 
@@ -34,7 +34,7 @@ describe("note.ts", () => {
   it("getNotes", async () => {
     const n = 10;
     for (let i = 0; i < n; i++) {
-      const note = await createNote("projectId", NoteType.MARKDOWN);
+      const note = await createNote("projectId", NodeType.MARKDOWN);
       await addNote(note);
     }
     const notes = (await getNotes("projectId")) as Note[];
@@ -45,7 +45,7 @@ describe("note.ts", () => {
     mockTable.length = 0;
     const n = 10;
     for (let i = 0; i < n; i++) {
-      const note = await createNote("projectId" + i, NoteType.MARKDOWN);
+      const note = await createNote("projectId" + i, NodeType.MARKDOWN);
       await addNote(note);
     }
     const noteIds = await getAllNoteIds();

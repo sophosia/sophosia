@@ -3,6 +3,7 @@
   "notebook": "Carnet de notes",
   "openedProjects": "Projets ouverts",
   "help": "Aide",
+  "collapse-sidebar": "Réduire la barre latérale",
   "settings": "Paramètres",
   "explain": "Explique",
   "general": "Général",
@@ -163,5 +164,8 @@
   "progress": "Progrès",
   "show": "Afficher {type}",
   "index-files": "Indexer des fichiers",
-  "index-files-info": "Indexer tous les fichiers pour une récupération des données plus rapide et une recherche en texte intégral dans les fichiers PDF."
+  "index-files-info": "Indexer tous les fichiers pour une récupération des données plus rapide et une recherche en texte intégral dans les fichiers PDF.",
+  "backlinks-count": "{count} liens retour",
+  "words-count": "{count} mots",
+  "characters-count": "{count} caractères"
 }

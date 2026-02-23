@@ -79,7 +79,7 @@
         v-if="projectStore.selected.length == 1"
         clickable
         v-close-popup
-        @click="addNote(NoteType.MARKDOWN)"
+        @click="addNote(NodeType.MARKDOWN)"
       >
         <q-item-section>
           <i18n-t keypath="add">
@@ -91,7 +91,7 @@
         v-if="projectStore.selected.length == 1"
         clickable
         v-close-popup
-        @click="addNote(NoteType.EXCALIDRAW)"
+        @click="addNote(NodeType.EXCALIDRAW)"
       >
         <q-item-section>
           <i18n-t keypath="add">
@@ -164,7 +164,7 @@ import { QMenu } from "quasar";
 import {
   Meta,
   Note,
-  NoteType,
+  NodeType,
   Project,
   SpecialCategory,
 } from "src/backend/database";
@@ -222,13 +222,15 @@ function expandRow(isExpand: boolean) {
 
 /**
  * Adds a new note of the specified type to the selected project.
- * @param {NoteType} noteType - The type of note to add (Markdown or Excalidraw).
+ * @param {NodeType} noteType - The type of note to add (Markdown or Excalidraw).
  */
-async function addNote(noteType: NoteType) {
+async function addNote(noteType: NodeType) {
   let project = projectStore.selected[0];
   let note = await projectStore.createNode(project._id, "note", noteType);
   await projectStore.addNode(note);
   expandRow(true);
+  // Open the note immediately
+  layoutStore.openItem(note._id);
   await nextTick();
   renamingNoteId.value = note._id;
 }

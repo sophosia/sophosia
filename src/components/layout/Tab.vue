@@ -11,7 +11,7 @@
         class="q-mr-xs"
       />
       <div class="tab-label ellipsis">
-        {{ specialPages.includes(page.label) ? $t(page.label) : page.label }}
+        {{ specialPages.includes(page.label) ? $t(page.label) : page.label.replace(/\.md$/, '') }}
       </div>
     </div>
     <q-btn

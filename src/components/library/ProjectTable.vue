@@ -68,13 +68,13 @@
       <!-- Children (papers + notes) -->
       <TableItemRow
         v-show="props.expand"
-        v-for="note in props.row.children"
-        :key="note._id"
-        :item="note"
+        v-for="child in props.row.children"
+        :key="child._id"
+        :item="child"
         :class="{
           'tableview-highlighted-row': projectStore.selected
             .map((item) => item._id)
-            .includes(note._id),
+            .includes(child._id),
         }"
       />
 

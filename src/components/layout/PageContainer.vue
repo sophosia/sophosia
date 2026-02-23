@@ -5,7 +5,7 @@
   >
     <component
       v-for="page in pages"
-      :key="page.id"
+      :key="page.uid || page.id"
       :is="asyncPages.get(page.type)"
       :visible="!!page.visible"
       :itemId="page.id"
