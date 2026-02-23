@@ -84,7 +84,7 @@ const iconComponent = computed(() => {
   color: var(--q-text-muted);
   padding: 0 8px;
   min-width: 10rem;
-  height: 100%;
+  height: 44px;
   border-radius: 6px 6px 0 0;
   box-shadow: 0 0 0 1px var(--q-edge);
   transition: color 0.15s ease, background-color 0.15s ease;

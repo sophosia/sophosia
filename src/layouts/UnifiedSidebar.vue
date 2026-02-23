@@ -159,7 +159,8 @@ defineEmits(["openPage"]);
   flex-direction: row;
   align-items: center;
   gap: 2px;
-  padding: 4px 6px;
+  padding: 0 6px;
+  height: 44px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--q-border);
 }

@@ -9,7 +9,7 @@
           :class="{ active: activeTab === tab.id }"
           @click="activeTab = tab.id"
         >
-          <component :is="tab.icon" width="14" height="14" />
+          <component :is="tab.icon" width="12" height="12" />
           <span>{{ $t(tab.label) }}</span>
         </button>
       </div>
@@ -54,7 +54,7 @@ const activeTab = ref("general");
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 4px 8px;
+  padding: 2px 8px;
   overflow-x: auto;
   scrollbar-width: none;
 
@@ -66,14 +66,14 @@ const activeTab = ref("general");
 .settings-tab {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 8px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   background: transparent;
   color: var(--q-text-muted);
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;

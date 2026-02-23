@@ -2,6 +2,7 @@
   <!-- the class stack is only for searching -->
   <TabContainer
     class="tab-container"
+    data-tauri-drag-region
     :enableCrossWindowDragAndDrop="enableCrossWindowDragAndDrop"
     :pages="stack.children"
     @movePage="(page: Page, id: string, pos: 'before' | 'after', fromWindow: string) => movePage(page, id, pos, fromWindow)"
@@ -125,13 +126,14 @@ function refresh() {
 .page-container {
   position: absolute;
   width: 100%;
-  height: calc(100% - 44px);
+  height: calc(100% - var(--tab-bar-height));
 }
 .tab-container {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-end;
   background: var(--color-layout-header-bkgd);
-  height: 44px;
+  height: var(--tab-bar-height);
+  padding-top: var(--traffic-light-height);
 }
 </style>
