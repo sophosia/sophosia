@@ -6,8 +6,8 @@
     <div class="row items-center">
       <component
         :is="iconComponent"
-        width="13"
-        height="13"
+        width="15"
+        height="15"
         class="q-mr-xs"
       />
       <div class="tab-label ellipsis">
@@ -21,7 +21,7 @@
       size="sm"
       class="tab-close-btn"
     >
-      <Xmark width="12" height="12" />
+      <Xmark width="14" height="14" />
     </q-btn>
     <slot name="menu"></slot>
   </div>
@@ -99,7 +99,7 @@ const iconComponent = computed(() => {
 }
 
 .tab-label {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 500;
   width: 6rem;
 }

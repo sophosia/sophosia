@@ -9,7 +9,7 @@
           :class="{ active: activeTab === tab.id }"
           @click="activeTab = tab.id"
         >
-          <component :is="tab.icon" width="12" height="12" />
+          <component :is="tab.icon" width="14" height="14" />
           <span>{{ $t(tab.label) }}</span>
         </button>
       </div>
@@ -73,7 +73,7 @@ const activeTab = ref("general");
   background: transparent;
   color: var(--q-text-muted);
   font-family: inherit;
-  font-size: 0.6875rem;
+  font-size: 0.875rem;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;

@@ -202,7 +202,7 @@ defineEmits(["openPage"]);
 .sidebar-bottom-btn {
   border-radius: 6px;
   color: var(--q-text-muted);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   transition: color 0.15s ease, background-color 0.15s ease;
 
   &:hover {

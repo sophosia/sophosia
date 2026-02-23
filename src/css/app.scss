@@ -94,9 +94,9 @@ body {
 :root {
   --sidebar-width: 270px;
   --traffic-light-height: 0px;
-  --tab-bar-height: 34px;
-  --sub-tab-height: 34px;
-  --header-total-height: 68px; // tab-bar + sub-tab
+  --tab-bar-height: 40px;
+  --sub-tab-height: 40px;
+  --header-total-height: 80px; // tab-bar + sub-tab
 }
 
 body[data-platform="Darwin"] {
