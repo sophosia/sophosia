@@ -1,4 +1,4 @@
-import { sqldb, db, FolderOrNote, Note, NoteType } from "../database";
+import { sqldb, db, ProjectNode, Note, NoteType, NodeType } from "../database";
 import { Buffer } from "buffer";
 import {
   exists,
@@ -303,27 +303,34 @@ export async function getNotes(folderId: string): Promise<Note[]> {
  * Generates a tree structure of notes and folders for a given project.
  *
  * @param {string} projectId - The ID of the project.
- * @returns {Promise<FolderOrNote[]>} A promise resolving to an array representing the tree structure.
+ * @returns {Promise<ProjectNode[]>} A promise resolving to an array representing the tree structure.
  *
  * Recursively traverses through folders and notes, constructing a hierarchical tree structure.
  * Skips non-note files and the project's main note.
  */
-export async function getNoteTree(projectId: string): Promise<FolderOrNote[]> {
-  async function _dfs(entries: FileEntry[], children: FolderOrNote[]) {
+export async function getNoteTree(projectId: string): Promise<ProjectNode[]> {
+  async function _dfs(entries: FileEntry[], children: ProjectNode[]) {
     for (const entry of entries) {
       const meta = await metadata(entry.path);
-      const node = {} as FolderOrNote;
+      const node = {} as ProjectNode;
       node._id = pathToId(entry.path);
       node.label = entry.name as string;
       if (meta.isFile) {
         const ext = await extname(entry.path);
-        if (!["md", "excalidraw"].includes(ext)) continue;
         if (entry.name == projectId + ".md") continue; // skip project note
-        node.dataType = "note";
-        node.type = ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW;
+        if (ext === "pdf") {
+          node.dataType = "paper";
+          node.type = NodeType.PAPER;
+          node.children = [];
+        } else if (["md", "excalidraw"].includes(ext)) {
+          node.dataType = "note";
+          node.type = ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW;
+        } else {
+          continue;
+        }
       } else if (entry.children) {
         node.dataType = "folder";
-        node.children = [] as FolderOrNote[];
+        node.children = [] as ProjectNode[];
         await _dfs(entry.children, node.children);
       }
       children.push(node);
@@ -333,7 +340,7 @@ export async function getNoteTree(projectId: string): Promise<FolderOrNote[]> {
   const entries = await readDir(await join(db.config.storagePath, projectId), {
     recursive: true,
   });
-  const notes = [] as FolderOrNote[];
+  const notes = [] as ProjectNode[];
   await _dfs(entries, notes);
   return notes;
 }
@@ -426,14 +433,14 @@ export async function uploadImage(
  * Creates a new folder within a specified parent folder.
  *
  * @param {string} parentFolderId - The ID of the parent folder.
- * @returns {Promise<FolderOrNote>} A promise resolving to the newly created folder object.
+ * @returns {Promise<ProjectNode>} A promise resolving to the newly created folder object.
  *
  * Generates a unique name for the new folder and creates it under the parent folder.
  * Returns the folder object with its properties.
  */
 export async function createFolder(
   parentFolderId: string
-): Promise<FolderOrNote> {
+): Promise<ProjectNode> {
   let name = t("new", { type: t("folder") });
   let path = await join(idToPath(parentFolderId), name);
   let i = 1;
@@ -449,7 +456,7 @@ export async function createFolder(
     label: name,
     path: path,
     children: [],
-  } as FolderOrNote;
+  } as ProjectNode;
 
   return folder;
 }
@@ -457,13 +464,13 @@ export async function createFolder(
 /**
  * Adds a new folder to the file system based on the provided folder object.
  *
- * @param {FolderOrNote} folder - The folder object to be added.
+ * @param {ProjectNode} folder - The folder object to be added.
  *
  * Creates a directory in the file system using the folder's ID as the path.
  *
  * @throws Logs an error if the folder creation process fails.
  */
-export async function addFolder(folder: FolderOrNote) {
+export async function addFolder(folder: ProjectNode) {
   try {
     await createDir(idToPath(folder._id));
   } catch (error) {

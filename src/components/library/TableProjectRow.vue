@@ -22,7 +22,7 @@
     </q-th>
     <q-td auto-width>
       <component
-        v-if="!!tableProps.row.path || (tableProps.row.children?.length as typeof NaN) > 0"
+        v-if="(tableProps.row.pdfs?.length > 0) || (tableProps.row.children?.length as typeof NaN) > 0"
         :is="tableProps.expand ? NavArrowDown : NavArrowRight"
         width="16"
         height="16"

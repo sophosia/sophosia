@@ -53,6 +53,14 @@
           @copyId="() => copyId(prop.node._id)"
           @copyAsLink="() => copyAsNoteLink(prop.node)"
         />
+        <PaperMenu
+          v-else-if="prop.node.dataType === 'paper'"
+          @addNote="(noteType: NoteType) => addNode(prop.node._id.split('/')[0], 'note', noteType)"
+          @showInExplorer="showInExplorer(prop.node)"
+          @showInNewWindow="showInNewWindow(prop.node)"
+          @delete="deleteNode(prop.node)"
+          @copyId="() => copyId(prop.node._id)"
+        />
         <FolderMenu
           v-else
           @showInExplorer="showInExplorer(prop.node)"
@@ -101,7 +109,7 @@
 <script setup lang="ts">
 import { QTree } from "quasar";
 import {
-  FolderOrNote,
+  ProjectNode,
   Note,
   NoteType,
   Page,
@@ -120,6 +128,7 @@ import { computed, nextTick, onMounted, ref, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
 import FolderMenu from "./FolderMenu.vue";
 import NoteMenu from "./NoteMenu.vue";
+import PaperMenu from "./PaperMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
 import NodeTypeIcon from "src/components/shared/NodeTypeIcon.vue";
 
@@ -151,8 +160,8 @@ const renamingNodeType = ref<"folder" | "note">("folder");
 const oldNoteName = ref("");
 const addingNode = ref(false);
 const expanded = ref<string[]>([]);
-const draggingNode = ref<Project | FolderOrNote | null>(null);
-const dragoverNode = ref<FolderOrNote | null>(null);
+const draggingNode = ref<Project | ProjectNode | null>(null);
+const dragoverNode = ref<ProjectNode | null>(null);
 const enterTime = ref(0);
 
 onMounted(async () => {
@@ -188,13 +197,8 @@ function selectItem(nodeId: string) {
     return;
   }
 
-  // PDF children open the parent project's reader
-  if (node._id.endsWith(".pdf")) {
-    const projectId = node._id.split("/")[0];
-    layoutStore.openItem(projectId);
-  } else {
-    layoutStore.openItem(node._id);
-  }
+  // PDF nodes open the reader for that specific PDF
+  layoutStore.openItem(node._id);
 }
 
 function showInTree(nodeId: string) {
@@ -232,7 +236,7 @@ async function addNode(
         const parentNode = tree_ref.getNodeByKey(parentNodeId);
         if (!parentNode || !parentNode.children) return false;
         return parentNode.children.some(
-          (child: FolderOrNote) =>
+          (child: ProjectNode) =>
             child.dataType === "folder" &&
             child.label.toLowerCase() === name.toLowerCase()
         );
@@ -255,7 +259,7 @@ async function addNode(
   }
 }
 
-function setRenameNode(node: FolderOrNote) {
+function setRenameNode(node: ProjectNode) {
   renamingNodeId.value = node._id;
   renamingNodeType.value = node.dataType;
   oldNoteName.value = (
@@ -271,9 +275,16 @@ function setRenameNode(node: FolderOrNote) {
   }, 100);
 }
 
+const renaming = ref(false);
 async function renameNode() {
-  const node = tree.value?.getNodeByKey(renamingNodeId.value) as FolderOrNote;
-  if (!node) return;
+  if (renaming.value) return;
+  renaming.value = true;
+
+  const node = tree.value?.getNodeByKey(renamingNodeId.value) as ProjectNode;
+  if (!node) {
+    renaming.value = false;
+    return;
+  }
 
   const oldNodeId = renamingNodeId.value;
 
@@ -308,6 +319,7 @@ async function renameNode() {
   addingNode.value = false;
   renamingNodeId.value = "";
   oldNoteName.value = "";
+  renaming.value = false;
 }
 
 async function checkDuplicate(node: Note) {
@@ -315,7 +327,7 @@ async function checkDuplicate(node: Note) {
   await checkDuplicateAction(node, node.label);
 }
 
-async function deleteNode(node: FolderOrNote) {
+async function deleteNode(node: ProjectNode) {
   await deleteNodeAction(node, () => {
     if (node._id === projectStore.selected[0]?._id) {
       const projectId = node._id.split("/")[0];
@@ -333,7 +345,7 @@ async function deleteNode(node: FolderOrNote) {
   });
 }
 
-function onDragStart(e: DragEvent, node: Project | FolderOrNote) {
+function onDragStart(e: DragEvent, node: Project | ProjectNode) {
   draggingNode.value = node;
   e.dataTransfer?.setData("draggingNode", JSON.stringify(node));
 
@@ -357,7 +369,7 @@ function onDragStart(e: DragEvent, node: Project | FolderOrNote) {
   }
 }
 
-function onDragOver(e: DragEvent, node: FolderOrNote) {
+function onDragOver(e: DragEvent, node: ProjectNode) {
   if (draggingNode.value?.dataType === "project") return;
   e.preventDefault();
   dragoverNode.value = node;
@@ -368,12 +380,12 @@ function onDragOver(e: DragEvent, node: FolderOrNote) {
   }
 }
 
-function onDragLeave(e: DragEvent, node: FolderOrNote) {
+function onDragLeave(e: DragEvent, node: ProjectNode) {
   enterTime.value = 0;
   dragoverNode.value = null;
 }
 
-async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
+async function onDrop(e: DragEvent, node: Project | ProjectNode) {
   if (draggingNode.value === null || draggingNode.value == node) return;
 
   const dragId = draggingNode.value._id;

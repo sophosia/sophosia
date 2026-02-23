@@ -3,7 +3,8 @@ import { join } from "@tauri-apps/api/path";
 import {
   AnnotationData,
   Author,
-  FolderOrNote,
+  PDFAttachment,
+  ProjectNode,
   PDFState,
   Project,
   db,
@@ -38,12 +39,12 @@ export function createProject(category: string): Project {
     dataType: "project",
     label: t("new", { type: t("project") }),
     title: t("new", { type: t("project") }),
-    path: undefined,
+    pdfs: [] as PDFAttachment[],
     tags: [] as string[],
     categories: ["library"],
     author: [] as Author[],
     favorite: false,
-    children: [] as FolderOrNote[],
+    children: [] as ProjectNode[],
   } as Project;
   if (category != "library") project.categories.push(category);
   return project;
@@ -164,7 +165,7 @@ export async function updateProject(
     projectSQLAGUD.updateProject(projectId, project);
     projectFileAGUD.saveProjectNote(project);
     // add these back since the vue components need this
-    project.path = await projectFileAGUD.getPDF(project._id);
+    project.pdfs = await projectFileAGUD.getPDFs(project._id);
     project.children = await getNoteTree(project._id);
     return project;
   } catch (error) {
@@ -190,7 +191,7 @@ export async function getProject(
   if (!project) return;
 
   if (options?.includePDF)
-    project.path = await projectFileAGUD.getPDF(projectId);
+    project.pdfs = await projectFileAGUD.getPDFs(projectId);
   if (options?.includeNotes) project.children = await getNoteTree(projectId);
   return project;
 }
@@ -228,7 +229,7 @@ export async function getProjects(
 
   for (const project of projects) {
     if (options?.includePDF)
-      project.path = await projectFileAGUD.getPDF(project._id);
+      project.pdfs = await projectFileAGUD.getPDFs(project._id);
     if (options?.includeNotes)
       project.children = await getNoteTree(project._id);
   }

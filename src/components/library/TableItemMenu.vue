@@ -98,6 +98,35 @@
     </q-list>
 
     <q-list
+      v-else-if="menuType === 'paper'"
+      dense
+    >
+      <q-item
+        clickable
+        @click="$emit('openItem')"
+      >
+        <q-item-section>
+          <i18n-t keypath="open">
+            <template #type>PDF</template>
+          </i18n-t>
+        </q-item-section>
+      </q-item>
+      <q-item
+        clickable
+        @click="$emit('showInExplorer')"
+      >
+        <q-item-section>{{ $t("show-in-explorer") }}</q-item-section>
+      </q-item>
+
+      <q-item
+        clickable
+        @click="$emit('renamePDF')"
+      >
+        <q-item-section>{{ $t("rename-pdf-from-metadata") }}</q-item-section>
+      </q-item>
+    </q-list>
+
+    <q-list
       v-else-if="menuType === 'project'"
       dense
     >

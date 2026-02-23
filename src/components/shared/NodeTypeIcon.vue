@@ -11,8 +11,14 @@
     :height="size"
     class="q-mr-xs"
   />
+  <PageIcon
+    v-else-if="node.dataType === 'paper'"
+    :width="size"
+    :height="size"
+    class="q-mr-xs"
+  />
   <DesignPencil
-    v-else-if="node.dataType === 'note' && node.type === NoteType.EXCALIDRAW"
+    v-else-if="node.dataType === 'note' && node.type === NodeType.EXCALIDRAW"
     :width="size"
     :height="size"
     class="q-mr-xs"
@@ -25,7 +31,7 @@
   />
 </template>
 <script setup lang="ts">
-import { FolderOrNote, NoteType, Project } from "src/backend/database";
+import { ProjectNode, NodeType, Project } from "src/backend/database";
 import {
   OpenBook,
   Folder,
@@ -35,7 +41,7 @@ import {
 
 withDefaults(
   defineProps<{
-    node: Project | FolderOrNote;
+    node: Project | ProjectNode;
     size?: number;
   }>(),
   { size: 16 }

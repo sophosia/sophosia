@@ -7,6 +7,7 @@ import { Annotation, Ink } from "./annotations";
  */
 export default class AnnotationStore {
   projectId: string;
+  pdfName: string;
   annots = reactive<Annotation[]>([]);
   _selectedId = ref<string>("");
 
@@ -20,8 +21,9 @@ export default class AnnotationStore {
     return this.getById(this.selectedId);
   }
 
-  constructor(projectId: string) {
+  constructor(projectId: string, pdfName: string = "") {
     this.projectId = projectId;
+    this.pdfName = pdfName;
   }
 
   /**
@@ -64,11 +66,15 @@ export default class AnnotationStore {
   async loadFromDB() {
     try {
       // try to get it from sqldb first
-      let annotDatas =
-        (await sqldb.select<AnnotationData[]>(
-          "SELECT * FROM annotations WHERE projectId = $1",
-          [this.projectId]
-        )) || [];
+      let annotDatas = this.pdfName
+        ? (await sqldb.select<AnnotationData[]>(
+            "SELECT * FROM annotations WHERE projectId = $1 AND pdfName = $2",
+            [this.projectId, this.pdfName]
+          )) || []
+        : (await sqldb.select<AnnotationData[]>(
+            "SELECT * FROM annotations WHERE projectId = $1",
+            [this.projectId]
+          )) || [];
       if (annotDatas.length > 0) {
         for (const annotData of annotDatas) {
           annotData.pageNumber = parseInt(

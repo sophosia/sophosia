@@ -188,18 +188,36 @@ export const useLayoutStore = defineStore("layoutStore", {
     async openItem(itemId: string) {
       if (!itemId) return;
       try {
-        // open associated project'
         const projectStore = useProjectStore();
         const dataType = getDataType(itemId);
         if (dataType === "project") {
           const item = (await projectStore.getProjectFromDB(itemId)) as Project;
           await projectStore.openProject(item._id);
-          const path = await projectFileAGUD.getPDF(itemId);
-          if (!path || item.type === "notebook") return; // do not open page if there is no pdf or it's a notebook
+          if (item.type === "notebook") return;
+          // For projects with exactly one PDF, open it directly
+          const pdfs = await projectFileAGUD.getPDFs(itemId);
+          if (pdfs.length === 1) {
+            this.openPage({
+              id: `${itemId}/${pdfs[0].name}`,
+              type: PageType.ReaderPage,
+              label: pdfs[0].name,
+              data: { pdfPath: pdfs[0].path },
+            });
+          }
+          // For multiple PDFs, let user pick from sidebar tree
+        } else if (dataType === "paper") {
+          // itemId is "projectId/filename.pdf"
+          const projectId = itemId.split("/")[0];
+          const pdfName = itemId.split("/").slice(1).join("/");
+          await projectStore.openProject(projectId);
+          const pdfs = await projectFileAGUD.getPDFs(projectId);
+          const pdf = pdfs.find((p) => p.name === pdfName);
+          if (!pdf) return;
           this.openPage({
             id: itemId,
             type: PageType.ReaderPage,
-            label: await basename(path),
+            label: pdfName,
+            data: { pdfPath: pdf.path },
           });
         } else if (dataType === "note") {
           const item = (await projectStore.getNoteFromDB(itemId)) as Note;
@@ -215,12 +233,18 @@ export const useLayoutStore = defineStore("layoutStore", {
         } else if (dataType === "pdfAnnotation") {
           const item = (await db.get(itemId)) as AnnotationData;
           await projectStore.openProject(item.projectId);
-          const project = (await getProject(item.projectId)) as Project;
+          const pdfName = item.pdfName;
+          const pdfs = await projectFileAGUD.getPDFs(item.projectId);
+          const pdf = pdfName
+            ? pdfs.find((p) => p.name === pdfName)
+            : pdfs[0];
+          if (!pdf) return;
+          const pageId = `${item.projectId}/${pdf.name}`;
           this.openPage({
-            id: project._id,
+            id: pageId,
             type: PageType.ReaderPage,
-            label: project.label,
-            data: { focusAnnotId: itemId },
+            label: pdf.name,
+            data: { focusAnnotId: itemId, pdfPath: pdf.path },
           });
         }
       } catch (error) {

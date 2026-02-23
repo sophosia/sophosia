@@ -107,11 +107,7 @@
         @click="onAttachFile()"
       >
         <q-item-section>
-          {{
-            !!projectStore.selected[0].path
-              ? $t("replace-file")
-              : $t("attach-file")
-          }}
+          {{ $t("attach-file") }}
         </q-item-section>
       </q-item>
 

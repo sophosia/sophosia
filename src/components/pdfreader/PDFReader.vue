@@ -51,6 +51,8 @@ import { onBeforeUnmount, computed, ref, watch } from "vue";
 
 const props = defineProps({
   projectId: { type: String, required: true },
+  pdfPath: { type: String, required: false },
+  pdfName: { type: String, required: false },
   focusAnnotId: { type: String, required: false },
 });
 
@@ -187,16 +189,32 @@ async function loadProjectPdf(projectId: string) {
   sourceUrl.value = "";
 
   try {
+    // If a specific pdfPath is provided, use it directly
+    if (props.pdfPath) {
+      sourceUrl.value = convertFileSrc(props.pdfPath);
+      return;
+    }
+
+    // Otherwise fall back to finding PDFs from the project
     const project = (await getProject(projectId, {
       includePDF: true,
     })) as Project | undefined;
 
-    if (!project?.path) {
+    if (!project?.pdfs?.length) {
       errorMessage.value = "No PDF file found for this project.";
       return;
     }
 
-    sourceUrl.value = convertFileSrc(project.path);
+    // If pdfName is given, find that specific PDF
+    const pdf = props.pdfName
+      ? project.pdfs.find((p) => p.name === props.pdfName)
+      : project.pdfs[0];
+    if (!pdf) {
+      errorMessage.value = "PDF file not found.";
+      return;
+    }
+
+    sourceUrl.value = convertFileSrc(pdf.path);
   } catch (error) {
     console.error(error);
     errorMessage.value = "Unable to load this PDF file.";
@@ -212,7 +230,10 @@ async function migrateLegacyAnnotationsForActiveDocument(
   const document = documentManager.getActiveDocument();
   if (!document) return;
 
-  const legacyAnnotations = await loadLegacyAnnotations(props.projectId);
+  const legacyAnnotations = await loadLegacyAnnotations(
+    props.projectId,
+    props.pdfName
+  );
   if (!legacyAnnotations.length) return;
 
   const existing =
@@ -258,7 +279,8 @@ async function syncAnnotationEventToLegacyStore(
   const annotation = embedToLegacyAnnotation(
     event.annotation,
     props.projectId,
-    document
+    document,
+    props.pdfName
   );
   if (!annotation) return;
   await saveLegacyAnnotation(annotation);

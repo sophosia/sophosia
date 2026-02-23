@@ -2,7 +2,7 @@ import { exists } from "@tauri-apps/api/fs";
 import { dirname, join } from "@tauri-apps/api/path";
 import { Notify } from "quasar";
 import {
-  FolderOrNote,
+  ProjectNode,
   Note,
   NoteType,
   Page,
@@ -36,7 +36,7 @@ export function useNodeActions() {
   }
 
   async function deleteNode(
-    node: FolderOrNote,
+    node: ProjectNode,
     onAfterDelete?: () => void
   ) {
     if (node.dataType === "note") {

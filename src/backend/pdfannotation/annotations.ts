@@ -163,10 +163,11 @@ export abstract class Annotation {
       ]);
       await sqldb.execute(
         `
-INSERT INTO annotations (projectId, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+INSERT INTO annotations (projectId, pdfName, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [
           this.data.projectId,
+          this.data.pdfName || "",
           this.data._id,
           this.data.type,
           this.data.rects,

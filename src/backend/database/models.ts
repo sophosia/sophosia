@@ -52,10 +52,16 @@ export interface Meta {
   reference?: Reference[]; // reference objects
 }
 
-export enum NoteType {
+export enum NodeType {
   MARKDOWN = "markdown",
   EXCALIDRAW = "excalidraw",
+  PAPER = "paper",
 }
+
+/** @deprecated Use NodeType instead */
+export const NoteType = NodeType;
+/** @deprecated Use NodeType instead */
+export type NoteType = NodeType;
 
 /**
  * Note datatype, both for database and for UI display
@@ -72,14 +78,22 @@ export interface Note {
 export type CategoryNode = QTreeNode<{ _id: string; children: CategoryNode[] }>;
 
 /**
- * Multilevel note and folder support
+ * Multilevel note, folder, and PDF support
  */
-export interface FolderOrNote {
+export interface ProjectNode {
   _id: string;
   label: string;
-  dataType: "folder" | "note";
+  dataType: "folder" | "note" | "paper";
   type?: NoteType;
-  children?: FolderOrNote[];
+  children?: ProjectNode[];
+}
+
+/** @deprecated Use ProjectNode instead */
+export type FolderOrNote = ProjectNode;
+
+export interface PDFAttachment {
+  name: string; // filename (e.g., "paper.pdf")
+  path: string; // full filesystem path
 }
 
 /**
@@ -91,8 +105,8 @@ export interface Project extends Meta {
   timestampModified: number; // timestamp when data is updated
   dataType: "project"; // for database search
   label: string; //title
-  children: FolderOrNote[];
-  path: undefined | string; // attached pdf file path
+  children: ProjectNode[];
+  pdfs: PDFAttachment[]; // attached pdf files
   tags: string[]; // user defined keywords for easier search
   categories: string[]; // array of categories (in form of paths) containing this project
   favorite?: boolean;
@@ -135,6 +149,7 @@ export interface PDFState {
   _id: string; // handled by db
   dataType: "pdfState"; // for database search
   projectId: string; // the corresponding project id
+  pdfName: string; // which PDF file this state belongs to
   pagesCount: number; // total pages of the pdf
   currentPageNumber: number; // current page of the pdf
   pageHistory: number[]; // history of page number
@@ -190,7 +205,8 @@ export interface AnnotationData {
   timestampAdded: number; // timestamp when data is saved
   timestampModified: number; // timestamp when data is updated
   dataType: "pdfAnnotation"; // for database search
-  projectId: string; // which project (pdf)
+  projectId: string; // which project
+  pdfName: string; // which PDF file this annotation belongs to
   pageNumber: number; // on which page
   content: string; // comments of the annotation
   color: string; // hex value
@@ -300,7 +316,7 @@ export interface Page {
   type: PageType;
   label: string;
   visible?: boolean; // if visible not exists, then it's not visible
-  data?: { path?: string; focusAnnotId?: string };
+  data?: { path?: string; focusAnnotId?: string; pdfPath?: string };
 }
 
 export enum PageType {

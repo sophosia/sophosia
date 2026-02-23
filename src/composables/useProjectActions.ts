@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api";
 import { copyToClipboard, useQuasar } from "quasar";
 import {
-  FolderOrNote,
+  ProjectNode,
   Page,
   PageType,
   Project,
@@ -35,15 +35,17 @@ export function useProjectActions() {
     });
   }
 
-  async function showInExplorer(node: Project | FolderOrNote) {
+  async function showInExplorer(node: Project | ProjectNode) {
     const path = idToPath(node._id);
     await invoke("show_in_folder", { path });
   }
 
-  function showInNewWindow(node: Project | FolderOrNote) {
+  function showInNewWindow(node: Project | ProjectNode) {
     const page = { id: node._id, label: node.label } as Page;
     const dataType = getDataType(node._id);
-    if (dataType === "note" && node._id.endsWith(".md")) {
+    if (dataType === "paper") {
+      page.type = PageType.ReaderPage;
+    } else if (dataType === "note" && node._id.endsWith(".md")) {
       page.type = PageType.NotePage;
     } else if (dataType === "note" && node._id.endsWith(".excalidraw")) {
       page.type = PageType.ExcalidrawPage;
@@ -66,7 +68,7 @@ export function useProjectActions() {
     $q.notify(t("text-copied"));
   }
 
-  function copyAsNoteLink(node: FolderOrNote) {
+  function copyAsNoteLink(node: ProjectNode) {
     copyToClipboard(`[${node._id}](${node._id})`);
     $q.notify(t("text-copied"));
   }

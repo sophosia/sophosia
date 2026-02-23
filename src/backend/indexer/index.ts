@@ -212,10 +212,11 @@ async function extractAnnotContent(filePath: string) {
 async function insertAnnot(annot: AnnotationData) {
   await sqldb.execute("DELETE FROM annotations WHERE _id = $1", [annot._id]);
   await sqldb.execute(
-    `INSERT INTO annotations (projectId, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    `INSERT INTO annotations (projectId, pdfName, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
     [
       annot.projectId,
+      annot.pdfName || "",
       annot._id,
       annot.type,
       annot.rects,

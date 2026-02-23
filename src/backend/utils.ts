@@ -124,6 +124,7 @@ export function idToLink(id: string): string {
 }
 
 export function getDataType(id: string): string {
+  if (id.includes("/") && id.endsWith(".pdf")) return "paper";
   if (id.includes("/")) return "note";
   else if (id.startsWith("SP")) return "project";
   else if (id.startsWith("SA")) return "pdfAnnotation";
