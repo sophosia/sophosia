@@ -46,15 +46,15 @@ const activeTab = ref("general");
 
 .settings-tabs {
   flex-shrink: 0;
+  height: var(--sub-tab-height);
   border-bottom: 1px solid var(--q-border);
   background: var(--q-surface);
 }
 
 .settings-tabs-scroll {
   display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px 8px;
+  align-items: stretch;
+  height: 100%;
   overflow-x: auto;
   scrollbar-width: none;
 
@@ -67,14 +67,15 @@ const activeTab = ref("general");
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 8px;
+  padding: 0 8px;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   background: transparent;
   color: var(--q-text-muted);
   font-family: inherit;
   font-size: 0.6875rem;
   font-weight: 500;
+  line-height: 1;
   white-space: nowrap;
   cursor: pointer;
   transition: color 0.15s ease, background-color 0.15s ease;

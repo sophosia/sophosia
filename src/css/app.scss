@@ -94,17 +94,17 @@ body {
 :root {
   --sidebar-width: 270px;
   --traffic-light-height: 0px;
-  --tab-bar-height: 44px;
+  --tab-bar-height: 34px;
+  --sub-tab-height: 34px;
+  --header-total-height: 68px; // tab-bar + sub-tab
 }
 
 body[data-platform="Darwin"] {
   --traffic-light-height: 38px;
-  --tab-bar-height: calc(44px + 38px);
 }
 
 body[data-platform="Darwin"][data-fullscreen="true"] {
   --traffic-light-height: 0px;
-  --tab-bar-height: 44px;
 }
 
 // ----------------------------------------------------------

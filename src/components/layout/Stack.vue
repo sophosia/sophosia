@@ -131,9 +131,8 @@ function refresh() {
 .tab-container {
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
+  align-items: flex-start;
   background: var(--color-layout-header-bkgd);
   height: var(--tab-bar-height);
-  padding-top: var(--traffic-light-height);
 }
 </style>

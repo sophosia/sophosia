@@ -160,7 +160,7 @@ defineEmits(["openPage"]);
   align-items: center;
   gap: 2px;
   padding: 0 6px;
-  height: 44px;
+  height: calc(var(--header-total-height) - var(--traffic-light-height));
   flex-shrink: 0;
   border-bottom: 1px solid var(--q-border);
 }
@@ -170,8 +170,8 @@ defineEmits(["openPage"]);
 }
 
 .sidebar-icon-btn {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   color: var(--q-text-muted);
   transition: color 0.15s ease, background-color 0.15s ease;
