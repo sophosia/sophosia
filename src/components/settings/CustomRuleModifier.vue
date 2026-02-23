@@ -1,46 +1,42 @@
 <template>
-  <q-card
-    flat
-    class="q-my-md card"
-  >
-    <q-card-section>
-      <div class="row">
-        <div class="text-h6">
-          {{
-            ruleType === "citeKey"
-              ? $t("citation-key")
-              : ruleType === "pdfRename"
-              ? $t("rename", { type: "PDF" })
-              : `${$t("project")} ID`
-          }}
-        </div>
-        <q-btn
-          class="btn q-ml-sm"
-          no-caps
-          :ripple="false"
-          :label="
-            $t('update', {
-              type:
-                ruleType === 'citeKey'
-                  ? $t('citation-key')
-                  : ruleType === 'pdfRename'
-                  ? $t('rename', { type: 'PDF' })
-                  : `${$t('project')} ID`,
-            })
-          "
-          @click="$emit('bulkUpdate')"
-        ></q-btn>
-      </div>
-    </q-card-section>
-    <q-card-section class="q-pt-none">
-      <div>
+  <div class="rule-section">
+    <div class="rule-header">
+      <span class="rule-title">
+        {{
+          ruleType === "citeKey"
+            ? $t("citation-key")
+            : ruleType === "pdfRename"
+            ? $t("rename", { type: "PDF" })
+            : `${$t("project")} ID`
+        }}
+      </span>
+      <q-btn
+        class="btn q-ml-sm"
+        no-caps
+        :ripple="false"
+        :label="
+          $t('update', {
+            type:
+              ruleType === 'citeKey'
+                ? $t('citation-key')
+                : ruleType === 'pdfRename'
+                ? $t('rename', { type: 'PDF' })
+                : `${$t('project')} ID`,
+          })
+        "
+        @click="$emit('bulkUpdate')"
+      />
+    </div>
+    <div class="rule-body">
+      <div class="rule-info">
         <div>{{ $t("custom-citekey-rule") }}</div>
-        <div>{{ citeKeyKeywords.join(", ") }}</div>
+        <div class="rule-keywords">{{ citeKeyKeywords.join(", ") }}</div>
       </div>
-      <div class="text-bold q-mt-sm">{{ $t("preview") }}</div>
+      <div class="rule-preview-label">{{ $t("preview") }}</div>
       <div
         v-for="(meta, index) in exampleMetas"
         :key="index"
+        class="rule-preview"
       >
         <div class="row">
           <div class="q-pr-xs">{{ $t("project") }}:</div>
@@ -59,14 +55,15 @@
       </div>
 
       <q-input
+        class="rule-input"
         outlined
         dense
         v-model="customRule"
         :error-message="$t('contains-invalid-keywords-or-connectors')"
         :error="!isRuleValid"
       />
-    </q-card-section>
-  </q-card>
+    </div>
+  </div>
 </template>
 <script setup lang="ts">
 import { Meta } from "src/backend/database";
@@ -120,3 +117,51 @@ onMounted(async () => {
   })) as string;
 });
 </script>
+<style lang="scss" scoped>
+.rule-section {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--q-border);
+}
+
+.rule-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.rule-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--q-reg-text);
+}
+
+.rule-body {
+  font-size: 0.8125rem;
+  color: var(--q-text-muted);
+}
+
+.rule-keywords {
+  font-size: 0.75rem;
+  color: var(--q-text-muted);
+  margin-top: 2px;
+}
+
+.rule-preview-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--q-reg-text);
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.rule-preview {
+  font-size: 0.8125rem;
+  color: var(--q-text-muted);
+  margin-bottom: 4px;
+}
+
+.rule-input {
+  max-width: 320px;
+  margin-top: 8px;
+}
+</style>

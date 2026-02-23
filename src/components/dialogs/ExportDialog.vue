@@ -3,15 +3,14 @@
     v-model="exportDialog.visible"
     @hide="exportDialog.close()"
   >
-    <q-card class="export-dialog dialog">
-      <q-card-section>
-        <div class="text-h6">{{ $t("options") }}</div>
+    <q-card class="dialog export-dialog">
+      <q-card-section class="dialog-header">
+        <span class="dialog-title">{{ $t("options") }}</span>
       </q-card-section>
-      <q-card-section class="q-pt-none">
-        <div class="row items-center">
-          <div class="col-auto">Format:</div>
+      <q-card-section class="dialog-body">
+        <div class="export-field">
+          <label class="field-label">Format</label>
           <q-select
-            class="q-ml-sm col"
             outlined
             dense
             options-dense
@@ -19,9 +18,13 @@
             v-model="exportDialog.format"
             data-cy="format-select"
           />
-
+        </div>
+        <div
+          v-if="exportDialog.format.value === 'bibliography'"
+          class="export-field"
+        >
+          <label class="field-label">Template</label>
           <q-select
-            v-if="exportDialog.format.value === 'bibliography'"
             outlined
             dense
             options-dense
@@ -31,18 +34,22 @@
           />
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+      <q-card-actions class="dialog-actions">
         <q-btn
           flat
           square
-          label="cancel"
+          :ripple="false"
+          class="dialog-btn"
+          :label="$t('cancel')"
           @click="exportDialog.close()"
           data-cy="btn-cancel"
         />
         <q-btn
           flat
           square
-          label="confirm"
+          :ripple="false"
+          class="dialog-btn"
+          :label="$t('confirm')"
           @click="exportDialog.confirm()"
           data-cy="btn-confirm"
         />
@@ -53,3 +60,26 @@
 <script setup lang="ts">
 import { exportDialog } from "./dialogController";
 </script>
+<style lang="scss" scoped>
+.export-dialog {
+  min-width: 380px;
+}
+
+.export-field {
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.field-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--q-text-muted);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+</style>

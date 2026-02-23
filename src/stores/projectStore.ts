@@ -41,64 +41,70 @@ import { useLayoutStore } from "./layoutStore";
 import { generateCiteKey, getMetaFromFile } from "src/backend/meta";
 import { useSettingStore } from "./settingStore";
 
+/**
+ * If a project has an attached PDF, inject a synthetic child node
+ * so the sidebar tree shows the PDF under the project.
+ */
+async function injectPDFChild(project: Project) {
+  if (!project.path) return;
+  const pdfLabel = await basename(project.path);
+  if (project.children?.some((c) => c.label === pdfLabel)) return;
+  if (!project.children) project.children = [];
+  project.children.unshift({
+    _id: `${project._id}/${pdfLabel}`,
+    label: pdfLabel,
+    dataType: "note",
+  } as FolderOrNote);
+}
+
+/**
+ * Fetch a project from DB with PDF + notes, inject PDF child, and sort.
+ */
+async function fetchAndPrepareProject(projectId: string): Promise<Project> {
+  const project = (await getProject(projectId, {
+    includePDF: true,
+    includeNotes: true,
+  })) as Project;
+  await injectPDFChild(project);
+  sortTree(project);
+  return project;
+}
+
 export const useProjectStore = defineStore("projectStore", {
   state: () => ({
-    initialized: false, // is project loaded
+    initialized: false,
     showReferences: true,
     showNotebooks: true,
-    selected: [] as (Project | Note)[], // projectIds selected by checkbox
-    projects: [] as Project[], // array of projects
-    openedProjects: [] as Project[], // array of opened projects
-    workspaceProjects: [] as Project[], // all projects in workspace (for sidebar tree)
+    selected: [] as (Project | Note)[],
+    projects: [] as Project[], // library view (filtered by category)
+    openedProjects: [] as Project[], // sidebar + tabs (only explicitly opened)
 
-    updatedProject: {} as Project, // for updating window tab name
-    selectedCategory: SpecialCategory.LIBRARY.toString(), // selected category in library page
-    // fire after a rename of note/folder, batchReplaceLink will change contents of markdowns containing the link to old note/folder
+    updatedProject: {} as Project,
+    selectedCategory: SpecialCategory.LIBRARY.toString(),
     isNotesUpdated: false,
   }),
 
   actions: {
-    /**
-     * Given the appState, initialize the store
-     * Will load the openedProjects and the projects corresponding to the selectedCategory
-     * @param {AppState} state
-     */
     async loadState(state: AppState) {
       if (this.initialized) return;
       this.selectedCategory = state.selectedCategory;
       await this.loadOpenedProjects(state.openedProjectIds);
-      await this.loadWorkspaceProjects();
       await this.loadProjects(state.selectedCategory);
       this.initialized = true;
     },
 
-    /**
-     * Output the data needs to be saved
-     * @returns {AppState} The data needs to be saved
-     */
     saveState(): AppState {
-      const projectIds = this.openedProjects.map((project) => project._id);
-      const uniqueIds = new Set(projectIds);
+      const uniqueIds = new Set(this.openedProjects.map((p) => p._id));
       return {
         openedProjectIds: [...uniqueIds],
         selectedCategory: this.selectedCategory,
       } as AppState;
     },
 
-    /**
-     * Retrieves a project from the store based on its projectId.
-     * @param projectId - The unique identifier of the project.
-     * @returns The project object if found, otherwise undefined.
-     */
     getProject(projectId: string) {
       return this.projects.find((project) => project._id === projectId);
     },
 
-    /**
-     * Loads a project from the database including its PDF and notes, if any.
-     * @param projectId - The unique identifier of the project to load.
-     * @returns A project object with detailed information.
-     */
     async getProjectFromDB(projectId: string) {
       return await getProject(projectId, {
         includePDF: true,
@@ -106,133 +112,61 @@ export const useProjectStore = defineStore("projectStore", {
       });
     },
 
-    /**
-     * Loads projects identified by their IDs into the openedProjects array.
-     * @param openedProjectIds - An array or set of project IDs to be loaded.
-     */
     async loadOpenedProjects(openedProjectIds: string[]) {
       const openedProjects = [];
-      const uniqueIds = new Set(openedProjectIds);
-      for (let projectId of uniqueIds) {
-        const project = (await this.getProjectFromDB(projectId)) as Project;
-        sortTree(project); // sort notes by alphabet
-        openedProjects.push(project);
+      for (const projectId of new Set(openedProjectIds)) {
+        openedProjects.push(await fetchAndPrepareProject(projectId));
       }
-      // only change the this.openedProjects in the final step
-      // this is to avoid the confusing of proxy object update
       this.openedProjects = openedProjects;
     },
 
-    /**
-     * Loads all projects in the workspace for the sidebar tree.
-     */
-    async loadWorkspaceProjects() {
-      const projects = await getProjects(SpecialCategory.LIBRARY, {
-        includePDF: true,
-        includeNotes: true,
-      });
-      for (const project of projects) {
-        sortTree(project);
-      }
-      this.workspaceProjects = projects;
-    },
-
-    /**
-     * Opens a project by loading its details from the database and adding it to the openedProjects array if not already present.
-     * @param projectId - The unique identifier of the project to open.
-     */
     async openProject(projectId: string) {
-      console.log("opened", projectId);
-      let project = (await this.getProjectFromDB(projectId)) as Project;
-      if (!this.openedProjects.map((p) => p._id).includes(project._id))
-        this.openedProjects.push(project);
-      // ensure project is in workspace sidebar
-      if (!this.workspaceProjects.find((p) => p._id === project._id)) {
-        sortTree(project);
-        this.workspaceProjects.push(project);
-      }
+      if (this.openedProjects.some((p) => p._id === projectId)) return;
+      const project = await fetchAndPrepareProject(projectId);
+      this.openedProjects.push(project);
     },
 
-    /**
-     * Creates a new project in a specified folder.
-     * @param category - The unique identifier of the category where the project is to be created.
-     * @returns A new project object.
-     */
+    closeProject(projectId: string) {
+      const idx = this.openedProjects.findIndex((p) => p._id === projectId);
+      if (idx > -1) this.openedProjects.splice(idx, 1);
+    },
+
     createProject(category: string) {
       return createProject(category);
     },
 
-    /**
-     * Adds a project to the projects array in the store. Optionally saves the project to the database.
-     * @param project - The project object to add.
-     * @param saveToDB - Boolean indicating whether to save the project to the database.
-     */
     async addProject(project: Project, saveToDB?: boolean) {
       if (saveToDB) project = (await addProject(project)) as Project;
       if (!this.getProject(project._id)) this.projects.push(project);
-      // keep workspace sidebar in sync
-      if (!this.workspaceProjects.find((p) => p._id === project._id))
-        this.workspaceProjects.push(project);
     },
 
-    /**
-     * Updates the details of a project both in the projects and openedProjects arrays.
-     * @param projectId - The unique identifier of the project to update.
-     * @param props - The new properties to be updated in the project.
-     */
     async updateProject(projectId: string, props: Project) {
-      let newProject = (await updateProject(projectId, props)) as Project;
-      this._updateProjectUI(projectId, newProject);
+      const newProject = (await updateProject(projectId, props)) as Project;
+      await this._updateProjectUI(projectId, newProject);
     },
 
-    _updateProjectUI(projectId: string, newProject: Project) {
-      let projectInList = this.projects.find((p) => p._id === projectId);
-      let projectInOpened = this.openedProjects.find(
-        (p) => p._id === projectId
-      );
-      let projectInWorkspace = this.workspaceProjects.find(
-        (p) => p._id === projectId
-      );
+    async _updateProjectUI(projectId: string, newProject: Project) {
+      await injectPDFChild(newProject);
 
-      // project exists in list
-      if (projectInList) Object.assign(projectInList, newProject);
-      // project exists in opened project lists
-      if (projectInOpened) Object.assign(projectInOpened, newProject);
-      // project exists in workspace sidebar
-      if (projectInWorkspace) Object.assign(projectInWorkspace, newProject);
+      for (const list of [this.projects, this.openedProjects]) {
+        const existing = list.find((p) => p._id === projectId);
+        if (existing) Object.assign(existing, newProject);
+      }
 
       this.updatedProject = newProject;
     },
 
-    /**
-     * Deletes a project from the projects array and optionally from the database.
-     * @param projectId - The unique identifier of the project to delete.
-     * @param deleteFromDB - Boolean indicating whether to delete the project from the database.
-     * @param folderId - Optional folder ID if the project is within a folder.
-     */
     async deleteProject(
       projectId: string,
       deleteFromDB: boolean,
       folderId?: string
     ) {
-      let ind = this.projects.findIndex((p) => p._id === projectId);
-      if (ind > -1) {
-        // update ui
-        this.projects.splice(ind, 1);
-        this.selected = this.selected.filter((p) => p._id === projectId);
-        // remove from workspace sidebar
-        const wsInd = this.workspaceProjects.findIndex((p) => p._id === projectId);
-        if (wsInd > -1) this.workspaceProjects.splice(wsInd, 1);
-        // update db
-        await deleteProject(projectId, deleteFromDB, folderId);
-      }
+      this.projects = this.projects.filter((p) => p._id !== projectId);
+      this.selected = this.selected.filter((p) => p._id !== projectId);
+      this.closeProject(projectId);
+      if (deleteFromDB) await deleteProject(projectId, deleteFromDB, folderId);
     },
 
-    /**
-     * Loads all projects under a specific folder from the database.
-     * Filters out necessary items based on showReferences and showNotebooks
-     * @param category - The unique identifier of the folder whose projects are to be loaded.
-     */
     async loadProjects(category: string) {
       this.projects = await getProjects(category, {
         includePDF: true,
@@ -248,14 +182,8 @@ export const useProjectStore = defineStore("projectStore", {
       });
     },
 
-    /**
-     * Renames the PDF file associated with a project.
-     * @param projectId - The unique identifier of the project whose PDF is to be renamed.
-     */
     async renamePDF(projectId: string, renameRule: string) {
-      // update db
       const newPath = await projectFileAGUD.renamePDF(projectId, renameRule);
-      // update ui
       let project = this.getProject(projectId);
       if (!project) return;
       Object.assign(project, { path: newPath });
@@ -268,17 +196,11 @@ export const useProjectStore = defineStore("projectStore", {
       });
     },
 
-    /**
-     * Attaches a PDF to a project.
-     * @param projectId - The unique identifier of the project to which the PDF will be attached.
-     */
     async attachPDF(projectId: string) {
-      // update db
       const filename = await projectFileAGUD.attachPDF(projectId);
       const filePath = idToPath(`${projectId}/${filename}`);
       const settingStore = useSettingStore();
       getMetaFromFile(filePath).then(async (meta) => {
-        // FIXME: when meta is undefined, we can trigger the extract pdf content
         let newProjectId = projectId;
         if (meta) {
           meta["citation-key"] = generateCiteKey(
@@ -295,27 +217,17 @@ export const useProjectStore = defineStore("projectStore", {
         await extractPDFContent((await projectFileAGUD.getPDF(newProjectId))!);
       });
 
-      // update ui
-      if (filename)
-        await this.updateProject(projectId, { path: filename } as Project);
+      if (filename) {
+        const project = await fetchAndPrepareProject(projectId);
+        project.path = filename;
+        await this._updateProjectUI(projectId, project);
+      }
     },
 
-    /**
-     * Retrieves a note from the database based on its unique identifier.
-     * @param noteId - The unique identifier of the note to retrieve.
-     * @returns The requested note object.
-     */
     async getNoteFromDB(noteId: string) {
       return await getNote(noteId);
     },
 
-    /**
-     * Creates a new folder or note under a specific parent node.
-     * @param parentNodeId - The unique identifier of the parent node.
-     * @param nodeType - Type of the node to create ('folder' or 'note').
-     * @param noteType - The type of note to create, if the node is a note.
-     * @returns The newly created node object.
-     */
     async createNode(
       parentNodeId: string,
       nodeType: "folder" | "note",
@@ -325,89 +237,44 @@ export const useProjectStore = defineStore("projectStore", {
       else return await createNote(parentNodeId, noteType);
     },
 
-    /**
-     * Adds a folder or note to the store and database.
-     * @param node - The node object (folder or note) to add.
-     */
     async addNode(node: FolderOrNote) {
-      // update db
       if (node.dataType === "folder") await addFolder(node);
       else await addNote(node as Note);
-      // update ui
       const projectId = node._id.split("/")[0];
-      const project = (await this.getProjectFromDB(projectId)) as Project;
-      sortTree(project);
-      this._updateProjectUI(projectId, project);
+      const project = await fetchAndPrepareProject(projectId);
+      await this._updateProjectUI(projectId, project);
     },
 
-    /**
-     * Renames a folder or note both in the store and the database.
-     * @param oldNodeId - The original unique identifier of the node.
-     * @param newNodeId - The new unique identifier for the node.
-     * @param nodeType - The type of the node ('folder' or 'note').
-     */
     async renameNode(
       oldNodeId: string,
       newNodeId: string,
       nodeType: "folder" | "note"
     ) {
-      // update db
       if (nodeType === "folder") await renameFolder(oldNodeId, newNodeId);
       else await renameNote(oldNodeId, newNodeId);
-      // update ui
-      const oldProjectId = oldNodeId.split("/")[0];
-      const newProjectId = newNodeId.split("/")[0];
-      for (const projectId of new Set([oldProjectId, newProjectId])) {
-        let project = (await this.getProjectFromDB(projectId)) as Project;
-        sortTree(project);
-        this._updateProjectUI(projectId, project);
+      for (const projectId of new Set([
+        oldNodeId.split("/")[0],
+        newNodeId.split("/")[0],
+      ])) {
+        const project = await fetchAndPrepareProject(projectId);
+        await this._updateProjectUI(projectId, project);
       }
     },
 
-    /**
-     * Deletes a folder or note from the store and database.
-     * @param nodeId - The unique identifier of the node to delete.
-     * @param nodeType - The type of the node ('folder' or 'note').
-     */
     async deleteNode(nodeId: string, nodeType: "folder" | "note") {
       if (nodeType === "folder") await deleteFolder(nodeId);
       else await deleteNote(nodeId);
-      // update ui
       const projectId = nodeId.split("/")[0];
-      let project = (await this.getProjectFromDB(projectId)) as Project;
-      sortTree(project);
-      this._updateProjectUI(projectId, project);
+      const project = await fetchAndPrepareProject(projectId);
+      await this._updateProjectUI(projectId, project);
     },
 
-    /**
-     * Get category tree
-     *
-     * @returns {Promise<CategoryNode[]>}
-     */
     async getCategoryTree(): Promise<CategoryNode[]> {
       return await getCategoryTree();
     },
 
-    /**
-     * Update category and the corresponding projects
-     *
-     * @param {string} oldCategory
-     * @param {string} newCategory
-     *
-     * @example
-     * To rename a category (and its subcategories)
-     * updateCategory(oldCategory, newCategory)
-     *
-     * @example
-     * To move a category into another category
-     * move library/category1 into library/category2
-     * updateCategory("library/category1", "library/category2/category1")
-     * duplicate must be check before using this function
-     */
     async updateCategory(oldCategory: string, newCategory: string) {
-      // updte db
       await updateCategory(oldCategory, newCategory);
-      // update UI
       for (const project of this.projects) {
         project.categories = project.categories.map((category) =>
           category.replace(oldCategory, newCategory)
@@ -415,15 +282,8 @@ export const useProjectStore = defineStore("projectStore", {
       }
     },
 
-    /**
-     * Delete a category and its subcategories
-     *
-     * @param {string} category
-     */
     async deleteCategory(category: string) {
-      // update db
       await deleteCategory(category);
-      // update UI
       for (const project of this.projects) {
         project.categories = project.categories.filter(
           (cat) => !cat.startsWith(category)

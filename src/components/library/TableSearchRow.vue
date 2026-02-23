@@ -3,7 +3,7 @@
     <q-td colspan="100%">
       <div
         :style="`width: ${width}px;`"
-        style="font-size: 0.9rem"
+        style="font-size: 0.8125rem"
         class="q-px-lg ellipsis text-grey"
         v-html="text"
         data-cy="text"

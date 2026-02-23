@@ -363,22 +363,71 @@ a {
 }
 
 // ----------------------------------------------------------
-// Dialogs
+// Dialogs: Shared Classes
 // ----------------------------------------------------------
 .export-dialog {
-  min-width: 300px;
+  min-width: 380px;
 }
 
-.progess-dialog {
-  width: 50vw;
+.progress-dialog {
+  min-width: 400px;
 }
 
 .import-dialog {
-  min-width: 500px;
+  min-width: 420px;
 }
 
 .identifier-dialog {
-  min-width: 500px;
+  min-width: 420px;
+}
+
+.dialog-header {
+  padding: 20px 24px 0;
+}
+
+.dialog-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--q-reg-text);
+  letter-spacing: -0.01em;
+}
+
+.dialog-body {
+  padding: 16px 24px;
+}
+
+.dialog-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--q-text-muted);
+  line-height: 1.5;
+}
+
+.dialog-actions {
+  padding: 8px 16px 16px;
+  justify-content: flex-end;
+}
+
+.dialog-btn {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 4px 16px;
+  border-radius: 6px;
+  color: var(--q-text-muted);
+  transition: color 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    color: var(--q-reg-text);
+    background: var(--q-hover);
+  }
+}
+
+.dialog-btn--danger {
+  color: var(--q-negative);
+
+  &:hover {
+    background: rgba(248, 113, 113, 0.1);
+  }
 }
 
 // ----------------------------------------------------------

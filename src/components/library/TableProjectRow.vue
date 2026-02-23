@@ -37,14 +37,14 @@
     >
       <div
         v-if="col.name === 'author'"
-        style="font-size: 1rem"
+        style="font-size: 0.875rem"
         class="ellipsis"
       >
         {{ shortAuthorString(col.value as Author[]) }}
       </div>
       <div
         v-else
-        style="font-size: 1rem; min-width: 20vw; max-width: 50vw"
+        style="font-size: 0.875rem; min-width: 20vw; max-width: 50vw"
         class="ellipsis"
       >
         {{
@@ -65,21 +65,17 @@
 </template>
 
 <script setup lang="ts">
-import { copyToClipboard, useQuasar } from "quasar";
 import { Author, Project } from "src/backend/database";
-import { formatMetaData } from "src/backend/meta";
 import { getTitle } from "src/backend/utils";
+import { useProjectActions } from "src/composables/useProjectActions";
 import { useSettingStore } from "src/stores/settingStore";
 import { PropType, ref } from "vue";
-import { useI18n } from "vue-i18n";
-import { exportDialog } from "../dialogs/dialogController";
 import TableProjectMenu from "./TableProjectMenu.vue";
 import { NavArrowDown, NavArrowRight } from "@iconoir/vue";
 
-const { t } = useI18n({ useScope: "global" });
+const { showExportCitationDialog } = useProjectActions();
 const settingStore = useSettingStore();
 const menu = ref<InstanceType<typeof TableProjectMenu>>();
-const $q = useQuasar();
 
 const props = defineProps({
   tableProps: {
@@ -98,17 +94,6 @@ const emit = defineEmits(["expandRow", "setFavorite"]);
 
 function expandRow(isExpand: boolean) {
   emit("expandRow", isExpand);
-}
-
-async function showExportCitationDialog(project: Project) {
-  exportDialog.show();
-  exportDialog.onConfirm(async () => {
-    const format = exportDialog.format.value;
-    const options = { template: exportDialog.template.value };
-    const meta = await formatMetaData([project], format, options);
-    await copyToClipboard(meta as string);
-    $q.notify(t("text-copied"));
-  });
 }
 
 function shortAuthorString(authors: Author[]) {

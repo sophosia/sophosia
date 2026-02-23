@@ -16,16 +16,7 @@
         class="row items-center"
         data-cy="content"
       >
-        <DesignPencil
-          v-if="item.type === NoteType.EXCALIDRAW"
-          width="14"
-          height="14"
-        />
-        <PageIcon
-          v-else
-          width="14"
-          height="14"
-        />
+        <NodeTypeIcon :node="item" :size="14" />
         <div
           v-if="renaming"
           class="row"
@@ -50,7 +41,7 @@
         </div>
         <div
           v-else
-          style="font-size: 1rem"
+          style="font-size: 0.875rem"
           class="q-ml-xs"
         >
           {{ label }}
@@ -62,14 +53,10 @@
       colspan="100%"
     >
       <div class="row items-center">
-        <OpenBook
-          width="14"
-          height="14"
-          class="q-mr-xs"
-        />
+        <NodeTypeIcon :node="item" :size="14" />
         <div
           class="col"
-          style="font-size: 1rem"
+          style="font-size: 0.875rem"
         >
           {{ label }}
         </div>
@@ -80,14 +67,10 @@
       colspan="100%"
     >
       <div class="row items-center">
-        <Folder
-          width="14"
-          height="14"
-          class="q-mr-xs"
-        />
+        <NodeTypeIcon :node="item" :size="14" />
         <div
           class="col"
-          style="font-size: 1rem"
+          style="font-size: 0.875rem"
         >
           {{ label }}
         </div>
@@ -102,34 +85,24 @@
       @setRenaming="setRenaming"
       @deleteItem="deleteItem"
       @renamePDF="renamePDF"
-      @copyId="
-        () => {
-          $q.notify($t('text-copied'));
-          copyToClipboard(item._id);
-        }
-      "
-      @copyAsLink="
-        () => {
-          $q.notify($t('text-copied'));
-          copyToClipboard(`[${item._id}](${item._id})`);
-        }
-      "
+      @copyId="() => copyId(item._id)"
+      @copyAsLink="() => copyAsNoteLink(item)"
     />
   </q-tr>
 </template>
 <script setup lang="ts">
-import { Note, NoteType, Page, PageType, Project } from "src/backend/database";
-import { PropType, Ref, inject, nextTick, ref, watchEffect } from "vue";
+import { Note, FolderOrNote, Project } from "src/backend/database";
+import { PropType, Ref, inject, ref, watchEffect } from "vue";
 import { invoke } from "@tauri-apps/api";
-import { exists } from "@tauri-apps/api/fs";
-import { basename, dirname, join } from "@tauri-apps/api/path";
-import { copyToClipboard } from "quasar";
-import { idToPath, oldToNewId } from "src/backend/utils";
+import { basename } from "@tauri-apps/api/path";
+import { idToPath } from "src/backend/utils";
+import { useProjectActions } from "src/composables/useProjectActions";
+import { useNodeActions } from "src/composables/useNodeActions";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import TableItemMenu from "./TableItemMenu.vue";
-import { DesignPencil, Folder, OpenBook, Page as PageIcon } from "@iconoir/vue";
+import NodeTypeIcon from "src/components/shared/NodeTypeIcon.vue";
 
 const props = defineProps({
   item: { type: Object as PropType<Project | Note>, required: true },
@@ -137,13 +110,23 @@ const props = defineProps({
 const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
 const settingStore = useSettingStore();
+const {
+  showInNewWindow: showInNewWindowAction,
+  copyId,
+  copyAsNoteLink,
+} = useProjectActions();
+const {
+  pathDuplicate,
+  checkDuplicate: checkDuplicateAction,
+  deleteNode,
+  renameNote: doRenameNote,
+} = useNodeActions();
 
 const renaming = ref(false);
 const renameInput = ref<HTMLInputElement | null>(null);
 const label = ref("");
 const renamingNoteId = inject("renamingNoteId") as Ref<string>;
 const oldNoteName = ref("");
-const pathDuplicate = ref(false);
 
 watchEffect(async () => {
   const path = props.item.path || idToPath(props.item._id);
@@ -161,14 +144,7 @@ async function showInExplorer() {
 }
 
 function showInNewWindow() {
-  const type = props.item._id.endsWith(".md")
-    ? PageType.NotePage
-    : PageType.ExcalidrawPage;
-  layoutStore.showInNewWindow({
-    id: props.item._id,
-    type: type,
-    label: props.item.label,
-  });
+  showInNewWindowAction(props.item);
 }
 
 function clickItem() {
@@ -192,28 +168,24 @@ function setRenaming() {
 }
 
 async function renameNote() {
-  let note = props.item as Note;
-  if (pathDuplicate.value) {
-    note.label = oldNoteName.value;
-    label.value = oldNoteName.value;
-  } else {
-    const oldNoteId = note._id;
-    const newNoteId = await oldToNewId(oldNoteId, label.value);
-    const newLabel = await basename(newNoteId);
-    layoutStore.renamePage(oldNoteId, {
-      id: newNoteId,
-      label: newLabel,
-    } as Page);
-    await nextTick(); // wait until itemId changes in the page
-    await projectStore.renameNode(oldNoteId, newNoteId, "note");
-  }
-  renaming.value = false;
-  renamingNoteId.value = "";
-  pathDuplicate.value = false;
+  await doRenameNote(
+    props.item._id,
+    label.value,
+    () => {
+      renaming.value = false;
+      renamingNoteId.value = "";
+    },
+    () => {
+      (props.item as Note).label = oldNoteName.value;
+      label.value = oldNoteName.value;
+      renaming.value = false;
+      renamingNoteId.value = "";
+    }
+  );
 }
 
 async function deleteItem() {
-  await projectStore.deleteNode(props.item._id, "note");
+  await deleteNode(props.item as FolderOrNote);
 }
 
 async function renamePDF() {
@@ -221,15 +193,6 @@ async function renamePDF() {
 }
 
 async function checkDuplicate() {
-  const extension =
-    props.item.type === NoteType.EXCALIDRAW ? ".excalidraw" : ".md";
-  const path = await join(
-    await dirname(idToPath(props.item._id)),
-    label.value.endsWith(extension) ? label.value : label.value + extension
-  );
-
-  if ((await exists(path)) && path !== idToPath(props.item._id))
-    pathDuplicate.value = true;
-  else pathDuplicate.value = false;
+  await checkDuplicateAction(props.item as Note, label.value);
 }
 </script>

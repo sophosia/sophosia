@@ -13,7 +13,7 @@
       >
         <q-item-section>
           <i18n-t keypath="add">
-            <template #type>{{ "Markdown" }}</template>
+            <template #type>{{ $t("note") }}</template>
           </i18n-t>
         </q-item-section>
       </q-item>

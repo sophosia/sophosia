@@ -107,34 +107,32 @@
     <q-input
       class="actionbar-input"
       outlined
+      dense
+      square
       :placeholder="$t('search', { type: $t('local') })"
       v-model="searchString"
       debounce="500"
     >
+      <template v-slot:prepend>
+        <Search width="14" height="14" style="color: var(--q-text-muted)" />
+      </template>
       <template v-slot:append>
-        <Search width="16" height="16" class="cursor-pointer" />
-        <q-btn-dropdown
-          dense
-          size="md"
-          padding="0"
-          :ripple="false"
-        >
-          <div class="text-center">Search Mode</div>
-          <div class="q-gutter-sm q-pa-sm">
-            <q-radio
-              dense
-              v-model="searchMode"
-              val="meta"
-              label="Meta"
-            />
-            <q-radio
-              dense
-              v-model="searchMode"
-              val="content"
-              label="Content"
-            />
-          </div>
-        </q-btn-dropdown>
+        <div class="search-mode-toggle">
+          <button
+            class="search-mode-btn"
+            :class="{ active: searchMode === 'meta' }"
+            @click="searchMode = 'meta'"
+          >
+            Meta
+          </button>
+          <button
+            class="search-mode-btn"
+            :class="{ active: searchMode === 'content' }"
+            @click="searchMode = 'content'"
+          >
+            Content
+          </button>
+        </div>
       </template>
     </q-input>
 
@@ -231,14 +229,48 @@ function addByID() {
 </script>
 <style lang="scss" scoped>
 .actionbar-input {
-  .q-field__control {
-    height: min(2rem, 40px);
+  max-width: 320px;
+  :deep(.q-field__control) {
+    height: 28px;
+    min-height: 28px;
   }
-  .q-field__control-container {
-    height: min(2rem, 40px);
+  :deep(.q-field__control-container) {
+    height: 28px;
   }
-  .q-field__marginal {
-    height: min(2rem, 40px);
+  :deep(.q-field__marginal) {
+    height: 28px;
+  }
+  :deep(.q-field__prepend) {
+    padding-right: 6px;
+  }
+}
+
+.search-mode-toggle {
+  display: flex;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+.search-mode-btn {
+  border: none;
+  background: transparent;
+  color: var(--q-text-muted);
+  font-family: inherit;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    color: var(--q-reg-text);
+    background: var(--q-hover);
+  }
+
+  &.active {
+    color: var(--q-primary);
+    background: var(--q-active);
   }
 }
 </style>

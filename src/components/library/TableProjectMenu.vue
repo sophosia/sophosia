@@ -169,18 +169,15 @@ import {
   Meta,
   Note,
   NoteType,
-  PageType,
   Project,
   SpecialCategory,
-  db,
 } from "src/backend/database";
 import { Ref, inject, nextTick, ref } from "vue";
 // db
-import { invoke } from "@tauri-apps/api";
-import { join } from "@tauri-apps/api/path";
 import { copyToClipboard } from "quasar";
 import { generateCiteKey, getMeta } from "src/backend/meta";
 import { getProject } from "src/backend/project";
+import { useProjectActions } from "src/composables/useProjectActions";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
@@ -194,6 +191,10 @@ import {
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 const settingStore = useSettingStore();
+const {
+  showInExplorer: showInExplorerAction,
+  showInNewWindow: showInNewWindowAction,
+} = useProjectActions();
 const props = defineProps({
   projectId: { type: String, required: true },
 });
@@ -250,25 +251,15 @@ async function openProject() {
 import { useQuasar } from "quasar";
 const $q = useQuasar();
 
-/**
- * Opens the file explorer and navigates to the location of the selected project(s).
- */
 async function showInExplorer() {
-  for (let project of projectStore.selected) {
-    let path = await join(db.config.storagePath, project._id);
-    await invoke("show_in_folder", {
-      path: path,
-    });
+  for (const project of projectStore.selected) {
+    await showInExplorerAction(project as Project);
   }
 }
 
 function showInNewWindow() {
   const project = projectStore.selected[0];
-  layoutStore.showInNewWindow({
-    id: project._id,
-    type: PageType.ReaderPage,
-    label: project.label,
-  });
+  showInNewWindowAction(project as Project);
 }
 
 /**

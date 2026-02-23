@@ -45,7 +45,7 @@
       >
         <q-item-section>
           <i18n-t keypath="add">
-            <template #type>Markdown</template>
+            <template #type>{{ $t("note") }}</template>
           </i18n-t>
         </q-item-section>
       </q-item>
@@ -58,6 +58,16 @@
           <i18n-t keypath="add">
             <template #type>Excalidraw</template>
           </i18n-t>
+        </q-item-section>
+      </q-item>
+
+      <q-item
+        clickable
+        v-close-popup
+        @click="onAttachFile"
+      >
+        <q-item-section>
+          {{ $t("attach-file") }}
         </q-item-section>
       </q-item>
 
@@ -107,6 +117,9 @@
 </template>
 <script setup lang="ts">
 import { NoteType } from "src/backend/database";
+import { useProjectStore } from "src/stores/projectStore";
+
+const projectStore = useProjectStore();
 
 const props = defineProps({
   projectId: { type: String, required: true },
@@ -122,4 +135,8 @@ const emit = defineEmits([
   "closeProject",
   "exportCitation",
 ]);
+
+async function onAttachFile() {
+  await projectStore.attachPDF(props.projectId);
+}
 </script>

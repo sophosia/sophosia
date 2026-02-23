@@ -1,83 +1,58 @@
 <template>
-  <div class="q-pb-md">
-    <q-card
-      flat
-      class="q-my-md card"
-    >
-      <q-card-section>
-        <div class="text-h6">{{ $t("theme") }}</div>
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <q-select
-          class="selector"
-          dense
-          outlined
-          :options="themeOptions"
-          :display-value="theme[0].toUpperCase() + theme.slice(1)"
-          v-model="theme"
-        >
-          <template v-slot:option="scope">
-            <q-item v-bind="scope.itemProps">
-              <q-item-section>
-                <q-item-label>
-                  {{ scope.opt[0].toUpperCase() + scope.opt.slice(1) }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-      </q-card-section>
-    </q-card>
+  <div class="settings-sections">
+    <div class="settings-section">
+      <div class="section-title">{{ $t("theme") }}</div>
+      <q-select
+        class="section-input"
+        dense
+        outlined
+        :options="themeOptions"
+        :display-value="theme[0].toUpperCase() + theme.slice(1)"
+        v-model="theme"
+      >
+        <template v-slot:option="scope">
+          <q-item v-bind="scope.itemProps">
+            <q-item-section>
+              <q-item-label>
+                {{ scope.opt[0].toUpperCase() + scope.opt.slice(1) }}
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+        </template>
+      </q-select>
+    </div>
 
-    <q-card
-      flat
-      class="q-my-md card"
-    >
-      <q-card-section>
-        <div class="text-h6">{{ $t("font") }}</div>
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <div style="font-size: 1rem">
-          {{ $t("font-size-fontsize-px", [fontSize]) }}
-        </div>
-        <q-slider
-          class="col q-pl-md"
-          :min="14"
-          :max="25"
-          markers
-          snap
-          v-model="fontSize"
-        ></q-slider>
-      </q-card-section>
-    </q-card>
+    <div class="settings-section">
+      <div class="section-title">{{ $t("font") }}</div>
+      <div class="section-text">
+        {{ $t("font-size-fontsize-px", [fontSize]) }}
+      </div>
+      <q-slider
+        :min="14"
+        :max="25"
+        markers
+        snap
+        v-model="fontSize"
+      />
+    </div>
 
-    <q-card
-      flat
-      class="q-my-md card"
-    >
-      <q-card-section>
-        <div class="text-h6">{{ $t("language") }}</div>
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <q-select
-          dense
-          outlined
-          v-model="language"
-          :options="languageOptions"
-        />
-      </q-card-section>
-    </q-card>
+    <div class="settings-section">
+      <div class="section-title">{{ $t("language") }}</div>
+      <q-select
+        class="section-input"
+        dense
+        outlined
+        v-model="language"
+        :options="languageOptions"
+      />
+    </div>
 
-    <q-card
-      flat
-      class="q-my-md card"
-    >
-      <q-card-section>
-        <div class="text-h6">{{ $t("pdftranslate") }}</div>
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        {{ $t("language") }}
+    <div class="settings-section">
+      <div class="section-title">{{ $t("pdftranslate") }}</div>
+      <div class="section-field">
+        <label class="field-label">{{ $t("language") }}</label>
         <q-select
+          class="section-input"
           dense
           outlined
           map-options
@@ -85,9 +60,11 @@
           v-model="settingStore.pdfTranslateLanguage"
           :options="pdfTranslateOptions"
         />
-
-        {{ $t("engine") }}
+      </div>
+      <div class="section-field">
+        <label class="field-label">{{ $t("engine") }}</label>
         <q-select
+          class="section-input"
           dense
           outlined
           map-options
@@ -95,38 +72,34 @@
           v-model="settingStore.pdfTranslateEngine"
           :options="pdfTranslateEngineOptions"
         />
-
-        API Key
+      </div>
+      <div class="section-field">
+        <label class="field-label">API Key</label>
         <q-input
+          class="section-input"
           v-model="settingStore.pdfTranslateApiKey"
           :disable="settingStore.pdfTranslateEngine === 'google'"
           dense
           outlined
         />
-      </q-card-section>
-    </q-card>
+      </div>
+    </div>
 
-    <q-card
-      flat
-      class="q-my-md card"
-    >
-      <q-card-section>
-        <div class="text-h6">{{ $t("display-translated-title") }}</div>
-        <div>
-          {{ $t("display-translated-title-info") }}
-        </div>
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <q-select
-          dense
-          outlined
-          emit-value
-          map-options
-          v-model="settingStore.showTranslatedTitle"
-          :options="titleTranslateOptions"
-        />
-      </q-card-section>
-    </q-card>
+    <div class="settings-section">
+      <div class="section-title">{{ $t("display-translated-title") }}</div>
+      <div class="section-text">
+        {{ $t("display-translated-title-info") }}
+      </div>
+      <q-select
+        class="section-input"
+        dense
+        outlined
+        emit-value
+        map-options
+        v-model="settingStore.showTranslatedTitle"
+        :options="titleTranslateOptions"
+      />
+    </div>
 
     <CustomRuleModifier
       v-model:rule="settingStore.citeKeyRule"
@@ -296,3 +269,48 @@ async function onIndexFiles() {
   await db.setConfig({ lastScanTime: Date.now() } as Config);
 }
 </script>
+<style lang="scss" scoped>
+.settings-sections {
+  max-width: 600px;
+}
+
+.settings-section {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--q-border);
+
+  &:first-child {
+    padding-top: 0;
+  }
+}
+
+.section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--q-reg-text);
+  margin-bottom: 8px;
+}
+
+.section-text {
+  font-size: 0.8125rem;
+  color: var(--q-text-muted);
+  margin-bottom: 8px;
+}
+
+.section-input {
+  max-width: 320px;
+}
+
+.section-field {
+  margin-bottom: 8px;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--q-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+</style>

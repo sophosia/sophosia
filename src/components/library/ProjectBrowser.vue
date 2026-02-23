@@ -1,59 +1,40 @@
 <template>
-  <q-splitter
-    class="project-browser-splitter"
-    :limits="[10, 30]"
-    separator-class="q-splitter-separator"
-    v-model="treeViewSize"
-  >
-    <template v-slot:before>
-      <CategoryTree
-        style="background: var(--color-library-treeview-bkgd)"
-        @exportCategory="(node: CategoryNode) => showExportReferenceDialog(node)"
-        ref="treeview"
-      />
-    </template>
-    <template v-slot:after>
-      <ActionBar
-        class="project-action-bar"
-        v-model:searchMode="searchMode"
-        v-model:searchString="searchString"
-        v-model:showReferences="projectStore.showReferences"
-        v-model:showNotebooks="projectStore.showNotebooks"
-        @addEmptyProject="addEmptyProject"
-        @addNotebook="addNotebook"
-        @addByFiles="(filePaths) => addProjectsByFiles(filePaths)"
-        @addByCollection="(collectionPath) => showImportDialog(collectionPath)"
-        @showIdentifierDialog="showIdentifierDialog()"
-        ref="actionBar"
-      />
-      <!-- actionbar height 36px, table view is 100%-36px -->
-      <ProjectTable
-        v-model:projects="projectStore.projects"
-        :searchMode="searchMode"
-        :searchString="searchString"
-        style="
-          height: calc(100% - 36px);
-          width: 100%;
-          background: var(--color-library-tableview-bkgd);
-        "
-        ref="table"
-      />
-    </template>
-  </q-splitter>
+  <div class="project-browser">
+    <CategoryTabs ref="categoryTabs" />
+    <ActionBar
+      class="project-action-bar"
+      v-model:searchMode="searchMode"
+      v-model:searchString="searchString"
+      v-model:showReferences="projectStore.showReferences"
+      v-model:showNotebooks="projectStore.showNotebooks"
+      @addEmptyProject="addEmptyProject"
+      @addNotebook="addNotebook"
+      @addByFiles="(filePaths) => addProjectsByFiles(filePaths)"
+      @addByCollection="(collectionPath) => showImportDialog(collectionPath)"
+      @showIdentifierDialog="showIdentifierDialog()"
+      ref="actionBar"
+    />
+    <ProjectTable
+      v-model:projects="projectStore.projects"
+      :searchMode="searchMode"
+      :searchString="searchString"
+      class="project-browser-table"
+      ref="table"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { nextTick, onMounted, ref, watch } from "vue";
 // types
-import { CategoryNode, Project } from "src/backend/database";
+import { Project } from "src/backend/database";
 // components
 import ActionBar from "src/components/library/ActionBar.vue";
-import CategoryTree from "src/components/library/CategoryTree.vue";
+import CategoryTabs from "src/components/library/CategoryTabs.vue";
 import ProjectTable from "src/components/library/ProjectTable.vue";
 // db
 import { basename, extname } from "@tauri-apps/api/path";
 import {
-  exportMeta,
   generateCiteKey,
   getMeta,
   getMetaFromFile,
@@ -61,29 +42,31 @@ import {
 } from "src/backend/meta";
 import { projectFileAGUD } from "src/backend/project/fileOps";
 import {
-  exportDialog,
   identifierDialog,
   importDialog,
 } from "src/components/dialogs/dialogController";
+import { useProjectActions } from "src/composables/useProjectActions";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { useSettingStore } from "src/stores/settingStore";
 import { extractPDFContent } from "src/backend/project";
+import { useI18n } from "vue-i18n";
 
 const projectStore = useProjectStore();
 const layoutStore = useLayoutStore();
 const settingStore = useSettingStore();
+const { t } = useI18n({ useScope: "global" });
+const { createProject } = useProjectActions();
 
 /*********************************
  * Data
  *********************************/
 // component refs
-const treeview = ref<typeof CategoryTree | null>(null);
+const categoryTabs = ref<typeof CategoryTabs | null>(null);
 
 // data
 const searchString = ref("");
 const searchMode = ref<"meta" | "content">("meta");
-const treeViewSize = ref(20);
 
 watch(
   () => [
@@ -130,21 +113,28 @@ function showImportDialog(collectionPath: string) {
   });
 }
 
-/**
- * Add an empty project to table
- */
-async function addEmptyProject() {
-  // udpate db and ui
-  const project = projectStore.createProject(projectStore.selectedCategory);
-  projectStore.addProject(project, true);
+function addEmptyProject() {
+  createProject(
+    () => projectStore.selectedCategory,
+    () => (name: string) =>
+      projectStore.projects.some(
+        (p) => p.label.toLowerCase() === name.toLowerCase()
+      )
+  );
 }
 
-/**
- * Add a notebook project
- */
-async function addNotebook() {
-  const project = projectStore.createProject(projectStore.selectedCategory);
-  projectStore.addProject(project, true);
+function addNotebook() {
+  createProject(
+    () => projectStore.selectedCategory,
+    () => (name: string) =>
+      projectStore.projects.some(
+        (p) => p.label.toLowerCase() === name.toLowerCase()
+      ),
+    {
+      title: t("new", { type: t("notebook") }),
+      placeholder: t("new", { type: t("notebook") }),
+    }
+  );
 }
 
 /**
@@ -164,7 +154,6 @@ async function addProjectsByFiles(filePaths: string[]) {
       await projectStore.updateProject(project._id, {
         path: filename,
         title: title,
-        label: title,
       } as Project);
       // do not use await since this task takes time
       getMetaFromFile(filePath).then(async (meta) => {
@@ -197,25 +186,18 @@ async function addProjectsByCollection(
   isCreateCategory: boolean
 ) {
   if (collectionPath === "") return;
-  // create category if user wants to
   if (isCreateCategory) {
-    if (!treeview.value) return;
-    let rootNode = treeview.value.getLibraryNode();
-    if (!rootNode) return;
     let categoryLabel = await basename(
       collectionPath,
       `.${await extname(collectionPath)}`
     );
-
-    let focus = true;
-    await treeview.value.addCategoryNode(rootNode, categoryLabel, focus);
+    projectStore.selectedCategory = `library/${categoryLabel}`;
   }
 
-  await nextTick(); //wait until ui actions settled
+  await nextTick();
 
   let metas = await importMeta(collectionPath);
   for (let meta of metas) {
-    // add a new project to db and update it with meta
     let project = projectStore.createProject(projectStore.selectedCategory);
     await projectStore.addProject(project, true);
     (meta as Project)._id = generateCiteKey(meta, settingStore.projectIdRule);
@@ -237,34 +219,25 @@ async function addProjectByIdentifier(identifier: string) {
   await projectStore.updateProject(project._id, meta as Project);
 }
 
-/**
- * Open export dialog for citation export
- * @param {CategoryNode} node - The category which needs to be exported
- */
-function showExportReferenceDialog(node: CategoryNode) {
-  exportDialog.show();
-  exportDialog.onConfirm(async () => {
-    let options = undefined;
-    const format = exportDialog.format.value;
-    if (format === "bibliography")
-      options = { template: exportDialog.template.value };
-    await exportCategory(format, node, options);
-  });
-}
-/**********************************************************
- * CategoryTree
- **********************************************************/
-
-/**
- * Exports a category as a collection of references in a specified format.
- * @param {string} format - The citation.js supported format.
- * @param {object} options - Extra export options.
- */
-async function exportCategory(
-  format: string,
-  categoryNode: CategoryNode,
-  options?: { format?: string; template?: string }
-) {
-  await exportMeta(categoryNode, format, options);
-}
 </script>
+<style lang="scss" scoped>
+.project-browser {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.project-action-bar {
+  flex-shrink: 0;
+  padding: 0 8px;
+  height: 36px;
+}
+
+.project-browser-table {
+  flex: 1;
+  width: 100%;
+  background: var(--color-library-tableview-bkgd);
+  overflow: hidden;
+}
+</style>
