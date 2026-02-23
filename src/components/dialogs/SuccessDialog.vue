@@ -6,15 +6,18 @@
     no-shake
     @hide="successDialog.close()"
   >
-    <q-card class="dialog">
-      <q-card-section class="q-pt-none flex justify-center">
-        {{ successDialog.message }}
+    <q-card class="dialog success-dialog">
+      <q-card-section class="dialog-body">
+        <p class="dialog-text" style="text-align: center">
+          {{ successDialog.message }}
+        </p>
       </q-card-section>
-      <q-card-actions align="right">
+      <q-card-actions class="dialog-actions">
         <q-btn
           flat
-          dense
+          square
           :ripple="false"
+          class="dialog-btn"
           label="OK"
           @click="successDialog.close()"
           data-cy="btn-ok"
@@ -26,3 +29,8 @@
 <script setup lang="ts">
 import { successDialog } from "src/components/dialogs/dialogController";
 </script>
+<style lang="scss" scoped>
+.success-dialog {
+  min-width: 320px;
+}
+</style>

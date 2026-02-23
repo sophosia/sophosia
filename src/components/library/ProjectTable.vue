@@ -38,7 +38,7 @@
           :props="props"
           style="padding: 0"
         >
-          <span class="text-subtitle1 text-bold">{{ col.label }}</span>
+          {{ col.label }}
         </q-th>
       </q-tr>
     </template>

@@ -3,21 +3,17 @@
     v-model="identifierDialog.visible"
     @hide="identifierDialog.close()"
   >
-    <q-card
-      class="identifier-dialog dialog"
-      square
-    >
-      <q-card-section>
-        <div class="text-h6">
+    <q-card class="dialog identifier-dialog">
+      <q-card-section class="dialog-header">
+        <span class="dialog-title">
           <i18n-t keypath="search">
             <template #type>{{ $t("identifier") }}</template>
           </i18n-t>
-        </div>
+        </span>
       </q-card-section>
-      <q-card-section class="q-pt-none">
+      <q-card-section class="dialog-body">
         <q-input
           outlined
-          square
           dense
           autofocus
           class="full-width"
@@ -27,23 +23,25 @@
           data-cy="identifier-input"
         />
       </q-card-section>
-      <q-card-actions align="right">
+      <q-card-actions class="dialog-actions">
         <q-btn
           flat
           square
-          v-close-popup
           :ripple="false"
+          class="dialog-btn"
           :label="$t('cancel')"
+          v-close-popup
           @click="identifierDialog.close()"
           data-cy="btn-cancel"
         />
         <q-btn
           flat
           square
-          v-close-popup
           :ripple="false"
+          class="dialog-btn"
           :label="$t('confirm')"
           :disable="!identifierDialog.identifier"
+          v-close-popup
           @click="identifierDialog.confirm()"
           data-cy="btn-confirm"
         />

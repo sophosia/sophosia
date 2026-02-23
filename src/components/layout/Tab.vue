@@ -6,8 +6,8 @@
     <div class="row items-center">
       <component
         :is="iconComponent"
-        width="14"
-        height="14"
+        width="13"
+        height="13"
         class="q-mr-xs"
       />
       <div class="tab-label ellipsis">
@@ -21,7 +21,7 @@
       size="sm"
       class="tab-close-btn"
     >
-      <Xmark width="14" height="14" />
+      <Xmark width="12" height="12" />
     </q-btn>
     <slot name="menu"></slot>
   </div>
@@ -84,19 +84,22 @@ const iconComponent = computed(() => {
   color: var(--q-text-muted);
   padding: 0 8px;
   min-width: 10rem;
-  height: 100%;
-  border-radius: 6px 6px 0 0;
-  box-shadow: 0 0 0 1px var(--q-edge);
+  height: var(--tab-bar-height);
+  border-radius: 0;
   transition: color 0.15s ease, background-color 0.15s ease;
 
   &:hover {
     color: var(--color-layout-active-tab-fore);
     background: var(--q-hover);
+
+    .tab-close-btn {
+      opacity: 0.4;
+    }
   }
 }
 
 .tab-label {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   width: 6rem;
 }
@@ -110,7 +113,7 @@ const iconComponent = computed(() => {
 }
 
 .tab-close-btn {
-  opacity: 0.4;
+  opacity: 0;
   border-radius: 4px;
   transition: opacity 0.15s ease;
 

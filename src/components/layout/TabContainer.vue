@@ -87,7 +87,7 @@
     </Tab>
     <!-- trailing tab header for dropping tabs + window drag region -->
     <div
-      style="width: 100%; height: 100%"
+      style="width: 100%; height: var(--tab-bar-height)"
       data-tauri-drag-region
       @dragover="(ev) => onDragOverTabContainer(ev)"
       @dragleave="(ev) => onDragLeaveTabContainer(ev)"

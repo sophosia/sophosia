@@ -1,26 +1,43 @@
 <template>
-  <q-card
-    flat
-    class="q-my-md card"
-  >
-    <q-card-section>
-      <div class="row">
-        <div class="text-h6">{{ $t("index-files") }}</div>
-        <q-btn
-          class="btn q-ml-sm"
-          no-caps
-          :ripple="false"
-          :label="$t('index-files')"
-          @click="$emit('indexFiles')"
-        ></q-btn>
-      </div>
-    </q-card-section>
-
-    <q-card-section class="q-pt-none">
+  <div class="index-section">
+    <div class="index-header">
+      <span class="index-title">{{ $t("index-files") }}</span>
+      <q-btn
+        class="btn q-ml-sm"
+        no-caps
+        :ripple="false"
+        :label="$t('index-files')"
+        @click="$emit('indexFiles')"
+      />
+    </div>
+    <div class="index-info">
       {{ $t("index-files-info") }}
-    </q-card-section>
-  </q-card>
+    </div>
+  </div>
 </template>
 <script setup lang="ts">
 const emit = defineEmits(["indexFiles"]);
 </script>
+<style lang="scss" scoped>
+.index-section {
+  padding: 16px 0;
+}
+
+.index-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.index-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--q-reg-text);
+}
+
+.index-info {
+  font-size: 0.8125rem;
+  color: var(--q-text-muted);
+  line-height: 1.5;
+}
+</style>

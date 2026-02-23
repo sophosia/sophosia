@@ -162,6 +162,42 @@ function useProgressDialog() {
   };
 }
 
+/**
+ * Controller for NameDialog (used for naming projects, folders, etc.)
+ * @returns properties and controls
+ */
+function useNameDialog() {
+  const dialog = useDialog();
+  const name = ref("");
+  const title = ref("");
+  const placeholder = ref("");
+  const isDuplicate = ref(false);
+  const validateName = ref<(name: string) => boolean>(() => false);
+
+  function showWithOptions(options: {
+    title: string;
+    placeholder?: string;
+    validate?: (name: string) => boolean;
+  }) {
+    title.value = options.title;
+    placeholder.value = options.placeholder || "";
+    validateName.value = options.validate || (() => false);
+    name.value = "";
+    isDuplicate.value = false;
+    dialog.show();
+  }
+
+  return {
+    ...dialog,
+    name,
+    title,
+    placeholder,
+    isDuplicate,
+    validateName,
+    showWithOptions,
+  };
+}
+
 // use reative here so we can use properties in the composable reactively without desconstructing them
 export const importDialog = reactive(useImportDialog());
 export const deleteDialog = reactive(useDeleteDialog());
@@ -170,3 +206,4 @@ export const exportDialog = reactive(useExportDialog());
 export const errorDialog = reactive(useErrorDialog());
 export const successDialog = reactive(useSuccessDialog());
 export const progressDialog = reactive(useProgressDialog());
+export const nameDialog = reactive(useNameDialog());
