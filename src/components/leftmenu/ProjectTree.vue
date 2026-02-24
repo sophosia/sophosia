@@ -27,6 +27,8 @@
           'tree-node-selected': treeSelected === prop.node._id,
         }"
         @click="selectItem(prop.node._id)"
+        @mouseenter="(e) => onNodeMouseEnter(e, prop.node)"
+        @mouseleave="onNodeMouseLeave"
         draggable="true"
         @dragstart="(e) => onDragStart(e, prop.node)"
         @dragover="(e) => onDragOver(e, prop.node)"
@@ -95,15 +97,24 @@
         <div
           v-else
           style="width: 100%; font-size: 0.875rem"
-          class="ellipsis non-selectable"
+          class="row items-center ellipsis non-selectable"
           :type="prop.node.dataType"
         >
+          <NodeTypeIcon :node="prop.node" :size="14" />
           {{ prop.node.label.replace(/\.md$/, '') }}
-          <q-tooltip> ID: {{ prop.key }} </q-tooltip>
         </div>
       </div>
     </template>
   </q-tree>
+  <Teleport to="body">
+    <SidebarPeekCard
+      :node="peekNode"
+      :visible="peekVisible"
+      :anchorRect="peekAnchorRect"
+      @cardEnter="onPeekCardEnter"
+      @cardLeave="onPeekCardLeave"
+    />
+  </Teleport>
 </template>
 <script setup lang="ts">
 import { QTree } from "quasar";
@@ -123,12 +134,13 @@ import { useNodeActions } from "src/composables/useNodeActions";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import { computed, nextTick, onMounted, ref, watchEffect } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
 import FolderMenu from "./FolderMenu.vue";
 import NoteMenu from "./NoteMenu.vue";
 import PaperMenu from "./PaperMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
+import SidebarPeekCard from "./SidebarPeekCard.vue";
 import NodeTypeIcon from "src/components/shared/NodeTypeIcon.vue";
 
 const { t } = useI18n({ useScope: "global" });
@@ -180,6 +192,11 @@ const treeSelected = computed(() => {
 });
 
 function selectItem(nodeId: string) {
+  // Hide peek card when clicking to open an item
+  peekVisible.value = false;
+  peekNode.value = null;
+  if (peekTimer) clearTimeout(peekTimer);
+
   if (!tree.value) return;
   const node = tree.value.getNodeByKey(nodeId);
 
@@ -347,6 +364,11 @@ async function deleteNode(node: ProjectNode) {
 }
 
 function onDragStart(e: DragEvent, node: Project | ProjectNode) {
+  // Hide peek card during drag
+  peekVisible.value = false;
+  peekNode.value = null;
+  if (peekTimer) clearTimeout(peekTimer);
+
   draggingNode.value = node;
   e.dataTransfer?.setData("draggingNode", JSON.stringify(node));
 
@@ -425,6 +447,75 @@ async function onDrop(e: DragEvent, node: Project | ProjectNode) {
   draggingNode.value = null;
   dragoverNode.value = null;
 }
+
+// ── Sidebar Peek Card ──
+const peekNode = ref<ProjectNode | null>(null);
+const peekVisible = ref(false);
+const peekAnchorRect = ref<{
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+} | null>(null);
+let peekTimer: ReturnType<typeof setTimeout> | null = null;
+
+function onNodeMouseEnter(e: MouseEvent, node: ProjectNode) {
+  if (node.dataType !== "note" && node.dataType !== "paper") return;
+
+  const target = (e.currentTarget as HTMLElement).closest(
+    ".tree-node-row"
+  ) as HTMLElement | null;
+  if (!target) return;
+
+  // Find the sidebar container to get its right edge
+  const sidebar = target.closest(".sidebar-fixed, .unified-sidebar");
+  const rect = target.getBoundingClientRect();
+  const rightEdge = sidebar
+    ? sidebar.getBoundingClientRect().right
+    : rect.right;
+
+  if (peekTimer) clearTimeout(peekTimer);
+  peekTimer = setTimeout(() => {
+    peekNode.value = node;
+    peekAnchorRect.value = {
+      top: rect.top,
+      left: rect.left,
+      right: rightEdge,
+      bottom: rect.bottom,
+    };
+    peekVisible.value = true;
+  }, 400);
+}
+
+function onNodeMouseLeave() {
+  if (peekTimer) {
+    clearTimeout(peekTimer);
+    peekTimer = null;
+  }
+  // Delay hide to allow mouse to move to the card
+  setTimeout(() => {
+    if (!peekCardHovered) {
+      peekVisible.value = false;
+      peekNode.value = null;
+    }
+  }, 200);
+}
+
+let peekCardHovered = false;
+
+function onPeekCardEnter() {
+  peekCardHovered = true;
+}
+
+function onPeekCardLeave() {
+  peekCardHovered = false;
+  peekVisible.value = false;
+  peekNode.value = null;
+}
+
+onUnmounted(() => {
+  if (peekTimer) clearTimeout(peekTimer);
+});
 </script>
 
 <style scoped lang="scss">

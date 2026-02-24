@@ -44,7 +44,7 @@ import { getAllProjects, getProject } from "src/backend/project";
 import { sep } from "@tauri-apps/api/path";
 import _ from "lodash";
 import { EventBus } from "quasar";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import { generateCiteKey } from "src/backend/meta";
 import {
   authorToString,

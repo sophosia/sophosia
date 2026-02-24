@@ -61,7 +61,7 @@ export async function addProject(
   project: Project
 ): Promise<Project | undefined> {
   try {
-    // need to remomve _graph property if update by meta
+    // need to remove _graph property if updated by meta
     delete project._graph;
     const ot = project["original-title"];
     if (!ot || (Array.isArray(ot) && ot.length === 0))
@@ -120,7 +120,7 @@ export async function updateProject(
     const project = (await getProject(projectId)) as Project;
     Object.assign(project, props);
     project.timestampModified = Date.now();
-    delete project._graph; // remomve _graph property if update by meta
+    delete project._graph; // remove _graph property if updated by meta
     delete project.folderIds; // this property is removed since v0.17.0
     const ot = project["original-title"];
     if (!ot || (Array.isArray(ot) && ot.length === 0))

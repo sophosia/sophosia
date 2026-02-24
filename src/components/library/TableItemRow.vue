@@ -49,20 +49,6 @@
       </div>
     </q-td>
     <q-td
-      v-else-if="item.dataType === 'project'"
-      colspan="100%"
-    >
-      <div class="row items-center">
-        <NodeTypeIcon :node="item" :size="14" />
-        <div
-          class="col"
-          style="font-size: 0.875rem"
-        >
-          {{ label }}
-        </div>
-      </div>
-    </q-td>
-    <q-td
       v-else
       colspan="100%"
     >
@@ -130,25 +116,13 @@ const renamingNoteId = inject("renamingNoteId") as Ref<string>;
 const oldNoteName = ref("");
 
 watchEffect(async () => {
-  let path: string;
-  if (props.item.dataType === "project") {
-    const project = props.item as Project;
-    path =
-      project.pdfs?.length > 0
-        ? project.pdfs[0].path
-        : idToPath(project._id);
-  } else {
-    path = idToPath(props.item._id);
-  }
+  const path = idToPath(props.item._id);
   label.value = await basename(path);
   if (renamingNoteId.value === props.item._id) setRenaming();
 });
 
 async function showInExplorer() {
-  const path =
-    props.item.dataType === "project"
-      ? idToPath(props.item._id)
-      : idToPath(props.item._id);
+  const path = idToPath(props.item._id);
   if (!path) return;
   await invoke("show_in_folder", { path: path });
 }

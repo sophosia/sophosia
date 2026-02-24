@@ -213,6 +213,8 @@ export const useProjectStore = defineStore("projectStore", {
         const pdfs = await projectFileAGUD.getPDFs(newProjectId);
         const pdf = pdfs.find((p) => p.name === filename);
         if (pdf) await extractPDFContent(pdf.path);
+      }).catch((error) => {
+        console.error(`Failed to extract metadata from PDF "${filename}":`, error);
       });
 
       const project = await fetchAndPrepareProject(projectId);

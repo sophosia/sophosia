@@ -66,7 +66,9 @@ class SQLDatabase {
       if (result && result.length > 0 && !result[0].sql.includes("pdfName")) {
         await _sqldb.execute("DROP TABLE IF EXISTS annotations");
       }
-    } catch {}
+    } catch (error) {
+      console.error("Failed to migrate annotations table:", error);
+    }
     await _sqldb.execute(
       "CREATE VIRTUAL TABLE IF NOT EXISTS annotations USING fts5 (projectId, pdfName, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)"
     );

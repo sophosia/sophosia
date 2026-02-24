@@ -72,7 +72,7 @@ class ProjectFileAGUD {
         // only read non-hidden folders
         if (folder.name!.startsWith(".")) continue;
         const project = await this.getProject(folder.name!);
-        if (!project) continue; // skip this folder if it has not meta info
+        if (!project) continue; // skip this folder if it has no meta info
         projects.push(project);
       }
       return projects;
@@ -101,7 +101,9 @@ class ProjectFileAGUD {
               path: entry.path,
             });
           }
-        } catch (error) {}
+        } catch (error) {
+          console.warn(`Skipping entry "${entry.path}" while scanning for PDFs:`, error);
+        }
       }
       return pdfs;
     } catch (error) {
@@ -134,11 +136,15 @@ class ProjectFileAGUD {
       ? pdfs.find((p) => p.name === pdfName)
       : pdfs[0];
     if (!pdf) return;
-    const oldPath = pdf.path;
-    const fileName = generateCiteKey(project, renameRule) + ".pdf";
-    const newPath = await join(db.config.storagePath, project._id, fileName);
-    await renameFile(oldPath, newPath);
-    return newPath;
+    try {
+      const oldPath = pdf.path;
+      const fileName = generateCiteKey(project, renameRule) + ".pdf";
+      const newPath = await join(db.config.storagePath, project._id, fileName);
+      await renameFile(oldPath, newPath);
+      return newPath;
+    } catch (error) {
+      console.error(`Failed to rename PDF in project "${projectId}":`, error);
+    }
   }
 
   /**
@@ -159,7 +165,7 @@ class ProjectFileAGUD {
         await this.saveProjectNote(project);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Failed to remove PDF:", error);
     }
   }
 
@@ -217,6 +223,8 @@ ${JSON.stringify(project, null, 2)}
   /**
    * Load project from markdown note in project folder
    *
+   * Performs automatic migration from the legacy single-path format to the multi-PDF format when needed.
+   *
    * @param {string} projectId
    * @returns {Promise<Project | undefined>} - Project data without pdf and notes
    */
@@ -235,16 +243,20 @@ ${JSON.stringify(project, null, 2)}
 
       // Migrate old single-path format to multi-PDF format
       if (!project.pdfs) {
-        const oldPath = (project as any).path;
-        if (typeof oldPath === "string" && oldPath) {
-          const name = await basename(oldPath);
-          project.pdfs = [{ name, path: oldPath }];
-        } else {
-          project.pdfs = [];
+        try {
+          const oldPath = (project as any).path;
+          if (typeof oldPath === "string" && oldPath) {
+            const name = await basename(oldPath);
+            project.pdfs = [{ name, path: oldPath }];
+          } else {
+            project.pdfs = [];
+          }
+          delete (project as any).path;
+          await this.saveProjectNote(project);
+        } catch (migrationError) {
+          console.error(`Failed to migrate project "${projectId}" to multi-PDF format:`, migrationError);
+          project.pdfs = project.pdfs || [];
         }
-        delete (project as any).path;
-        // Re-save to persist the migration
-        await this.saveProjectNote(project);
       }
 
       return project;
@@ -291,7 +303,7 @@ ${JSON.stringify(project, null, 2)}
    * Copy file to the corresponding project folder and returns the filename
    * @param srcPath
    * @param projectId
-   * @returns dstPath
+   * @returns fileName - the basename of the copied file, or undefined on error
    */
   async copyFileToProjectFolder(
     srcPath: string,

@@ -70,7 +70,7 @@ export interface Note {
   _id: string; // unique id of the note
   dataType: "note"; // for database search
   projectId: string; // the project it belongs to
-  path: string; // path to actual markdown file
+  path: string; // absolute path to the note file (markdown or excalidraw)
   label: string; // markdown file name
   type: NodeType;
 }

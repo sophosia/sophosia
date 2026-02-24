@@ -143,8 +143,8 @@ export const useLayoutStore = defineStore("layoutStore", {
     },
 
     /**
-     * closes a page identified by its itemid. the method removes the page from the store and updates the application state.
-     * @param itemid - the unique identifier of the page to be closed.
+     * closes a page identified by its pageId. the method removes the page from the store and updates the application state.
+     * @param pageId - the unique identifier of the page to be closed.
      */
     closePage(pageId: string) {
       this.removeNode(pageId);
@@ -170,7 +170,7 @@ export const useLayoutStore = defineStore("layoutStore", {
 
     /**
      * Renames a page in the store. This method is used to update the properties of a page, including changing its identifier.
-     * @param oldItemId - The original unique identifier of the page.
+     * @param oldPageId - The original unique identifier of the page.
      * @param newPage - The updated page object with new properties.
      */
     renamePage(oldPageId: string, newPage: Page) {
@@ -225,7 +225,10 @@ export const useLayoutStore = defineStore("layoutStore", {
           await projectStore.openProject(projectId);
           const pdfs = await projectFileAGUD.getPDFs(projectId);
           const pdf = pdfs.find((p) => p.name === pdfName);
-          if (!pdf) return;
+          if (!pdf) {
+            console.error(`PDF "${pdfName}" not found in project "${projectId}"`);
+            return;
+          }
           this.openPage({
             id: itemId,
             type: PageType.ReaderPage,
@@ -251,7 +254,10 @@ export const useLayoutStore = defineStore("layoutStore", {
           const pdf = pdfName
             ? pdfs.find((p) => p.name === pdfName)
             : pdfs[0];
-          if (!pdf) return;
+          if (!pdf) {
+            console.error(`PDF "${pdfName}" not found in project "${item.projectId}"`);
+            return;
+          }
           const pageId = `${item.projectId}/${pdf.name}`;
           this.openPage({
             id: pageId,
@@ -261,7 +267,7 @@ export const useLayoutStore = defineStore("layoutStore", {
           });
         }
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     },
 
@@ -341,7 +347,7 @@ export const useLayoutStore = defineStore("layoutStore", {
      ***********************************************/
     /**
      * Returns the first found page satisfying the predicate, returns undefined is not found
-     * @param pageId - the id of the page to search
+     * @param predicate - a function that returns true for the desired page
      * @returns page - the found node, could be undefined
      */
     findPage(predicate: (page: Page) => boolean): Page | undefined {
@@ -359,9 +365,9 @@ export const useLayoutStore = defineStore("layoutStore", {
     },
 
     /**
-     * Returns all pages satisfying the predicate, returns undefined is not found
-     * @param pageId - the id of the page to search
-     * @returns page - the found node, could be undefined
+     * Returns all pages satisfying the predicate
+     * @param predicate - a function that returns true for matching pages
+     * @returns Page[] - array of matching pages, empty if none found
      */
     findAllPages(predicate: (page: Page) => boolean): Page[] {
       const pages = [] as Page[];
