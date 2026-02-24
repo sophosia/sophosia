@@ -50,16 +50,6 @@
         <BookStack width="18" height="18" />
         <q-tooltip>{{ $t("library") }}</q-tooltip>
       </q-btn>
-      <q-btn
-        class="sidebar-icon-btn"
-        flat
-        square
-        padding="xs"
-        @click="layoutStore.toggleSidebar(true)"
-      >
-        <SidebarCollapse width="18" height="18" />
-        <q-tooltip>{{ $t("collapse-sidebar") }}</q-tooltip>
-      </q-btn>
     </div>
     <div class="sidebar-content">
       <ProjectNavigator />
@@ -142,25 +132,18 @@ import {
   HelpCircle,
   Settings,
   ShareAndroid,
-  SidebarCollapse,
 } from "@iconoir/vue";
-import { useLayoutStore } from "src/stores/layoutStore";
-
-const layoutStore = useLayoutStore();
 
 defineEmits(["openPage"]);
 </script>
 <style scoped lang="scss">
 .unified-sidebar {
-  width: var(--sidebar-width);
-  min-width: var(--sidebar-width);
+  width: 100%;
   height: 100vh;
   background: var(--color-leftmenu-bkgd);
-  border-right: 1px solid var(--q-border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  flex-shrink: 0;
 }
 
 .sidebar-traffic-light-spacer {

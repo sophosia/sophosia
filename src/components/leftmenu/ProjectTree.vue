@@ -17,13 +17,14 @@
         of the node still fires click event -->
       <!-- only note can drop into a project -->
       <div
-        style="width: calc(100% - 23px)"
-        class="row"
+        style="flex: 1; min-width: 0"
+        class="row tree-node-row"
         :class="{
           dragover:
             !!dragoverNode &&
             dragoverNode == prop.node &&
             draggingNode != prop.node,
+          'tree-node-selected': treeSelected === prop.node._id,
         }"
         @click="selectItem(prop.node._id)"
         draggable="true"
@@ -70,8 +71,6 @@
           @deleteFolder="deleteNode(prop.node)"
         />
 
-        <NodeTypeIcon :node="prop.node" :size="16" />
-        <!-- note icon has 1rem width -->
         <!-- input must have keypress.space.stop since space is default to expand row rather than space in text -->
         <div v-if="prop.node._id == renamingNodeId">
           <q-input
@@ -95,7 +94,7 @@
         </div>
         <div
           v-else
-          style="width: calc(100% - 1.4rem); font-size: 0.875rem"
+          style="width: 100%; font-size: 0.875rem"
           class="ellipsis non-selectable"
           :type="prop.node.dataType"
         >
@@ -427,3 +426,32 @@ async function onDrop(e: DragEvent, node: Project | ProjectNode) {
   dragoverNode.value = null;
 }
 </script>
+
+<style scoped lang="scss">
+:deep(.q-tree__node-header) {
+  padding: 2px 4px;
+
+  // Disable Quasar's built-in hover overlay so only our custom highlight shows
+  > .q-focus-helper {
+    display: none;
+  }
+}
+
+.tree-node-row {
+  border-radius: 6px;
+  padding: 4px 8px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--q-hover);
+  }
+}
+
+.tree-node-selected {
+  background-color: var(--q-active);
+
+  &:hover {
+    background-color: var(--q-active);
+  }
+}
+</style>

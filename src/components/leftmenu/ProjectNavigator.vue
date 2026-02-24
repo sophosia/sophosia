@@ -86,7 +86,7 @@ function createProject() {
 
 .project-nav-content {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
 }
 

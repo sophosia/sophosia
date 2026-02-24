@@ -1,5 +1,5 @@
 <template>
-  <div style="overflow-x: auto; overflow-y: hidden">
+  <div class="tab-strip">
     <Tab
       v-for="[index, page] in pages.entries()"
       :key="index"
@@ -87,7 +87,7 @@
     </Tab>
     <!-- trailing tab header for dropping tabs + window drag region -->
     <div
-      style="width: 100%; height: var(--tab-bar-height)"
+      class="tab-trailing-drop"
       data-tauri-drag-region
       @dragover="(ev) => onDragOverTabContainer(ev)"
       @dragleave="(ev) => onDragLeaveTabContainer(ev)"
@@ -249,6 +249,20 @@ async function copyAsLink(page: Page) {
 }
 </script>
 <style scoped lang="scss">
+.tab-strip {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tab-trailing-drop {
+  flex: 1 1 auto;
+  min-width: 56px;
+  height: var(--tab-bar-height);
+  background: var(--color-layout-base-bkgd);
+}
+
 .tab-drag-highlight {
   background: var(--color-layout-focused-tab-bkgd);
 }

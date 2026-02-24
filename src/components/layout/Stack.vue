@@ -2,6 +2,7 @@
   <!-- the class stack is only for searching -->
   <TabContainer
     class="tab-container"
+    :class="{ 'tab-container-no-sidebar': layoutStore.sidebarCollapsed }"
     data-tauri-drag-region
     :enableCrossWindowDragAndDrop="enableCrossWindowDragAndDrop"
     :pages="stack.children"
@@ -134,5 +135,8 @@ function refresh() {
   align-items: flex-start;
   background: var(--color-layout-header-bkgd);
   height: var(--tab-bar-height);
+}
+.tab-container-no-sidebar {
+  padding-left: 70px; // space for macOS traffic lights when sidebar is collapsed
 }
 </style>

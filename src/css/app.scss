@@ -254,8 +254,12 @@ a {
   }
 }
 
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 ::-webkit-scrollbar-corner {
-  color: transparent;
+  background: transparent;
 }
 
 // ----------------------------------------------------------

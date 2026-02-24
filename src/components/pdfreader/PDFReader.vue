@@ -93,6 +93,9 @@ function injectCompactToolbarStyles() {
     [data-epdf-i="divider-2"] {
       display: none !important;
     }
+    #document-content [style*="overflow-y"] {
+      scrollbar-gutter: stable both-edges;
+    }
   `;
   container.shadowRoot.appendChild(style);
 }
