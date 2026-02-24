@@ -9,7 +9,12 @@ import {
   renameFile,
   writeTextFile,
 } from "@tauri-apps/api/fs";
-import { Project, SpecialCategory, db } from "src/backend/database";
+import {
+  PDFAttachment,
+  Project,
+  SpecialCategory,
+  db,
+} from "src/backend/database";
 import { i18n } from "src/boot/i18n";
 import { authorToString, idToPath } from "../utils";
 import { basename, extname, join } from "@tauri-apps/api/path";
@@ -67,7 +72,7 @@ class ProjectFileAGUD {
         // only read non-hidden folders
         if (folder.name!.startsWith(".")) continue;
         const project = await this.getProject(folder.name!);
-        if (!project) continue; // skip this folder if it has not meta info
+        if (!project) continue; // skip this folder if it has no meta info
         projects.push(project);
       }
       return projects;
@@ -78,43 +83,90 @@ class ProjectFileAGUD {
   }
 
   /**
-   * Retrieve the path of the first PDF file found within a project folder.
+   * Retrieve all PDF files found within a project folder.
    *
    * @param projectId - The unique identifier of the project.
-   * @returns The path of the first PDF file found, or undefined if no PDF is found or an error occurs.
+   * @returns Array of PDFAttachment objects for all PDFs found.
    */
-  async getPDF(projectId: string) {
+  async getPDFs(projectId: string): Promise<PDFAttachment[]> {
     try {
       const projectFolder = idToPath(projectId);
       const entries = await readDir(projectFolder);
+      const pdfs: PDFAttachment[] = [];
       for (const entry of entries) {
         try {
-          if ((await extname(entry.path)) === "pdf") return entry.path;
-        } catch (error) {}
+          if ((await extname(entry.path)) === "pdf") {
+            pdfs.push({
+              name: entry.name || (await basename(entry.path)),
+              path: entry.path,
+            });
+          }
+        } catch (error) {
+          console.warn(`Skipping entry "${entry.path}" while scanning for PDFs:`, error);
+        }
       }
+      return pdfs;
     } catch (error) {
       console.log(error);
+      return [];
     }
   }
 
   /**
-   * Renames the PDF file associated with a project based on a generated citation key.
+   * @deprecated Use getPDFs() instead. Returns the first PDF found.
+   */
+  async getPDF(projectId: string) {
+    const pdfs = await this.getPDFs(projectId);
+    return pdfs.length > 0 ? pdfs[0].path : undefined;
+  }
+
+  /**
+   * Renames a specific PDF file associated with a project based on a generated citation key.
    *
    * @param projectId - The project whose associated PDF needs renaming.
-   * @returns The new path of the renamed PDF file or undefined if the project has no associated path.
-   *
-   * Generates a new filename using the citation key and moves the PDF file to this new path.
+   * @param renameRule - The rule used to generate the new filename.
+   * @param pdfName - The filename of the specific PDF to rename.
+   * @returns The new path of the renamed PDF file or undefined if the PDF is not found.
    */
-  async renamePDF(projectId: string, renameRule: string) {
+  async renamePDF(projectId: string, renameRule: string, pdfName?: string) {
     const project = await this.getProject(projectId);
     if (!project) return;
-    project.path = await this.getPDF(projectId);
-    if (project.path === undefined) return;
-    const oldPath = project.path;
-    const fileName = generateCiteKey(project, renameRule) + ".pdf";
-    const newPath = await join(db.config.storagePath, project._id, fileName);
-    await renameFile(oldPath, newPath);
-    return newPath;
+    const pdfs = await this.getPDFs(projectId);
+    const pdf = pdfName
+      ? pdfs.find((p) => p.name === pdfName)
+      : pdfs[0];
+    if (!pdf) return;
+    try {
+      const oldPath = pdf.path;
+      const fileName = generateCiteKey(project, renameRule) + ".pdf";
+      const newPath = await join(db.config.storagePath, project._id, fileName);
+      await renameFile(oldPath, newPath);
+      return newPath;
+    } catch (error) {
+      console.error(`Failed to rename PDF in project "${projectId}":`, error);
+    }
+  }
+
+  /**
+   * Remove a specific PDF file from a project and update the project metadata.
+   *
+   * @param projectId - The project ID
+   * @param pdfName - The filename of the PDF to remove
+   */
+  async removePDF(projectId: string, pdfName: string): Promise<void> {
+    try {
+      const pdfPath = idToPath(`${projectId}/${pdfName}`);
+      if (await exists(pdfPath)) await removeFile(pdfPath);
+
+      // Update project metadata to remove the PDF from the pdfs array
+      const project = await this.getProject(projectId);
+      if (project) {
+        project.pdfs = (project.pdfs || []).filter((p) => p.name !== pdfName);
+        await this.saveProjectNote(project);
+      }
+    } catch (error) {
+      console.error("Failed to remove PDF:", error);
+    }
   }
 
   async deleteProject(projectId: string) {
@@ -132,9 +184,10 @@ class ProjectFileAGUD {
    * Attaches a PDF file to a project by copying it to the project's folder.
    *
    * @param {string} projectId - The ID of the project to attach the PDF to.
-   * @returns {Promise<string | undefined>} The path of the copied PDF file in the project's folder, or undefined if no file is selected.
+   * @returns {Promise<string | undefined>} The filename of the copied PDF, or undefined if no file is selected.
    *
-   * Opens a file dialog to select a PDF, removes any existing PDF associated with the project, and copies the selected PDF to the project's folder.
+   * Opens a file dialog to select a PDF and copies it to the project's folder.
+   * Multiple PDFs can be attached to a single project.
    */
   async attachPDF(projectId: string): Promise<string | undefined> {
     const filePath = await open({
@@ -143,8 +196,6 @@ class ProjectFileAGUD {
     });
 
     if (typeof filePath !== "string") return;
-    const oldPDFPath = await this.getPDF(projectId);
-    if (oldPDFPath) await removeFile(oldPDFPath);
     return await this.copyFileToProjectFolder(filePath, projectId);
   }
 
@@ -172,6 +223,8 @@ ${JSON.stringify(project, null, 2)}
   /**
    * Load project from markdown note in project folder
    *
+   * Performs automatic migration from the legacy single-path format to the multi-PDF format when needed.
+   *
    * @param {string} projectId
    * @returns {Promise<Project | undefined>} - Project data without pdf and notes
    */
@@ -187,6 +240,25 @@ ${JSON.stringify(project, null, 2)}
         throw Error(`Cannot find meta data of project ${projectId}`);
       const metaString = lines.slice(startIndex + 1, endIndex).join("\n");
       const project = JSON.parse(metaString) as Project;
+
+      // Migrate old single-path format to multi-PDF format
+      if (!project.pdfs) {
+        try {
+          const oldPath = (project as any).path;
+          if (typeof oldPath === "string" && oldPath) {
+            const name = await basename(oldPath);
+            project.pdfs = [{ name, path: oldPath }];
+          } else {
+            project.pdfs = [];
+          }
+          delete (project as any).path;
+          await this.saveProjectNote(project);
+        } catch (migrationError) {
+          console.error(`Failed to migrate project "${projectId}" to multi-PDF format:`, migrationError);
+          project.pdfs = project.pdfs || [];
+        }
+      }
+
       return project;
     } catch (error) {
       console.log(error);
@@ -231,7 +303,7 @@ ${JSON.stringify(project, null, 2)}
    * Copy file to the corresponding project folder and returns the filename
    * @param srcPath
    * @param projectId
-   * @returns dstPath
+   * @returns fileName - the basename of the copied file, or undefined on error
    */
   async copyFileToProjectFolder(
     srcPath: string,

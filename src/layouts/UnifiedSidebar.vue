@@ -138,15 +138,12 @@ defineEmits(["openPage"]);
 </script>
 <style scoped lang="scss">
 .unified-sidebar {
-  width: var(--sidebar-width);
-  min-width: var(--sidebar-width);
+  width: 100%;
   height: 100vh;
   background: var(--color-leftmenu-bkgd);
-  border-right: 1px solid var(--q-border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  flex-shrink: 0;
 }
 
 .sidebar-traffic-light-spacer {

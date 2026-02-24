@@ -266,11 +266,11 @@
             padding="none"
             size="md"
             icon="open_in_new"
-            :disable="!meta.path"
+            :disable="!meta?.pdfs?.length"
             @click="
               async () => {
                 await invoke('show_in_folder', {
-                  path: meta!.path as string,
+                  path: meta!.pdfs[0].path as string,
                 });
               }
             "
@@ -480,7 +480,8 @@ const authors = computed(() => {
 const file = ref(""); // pdf file name
 watchEffect(async () => {
   try {
-    file.value = await basename(props.project?.path as string);
+    const pdfs = props.project?.pdfs;
+    file.value = pdfs?.length ? await basename(pdfs[0].path) : "";
   } catch (error) {
     file.value = "";
   }

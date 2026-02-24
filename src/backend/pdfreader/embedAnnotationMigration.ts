@@ -190,6 +190,7 @@ function normalizeSqlRow(row: Record<string, unknown>): AnnotationData {
     timestampModified: toNumber(row.timestampModified, Date.now()),
     dataType: "pdfAnnotation",
     projectId: String(row.projectId || ""),
+    pdfName: String(row.pdfName || ""),
     pageNumber: toNumber(row.pageNumber, 1),
     content: String(row.content || ""),
     color: String(row.color || ""),
@@ -199,16 +200,21 @@ function normalizeSqlRow(row: Record<string, unknown>): AnnotationData {
 }
 
 export async function loadLegacyAnnotations(
-  projectId: string
+  projectId: string,
+  pdfName?: string
 ): Promise<AnnotationData[]> {
   const normalized = [] as AnnotationData[];
   const seen = new Set<string>();
 
-  const sqlRows =
-    (await sqldb.select<Record<string, unknown>[]>(
-      "SELECT * FROM annotations WHERE projectId = $1",
-      [projectId]
-    )) || [];
+  const sqlRows = pdfName
+    ? (await sqldb.select<Record<string, unknown>[]>(
+        "SELECT * FROM annotations WHERE projectId = $1 AND pdfName = $2",
+        [projectId, pdfName]
+      )) || []
+    : (await sqldb.select<Record<string, unknown>[]>(
+        "SELECT * FROM annotations WHERE projectId = $1",
+        [projectId]
+      )) || [];
 
   for (const row of sqlRows) {
     const annotation = normalizeSqlRow(row);
@@ -223,6 +229,7 @@ export async function loadLegacyAnnotations(
   const docs = ((await db.getDocs("pdfAnnotation")) || []) as AnnotationData[];
   for (const doc of docs) {
     if (!doc || doc.projectId !== projectId) continue;
+    if (pdfName && doc.pdfName && doc.pdfName !== pdfName) continue;
     const annotation = normalizeLegacyAnnotation(doc);
     if (!annotation._id || seen.has(annotation._id)) continue;
     if (!supportedLegacyType(annotation.type)) continue;
@@ -349,7 +356,8 @@ function embedTypeToLegacyType(type: PdfAnnotationSubtype): AnnotationType | nul
 export function embedToLegacyAnnotation(
   annotation: PdfAnnotationObject,
   projectId: string,
-  document: PdfDocumentObject
+  document: PdfDocumentObject,
+  pdfName?: string
 ): AnnotationData | null {
   const legacyType = embedTypeToLegacyType(annotation.type);
   if (!legacyType) return null;
@@ -393,6 +401,7 @@ export function embedToLegacyAnnotation(
     timestampModified: Date.now(),
     dataType: "pdfAnnotation",
     projectId,
+    pdfName: pdfName || "",
     pageNumber: pageIndex + 1,
     content,
     color,
@@ -421,10 +430,11 @@ export async function saveLegacyAnnotation(annotation: AnnotationData) {
   await db.put(next);
   await sqldb.execute("DELETE FROM annotations WHERE _id = $1", [next._id]);
   await sqldb.execute(
-    `INSERT INTO annotations (projectId, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    `INSERT INTO annotations (projectId, pdfName, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
     [
       next.projectId,
+      next.pdfName || "",
       next._id,
       next.type,
       next.rects,

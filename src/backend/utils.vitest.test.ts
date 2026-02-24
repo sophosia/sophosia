@@ -144,6 +144,7 @@ describe("utils.ts", () => {
     dataTypes.set("projetId", "project");
     dataTypes.set("projectId/note.md", "note");
     dataTypes.set("projetId/draw.excalidraw", "note");
+    dataTypes.set("projectId/paper.pdf", "paper");
     dataTypes.set("SA012345", "pdfAnnotation");
 
     for (const [id, type] of dataTypes.entries()) {

@@ -17,15 +17,18 @@
         of the node still fires click event -->
       <!-- only note can drop into a project -->
       <div
-        style="width: calc(100% - 23px)"
-        class="row"
+        style="flex: 1; min-width: 0"
+        class="row tree-node-row"
         :class="{
           dragover:
             !!dragoverNode &&
             dragoverNode == prop.node &&
             draggingNode != prop.node,
+          'tree-node-selected': treeSelected === prop.node._id,
         }"
         @click="selectItem(prop.node._id)"
+        @mouseenter="(e) => onNodeMouseEnter(e, prop.node)"
+        @mouseleave="onNodeMouseLeave"
         draggable="true"
         @dragstart="(e) => onDragStart(e, prop.node)"
         @dragover="(e) => onDragOver(e, prop.node)"
@@ -37,7 +40,7 @@
           :projectId="prop.node._id"
           @showInExplorer="showInExplorer(prop.node)"
           @showInNewWindow="showInNewWindow(prop.node)"
-          @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
+          @addNote="(noteType: NodeType) => addNode(prop.node._id, 'note', noteType)"
           @addFolder="addNode(prop.node._id, 'folder')"
           @exportCitation="showExportCitationDialog(prop.node)"
           @closeProject="closeProject(prop.node._id)"
@@ -53,17 +56,23 @@
           @copyId="() => copyId(prop.node._id)"
           @copyAsLink="() => copyAsNoteLink(prop.node)"
         />
+        <PaperMenu
+          v-else-if="prop.node.dataType === 'paper'"
+          @addNote="(noteType: NodeType) => addNode(prop.node._id.split('/')[0], 'note', noteType)"
+          @showInExplorer="showInExplorer(prop.node)"
+          @showInNewWindow="showInNewWindow(prop.node)"
+          @delete="deleteNode(prop.node)"
+          @copyId="() => copyId(prop.node._id)"
+        />
         <FolderMenu
           v-else
           @showInExplorer="showInExplorer(prop.node)"
-          @addNote="(noteType: NoteType) => addNode(prop.node._id, 'note', noteType)"
+          @addNote="(noteType: NodeType) => addNode(prop.node._id, 'note', noteType)"
           @addFolder="addNode(prop.node._id, 'folder')"
           @renameFolder="setRenameNode(prop.node)"
           @deleteFolder="deleteNode(prop.node)"
         />
 
-        <NodeTypeIcon :node="prop.node" :size="16" />
-        <!-- note icon has 1rem width -->
         <!-- input must have keypress.space.stop since space is default to expand row rather than space in text -->
         <div v-if="prop.node._id == renamingNodeId">
           <q-input
@@ -87,23 +96,32 @@
         </div>
         <div
           v-else
-          style="width: calc(100% - 1.4rem); font-size: 0.875rem"
-          class="ellipsis non-selectable"
+          style="width: 100%; font-size: 0.875rem"
+          class="row items-center ellipsis non-selectable"
           :type="prop.node.dataType"
         >
-          {{ prop.node.label }}
-          <q-tooltip> ID: {{ prop.key }} </q-tooltip>
+          <NodeTypeIcon :node="prop.node" :size="14" />
+          {{ prop.node.label.replace(/\.md$/, '') }}
         </div>
       </div>
     </template>
   </q-tree>
+  <Teleport to="body">
+    <SidebarPeekCard
+      :node="peekNode"
+      :visible="peekVisible"
+      :anchorRect="peekAnchorRect"
+      @cardEnter="onPeekCardEnter"
+      @cardLeave="onPeekCardLeave"
+    />
+  </Teleport>
 </template>
 <script setup lang="ts">
 import { QTree } from "quasar";
 import {
-  FolderOrNote,
+  ProjectNode,
   Note,
-  NoteType,
+  NodeType,
   Page,
   PageType,
   Project,
@@ -116,11 +134,13 @@ import { useNodeActions } from "src/composables/useNodeActions";
 import { useLayoutStore } from "src/stores/layoutStore";
 import { useProjectStore } from "src/stores/projectStore";
 import { metadata } from "tauri-plugin-fs-extra-api";
-import { computed, nextTick, onMounted, ref, watchEffect } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watchEffect } from "vue";
 import { useI18n } from "vue-i18n";
 import FolderMenu from "./FolderMenu.vue";
 import NoteMenu from "./NoteMenu.vue";
+import PaperMenu from "./PaperMenu.vue";
 import ProjectMenu from "./ProjectMenu.vue";
+import SidebarPeekCard from "./SidebarPeekCard.vue";
 import NodeTypeIcon from "src/components/shared/NodeTypeIcon.vue";
 
 const { t } = useI18n({ useScope: "global" });
@@ -151,8 +171,8 @@ const renamingNodeType = ref<"folder" | "note">("folder");
 const oldNoteName = ref("");
 const addingNode = ref(false);
 const expanded = ref<string[]>([]);
-const draggingNode = ref<Project | FolderOrNote | null>(null);
-const dragoverNode = ref<FolderOrNote | null>(null);
+const draggingNode = ref<Project | ProjectNode | null>(null);
+const dragoverNode = ref<ProjectNode | null>(null);
 const enterTime = ref(0);
 
 onMounted(async () => {
@@ -172,6 +192,11 @@ const treeSelected = computed(() => {
 });
 
 function selectItem(nodeId: string) {
+  // Hide peek card when clicking to open an item
+  peekVisible.value = false;
+  peekNode.value = null;
+  if (peekTimer) clearTimeout(peekTimer);
+
   if (!tree.value) return;
   const node = tree.value.getNodeByKey(nodeId);
 
@@ -188,13 +213,8 @@ function selectItem(nodeId: string) {
     return;
   }
 
-  // PDF children open the parent project's reader
-  if (node._id.endsWith(".pdf")) {
-    const projectId = node._id.split("/")[0];
-    layoutStore.openItem(projectId);
-  } else {
-    layoutStore.openItem(node._id);
-  }
+  // PDF nodes open the reader for that specific PDF
+  layoutStore.openItem(node._id);
 }
 
 function showInTree(nodeId: string) {
@@ -220,7 +240,7 @@ async function closeProject(projectId: string) {
 async function addNode(
   parentNodeId: string,
   nodeType: "folder" | "note",
-  noteType: NoteType = NoteType.MARKDOWN
+  noteType: NodeType = NodeType.MARKDOWN
 ) {
   if (nodeType === "folder") {
     nameDialog.showWithOptions({
@@ -232,7 +252,7 @@ async function addNode(
         const parentNode = tree_ref.getNodeByKey(parentNodeId);
         if (!parentNode || !parentNode.children) return false;
         return parentNode.children.some(
-          (child: FolderOrNote) =>
+          (child: ProjectNode) =>
             child.dataType === "folder" &&
             child.label.toLowerCase() === name.toLowerCase()
         );
@@ -249,13 +269,15 @@ async function addNode(
     const node = await projectStore.createNode(parentNodeId, nodeType, noteType);
     await projectStore.addNode(node);
     expanded.value.push(parentNodeId);
+    // Open the note immediately
+    layoutStore.openItem(node._id);
     addingNode.value = true;
     await nextTick();
     setRenameNode(node);
   }
 }
 
-function setRenameNode(node: FolderOrNote) {
+function setRenameNode(node: ProjectNode) {
   renamingNodeId.value = node._id;
   renamingNodeType.value = node.dataType;
   oldNoteName.value = (
@@ -271,9 +293,16 @@ function setRenameNode(node: FolderOrNote) {
   }, 100);
 }
 
+const renaming = ref(false);
 async function renameNode() {
-  const node = tree.value?.getNodeByKey(renamingNodeId.value) as FolderOrNote;
-  if (!node) return;
+  if (renaming.value) return;
+  renaming.value = true;
+
+  const node = tree.value?.getNodeByKey(renamingNodeId.value) as ProjectNode;
+  if (!node) {
+    renaming.value = false;
+    return;
+  }
 
   const oldNodeId = renamingNodeId.value;
 
@@ -308,6 +337,7 @@ async function renameNode() {
   addingNode.value = false;
   renamingNodeId.value = "";
   oldNoteName.value = "";
+  renaming.value = false;
 }
 
 async function checkDuplicate(node: Note) {
@@ -315,7 +345,7 @@ async function checkDuplicate(node: Note) {
   await checkDuplicateAction(node, node.label);
 }
 
-async function deleteNode(node: FolderOrNote) {
+async function deleteNode(node: ProjectNode) {
   await deleteNodeAction(node, () => {
     if (node._id === projectStore.selected[0]?._id) {
       const projectId = node._id.split("/")[0];
@@ -333,7 +363,12 @@ async function deleteNode(node: FolderOrNote) {
   });
 }
 
-function onDragStart(e: DragEvent, node: Project | FolderOrNote) {
+function onDragStart(e: DragEvent, node: Project | ProjectNode) {
+  // Hide peek card during drag
+  peekVisible.value = false;
+  peekNode.value = null;
+  if (peekTimer) clearTimeout(peekTimer);
+
   draggingNode.value = node;
   e.dataTransfer?.setData("draggingNode", JSON.stringify(node));
 
@@ -357,7 +392,7 @@ function onDragStart(e: DragEvent, node: Project | FolderOrNote) {
   }
 }
 
-function onDragOver(e: DragEvent, node: FolderOrNote) {
+function onDragOver(e: DragEvent, node: ProjectNode) {
   if (draggingNode.value?.dataType === "project") return;
   e.preventDefault();
   dragoverNode.value = node;
@@ -368,12 +403,12 @@ function onDragOver(e: DragEvent, node: FolderOrNote) {
   }
 }
 
-function onDragLeave(e: DragEvent, node: FolderOrNote) {
+function onDragLeave(e: DragEvent, node: ProjectNode) {
   enterTime.value = 0;
   dragoverNode.value = null;
 }
 
-async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
+async function onDrop(e: DragEvent, node: Project | ProjectNode) {
   if (draggingNode.value === null || draggingNode.value == node) return;
 
   const dragId = draggingNode.value._id;
@@ -412,4 +447,102 @@ async function onDrop(e: DragEvent, node: Project | FolderOrNote) {
   draggingNode.value = null;
   dragoverNode.value = null;
 }
+
+// ── Sidebar Peek Card ──
+const peekNode = ref<ProjectNode | null>(null);
+const peekVisible = ref(false);
+const peekAnchorRect = ref<{
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+} | null>(null);
+let peekTimer: ReturnType<typeof setTimeout> | null = null;
+
+function onNodeMouseEnter(e: MouseEvent, node: ProjectNode) {
+  if (node.dataType !== "note" && node.dataType !== "paper") return;
+
+  const target = (e.currentTarget as HTMLElement).closest(
+    ".tree-node-row"
+  ) as HTMLElement | null;
+  if (!target) return;
+
+  // Find the sidebar container to get its right edge
+  const sidebar = target.closest(".sidebar-fixed, .unified-sidebar");
+  const rect = target.getBoundingClientRect();
+  const rightEdge = sidebar
+    ? sidebar.getBoundingClientRect().right
+    : rect.right;
+
+  if (peekTimer) clearTimeout(peekTimer);
+  peekTimer = setTimeout(() => {
+    peekNode.value = node;
+    peekAnchorRect.value = {
+      top: rect.top,
+      left: rect.left,
+      right: rightEdge,
+      bottom: rect.bottom,
+    };
+    peekVisible.value = true;
+  }, 400);
+}
+
+function onNodeMouseLeave() {
+  if (peekTimer) {
+    clearTimeout(peekTimer);
+    peekTimer = null;
+  }
+  // Delay hide to allow mouse to move to the card
+  setTimeout(() => {
+    if (!peekCardHovered) {
+      peekVisible.value = false;
+      peekNode.value = null;
+    }
+  }, 200);
+}
+
+let peekCardHovered = false;
+
+function onPeekCardEnter() {
+  peekCardHovered = true;
+}
+
+function onPeekCardLeave() {
+  peekCardHovered = false;
+  peekVisible.value = false;
+  peekNode.value = null;
+}
+
+onUnmounted(() => {
+  if (peekTimer) clearTimeout(peekTimer);
+});
 </script>
+
+<style scoped lang="scss">
+:deep(.q-tree__node-header) {
+  padding: 2px 4px;
+
+  // Disable Quasar's built-in hover overlay so only our custom highlight shows
+  > .q-focus-helper {
+    display: none;
+  }
+}
+
+.tree-node-row {
+  border-radius: 6px;
+  padding: 4px 8px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--q-hover);
+  }
+}
+
+.tree-node-selected {
+  background-color: var(--q-active);
+
+  &:hover {
+    background-color: var(--q-active);
+  }
+}
+</style>

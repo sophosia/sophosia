@@ -1,4 +1,4 @@
-import { sqldb, db, FolderOrNote, Note, NoteType } from "../database";
+import { sqldb, db, ProjectNode, Note, NodeType } from "../database";
 import { Buffer } from "buffer";
 import {
   exists,
@@ -26,23 +26,23 @@ export const isLinkUpdated = ref(false); // to notify the reloading of note edit
  * Creates a new note with a unique name in the specified folder.
  *
  * @param {string} folderId - The ID of the folder where the note will be created.
- * @param {NoteType} type - The type of note (Markdown or Excalidraw).
+ * @param {NodeType} type - The type of note (Markdown or Excalidraw).
  * @returns {Promise<Note>} A promise that resolves to the newly created note object.
  *
  * Generates a note file path, ensuring no naming conflicts. Constructs and returns a note object.
  */
 export async function createNote(
   folderId: string,
-  type: NoteType
+  type: NodeType
 ): Promise<Note> {
   const splits = folderId.split("/");
   const projectId = splits[0];
-  let ext = type === NoteType.MARKDOWN ? ".md" : ".excalidraw";
-  let name = t("new", { type: t("note") });
+  let ext = type === NodeType.MARKDOWN ? ".md" : ".excalidraw";
+  let name = "untitled";
   let path = await join(db.config.storagePath, ...splits, name + ext);
   let i = 1;
   while (await exists(path)) {
-    name = `${t("new", { type: t("note") })} ${i}`;
+    name = `untitled ${i}`;
     path = await join(db.config.storagePath, ...splits, name + ext);
     i++;
   }
@@ -195,7 +195,7 @@ WHERE source = $1 OR target = $2
     return {
       _id: newNoteId,
       dataType: "note",
-      type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
+      type: ext === "md" ? NodeType.MARKDOWN : NodeType.EXCALIDRAW,
       projectId: newNoteId.split("/")[0],
       path: newPath,
       label: await basename(newNoteId),
@@ -229,7 +229,7 @@ export async function getNote(noteId: string): Promise<Note | undefined> {
       projectId: projectId,
       label: label,
       path: path,
-      type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
+      type: ext === "md" ? NodeType.MARKDOWN : NodeType.EXCALIDRAW,
     } as Note;
     return note;
   } catch (error) {
@@ -282,7 +282,7 @@ export async function getNotes(folderId: string): Promise<Note[]> {
             projectId: projectId,
             label: label,
             path: entry.path,
-            type: ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW,
+            type: ext === "md" ? NodeType.MARKDOWN : NodeType.EXCALIDRAW,
           } as Note);
         } else if (entry.children) {
           await processEntries(entry.children);
@@ -303,27 +303,34 @@ export async function getNotes(folderId: string): Promise<Note[]> {
  * Generates a tree structure of notes and folders for a given project.
  *
  * @param {string} projectId - The ID of the project.
- * @returns {Promise<FolderOrNote[]>} A promise resolving to an array representing the tree structure.
+ * @returns {Promise<ProjectNode[]>} A promise resolving to an array representing the tree structure.
  *
  * Recursively traverses through folders and notes, constructing a hierarchical tree structure.
  * Skips non-note files and the project's main note.
  */
-export async function getNoteTree(projectId: string): Promise<FolderOrNote[]> {
-  async function _dfs(entries: FileEntry[], children: FolderOrNote[]) {
+export async function getNoteTree(projectId: string): Promise<ProjectNode[]> {
+  async function _dfs(entries: FileEntry[], children: ProjectNode[]) {
     for (const entry of entries) {
       const meta = await metadata(entry.path);
-      const node = {} as FolderOrNote;
+      const node = {} as ProjectNode;
       node._id = pathToId(entry.path);
       node.label = entry.name as string;
       if (meta.isFile) {
         const ext = await extname(entry.path);
-        if (!["md", "excalidraw"].includes(ext)) continue;
         if (entry.name == projectId + ".md") continue; // skip project note
-        node.dataType = "note";
-        node.type = ext === "md" ? NoteType.MARKDOWN : NoteType.EXCALIDRAW;
+        if (ext === "pdf") {
+          node.dataType = "paper";
+          node.type = NodeType.PAPER;
+          node.children = [];
+        } else if (["md", "excalidraw"].includes(ext)) {
+          node.dataType = "note";
+          node.type = ext === "md" ? NodeType.MARKDOWN : NodeType.EXCALIDRAW;
+        } else {
+          continue;
+        }
       } else if (entry.children) {
         node.dataType = "folder";
-        node.children = [] as FolderOrNote[];
+        node.children = [] as ProjectNode[];
         await _dfs(entry.children, node.children);
       }
       children.push(node);
@@ -333,7 +340,7 @@ export async function getNoteTree(projectId: string): Promise<FolderOrNote[]> {
   const entries = await readDir(await join(db.config.storagePath, projectId), {
     recursive: true,
   });
-  const notes = [] as FolderOrNote[];
+  const notes = [] as ProjectNode[];
   await _dfs(entries, notes);
   return notes;
 }
@@ -363,7 +370,7 @@ export async function loadNote(
         "SELECT type, content FROM notes WHERE _id = $1",
         [noteId]
       )) || [];
-    if (result.length === 1 && result[0].type === NoteType.MARKDOWN)
+    if (result.length === 1 && result[0].type === NodeType.MARKDOWN)
       return result[0].content;
     else return await readTextFile(notePath || idToPath(noteId));
   } catch (error) {
@@ -426,14 +433,14 @@ export async function uploadImage(
  * Creates a new folder within a specified parent folder.
  *
  * @param {string} parentFolderId - The ID of the parent folder.
- * @returns {Promise<FolderOrNote>} A promise resolving to the newly created folder object.
+ * @returns {Promise<ProjectNode>} A promise resolving to the newly created folder object.
  *
  * Generates a unique name for the new folder and creates it under the parent folder.
  * Returns the folder object with its properties.
  */
 export async function createFolder(
   parentFolderId: string
-): Promise<FolderOrNote> {
+): Promise<ProjectNode> {
   let name = t("new", { type: t("folder") });
   let path = await join(idToPath(parentFolderId), name);
   let i = 1;
@@ -449,7 +456,7 @@ export async function createFolder(
     label: name,
     path: path,
     children: [],
-  } as FolderOrNote;
+  } as ProjectNode;
 
   return folder;
 }
@@ -457,13 +464,13 @@ export async function createFolder(
 /**
  * Adds a new folder to the file system based on the provided folder object.
  *
- * @param {FolderOrNote} folder - The folder object to be added.
+ * @param {ProjectNode} folder - The folder object to be added.
  *
  * Creates a directory in the file system using the folder's ID as the path.
  *
  * @throws Logs an error if the folder creation process fails.
  */
-export async function addFolder(folder: FolderOrNote) {
+export async function addFolder(folder: ProjectNode) {
   try {
     await createDir(idToPath(folder._id));
   } catch (error) {

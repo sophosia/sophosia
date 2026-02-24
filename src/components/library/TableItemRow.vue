@@ -49,20 +49,6 @@
       </div>
     </q-td>
     <q-td
-      v-else-if="item.dataType === 'project'"
-      colspan="100%"
-    >
-      <div class="row items-center">
-        <NodeTypeIcon :node="item" :size="14" />
-        <div
-          class="col"
-          style="font-size: 0.875rem"
-        >
-          {{ label }}
-        </div>
-      </div>
-    </q-td>
-    <q-td
       v-else
       colspan="100%"
     >
@@ -91,7 +77,7 @@
   </q-tr>
 </template>
 <script setup lang="ts">
-import { Note, FolderOrNote, Project } from "src/backend/database";
+import { Note, ProjectNode } from "src/backend/database";
 import { PropType, Ref, inject, ref, watchEffect } from "vue";
 import { invoke } from "@tauri-apps/api";
 import { basename } from "@tauri-apps/api/path";
@@ -105,7 +91,7 @@ import TableItemMenu from "./TableItemMenu.vue";
 import NodeTypeIcon from "src/components/shared/NodeTypeIcon.vue";
 
 const props = defineProps({
-  item: { type: Object as PropType<Project | Note>, required: true },
+  item: { type: Object as PropType<ProjectNode>, required: true },
 });
 const layoutStore = useLayoutStore();
 const projectStore = useProjectStore();
@@ -123,22 +109,20 @@ const {
 } = useNodeActions();
 
 const renaming = ref(false);
+const renameProcessing = ref(false);
 const renameInput = ref<HTMLInputElement | null>(null);
 const label = ref("");
 const renamingNoteId = inject("renamingNoteId") as Ref<string>;
 const oldNoteName = ref("");
 
 watchEffect(async () => {
-  const path = props.item.path || idToPath(props.item._id);
+  const path = idToPath(props.item._id);
   label.value = await basename(path);
   if (renamingNoteId.value === props.item._id) setRenaming();
 });
 
 async function showInExplorer() {
-  const path =
-    props.item.dataType === "project"
-      ? props.item.path
-      : idToPath(props.item._id);
+  const path = idToPath(props.item._id);
   if (!path) return;
   await invoke("show_in_folder", { path: path });
 }
@@ -168,6 +152,8 @@ function setRenaming() {
 }
 
 async function renameNote() {
+  if (renameProcessing.value) return;
+  renameProcessing.value = true;
   await doRenameNote(
     props.item._id,
     label.value,
@@ -182,10 +168,11 @@ async function renameNote() {
       renamingNoteId.value = "";
     }
   );
+  renameProcessing.value = false;
 }
 
 async function deleteItem() {
-  await deleteNode(props.item as FolderOrNote);
+  await deleteNode(props.item as ProjectNode);
 }
 
 async function renamePDF() {

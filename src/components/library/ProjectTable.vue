@@ -65,27 +65,16 @@
       />
       <!-- Expanded Rows -->
 
-      <!-- PDF -->
-      <TableItemRow
-        v-if="props.expand && !!props.row.path"
-        :item="props.row"
-        :class="{
-          'tableview-highlighted-row':
-            projectStore.selected.map((item) => item._id).includes(props.key) &&
-            isClickingPDF,
-        }"
-        @click="isClickingPDF = true"
-      />
-      <!-- Notes -->
+      <!-- Children (papers + notes) -->
       <TableItemRow
         v-show="props.expand"
-        v-for="note in (props.row.children as Note[])"
-        :key="note._id"
-        :item="note"
+        v-for="child in props.row.children"
+        :key="child._id"
+        :item="child"
         :class="{
           'tableview-highlighted-row': projectStore.selected
             .map((item) => item._id)
-            .includes(note._id),
+            .includes(child._id),
         }"
       />
 

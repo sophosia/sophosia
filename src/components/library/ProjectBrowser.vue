@@ -41,6 +41,7 @@ import {
   importMeta,
 } from "src/backend/meta";
 import { projectFileAGUD } from "src/backend/project/fileOps";
+import { idToPath } from "src/backend/utils";
 import {
   identifierDialog,
   importDialog,
@@ -151,8 +152,9 @@ async function addProjectsByFiles(filePaths: string[]) {
         project._id
       )) as string;
       let title = await basename(filename, ".pdf");
+      const fullPath = idToPath(`${project._id}/${filename}`);
       await projectStore.updateProject(project._id, {
-        path: filename,
+        pdfs: [{ name: filename, path: fullPath }],
         title: title,
       } as Project);
       // do not use await since this task takes time
@@ -169,7 +171,8 @@ async function addProjectsByFiles(filePaths: string[]) {
           );
           await projectStore.updateProject(project._id, meta as Project);
         }
-        await extractPDFContent((await projectFileAGUD.getPDF(project._id))!);
+        const pdfs = await projectFileAGUD.getPDFs(project._id);
+        if (pdfs.length > 0) await extractPDFContent(pdfs[0].path);
       });
     } catch (error) {
       console.log(error);

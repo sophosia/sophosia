@@ -254,8 +254,12 @@ a {
   }
 }
 
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 ::-webkit-scrollbar-corner {
-  color: transparent;
+  background: transparent;
 }
 
 // ----------------------------------------------------------
@@ -278,6 +282,34 @@ a {
   padding: 16px;
   border-radius: 8px;
   background: transparent !important;
+}
+
+.sidebar-peek-card {
+  position: fixed;
+  width: 500px;
+  max-height: 400px;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: var(--color-hoverpane-bkgd);
+  border: 1px solid var(--color-hoverpane-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 2000;
+
+  .sidebar-peek-card-scroll {
+    max-height: 384px;
+    overflow: auto;
+  }
+
+  .peek-pdf-container {
+    width: 100%;
+    height: 360px;
+    overflow: hidden;
+  }
+
+  .peek-pdf-viewer {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 // Markdown table

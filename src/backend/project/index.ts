@@ -3,7 +3,8 @@ import { join } from "@tauri-apps/api/path";
 import {
   AnnotationData,
   Author,
-  FolderOrNote,
+  PDFAttachment,
+  ProjectNode,
   PDFState,
   Project,
   db,
@@ -38,12 +39,12 @@ export function createProject(category: string): Project {
     dataType: "project",
     label: t("new", { type: t("project") }),
     title: t("new", { type: t("project") }),
-    path: undefined,
+    pdfs: [] as PDFAttachment[],
     tags: [] as string[],
     categories: ["library"],
     author: [] as Author[],
     favorite: false,
-    children: [] as FolderOrNote[],
+    children: [] as ProjectNode[],
   } as Project;
   if (category != "library") project.categories.push(category);
   return project;
@@ -60,7 +61,7 @@ export async function addProject(
   project: Project
 ): Promise<Project | undefined> {
   try {
-    // need to remomve _graph property if update by meta
+    // need to remove _graph property if updated by meta
     delete project._graph;
     const ot = project["original-title"];
     if (!ot || (Array.isArray(ot) && ot.length === 0))
@@ -119,7 +120,7 @@ export async function updateProject(
     const project = (await getProject(projectId)) as Project;
     Object.assign(project, props);
     project.timestampModified = Date.now();
-    delete project._graph; // remomve _graph property if update by meta
+    delete project._graph; // remove _graph property if updated by meta
     delete project.folderIds; // this property is removed since v0.17.0
     const ot = project["original-title"];
     if (!ot || (Array.isArray(ot) && ot.length === 0))
@@ -164,7 +165,7 @@ export async function updateProject(
     projectSQLAGUD.updateProject(projectId, project);
     projectFileAGUD.saveProjectNote(project);
     // add these back since the vue components need this
-    project.path = await projectFileAGUD.getPDF(project._id);
+    project.pdfs = await projectFileAGUD.getPDFs(project._id);
     project.children = await getNoteTree(project._id);
     return project;
   } catch (error) {
@@ -190,7 +191,7 @@ export async function getProject(
   if (!project) return;
 
   if (options?.includePDF)
-    project.path = await projectFileAGUD.getPDF(projectId);
+    project.pdfs = await projectFileAGUD.getPDFs(projectId);
   if (options?.includeNotes) project.children = await getNoteTree(projectId);
   return project;
 }
@@ -228,7 +229,7 @@ export async function getProjects(
 
   for (const project of projects) {
     if (options?.includePDF)
-      project.path = await projectFileAGUD.getPDF(project._id);
+      project.pdfs = await projectFileAGUD.getPDFs(project._id);
     if (options?.includeNotes)
       project.children = await getNoteTree(project._id);
   }

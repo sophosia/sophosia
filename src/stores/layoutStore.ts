@@ -2,7 +2,7 @@ import { basename } from "@tauri-apps/api/path";
 import { WebviewWindow, getCurrent } from "@tauri-apps/api/window";
 import { nanoid } from "nanoid";
 import { defineStore } from "pinia";
-import { NoteType, PageType, db } from "src/backend/database";
+import { NodeType, PageType, db } from "src/backend/database";
 import type {
   AnnotationData,
   AppState,
@@ -28,6 +28,7 @@ export const useLayoutStore = defineStore("layoutStore", {
     rightMenuSize: 0,
     prvRightMenuSize: 0,
     showWelcomeCarousel: true,
+    sidebarCollapsed: false,
 
     // layout
     currentItemId: "",
@@ -57,6 +58,7 @@ export const useLayoutStore = defineStore("layoutStore", {
       this.currentItemId = state.currentItemId;
       this.historyItemIds = state.historyItemIds;
       this.rightMenuSize = state.rightMenuSize;
+      this.sidebarCollapsed = state.sidebarCollapsed ?? false;
       // load layout from db
       await this.loadLayout();
       this.initialized = true;
@@ -74,6 +76,7 @@ export const useLayoutStore = defineStore("layoutStore", {
         currentItemId: this.currentItemId,
         historyItemIds: this.historyItemIds,
         rightMenuSize: this.rightMenuSize,
+        sidebarCollapsed: this.sidebarCollapsed,
       } as AppState;
     },
 
@@ -84,6 +87,10 @@ export const useLayoutStore = defineStore("layoutStore", {
     async loadLayout() {
       if (this.windowId !== "main") return;
       this.layouts.set(this.windowId, await getLayout());
+      // Backfill uid for pages loaded from older layouts
+      for (const page of this.findAllPages(() => true)) {
+        if (!page.uid) page.uid = nanoid();
+      }
       if (this.findPage((page) => page.id === this.currentItemId))
         this.setActive(this.currentItemId);
       else {
@@ -112,6 +119,7 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param page - The page object to be opened, containing necessary properties like id, label, type, etc.
      */
     openPage(page: Page) {
+      if (!page.uid) page.uid = nanoid();
       if (this.layout.type === "stack" && this.layout.children.length === 0) {
         this.layout.children.push(page);
       } else if (!this.findPage((p) => p.id === page.id)) {
@@ -135,8 +143,8 @@ export const useLayoutStore = defineStore("layoutStore", {
     },
 
     /**
-     * closes a page identified by its itemid. the method removes the page from the store and updates the application state.
-     * @param itemid - the unique identifier of the page to be closed.
+     * closes a page identified by its pageId. the method removes the page from the store and updates the application state.
+     * @param pageId - the unique identifier of the page to be closed.
      */
     closePage(pageId: string) {
       this.removeNode(pageId);
@@ -162,11 +170,16 @@ export const useLayoutStore = defineStore("layoutStore", {
 
     /**
      * Renames a page in the store. This method is used to update the properties of a page, including changing its identifier.
-     * @param oldItemId - The original unique identifier of the page.
+     * @param oldPageId - The original unique identifier of the page.
      * @param newPage - The updated page object with new properties.
      */
     renamePage(oldPageId: string, newPage: Page) {
       this.replaceNode(newPage, oldPageId);
+      // Update currentItemId and history to reflect the new ID
+      if (this.currentItemId === oldPageId) this.currentItemId = newPage.id;
+      this.historyItemIds = this.historyItemIds.map((id) =>
+        id === oldPageId ? newPage.id : id
+      );
     },
 
     /**
@@ -188,18 +201,39 @@ export const useLayoutStore = defineStore("layoutStore", {
     async openItem(itemId: string) {
       if (!itemId) return;
       try {
-        // open associated project'
         const projectStore = useProjectStore();
         const dataType = getDataType(itemId);
         if (dataType === "project") {
           const item = (await projectStore.getProjectFromDB(itemId)) as Project;
           await projectStore.openProject(item._id);
-          const path = await projectFileAGUD.getPDF(itemId);
-          if (!path || item.type === "notebook") return; // do not open page if there is no pdf or it's a notebook
+          if (item.type === "notebook") return;
+          // For projects with exactly one PDF, open it directly
+          const pdfs = await projectFileAGUD.getPDFs(itemId);
+          if (pdfs.length === 1) {
+            this.openPage({
+              id: `${itemId}/${pdfs[0].name}`,
+              type: PageType.ReaderPage,
+              label: pdfs[0].name,
+              data: { pdfPath: pdfs[0].path },
+            });
+          }
+          // For multiple PDFs, let user pick from sidebar tree
+        } else if (dataType === "paper") {
+          // itemId is "projectId/filename.pdf"
+          const projectId = itemId.split("/")[0];
+          const pdfName = itemId.split("/").slice(1).join("/");
+          await projectStore.openProject(projectId);
+          const pdfs = await projectFileAGUD.getPDFs(projectId);
+          const pdf = pdfs.find((p) => p.name === pdfName);
+          if (!pdf) {
+            console.error(`PDF "${pdfName}" not found in project "${projectId}"`);
+            return;
+          }
           this.openPage({
             id: itemId,
             type: PageType.ReaderPage,
-            label: await basename(path),
+            label: pdfName,
+            data: { pdfPath: pdf.path },
           });
         } else if (dataType === "note") {
           const item = (await projectStore.getNoteFromDB(itemId)) as Note;
@@ -207,7 +241,7 @@ export const useLayoutStore = defineStore("layoutStore", {
           this.openPage({
             id: itemId,
             type:
-              item.type === NoteType.MARKDOWN
+              item.type === NodeType.MARKDOWN
                 ? PageType.NotePage
                 : PageType.ExcalidrawPage,
             label: item.label,
@@ -215,16 +249,25 @@ export const useLayoutStore = defineStore("layoutStore", {
         } else if (dataType === "pdfAnnotation") {
           const item = (await db.get(itemId)) as AnnotationData;
           await projectStore.openProject(item.projectId);
-          const project = (await getProject(item.projectId)) as Project;
+          const pdfName = item.pdfName;
+          const pdfs = await projectFileAGUD.getPDFs(item.projectId);
+          const pdf = pdfName
+            ? pdfs.find((p) => p.name === pdfName)
+            : pdfs[0];
+          if (!pdf) {
+            console.error(`PDF "${pdfName}" not found in project "${item.projectId}"`);
+            return;
+          }
+          const pageId = `${item.projectId}/${pdf.name}`;
           this.openPage({
-            id: project._id,
+            id: pageId,
             type: PageType.ReaderPage,
-            label: project.label,
-            data: { focusAnnotId: itemId },
+            label: pdf.name,
+            data: { focusAnnotId: itemId, pdfPath: pdf.path },
           });
         }
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     },
 
@@ -264,6 +307,18 @@ export const useLayoutStore = defineStore("layoutStore", {
     },
 
     /**
+     * Toggle sidebar collapsed state
+     * @param collapsed - if given, set the state directly
+     */
+    toggleSidebar(collapsed?: boolean) {
+      if (collapsed === undefined) {
+        this.sidebarCollapsed = !this.sidebarCollapsed;
+      } else {
+        this.sidebarCollapsed = collapsed;
+      }
+    },
+
+    /**
      * Toggle library right menu
      * The size is determined by the minimum size 30 and its previous size
      * If visible is given, set the state as it is
@@ -292,7 +347,7 @@ export const useLayoutStore = defineStore("layoutStore", {
      ***********************************************/
     /**
      * Returns the first found page satisfying the predicate, returns undefined is not found
-     * @param pageId - the id of the page to search
+     * @param predicate - a function that returns true for the desired page
      * @returns page - the found node, could be undefined
      */
     findPage(predicate: (page: Page) => boolean): Page | undefined {
@@ -310,9 +365,9 @@ export const useLayoutStore = defineStore("layoutStore", {
     },
 
     /**
-     * Returns all pages satisfying the predicate, returns undefined is not found
-     * @param pageId - the id of the page to search
-     * @returns page - the found node, could be undefined
+     * Returns all pages satisfying the predicate
+     * @param predicate - a function that returns true for matching pages
+     * @returns Page[] - array of matching pages, empty if none found
      */
     findAllPages(predicate: (page: Page) => boolean): Page[] {
       const pages = [] as Page[];
@@ -337,6 +392,7 @@ export const useLayoutStore = defineStore("layoutStore", {
      * @param pos - position relative to target node, either before or after
      */
     insertPage(page: Page, targetPageId: string, pos: "before" | "after") {
+      if (!page.uid) page.uid = nanoid();
       if (!this.layout) return;
       const stack = [this.layout];
       while (stack.length > 0) {

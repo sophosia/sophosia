@@ -3,9 +3,10 @@ import { defineStore } from "pinia";
 import {
   AppState,
   CategoryNode,
-  FolderOrNote,
+  PDFAttachment,
+  ProjectNode,
   Note,
-  NoteType,
+  NodeType,
   PageType,
   Project,
   SpecialCategory,
@@ -42,30 +43,14 @@ import { generateCiteKey, getMetaFromFile } from "src/backend/meta";
 import { useSettingStore } from "./settingStore";
 
 /**
- * If a project has an attached PDF, inject a synthetic child node
- * so the sidebar tree shows the PDF under the project.
- */
-async function injectPDFChild(project: Project) {
-  if (!project.path) return;
-  const pdfLabel = await basename(project.path);
-  if (project.children?.some((c) => c.label === pdfLabel)) return;
-  if (!project.children) project.children = [];
-  project.children.unshift({
-    _id: `${project._id}/${pdfLabel}`,
-    label: pdfLabel,
-    dataType: "note",
-  } as FolderOrNote);
-}
-
-/**
- * Fetch a project from DB with PDF + notes, inject PDF child, and sort.
+ * Fetch a project from DB with PDF + notes, and sort.
+ * PDFs are now real tree nodes returned by getNoteTree().
  */
 async function fetchAndPrepareProject(projectId: string): Promise<Project> {
   const project = (await getProject(projectId, {
     includePDF: true,
     includeNotes: true,
   })) as Project;
-  await injectPDFChild(project);
   sortTree(project);
   return project;
 }
@@ -146,8 +131,6 @@ export const useProjectStore = defineStore("projectStore", {
     },
 
     async _updateProjectUI(projectId: string, newProject: Project) {
-      await injectPDFChild(newProject);
-
       for (const list of [this.projects, this.openedProjects]) {
         const existing = list.find((p) => p._id === projectId);
         if (existing) Object.assign(existing, newProject);
@@ -182,22 +165,35 @@ export const useProjectStore = defineStore("projectStore", {
       });
     },
 
-    async renamePDF(projectId: string, renameRule: string) {
-      const newPath = await projectFileAGUD.renamePDF(projectId, renameRule);
+    async renamePDF(projectId: string, renameRule: string, pdfName?: string) {
+      const newPath = await projectFileAGUD.renamePDF(
+        projectId,
+        renameRule,
+        pdfName
+      );
+      if (!newPath) return;
+      const newName = await basename(newPath);
       let project = this.getProject(projectId);
       if (!project) return;
-      Object.assign(project, { path: newPath });
-      if (!newPath) return;
+      // Update the pdfs array
+      const targetName = pdfName || project.pdfs[0]?.name;
+      const pdfEntry = project.pdfs.find((p) => p.name === targetName);
+      if (pdfEntry) {
+        pdfEntry.name = newName;
+        pdfEntry.path = newPath;
+      }
       const layoutStore = useLayoutStore();
-      layoutStore.renamePage(project._id, {
-        id: project._id,
+      const oldPageId = `${projectId}/${targetName}`;
+      layoutStore.renamePage(oldPageId, {
+        id: `${projectId}/${newName}`,
         type: PageType.ReaderPage,
-        label: await basename(newPath),
+        label: newName,
       });
     },
 
     async attachPDF(projectId: string) {
       const filename = await projectFileAGUD.attachPDF(projectId);
+      if (!filename) return;
       const filePath = idToPath(`${projectId}/${filename}`);
       const settingStore = useSettingStore();
       getMetaFromFile(filePath).then(async (meta) => {
@@ -214,14 +210,21 @@ export const useProjectStore = defineStore("projectStore", {
           await this.updateProject(projectId, meta as Project);
           newProjectId = (meta as Project)._id;
         }
-        await extractPDFContent((await projectFileAGUD.getPDF(newProjectId))!);
+        const pdfs = await projectFileAGUD.getPDFs(newProjectId);
+        const pdf = pdfs.find((p) => p.name === filename);
+        if (pdf) await extractPDFContent(pdf.path);
+      }).catch((error) => {
+        console.error(`Failed to extract metadata from PDF "${filename}":`, error);
       });
 
-      if (filename) {
-        const project = await fetchAndPrepareProject(projectId);
-        project.path = filename;
-        await this._updateProjectUI(projectId, project);
+      const project = await fetchAndPrepareProject(projectId);
+      // Add the new PDF to the pdfs array if not already there
+      if (!project.pdfs) project.pdfs = [];
+      const fullPath = idToPath(`${projectId}/${filename}`);
+      if (!project.pdfs.some((p) => p.name === filename)) {
+        project.pdfs.push({ name: filename, path: fullPath });
       }
+      await this._updateProjectUI(projectId, project);
     },
 
     async getNoteFromDB(noteId: string) {
@@ -231,15 +234,16 @@ export const useProjectStore = defineStore("projectStore", {
     async createNode(
       parentNodeId: string,
       nodeType: "folder" | "note",
-      noteType: NoteType = NoteType.MARKDOWN
+      noteType: NodeType = NodeType.MARKDOWN
     ) {
       if (nodeType === "folder") return await createFolder(parentNodeId);
       else return await createNote(parentNodeId, noteType);
     },
 
-    async addNode(node: FolderOrNote) {
+    async addNode(node: ProjectNode) {
       if (node.dataType === "folder") await addFolder(node);
-      else await addNote(node as Note);
+      else if (node.dataType === "note") await addNote(node as Note);
+      // Papers (PDFs) don't need file creation - the PDF already exists on disk
       const projectId = node._id.split("/")[0];
       const project = await fetchAndPrepareProject(projectId);
       await this._updateProjectUI(projectId, project);
@@ -261,9 +265,16 @@ export const useProjectStore = defineStore("projectStore", {
       }
     },
 
-    async deleteNode(nodeId: string, nodeType: "folder" | "note") {
+    async deleteNode(
+      nodeId: string,
+      nodeType: "folder" | "note" | "paper"
+    ) {
       if (nodeType === "folder") await deleteFolder(nodeId);
-      else await deleteNote(nodeId);
+      else if (nodeType === "paper") {
+        const projectId = nodeId.split("/")[0];
+        const pdfName = nodeId.split("/").slice(1).join("/");
+        await projectFileAGUD.removePDF(projectId, pdfName);
+      } else await deleteNote(nodeId);
       const projectId = nodeId.split("/")[0];
       const project = await fetchAndPrepareProject(projectId);
       await this._updateProjectUI(projectId, project);

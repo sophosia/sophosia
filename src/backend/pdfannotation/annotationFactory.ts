@@ -15,9 +15,11 @@ import { PDFPageView } from "pdfjs-dist/web/pdf_viewer";
  */
 export default class AnnotationFactory {
   projectId: string;
+  pdfName: string;
 
-  constructor(projectId: string) {
+  constructor(projectId: string, pdfName: string = "") {
     this.projectId = projectId;
+    this.pdfName = pdfName;
   }
 
   /**
@@ -174,6 +176,7 @@ export default class AnnotationFactory {
       color: color,
       pageNumber: e.pageNumber,
       projectId: this.projectId,
+      pdfName: this.pdfName,
       dataType: "pdfAnnotation",
       content: "",
     } as AnnotationData;

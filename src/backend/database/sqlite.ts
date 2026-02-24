@@ -58,8 +58,19 @@ class SQLDatabase {
       "CREATE VIRTUAL TABLE IF NOT EXISTS notes USING fts5 (projectId, _id, type, content, timestampAdded, timestampModified)"
     );
     // store the annotations of each meta, _id is annotId
+    // Migration: drop old table without pdfName column and recreate
+    try {
+      const result = await _sqldb.select<{ sql: string }[]>(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='annotations'"
+      );
+      if (result && result.length > 0 && !result[0].sql.includes("pdfName")) {
+        await _sqldb.execute("DROP TABLE IF EXISTS annotations");
+      }
+    } catch (error) {
+      console.error("Failed to migrate annotations table:", error);
+    }
     await _sqldb.execute(
-      "CREATE VIRTUAL TABLE IF NOT EXISTS annotations USING fts5 (projectId, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)"
+      "CREATE VIRTUAL TABLE IF NOT EXISTS annotations USING fts5 (projectId, pdfName, _id, type, rects, color, pageNumber, content, timestampAdded, timestampModified)"
     );
     // store the tags of each meta
     await _sqldb.execute(

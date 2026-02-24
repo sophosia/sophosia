@@ -41,7 +41,7 @@
       <q-item
         clickable
         v-close-popup
-        @click="$emit('addNote', NoteType.MARKDOWN)"
+        @click="$emit('addNote', NodeType.MARKDOWN)"
       >
         <q-item-section>
           <i18n-t keypath="add">
@@ -52,7 +52,7 @@
       <q-item
         clickable
         v-close-popup
-        @click="$emit('addNote', NoteType.EXCALIDRAW)"
+        @click="$emit('addNote', NodeType.EXCALIDRAW)"
       >
         <q-item-section>
           <i18n-t keypath="add">
@@ -116,7 +116,7 @@
   </q-menu>
 </template>
 <script setup lang="ts">
-import { NoteType } from "src/backend/database";
+import { NodeType } from "src/backend/database";
 import { useProjectStore } from "src/stores/projectStore";
 
 const projectStore = useProjectStore();
